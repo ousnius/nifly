@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Objects.h"
+#include "Objects.hpp"
 
 void NiObjectNET::Get(NiStream& stream) {
 	NiObject::Get(stream);

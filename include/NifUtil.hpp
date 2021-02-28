@@ -5,7 +5,7 @@ See the included LICENSE file
 
 #pragma once
 
-#include "utils/Object3d.h"
+#include "Object3d.hpp"
 
 // ApplyMapToTriangles applies a vertex index renumbering map to p1, p2,
 // and p3 of a vector of Triangles "tris".  If a triangle has an index out

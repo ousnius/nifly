@@ -5,9 +5,9 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "Animation.h"
-#include "ExtraData.h"
+#include "BasicTypes.hpp"
+#include "Animation.hpp"
+#include "ExtraData.hpp"
 
 class NiObjectNET : public NiObject {
 protected:

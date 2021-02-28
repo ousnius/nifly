@@ -5,16 +5,16 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "Animation.h"
-#include "bhk.h"
-#include "ExtraData.h"
-#include "Geometry.h"
-#include "Keys.h"
-#include "Objects.h"
-#include "Particles.h"
-#include "Shaders.h"
-#include "Skin.h"
+#include "BasicTypes.hpp"
+#include "Animation.hpp"
+#include "bhk.hpp"
+#include "ExtraData.hpp"
+#include "Geometry.hpp"
+#include "Keys.hpp"
+#include "Objects.hpp"
+#include "Particles.hpp"
+#include "Shaders.hpp"
+#include "Skin.hpp"
 
 #include <unordered_map>
 

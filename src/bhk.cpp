@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "bhk.h"
+#include "bhk.hpp"
 
 void NiCollisionObject::Get(NiStream& stream) {
 	NiObject::Get(stream);

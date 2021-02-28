@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Animation.h"
+#include "Animation.hpp"
 
 void NiKeyframeData::Get(NiStream& stream) {
 	NiObject::Get(stream);

@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Particles.h"
+#include "Particles.hpp"
 
 NiParticlesData::NiParticlesData() {
 	NiGeometryData::isPSys = true;

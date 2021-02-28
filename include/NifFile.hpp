@@ -5,7 +5,7 @@ See the included LICENSE file
 
 #pragma once
 
-#include "Factory.h"
+#include "Factory.hpp"
 
 struct OptOptions {
 	NiVersion targetVersion;

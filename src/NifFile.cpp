@@ -3,8 +3,8 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "NifFile.h"
-#include "NifUtil.h"
+#include "NifFile.hpp"
+#include "NifUtil.hpp"
 
 #include <set>
 #include <unordered_set>

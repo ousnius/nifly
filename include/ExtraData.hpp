@@ -5,10 +5,10 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "Keys.h"
-#include "VertexData.h"
-#include "utils/half.hpp"
+#include "BasicTypes.hpp"
+#include "Keys.hpp"
+#include "VertexData.hpp"
+#include "half.hpp"
 
 class NiExtraData : public NiObject {
 private:

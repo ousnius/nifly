@@ -3,12 +3,12 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Geometry.h"
-#include "Skin.h"
-#include "Nodes.h"
+#include "Geometry.hpp"
+#include "Skin.hpp"
+#include "Nodes.hpp"
 
-#include "utils/KDMatcher.h"
-#include "NifUtil.h"
+#include "KDMatcher.hpp"
+#include "NifUtil.hpp"
 
 void NiAdditionalGeometryData::Get(NiStream & stream) {
 	AdditionalGeomData::Get(stream);

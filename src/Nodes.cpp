@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Nodes.h"
+#include "Nodes.hpp"
 
 void NiNode::Get(NiStream& stream) {
 	NiAVObject::Get(stream);

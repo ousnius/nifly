@@ -5,9 +5,9 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "ExtraData.h"
-#include "Keys.h"
+#include "BasicTypes.hpp"
+#include "ExtraData.hpp"
+#include "Keys.hpp"
 
 class NiKeyframeData : public NiObject {
 private:

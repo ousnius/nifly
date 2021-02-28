@@ -5,9 +5,9 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "Geometry.h"
-#include "Nodes.h"
+#include "BasicTypes.hpp"
+#include "Geometry.hpp"
+#include "Nodes.hpp"
 
 class NiParticles : public NiGeometry {
 public:

@@ -1,6 +1,6 @@
 Project(nifly)
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.10)
 
 add_library(nifly STATIC
     external/half.hpp
@@ -36,6 +36,8 @@ add_library(nifly STATIC
     src/Skin.cpp
     src/Object3d.cpp
     )
+
+target_include_directories(nifly PUBLIC "include" "external")
 
 target_compile_features(nifly PUBLIC cxx_std_17)
 if(MSVC)

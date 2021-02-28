@@ -5,7 +5,7 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
+#include "BasicTypes.hpp"
 
 enum VertexAttribute : byte {
 	VA_POSITION = 0x0,

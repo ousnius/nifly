@@ -5,8 +5,8 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "Objects.h"
+#include "BasicTypes.hpp"
+#include "Objects.hpp"
 
 enum BSShaderType : uint {
 	SHADER_TALL_GRASS,

@@ -5,7 +5,7 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
+#include "BasicTypes.hpp"
 
 enum KeyType : uint {
 	NO_INTERP,

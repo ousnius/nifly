@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "BasicTypes.h"
+#include "BasicTypes.hpp"
 #include <regex>
 
 static const std::string NIF_GAMEBRYO = "Gamebryo File Format";

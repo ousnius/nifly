@@ -5,7 +5,7 @@ See the included LICENSE file
 
 #pragma once
 
-#include "utils/Object3d.h"
+#include "Object3d.hpp"
 
 #include <set>
 #include <unordered_set>

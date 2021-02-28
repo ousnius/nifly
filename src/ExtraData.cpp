@@ -3,8 +3,8 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "ExtraData.h"
-#include "utils/half.hpp"
+#include "ExtraData.hpp"
+#include "half.hpp"
 
 #include <fstream>
 

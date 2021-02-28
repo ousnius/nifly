@@ -1,4 +1,4 @@
-#include "Object3d.h"
+#include "Object3d.hpp"
 #include "Miniball.hpp"
 
 BoundingSphere::BoundingSphere(const std::vector<Vector3>& vertices) {

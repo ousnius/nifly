@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Shaders.h"
+#include "Shaders.hpp"
 
 void NiShadeProperty::Get(NiStream& stream) {
 	NiProperty::Get(stream);

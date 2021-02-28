@@ -5,9 +5,9 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "ExtraData.h"
-#include "Animation.h"
+#include "BasicTypes.hpp"
+#include "ExtraData.hpp"
+#include "Animation.hpp"
 
 typedef uint HavokMaterial;
 

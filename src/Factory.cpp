@@ -3,7 +3,7 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Factory.h"
+#include "Factory.hpp"
 
 NiFactoryRegister& NiFactoryRegister::Get() {
 	static NiFactoryRegister instance;

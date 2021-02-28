@@ -3,9 +3,9 @@ BodySlide and Outfit Studio
 See the included LICENSE file
 */
 
-#include "Skin.h"
-#include "utils/half.hpp"
-#include "NifUtil.h"
+#include "Skin.hpp"
+#include "half.hpp"
+#include "NifUtil.hpp"
 
 #include <unordered_map>
 

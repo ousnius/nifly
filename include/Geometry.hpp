@@ -5,9 +5,9 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "Objects.h"
-#include "VertexData.h"
+#include "BasicTypes.hpp"
+#include "Objects.hpp"
+#include "VertexData.hpp"
 
 #include <deque>
 

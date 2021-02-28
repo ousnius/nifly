@@ -5,8 +5,8 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.h"
-#include "VertexData.h"
+#include "BasicTypes.hpp"
+#include "VertexData.hpp"
 
 struct SkinWeight {
 	ushort index;
