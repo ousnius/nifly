@@ -307,11 +307,7 @@ public:
 	BSPSysScaleModifier* Clone() { return new BSPSysScaleModifier(*this); }
 };
 
-enum ForceType : uint {
-	FORCE_PLANAR,
-	FORCE_SPHERICAL,
-	FORCE_UNKNOWN
-};
+enum ForceType : uint { FORCE_PLANAR, FORCE_SPHERICAL, FORCE_UNKNOWN };
 
 class NiPSysGravityModifier : public NiPSysModifier {
 private:
@@ -409,17 +405,9 @@ public:
 	BSPSysSubTexModifier* Clone() { return new BSPSysSubTexModifier(*this); }
 };
 
-enum DecayType : uint {
-	DECAY_NONE,
-	DECAY_LINEAR,
-	DECAY_EXPONENTIAL
-};
+enum DecayType : uint { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
 
-enum SymmetryType : uint {
-	SYMMETRY_SPHERICAL,
-	SYMMETRY_CYLINDRICAL,
-	SYMMETRY_PLANAR
-};
+enum SymmetryType : uint { SYMMETRY_SPHERICAL, SYMMETRY_CYLINDRICAL, SYMMETRY_PLANAR };
 
 class NiPSysBombModifier : public NiPSysModifier {
 private:
@@ -907,11 +895,7 @@ public:
 	BSPSysArrayEmitter* Clone() { return new BSPSysArrayEmitter(*this); }
 };
 
-enum VelocityType : uint {
-	VELOCITY_USE_NORMALS,
-	VELOCITY_USE_RANDOM,
-	VELOCITY_USE_DIRECTION
-};
+enum VelocityType : uint { VELOCITY_USE_NORMALS, VELOCITY_USE_RANDOM, VELOCITY_USE_DIRECTION };
 
 enum EmitFrom : uint {
 	EMIT_FROM_VERTICES,

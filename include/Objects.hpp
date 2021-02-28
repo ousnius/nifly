@@ -5,8 +5,8 @@ See the included LICENSE file
 
 #pragma once
 
-#include "BasicTypes.hpp"
 #include "Animation.hpp"
+#include "BasicTypes.hpp"
 #include "ExtraData.hpp"
 
 class NiObjectNET : public NiObject {
@@ -18,7 +18,7 @@ private:
 	BlockRefArray<NiExtraData> extraDataRefs;
 
 public:
-	uint bslspShaderType = 0;				// BSLightingShaderProperty && User Version >= 12
+	uint bslspShaderType = 0; // BSLightingShaderProperty && User Version >= 12
 	bool bBSLightingShaderProperty = false;
 
 	void Get(NiStream& stream);
@@ -62,8 +62,8 @@ public:
 	int GetCollisionRef() { return collisionRef.GetIndex(); }
 	void SetCollisionRef(const int colRef) { collisionRef.SetIndex(colRef); }
 
-	const MatTransform &GetTransformToParent() const {return transform;}
-	void SetTransformToParent(const MatTransform &t) {transform = t;}
+	const MatTransform& GetTransformToParent() const { return transform; }
+	void SetTransformToParent(const MatTransform& t) { transform = t; }
 };
 
 struct AVObject {
@@ -71,8 +71,7 @@ struct AVObject {
 	BlockRef<NiAVObject> objectRef;
 };
 
-class NiAVObjectPalette : public NiObject {
-};
+class NiAVObjectPalette : public NiObject {};
 
 class NiDefaultAVObjectPalette : public NiAVObjectPalette {
 private:
@@ -167,12 +166,7 @@ enum ChannelType : uint {
 	CHNL_EMPTY = 19,
 };
 
-enum ChannelConvention : uint {
-	CC_FIXED,
-	CC_INDEX = 3,
-	CC_COMPRESSED = 4,
-	CC_EMPTY = 5
-};
+enum ChannelConvention : uint { CC_FIXED, CC_INDEX = 3, CC_COMPRESSED = 4, CC_EMPTY = 5 };
 
 struct ChannelData {
 	ChannelType type = CHNL_EMPTY;
@@ -219,7 +213,7 @@ private:
 	uint unkInt4 = 0;
 	uint numFaces = 0;
 	uint unkInt5 = 0;
-	
+
 	std::vector<std::vector<byte>> pixelData;
 
 public:
@@ -259,21 +253,11 @@ enum PixelLayout : uint {
 	PIX_LAY_DEFAULT
 };
 
-enum MipMapFormat : uint {
-	MIP_FMT_NO,
-	MIP_FMT_YES,
-	MIP_FMT_DEFAULT
-};
+enum MipMapFormat : uint { MIP_FMT_NO, MIP_FMT_YES, MIP_FMT_DEFAULT };
 
-enum AlphaFormat : uint {
-	ALPHA_NONE,
-	ALPHA_BINARY,
-	ALPHA_SMOOTH,
-	ALPHA_DEFAULT
-};
+enum AlphaFormat : uint { ALPHA_NONE, ALPHA_BINARY, ALPHA_SMOOTH, ALPHA_DEFAULT };
 
-class NiTexture : public NiObjectNET {
-};
+class NiTexture : public NiObjectNET {};
 
 class NiSourceTexture : public NiTexture {
 private:
@@ -323,12 +307,7 @@ enum TexFilterMode : uint {
 	FILTER_BILERP_MIPNEAREST
 };
 
-enum TexClampMode : uint {
-	CLAMP_S_CLAMP_T,
-	CLAMP_S_WRAP_T,
-	WRAP_S_CLAMP_T,
-	WRAP_S_WRAP_T
-};
+enum TexClampMode : uint { CLAMP_S_CLAMP_T, CLAMP_S_WRAP_T, WRAP_S_CLAMP_T, WRAP_S_WRAP_T };
 
 enum EffectType : uint {
 	EFFECT_PROJECTED_LIGHT,

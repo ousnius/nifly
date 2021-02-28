@@ -1027,7 +1027,7 @@ void NiParticleSystem::Put(NiStream& stream) {
 void NiParticleSystem::GetStringRefs(std::set<StringRef*>& refs) {
 	NiAVObject::GetStringRefs(refs);
 
-	for (auto &m : materialNameRefs)
+	for (auto& m : materialNameRefs)
 		refs.insert(&m);
 }
 

@@ -79,11 +79,11 @@ public:
 		bool hasBoneIndices = false;
 		std::vector<BoneIndices> boneIndices;
 
-		ushort unkShort = 0;					// User Version >= 12
-		VertexDesc vertexDesc;					// User Version >= 12, User Version 2 == 100
+		ushort unkShort = 0;   // User Version >= 12
+		VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 		// When trueTriangles is changed so it's no longer in sync with
 		// triParts, triParts should be cleared.
-		std::vector<Triangle> trueTriangles;	// User Version >= 12, User Version 2 == 100
+		std::vector<Triangle> trueTriangles; // User Version >= 12, User Version 2 == 100
 
 		bool ConvertStripsToTriangles();
 		void GenerateTrueTrianglesFromMappedTriangles();
@@ -92,12 +92,12 @@ public:
 	};
 
 	uint numPartitions = 0;
-	uint dataSize = 0;						// User Version >= 12, User Version 2 == 100
-	uint vertexSize = 0;					// User Version >= 12, User Version 2 == 100
-	VertexDesc vertexDesc;					// User Version >= 12, User Version 2 == 100
+	uint dataSize = 0;	   // User Version >= 12, User Version 2 == 100
+	uint vertexSize = 0;   // User Version >= 12, User Version 2 == 100
+	VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 
-	uint numVertices = 0;					// Not in file
-	std::vector<BSVertexData> vertData;		// User Version >= 12, User Version 2 == 100
+	uint numVertices = 0;				// Not in file
+	std::vector<BSVertexData> vertData; // User Version >= 12, User Version 2 == 100
 	std::vector<PartitionBlock> partitions;
 
 	// bMappedIndices is not in the file; it is calculated from
@@ -130,7 +130,7 @@ public:
 	void Put(NiStream& stream);
 	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
 	// DeletePartitions: partInds must be in sorted ascending order
-	void DeletePartitions(const std::vector<int> &partInds);
+	void DeletePartitions(const std::vector<int>& partInds);
 	int RemoveEmptyPartitions(std::vector<int>& outDeletedIndices);
 	NiSkinPartition* Clone() { return new NiSkinPartition(*this); }
 	// ConvertStripsToTriangles returns true if any conversions were
@@ -150,15 +150,15 @@ public:
 	// typically triParts[i] will be between 0 and partitions.size()-1,
 	// it is theoretically possible for some triParts[i] to be -1
 	// (like because of garbage data in the file).
-	void GenerateTriPartsFromTrueTriangles(const std::vector<Triangle> &shapeTris);
+	void GenerateTriPartsFromTrueTriangles(const std::vector<Triangle>& shapeTris);
 	// GenerateTrueTrianglesFromTriParts: generates the partitions'
 	// trueTriangles from triParts and shapeTris.  If triParts[i] is
 	// out of range, the corresponding triangle will not be copied
 	// into a partition.
-	void GenerateTrueTrianglesFromTriParts(const std::vector<Triangle> &shapeTris);
+	void GenerateTrueTrianglesFromTriParts(const std::vector<Triangle>& shapeTris);
 	// PrepareTriParts: ensures triParts has data, generating it
 	// if necessary from trueTriangles and shapeTris.
-	void PrepareTriParts(const std::vector<Triangle> &shapeTris);
+	void PrepareTriParts(const std::vector<Triangle>& shapeTris);
 };
 
 class NiNode;
@@ -191,7 +191,7 @@ public:
 	int GetDataRef() { return dataRef.GetIndex(); }
 	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
 
-    int GetSkinPartitionRef() { return skinPartitionRef.GetIndex(); }
+	int GetSkinPartitionRef() { return skinPartitionRef.GetIndex(); }
 	void SetSkinPartitionRef(const int skinPartRef) { skinPartitionRef.SetIndex(skinPartRef); }
 
 	int GetSkeletonRootRef() { return targetRef.GetIndex(); }
@@ -199,11 +199,7 @@ public:
 };
 
 
-enum PartitionFlags : ushort {
-	PF_NONE = 0,
-	PF_EDITOR_VISIBLE = 1 << 0,
-	PF_START_NET_BONESET = 1 << 8
-};
+enum PartitionFlags : ushort { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
 class BSDismemberSkinInstance : public NiSkinInstance {
 public:
@@ -230,7 +226,7 @@ public:
 	void AddPartition(const PartitionInfo& partition);
 	void RemovePartition(const int id);
 	// DeletePartitions: partInds must be in sorted ascending order.
-	void DeletePartitions(const std::vector<int> &partInds);
+	void DeletePartitions(const std::vector<int>& partInds);
 	void ClearPartitions();
 
 	void SetPartitions(const std::vector<PartitionInfo>& parts) {

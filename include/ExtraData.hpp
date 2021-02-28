@@ -329,13 +329,13 @@ public:
 struct FurniturePosition {
 	Vector3 offset;
 
-	ushort orientation;			// User Version <= 11
-	byte posRef1;				// User Version <= 11
-	byte posRef2;				// User Version <= 11
+	ushort orientation; // User Version <= 11
+	byte posRef1;		// User Version <= 11
+	byte posRef2;		// User Version <= 11
 
-	float heading;				// User Version >= 12
-	ushort animationType;		// User Version >= 12
-	ushort entryPoints;			// User Version >= 12
+	float heading;		  // User Version >= 12
+	ushort animationType; // User Version >= 12
+	ushort entryPoints;	  // User Version >= 12
 };
 
 class BSFurnitureMarker : public NiExtraData {
@@ -524,8 +524,7 @@ public:
 	void SetTargets(const std::vector<NiString>& targ);
 };
 
-class BSExtraData : public NiObject {
-};
+class BSExtraData : public NiObject {};
 
 class BSClothExtraData : public BSExtraData {
 private:

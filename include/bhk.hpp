@@ -5,9 +5,9 @@ See the included LICENSE file
 
 #pragma once
 
+#include "Animation.hpp"
 #include "BasicTypes.hpp"
 #include "ExtraData.hpp"
-#include "Animation.hpp"
 
 typedef uint HavokMaterial;
 
@@ -23,12 +23,7 @@ struct hkWorldObjCInfoProperty {
 	uint capacityAndFlags = 0x80000000;
 };
 
-enum MotorType : byte {
-	MOTOR_NONE = 0,
-	MOTOR_POSITION = 1,
-	MOTOR_VELOCITY = 2,
-	MOTOR_SPRING = 3
-};
+enum MotorType : byte { MOTOR_NONE = 0, MOTOR_POSITION = 1, MOTOR_VELOCITY = 2, MOTOR_SPRING = 3 };
 
 struct bhkLimitedForceConstraintMotor {
 	float minForce = -1000000.0f;
@@ -118,17 +113,10 @@ struct MotorDesc {
 		stream >> motorType;
 
 		switch (motorType) {
-		case MOTOR_POSITION:
-			motorPosition.Get(stream);
-			break;
-		case MOTOR_VELOCITY:
-			motorVelocity.Get(stream);
-			break;
-		case MOTOR_SPRING:
-			motorSpringDamper.Get(stream);
-			break;
-		default:
-			break;
+			case MOTOR_POSITION: motorPosition.Get(stream); break;
+			case MOTOR_VELOCITY: motorVelocity.Get(stream); break;
+			case MOTOR_SPRING: motorSpringDamper.Get(stream); break;
+			default: break;
 		}
 	}
 
@@ -136,17 +124,10 @@ struct MotorDesc {
 		stream << motorType;
 
 		switch (motorType) {
-		case MOTOR_POSITION:
-			motorPosition.Put(stream);
-			break;
-		case MOTOR_VELOCITY:
-			motorVelocity.Put(stream);
-			break;
-		case MOTOR_SPRING:
-			motorSpringDamper.Put(stream);
-			break;
-		default:
-			break;
+			case MOTOR_POSITION: motorPosition.Put(stream); break;
+			case MOTOR_VELOCITY: motorVelocity.Put(stream); break;
+			case MOTOR_SPRING: motorSpringDamper.Put(stream); break;
+			default: break;
 		}
 	}
 };
@@ -276,20 +257,9 @@ public:
 	void SetTargetRef(const int ref) { targetRef.SetIndex(ref); }
 };
 
-enum PropagationMode : uint {
-	PROPAGATE_ON_SUCCESS,
-	PROPAGATE_ON_FAILURE,
-	PROPAGATE_ALWAYS,
-	PROPAGATE_NEVER
-};
+enum PropagationMode : uint { PROPAGATE_ON_SUCCESS, PROPAGATE_ON_FAILURE, PROPAGATE_ALWAYS, PROPAGATE_NEVER };
 
-enum CollisionMode : uint {
-	CM_USE_OBB,
-	CM_USE_TRI,
-	CM_USE_ABV,
-	CM_NOTEST,
-	CM_USE_NIBOUND
-};
+enum CollisionMode : uint { CM_USE_OBB, CM_USE_TRI, CM_USE_ABV, CM_NOTEST, CM_USE_NIBOUND };
 
 enum BoundVolumeType : uint {
 	BASE_BV = 0xFFFFFFFF,
@@ -489,11 +459,9 @@ public:
 	bhkBlendController* Clone() { return new bhkBlendController(*this); }
 };
 
-class bhkRefObject : public NiObject {
-};
+class bhkRefObject : public NiObject {};
 
-class bhkSerializable : public bhkRefObject {
-};
+class bhkSerializable : public bhkRefObject {};
 
 class bhkShape : public bhkSerializable {
 public:
@@ -501,8 +469,7 @@ public:
 	virtual void SetMaterial(HavokMaterial) {}
 };
 
-class bhkHeightFieldShape : public bhkShape {
-};
+class bhkHeightFieldShape : public bhkShape {};
 
 class bhkPlaneShape : public bhkHeightFieldShape {
 private:
@@ -557,8 +524,7 @@ public:
 	bhkMultiSphereShape* Clone() { return new bhkMultiSphereShape(*this); }
 };
 
-class bhkConvexShape : public bhkSphereRepShape {
-};
+class bhkConvexShape : public bhkSphereRepShape {};
 
 class bhkConvexListShape : public bhkShape {
 private:
@@ -704,8 +670,7 @@ public:
 	void SetRadius2(const float r) { radius2 = r; }
 };
 
-class bhkBvTreeShape : public bhkShape {
-};
+class bhkBvTreeShape : public bhkShape {};
 
 class bhkMoppBvTreeShape : public bhkBvTreeShape {
 private:
@@ -716,7 +681,7 @@ private:
 	float scale = 0.0f;
 	uint dataSize = 0;
 	Vector4 offset;
-	byte buildType = 2;						// User Version >= 12
+	byte buildType = 2; // User Version >= 12
 	std::vector<byte> data;
 
 public:
@@ -771,8 +736,7 @@ public:
 	void SetRadius(const float r) { radius = r; }
 };
 
-class bhkShapeCollection : public bhkShape {
-};
+class bhkShapeCollection : public bhkShape {};
 
 class bhkListShape : public bhkShapeCollection {
 private:
@@ -942,11 +906,9 @@ public:
 	void SetBroadPhaseType(const byte bpt) { broadPhaseType = bpt; }
 };
 
-class bhkPhantom : public bhkWorldObject {
-};
+class bhkPhantom : public bhkWorldObject {};
 
-class bhkShapePhantom : public bhkPhantom {
-};
+class bhkShapePhantom : public bhkPhantom {};
 
 class bhkSimpleShapePhantom : public bhkShapePhantom {
 private:
@@ -977,8 +939,7 @@ public:
 	bhkAabbPhantom* Clone() { return new bhkAabbPhantom(*this); }
 };
 
-class bhkEntity : public bhkWorldObject {
-};
+class bhkEntity : public bhkWorldObject {};
 
 class bhkConstraint : public bhkSerializable {
 private:
@@ -1157,12 +1118,7 @@ public:
 	void SetEntityBRef(int entityRef);
 };
 
-enum hkResponseType : byte {
-	RESPONSE_INVALID,
-	RESPONSE_SIMPLE_CONTACT,
-	RESPONSE_REPORTING,
-	RESPONSE_NONE
-};
+enum hkResponseType : byte { RESPONSE_INVALID, RESPONSE_SIMPLE_CONTACT, RESPONSE_REPORTING, RESPONSE_NONE };
 
 class bhkRigidBody : public bhkEntity {
 private:
@@ -1181,10 +1137,10 @@ private:
 	float mass = 1.0f;
 	float linearDamping = 0.1f;
 	float angularDamping = 0.05f;
-	float timeFactor = 1.0f;				// User Version >= 12
-	float gravityFactor = 1.0f;				// User Version >= 12
+	float timeFactor = 1.0f;	// User Version >= 12
+	float gravityFactor = 1.0f; // User Version >= 12
 	float friction = 0.5f;
-	float rollingFrictionMult = 1.0f;		// User Version >= 12
+	float rollingFrictionMult = 1.0f; // User Version >= 12
 	float restitution = 0.4f;
 	float maxLinearVelocity = 104.4f;
 	float maxAngularVelocity = 31.57f;
@@ -1199,10 +1155,10 @@ private:
 	bool forceCollideOntoPpu = false;
 	uint unkInt2 = 0;
 	uint unkInt3 = 0;
-	uint unkInt4 = 0;						// User Version >= 12
+	uint unkInt4 = 0; // User Version >= 12
 	BlockRefArray<bhkSerializable> constraintRefs;
-	uint unkInt5 = 0;						// User Version <= 11
-	ushort bodyFlags = 0;					// User Version >= 12
+	uint unkInt5 = 0;	  // User Version <= 11
+	ushort bodyFlags = 0; // User Version >= 12
 
 public:
 	static constexpr const char* BlockName = "bhkRigidBody";

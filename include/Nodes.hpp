@@ -36,11 +36,7 @@ public:
 	BSFadeNode* Clone() { return new BSFadeNode(*this); }
 };
 
-enum BSValueNodeFlags : byte {
-	BSVN_NONE = 0x0,
-	BSVN_BILLBOARD_WORLD_Z = 0x1,
-	BSVN_USE_PLAYER_ADJUST = 0x2
-};
+enum BSValueNodeFlags : byte { BSVN_NONE = 0x0, BSVN_BILLBOARD_WORLD_Z = 0x1, BSVN_USE_PLAYER_ADJUST = 0x2 };
 
 class BSValueNode : public NiNode {
 private:
@@ -98,8 +94,7 @@ public:
 	BSOrderedNode* Clone() { return new BSOrderedNode(*this); }
 };
 
-class BSMultiBoundData : public NiObject {
-};
+class BSMultiBoundData : public NiObject {};
 
 class BSMultiBoundOBB : public BSMultiBoundData {
 private:
@@ -254,10 +249,7 @@ public:
 	NiBillboardNode* Clone() { return new NiBillboardNode(*this); }
 };
 
-enum NiSwitchFlags : ushort {
-	UPDATE_ONLY_ACTIVE_CHILD,
-	UPDATE_CONTROLLERS
-};
+enum NiSwitchFlags : ushort { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
 
 class NiSwitchNode : public NiNode {
 private:
@@ -279,8 +271,7 @@ struct LODRange {
 	float farExtent = 0.0f;
 };
 
-class NiLODData : public NiObject {
-};
+class NiLODData : public NiObject {};
 
 class NiRangeLODData : public NiLODData {
 private:
@@ -344,10 +335,7 @@ public:
 	NiBone* Clone() { return new NiBone(*this); }
 };
 
-enum SortingMode {
-	SORTING_INHERIT,
-	SORTING_OFF
-};
+enum SortingMode { SORTING_INHERIT, SORTING_OFF };
 
 class NiSortAdjustNode : public NiNode {
 private:

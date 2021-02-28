@@ -11,19 +11,22 @@ See the included LICENSE file
 // and p3 of a vector of Triangles "tris".  If a triangle has an index out
 // of range of the map or if an index maps to a negative number, the
 // triangle is removed.
-template<typename IndexType1, typename IndexType2 = int> void ApplyMapToTriangles(std::vector<Triangle> &tris, const std::vector<IndexType1> &map, std::vector<IndexType2> *deletedTris = nullptr) {
+template<typename IndexType1, typename IndexType2 = int>
+void ApplyMapToTriangles(std::vector<Triangle>& tris,
+						 const std::vector<IndexType1>& map,
+						 std::vector<IndexType2>* deletedTris = nullptr) {
 	const int mapsz = map.size();
 	int di = 0;
 	for (int si = 0; si < tris.size(); ++si) {
-		const Triangle &stri = tris[si];
+		const Triangle& stri = tris[si];
 		// Triangle's indices are unsigned, but IndexType might be signed.
-		if (stri.p1 >= mapsz || stri.p2  >= mapsz || stri.p3 >= mapsz ||
-			map[stri.p1] < 0 || map[stri.p2] < 0 || map[stri.p3] < 0) {
+		if (stri.p1 >= mapsz || stri.p2 >= mapsz || stri.p3 >= mapsz || map[stri.p1] < 0 || map[stri.p2] < 0
+			|| map[stri.p3] < 0) {
 			if (deletedTris)
 				deletedTris->push_back(si);
 			continue;
 		}
-		Triangle &dtri = tris[di];
+		Triangle& dtri = tris[di];
 		dtri.p1 = map[stri.p1];
 		dtri.p2 = map[stri.p2];
 		dtri.p3 = map[stri.p3];
@@ -32,7 +35,7 @@ template<typename IndexType1, typename IndexType2 = int> void ApplyMapToTriangle
 	tris.resize(di);
 }
 
-inline ushort CalcMaxTriangleIndex(const std::vector<Triangle> &v) {
+inline ushort CalcMaxTriangleIndex(const std::vector<Triangle>& v) {
 	ushort maxind = 0;
 	for (unsigned int i = 0; i < v.size(); ++i) {
 		maxind = std::max(maxind, v[i].p1);
@@ -43,7 +46,8 @@ inline ushort CalcMaxTriangleIndex(const std::vector<Triangle> &v) {
 }
 
 // inds must be in sorted ascending order.
-template<typename VectorType, typename IndexType> void EraseVectorIndices(VectorType &v, const std::vector<IndexType> &inds) {
+template<typename VectorType, typename IndexType>
+void EraseVectorIndices(VectorType& v, const std::vector<IndexType>& inds) {
 	if (inds.empty() || inds[0] >= v.size())
 		return;
 	int indi = 1;
@@ -59,7 +63,8 @@ template<typename VectorType, typename IndexType> void EraseVectorIndices(Vector
 }
 
 // inds must be in sorted ascending order.
-template<typename VectorType, typename IndexType> void InsertVectorIndices(VectorType &v, const std::vector<IndexType> &inds) {
+template<typename VectorType, typename IndexType>
+void InsertVectorIndices(VectorType& v, const std::vector<IndexType>& inds) {
 	if (inds.empty() || inds.back() >= v.size() + inds.size())
 		return;
 	int indi = inds.size() - 1;
@@ -76,7 +81,8 @@ template<typename VectorType, typename IndexType> void InsertVectorIndices(Vecto
 }
 
 // inds must be in sorted ascending order.
-template<typename IndexType1, typename IndexType2> std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1> &inds, IndexType2 mapSize) {
+template<typename IndexType1, typename IndexType2>
+std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1>& inds, IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 	int indi = 0;
 	for (int si = 0, di = 0; si < mapSize; ++si) {
@@ -91,7 +97,8 @@ template<typename IndexType1, typename IndexType2> std::vector<int> GenerateInde
 }
 
 // inds must be in sorted ascending order.
-template<typename IndexType1, typename IndexType2> std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1> &inds, IndexType2 mapSize) {
+template<typename IndexType1, typename IndexType2>
+std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1>& inds, IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 	int indi = 0;
 	for (int si = 0, di = 0; si < mapSize; ++si, ++di) {
@@ -107,9 +114,10 @@ template<typename IndexType1, typename IndexType2> std::vector<int> GenerateInde
 // If a MapType-key k is in the indexMap, it is deleted if indexMap[k]
 // is negative, or changed to indexMap[k] otherwise.  If k is not in
 // indexMap, defaultOffset is added to it.
-template<typename MapType> void ApplyIndexMapToMapKeys(MapType &keyMap, const std::vector<int> indexMap, int defaultOffset) {
+template<typename MapType>
+void ApplyIndexMapToMapKeys(MapType& keyMap, const std::vector<int> indexMap, int defaultOffset) {
 	MapType copy;
-	for (auto &d : keyMap) {
+	for (auto& d : keyMap) {
 		if (d.first >= indexMap.size())
 			copy[d.first + defaultOffset] = std::move(d.second);
 		else if (indexMap[d.first] >= 0)
@@ -118,9 +126,10 @@ template<typename MapType> void ApplyIndexMapToMapKeys(MapType &keyMap, const st
 	keyMap = std::move(copy);
 }
 
-template<typename IndexType> std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<IndexType>> &strips) {
+template<typename IndexType>
+std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<IndexType>>& strips) {
 	std::vector<Triangle> tris;
-	for (const std::vector<IndexType> &strip : strips) {
+	for (const std::vector<IndexType>& strip : strips) {
 		if (strip.size() < 3)
 			continue;
 		ushort a = strip[0];

@@ -36,23 +36,12 @@ void BoundingVolume::Get(NiStream& stream) {
 	stream >> collisionType;
 
 	switch (collisionType) {
-	case SPHERE_BV:
-		stream >> bvSphere;
-		break;
-	case BOX_BV:
-		stream >> bvBox;
-		break;
-	case CAPSULE_BV:
-		stream >> bvCapsule;
-		break;
-	case UNION_BV:
-		bvUnion->Get(stream);
-		break;
-	case HALFSPACE_BV:
-		stream >> bvHalfSpace;
-		break;
-	default:
-		break;
+		case SPHERE_BV: stream >> bvSphere; break;
+		case BOX_BV: stream >> bvBox; break;
+		case CAPSULE_BV: stream >> bvCapsule; break;
+		case UNION_BV: bvUnion->Get(stream); break;
+		case HALFSPACE_BV: stream >> bvHalfSpace; break;
+		default: break;
 	}
 }
 
@@ -60,23 +49,12 @@ void BoundingVolume::Put(NiStream& stream) {
 	stream << collisionType;
 
 	switch (collisionType) {
-	case SPHERE_BV:
-		stream << bvSphere;
-		break;
-	case BOX_BV:
-		stream << bvBox;
-		break;
-	case CAPSULE_BV:
-		stream << bvCapsule;
-		break;
-	case UNION_BV:
-		bvUnion->Put(stream);
-		break;
-	case HALFSPACE_BV:
-		stream << bvHalfSpace;
-		break;
-	default:
-		break;
+		case SPHERE_BV: stream << bvSphere; break;
+		case BOX_BV: stream << bvBox; break;
+		case CAPSULE_BV: stream << bvCapsule; break;
+		case UNION_BV: bvUnion->Put(stream); break;
+		case HALFSPACE_BV: stream << bvHalfSpace; break;
+		default: break;
 	}
 }
 
@@ -485,7 +463,6 @@ void bhkMoppBvTreeShape::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-
 void bhkNiTriStripsShape::Get(NiStream& stream) {
 	bhkShape::Get(stream);
 
@@ -773,7 +750,7 @@ void bhkWorldObject::Get(NiStream& stream) {
 	stream >> collisionFilter;
 	stream >> unkInt1;
 	stream >> broadPhaseType;
-	stream.read((char*)unkBytes, 3);
+	stream.read((char*) unkBytes, 3);
 	stream >> prop;
 }
 
@@ -784,7 +761,7 @@ void bhkWorldObject::Put(NiStream& stream) {
 	stream << collisionFilter;
 	stream << unkInt1;
 	stream << broadPhaseType;
-	stream.write((char*)unkBytes, 3);
+	stream.write((char*) unkBytes, 3);
 	stream << prop;
 }
 
@@ -901,53 +878,47 @@ void ConstraintData::Get(NiStream& stream) {
 	stream >> priority;
 
 	switch (type) {
-	case BallAndSocket:
-		stream.read((char*)&desc1, 32);
-		break;
-	case Hinge:
-		stream.read((char*)&desc2, 128);
-		break;
-	case LimitedHinge:
-		stream >> desc3.hinge;
-		stream >> desc3.minAngle;
-		stream >> desc3.maxAngle;
-		stream >> desc3.maxFriction;
-		desc3.motorDesc.Get(stream);
-		break;
-	case Prismatic:
-		stream >> desc4.slidingA;
-		stream >> desc4.rotationA;
-		stream >> desc4.planeA;
-		stream >> desc4.pivotA;
-		stream >> desc4.slidingB;
-		stream >> desc4.rotationB;
-		stream >> desc4.planeB;
-		stream >> desc4.pivotB;
-		stream >> desc4.minDistance;
-		stream >> desc4.maxDistance;
-		stream >> desc4.friction;
-		desc4.motorDesc.Get(stream);
-		break;
-	case Ragdoll:
-		stream >> desc5.twistA;
-		stream >> desc5.planeA;
-		stream >> desc5.motorA;
-		stream >> desc5.pivotA;
-		stream >> desc5.twistB;
-		stream >> desc5.planeB;
-		stream >> desc5.motorB;
-		stream >> desc5.pivotB;
-		stream >> desc5.coneMaxAngle;
-		stream >> desc5.planeMinAngle;
-		stream >> desc5.planeMaxAngle;
-		stream >> desc5.twistMinAngle;
-		stream >> desc5.twistMaxAngle;
-		stream >> desc5.maxFriction;
-		desc5.motorDesc.Get(stream);
-		break;
-	case StiffSpring:
-		stream.read((char*)&desc6, 36);
-		break;
+		case BallAndSocket: stream.read((char*) &desc1, 32); break;
+		case Hinge: stream.read((char*) &desc2, 128); break;
+		case LimitedHinge:
+			stream >> desc3.hinge;
+			stream >> desc3.minAngle;
+			stream >> desc3.maxAngle;
+			stream >> desc3.maxFriction;
+			desc3.motorDesc.Get(stream);
+			break;
+		case Prismatic:
+			stream >> desc4.slidingA;
+			stream >> desc4.rotationA;
+			stream >> desc4.planeA;
+			stream >> desc4.pivotA;
+			stream >> desc4.slidingB;
+			stream >> desc4.rotationB;
+			stream >> desc4.planeB;
+			stream >> desc4.pivotB;
+			stream >> desc4.minDistance;
+			stream >> desc4.maxDistance;
+			stream >> desc4.friction;
+			desc4.motorDesc.Get(stream);
+			break;
+		case Ragdoll:
+			stream >> desc5.twistA;
+			stream >> desc5.planeA;
+			stream >> desc5.motorA;
+			stream >> desc5.pivotA;
+			stream >> desc5.twistB;
+			stream >> desc5.planeB;
+			stream >> desc5.motorB;
+			stream >> desc5.pivotB;
+			stream >> desc5.coneMaxAngle;
+			stream >> desc5.planeMinAngle;
+			stream >> desc5.planeMaxAngle;
+			stream >> desc5.twistMinAngle;
+			stream >> desc5.twistMaxAngle;
+			stream >> desc5.maxFriction;
+			desc5.motorDesc.Get(stream);
+			break;
+		case StiffSpring: stream.read((char*) &desc6, 36); break;
 	}
 
 	stream >> strength;
@@ -960,53 +931,47 @@ void ConstraintData::Put(NiStream& stream) {
 	stream << priority;
 
 	switch (type) {
-	case BallAndSocket:
-		stream.write((char*)&desc1, 32);
-		break;
-	case Hinge:
-		stream.write((char*)&desc2, 128);
-		break;
-	case LimitedHinge:
-		stream << desc3.hinge;
-		stream << desc3.minAngle;
-		stream << desc3.maxAngle;
-		stream << desc3.maxFriction;
-		desc3.motorDesc.Put(stream);
-		break;
-	case Prismatic:
-		stream << desc4.slidingA;
-		stream << desc4.rotationA;
-		stream << desc4.planeA;
-		stream << desc4.pivotA;
-		stream << desc4.slidingB;
-		stream << desc4.rotationB;
-		stream << desc4.planeB;
-		stream << desc4.pivotB;
-		stream << desc4.minDistance;
-		stream << desc4.maxDistance;
-		stream << desc4.friction;
-		desc4.motorDesc.Put(stream);
-		break;
-	case Ragdoll:
-		stream << desc5.twistA;
-		stream << desc5.planeA;
-		stream << desc5.motorA;
-		stream << desc5.pivotA;
-		stream << desc5.twistB;
-		stream << desc5.planeB;
-		stream << desc5.motorB;
-		stream << desc5.pivotB;
-		stream << desc5.coneMaxAngle;
-		stream << desc5.planeMinAngle;
-		stream << desc5.planeMaxAngle;
-		stream << desc5.twistMinAngle;
-		stream << desc5.twistMaxAngle;
-		stream << desc5.maxFriction;
-		desc5.motorDesc.Put(stream);
-		break;
-	case StiffSpring:
-		stream.write((char*)&desc6, 36);
-		break;
+		case BallAndSocket: stream.write((char*) &desc1, 32); break;
+		case Hinge: stream.write((char*) &desc2, 128); break;
+		case LimitedHinge:
+			stream << desc3.hinge;
+			stream << desc3.minAngle;
+			stream << desc3.maxAngle;
+			stream << desc3.maxFriction;
+			desc3.motorDesc.Put(stream);
+			break;
+		case Prismatic:
+			stream << desc4.slidingA;
+			stream << desc4.rotationA;
+			stream << desc4.planeA;
+			stream << desc4.pivotA;
+			stream << desc4.slidingB;
+			stream << desc4.rotationB;
+			stream << desc4.planeB;
+			stream << desc4.pivotB;
+			stream << desc4.minDistance;
+			stream << desc4.maxDistance;
+			stream << desc4.friction;
+			desc4.motorDesc.Put(stream);
+			break;
+		case Ragdoll:
+			stream << desc5.twistA;
+			stream << desc5.planeA;
+			stream << desc5.motorA;
+			stream << desc5.pivotA;
+			stream << desc5.twistB;
+			stream << desc5.planeB;
+			stream << desc5.motorB;
+			stream << desc5.pivotB;
+			stream << desc5.coneMaxAngle;
+			stream << desc5.planeMinAngle;
+			stream << desc5.planeMaxAngle;
+			stream << desc5.twistMinAngle;
+			stream << desc5.twistMaxAngle;
+			stream << desc5.maxFriction;
+			desc5.motorDesc.Put(stream);
+			break;
+		case StiffSpring: stream.write((char*) &desc6, 36); break;
 	}
 
 	stream << strength;
@@ -1189,7 +1154,7 @@ void bhkBallSocketConstraintChain::Put(NiStream& stream) {
 
 	stream << numPivots;
 	for (int i = 0; i < numPivots; i++)
-		stream.write((char*)&pivots[i], 16);
+		stream.write((char*) &pivots[i], 16);
 
 	stream << tau;
 	stream << damping;
@@ -1241,12 +1206,12 @@ void bhkRigidBody::Get(NiStream& stream) {
 	stream >> processContactCallbackDelay;
 	stream >> unkInt1;
 	stream >> collisionFilterCopy;
-	stream.read((char*)unkShorts2, 12);
+	stream.read((char*) unkShorts2, 12);
 	stream >> translation;
 	stream >> rotation;
 	stream >> linearVelocity;
 	stream >> angularVelocity;
-	stream.read((char*)inertiaMatrix, 48);
+	stream.read((char*) inertiaMatrix, 48);
 	stream >> center;
 	stream >> mass;
 	stream >> linearDamping;
@@ -1297,12 +1262,12 @@ void bhkRigidBody::Put(NiStream& stream) {
 	stream << processContactCallbackDelay;
 	stream << unkInt1;
 	stream << collisionFilterCopy;
-	stream.write((char*)unkShorts2, 12);
+	stream.write((char*) unkShorts2, 12);
 	stream << translation;
 	stream << rotation;
 	stream << linearVelocity;
 	stream << angularVelocity;
-	stream.write((char*)inertiaMatrix, 48);
+	stream.write((char*) inertiaMatrix, 48);
 	stream << center;
 	stream << mass;
 	stream << linearDamping;
@@ -1410,7 +1375,7 @@ void bhkCompressedMeshShapeData::Get(NiStream& stream) {
 	stream >> numBigTris;
 	bigTris.resize(numBigTris);
 	for (int i = 0; i < numBigTris; i++)
-		stream.read((char*)&bigTris[i], 12);
+		stream.read((char*) &bigTris[i], 12);
 
 	stream >> numChunks;
 	chunks.resize(numChunks);
@@ -1485,7 +1450,7 @@ void bhkCompressedMeshShapeData::Put(NiStream& stream) {
 
 	stream << numBigTris;
 	for (int i = 0; i < numBigTris; i++)
-		stream.write((char*)&bigTris[i], 12);
+		stream.write((char*) &bigTris[i], 12);
 
 	stream << numChunks;
 	for (int i = 0; i < numChunks; i++) {
@@ -1589,7 +1554,7 @@ void bhkPoseArray::Put(NiStream& stream) {
 void bhkPoseArray::GetStringRefs(std::set<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
-	for (auto &b : bones)
+	for (auto& b : bones)
 		refs.insert(&b);
 }
 

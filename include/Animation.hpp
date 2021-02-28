@@ -106,8 +106,7 @@ public:
 	NiBSplineBasisData* Clone() { return new NiBSplineBasisData(*this); }
 };
 
-class NiInterpolator : public NiObject {
-};
+class NiInterpolator : public NiObject {};
 
 class NiBSplineInterpolator : public NiInterpolator {
 private:
@@ -123,8 +122,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices);
 };
 
-class NiBSplineFloatInterpolator : public NiBSplineInterpolator {
-};
+class NiBSplineFloatInterpolator : public NiBSplineInterpolator {};
 
 class NiBSplineCompFloatInterpolator : public NiBSplineFloatInterpolator {
 private:
@@ -258,8 +256,7 @@ public:
 	NiBlendTransformInterpolator* Clone() { return new NiBlendTransformInterpolator(*this); }
 };
 
-class NiKeyBasedInterpolator : public NiInterpolator {
-};
+class NiKeyBasedInterpolator : public NiInterpolator {};
 
 class NiBoolInterpolator : public NiKeyBasedInterpolator {
 private:
@@ -434,9 +431,7 @@ struct BSTreadTransform {
 		stream << transform2;
 	}
 
-	void GetStringRefs(std::set<StringRef*>& refs) {
-		refs.insert(&name);
-	}
+	void GetStringRefs(std::set<StringRef*>& refs) { refs.insert(&name); }
 };
 
 class BSTreadTransfInterpolator : public NiInterpolator {
@@ -704,9 +699,7 @@ struct Morph {
 			stream << vectors[i];
 	}
 
-	void GetStringRefs(std::set<StringRef*>& refs) {
-		refs.insert(&frameName);
-	}
+	void GetStringRefs(std::set<StringRef*>& refs) { refs.insert(&frameName); }
 };
 
 class NiMorphData : public NiObject {
@@ -727,8 +720,7 @@ public:
 	NiMorphData* Clone() { return new NiMorphData(*this); }
 };
 
-class NiInterpController : public NiTimeController {
-};
+class NiInterpController : public NiTimeController {};
 
 struct MorphWeight {
 	BlockRef<NiInterpolator> interpRef;
@@ -744,13 +736,9 @@ struct MorphWeight {
 		stream << weight;
 	}
 
-	void GetChildRefs(std::set<Ref*>& refs) {
-		refs.insert(&interpRef);
-	}
+	void GetChildRefs(std::set<Ref*>& refs) { refs.insert(&interpRef); }
 
-	void GetChildIndices(std::vector<int>& indices) {
-		indices.push_back(interpRef.GetIndex());
-	}
+	void GetChildIndices(std::vector<int>& indices) { indices.push_back(interpRef.GetIndex()); }
 };
 
 class NiGeomMorpherController : public NiInterpController {
@@ -804,12 +792,7 @@ public:
 	NiRollController* Clone() { return new NiRollController(*this); }
 };
 
-enum TargetColor : ushort {
-	TC_AMBIENT,
-	TC_DIFFUSE,
-	TC_SPECULAR,
-	TC_SELF_ILLUM
-};
+enum TargetColor : ushort { TC_AMBIENT, TC_DIFFUSE, TC_SPECULAR, TC_SELF_ILLUM };
 
 class NiPoint3InterpController : public NiSingleInterpController {
 private:
@@ -836,8 +819,7 @@ public:
 	NiLightColorController* Clone() { return new NiLightColorController(*this); }
 };
 
-class NiExtraDataController : public NiSingleInterpController {
-};
+class NiExtraDataController : public NiSingleInterpController {};
 
 class NiFloatExtraDataController : public NiExtraDataController {
 private:
@@ -868,8 +850,7 @@ public:
 	NiVisData* Clone() { return new NiVisData(*this); }
 };
 
-class NiBoolInterpController : public NiSingleInterpController {
-};
+class NiBoolInterpController : public NiSingleInterpController {};
 
 class NiVisController : public NiBoolInterpController {
 public:
@@ -894,8 +875,7 @@ enum TexType : uint {
 	DECAL_3_MAP
 };
 
-class NiFloatInterpController : public NiSingleInterpController {
-};
+class NiFloatInterpController : public NiSingleInterpController {};
 
 class BSRefractionFirePeriodController : public NiSingleInterpController {
 public:
@@ -926,13 +906,7 @@ public:
 	BlockRefArray<NiSourceTexture>& GetSources();
 };
 
-enum TexTransformType : uint {
-	TT_TRANSLATE_U,
-	TT_TRANSLATE_V,
-	TT_ROTATE,
-	TT_SCALE_U,
-	TT_SCALE_V
-};
+enum TexTransformType : uint { TT_TRANSLATE_U, TT_TRANSLATE_V, TT_ROTATE, TT_SCALE_U, TT_SCALE_V };
 
 class NiTextureTransformController : public NiFloatInterpController {
 private:
@@ -1032,7 +1006,9 @@ public:
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
-	BSLightingShaderPropertyColorController* Clone() { return new BSLightingShaderPropertyColorController(*this); }
+	BSLightingShaderPropertyColorController* Clone() {
+		return new BSLightingShaderPropertyColorController(*this);
+	}
 };
 
 class BSLightingShaderPropertyFloatController : public NiFloatInterpController {
@@ -1045,7 +1021,9 @@ public:
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
-	BSLightingShaderPropertyFloatController* Clone() { return new BSLightingShaderPropertyFloatController(*this); }
+	BSLightingShaderPropertyFloatController* Clone() {
+		return new BSLightingShaderPropertyFloatController(*this);
+	}
 };
 
 class BSLightingShaderPropertyUShortController : public NiFloatInterpController {
@@ -1058,7 +1036,9 @@ public:
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
-	BSLightingShaderPropertyUShortController* Clone() { return new BSLightingShaderPropertyUShortController(*this); }
+	BSLightingShaderPropertyUShortController* Clone() {
+		return new BSLightingShaderPropertyUShortController(*this);
+	}
 };
 
 class BSEffectShaderPropertyColorController : public NiFloatInterpController {
@@ -1071,7 +1051,9 @@ public:
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
-	BSEffectShaderPropertyColorController* Clone() { return new BSEffectShaderPropertyColorController(*this); }
+	BSEffectShaderPropertyColorController* Clone() {
+		return new BSEffectShaderPropertyColorController(*this);
+	}
 };
 
 class BSEffectShaderPropertyFloatController : public NiFloatInterpController {
@@ -1084,7 +1066,9 @@ public:
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
-	BSEffectShaderPropertyFloatController* Clone() { return new BSEffectShaderPropertyFloatController(*this); }
+	BSEffectShaderPropertyFloatController* Clone() {
+		return new BSEffectShaderPropertyFloatController(*this);
+	}
 };
 
 class NiAVObject;
@@ -1115,8 +1099,7 @@ public:
 	void GetStringRefs(std::set<StringRef*>& refs);
 };
 
-class NiPSysModifierBoolCtlr : public NiPSysModifierCtlr {
-};
+class NiPSysModifierBoolCtlr : public NiPSysModifierCtlr {};
 
 class NiPSysModifierActiveCtlr : public NiPSysModifierBoolCtlr {
 public:
@@ -1126,8 +1109,7 @@ public:
 	NiPSysModifierActiveCtlr* Clone() { return new NiPSysModifierActiveCtlr(*this); }
 };
 
-class NiPSysModifierFloatCtlr : public NiPSysModifierCtlr {
-};
+class NiPSysModifierFloatCtlr : public NiPSysModifierCtlr {};
 
 class NiPSysEmitterLifeSpanCtlr : public NiPSysModifierFloatCtlr {
 public:
@@ -1351,19 +1333,11 @@ public:
 	NiSequence* Clone() { return new NiSequence(*this); }
 };
 
-enum CycleType : uint {
-	CYCLE_LOOP,
-	CYCLE_REVERSE,
-	CYCLE_CLAMP
-};
+enum CycleType : uint { CYCLE_LOOP, CYCLE_REVERSE, CYCLE_CLAMP };
 
 class BSAnimNote : public NiObject {
 public:
-	enum AnimNoteType : uint {
-		ANT_INVALID,
-		ANT_GRABIK,
-		ANT_LOOKIK
-	};
+	enum AnimNoteType : uint { ANT_INVALID, ANT_GRABIK, ANT_LOOKIK };
 
 private:
 	AnimNoteType type = ANT_INVALID;

@@ -98,8 +98,7 @@ struct AdditionalDataBlock {
 	}
 };
 
-class AdditionalGeomData : public NiObject {
-};
+class AdditionalGeomData : public NiObject {};
 
 class NiAdditionalGeometryData : public AdditionalGeomData {
 private:
@@ -264,7 +263,11 @@ public:
 	BoundingSphere GetBounds() { return bounds; }
 	void UpdateBounds();
 
-	virtual void Create(NiVersion& version, const std::vector<Vector3>* verts, const std::vector<Triangle>* tris, const std::vector<Vector2>* uvs, const std::vector<Vector3>* norms);
+	virtual void Create(NiVersion& version,
+						const std::vector<Vector3>* verts,
+						const std::vector<Triangle>* tris,
+						const std::vector<Vector2>* uvs,
+						const std::vector<Vector3>* norms);
 	virtual void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f);
 	virtual void CalcTangentSpace();
 };
@@ -336,22 +339,22 @@ public:
 	VertexDesc vertexDesc;
 
 	uint dataSize = 0;
-	uint vertexSize = 0;		// Not in file
+	uint vertexSize = 0; // Not in file
 
 	uint particleDataSize = 0;
 	std::vector<Vector3> particleVerts;
 	std::vector<Vector3> particleNorms;
 	std::vector<Triangle> particleTris;
 
-	std::vector<Vector3> rawVertices;		// filled by GetRawVerts function and returned.
-	std::vector<Vector3> rawNormals;		// filled by GetNormalData function and returned.
-	std::vector<Vector3> rawTangents;		// filled by CalcTangentSpace function and returned.
-	std::vector<Vector3> rawBitangents;		// filled in CalcTangentSpace
-	std::vector<Vector2> rawUvs;			// filled by GetUVData function and returned.
-	std::vector<Color4> rawColors;			// filled by GetColorData function and returned.
+	std::vector<Vector3> rawVertices;	// filled by GetRawVerts function and returned.
+	std::vector<Vector3> rawNormals;	// filled by GetNormalData function and returned.
+	std::vector<Vector3> rawTangents;	// filled by CalcTangentSpace function and returned.
+	std::vector<Vector3> rawBitangents; // filled in CalcTangentSpace
+	std::vector<Vector2> rawUvs;		// filled by GetUVData function and returned.
+	std::vector<Color4> rawColors;		// filled by GetColorData function and returned.
 	std::vector<float> rawEyeData;
 
-	std::vector<uint> deletedTris;			// temporary storage for BSSubIndexTriShape
+	std::vector<uint> deletedTris; // temporary storage for BSSubIndexTriShape
 
 	std::vector<BSVertexData> vertData;
 
@@ -424,15 +427,21 @@ public:
 	void SetVertexData(const std::vector<BSVertexData>& bsVertData);
 
 	void SetNormals(const std::vector<Vector3>& inNorms);
-	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f, std::unordered_set<uint>* lockedIndices = nullptr);
+	void RecalcNormals(const bool smooth = true,
+					   const float smoothThres = 60.0f,
+					   std::unordered_set<uint>* lockedIndices = nullptr);
 	void CalcTangentSpace();
 	int CalcDataSizes(NiVersion& version);
 
-	void SetTangentData(const std::vector<Vector3> &in);
-	void SetBitangentData(const std::vector<Vector3> &in);
-	void SetEyeData(const std::vector<float> &in);
+	void SetTangentData(const std::vector<Vector3>& in);
+	void SetBitangentData(const std::vector<Vector3>& in);
+	void SetEyeData(const std::vector<float>& in);
 
-	virtual void Create(NiVersion& version, const std::vector<Vector3>* verts, const std::vector<Triangle>* tris, const std::vector<Vector2>* uvs, const std::vector<Vector3>* normals = nullptr);
+	virtual void Create(NiVersion& version,
+						const std::vector<Vector3>* verts,
+						const std::vector<Triangle>* tris,
+						const std::vector<Vector2>* uvs,
+						const std::vector<Vector3>* normals = nullptr);
 };
 
 
@@ -540,11 +549,15 @@ public:
 	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
 	BSSubIndexTriShape* Clone() { return new BSSubIndexTriShape(*this); }
 
-	void GetSegmentation(NifSegmentationInfo &inf, std::vector<int> &triParts);
-	void SetSegmentation(const NifSegmentationInfo &inf, const std::vector<int> &triParts);
+	void GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts);
+	void SetSegmentation(const NifSegmentationInfo& inf, const std::vector<int>& triParts);
 
 	void SetDefaultSegments();
-	void Create(NiVersion& version, const std::vector<Vector3>* verts, const std::vector<Triangle>* tris, const std::vector<Vector2>* uvs, const std::vector<Vector3>* normals = nullptr);
+	void Create(NiVersion& version,
+				const std::vector<Vector3>* verts,
+				const std::vector<Triangle>* tris,
+				const std::vector<Vector2>* uvs,
+				const std::vector<Vector3>* normals = nullptr);
 };
 
 class BSMeshLODTriShape : public BSTriShape {
@@ -578,7 +591,11 @@ public:
 	void CalcDynamicData();
 	BSDynamicTriShape* Clone() { return new BSDynamicTriShape(*this); }
 
-	void Create(NiVersion& version, const std::vector<Vector3>* verts, const std::vector<Triangle>* tris, const std::vector<Vector2>* uvs, const std::vector<Vector3>* normals = nullptr);
+	void Create(NiVersion& version,
+				const std::vector<Vector3>* verts,
+				const std::vector<Triangle>* tris,
+				const std::vector<Vector2>* uvs,
+				const std::vector<Vector3>* normals = nullptr);
 };
 
 class NiSkinInstance;
@@ -622,8 +639,7 @@ public:
 	void SetAlphaPropertyRef(int alphaPropRef);
 };
 
-class NiTriBasedGeom : public NiGeometry {
-};
+class NiTriBasedGeom : public NiGeometry {};
 
 class NiTriBasedGeomData : public NiGeometryData {
 protected:
@@ -633,7 +649,11 @@ public:
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
 
-	void Create(NiVersion& version, const std::vector<Vector3>* verts, const std::vector<Triangle>* tris, const std::vector<Vector2>* uvs, const std::vector<Vector3>* norms);
+	void Create(NiVersion& version,
+				const std::vector<Vector3>* verts,
+				const std::vector<Triangle>* tris,
+				const std::vector<Vector2>* uvs,
+				const std::vector<Vector3>* norms);
 };
 
 struct MatchGroup {
@@ -656,7 +676,11 @@ public:
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
-	void Create(NiVersion& version, const std::vector<Vector3>* verts, const std::vector<Triangle>* tris, const std::vector<Vector2>* uvs, const std::vector<Vector3>* norms);
+	void Create(NiVersion& version,
+				const std::vector<Vector3>* verts,
+				const std::vector<Triangle>* tris,
+				const std::vector<Vector2>* uvs,
+				const std::vector<Vector3>* norms);
 	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
 
 	uint GetNumTriangles();

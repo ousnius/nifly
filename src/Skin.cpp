@@ -4,8 +4,8 @@ See the included LICENSE file
 */
 
 #include "Skin.hpp"
-#include "half.hpp"
 #include "NifUtil.hpp"
+#include "half.hpp"
 
 #include <unordered_map>
 
@@ -80,7 +80,7 @@ void NiSkinData::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
 	NiObject::notifyVerticesDelete(vertIndices);
 
 	ushort ival;
-	for (auto &b : bones) {
+	for (auto& b : bones) {
 		for (int i = b.numVertices - 1; i >= 0; i--) {
 			ival = b.vertexWeights[i].index;
 			if (b.vertexWeights[i].index > highestRemoved) {
@@ -124,22 +124,22 @@ void NiSkinPartition::Get(NiStream& stream) {
 					}
 					else {
 						// Half precision
-						stream.read((char*)&halfData, 2);
+						stream.read((char*) &halfData, 2);
 						vertex.vert.x = halfData;
-						stream.read((char*)&halfData, 2);
+						stream.read((char*) &halfData, 2);
 						vertex.vert.y = halfData;
-						stream.read((char*)&halfData, 2);
+						stream.read((char*) &halfData, 2);
 						vertex.vert.z = halfData;
 
-						stream.read((char*)&halfData, 2);
+						stream.read((char*) &halfData, 2);
 						vertex.bitangentX = halfData;
 					}
 				}
 
 				if (HasUVs()) {
-					stream.read((char*)&halfData, 2);
+					stream.read((char*) &halfData, 2);
 					vertex.uv.u = halfData;
-					stream.read((char*)&halfData, 2);
+					stream.read((char*) &halfData, 2);
 					vertex.uv.v = halfData;
 				}
 
@@ -163,7 +163,7 @@ void NiSkinPartition::Get(NiStream& stream) {
 
 				if (IsSkinned()) {
 					for (int j = 0; j < 4; j++) {
-						stream.read((char*)&halfData, 2);
+						stream.read((char*) &halfData, 2);
 						vertex.weights[j] = halfData;
 					}
 
@@ -270,22 +270,22 @@ void NiSkinPartition::Put(NiStream& stream) {
 					else {
 						// Half precision
 						halfData = vertex.vert.x;
-						stream.write((char*)&halfData, 2);
+						stream.write((char*) &halfData, 2);
 						halfData = vertex.vert.y;
-						stream.write((char*)&halfData, 2);
+						stream.write((char*) &halfData, 2);
 						halfData = vertex.vert.z;
-						stream.write((char*)&halfData, 2);
+						stream.write((char*) &halfData, 2);
 
 						halfData = vertex.bitangentX;
-						stream.write((char*)&halfData, 2);
+						stream.write((char*) &halfData, 2);
 					}
 				}
 
 				if (HasUVs()) {
 					halfData = vertex.uv.u;
-					stream.write((char*)&halfData, 2);
+					stream.write((char*) &halfData, 2);
 					halfData = vertex.uv.v;
-					stream.write((char*)&halfData, 2);
+					stream.write((char*) &halfData, 2);
 				}
 
 				if (HasNormals()) {
@@ -309,7 +309,7 @@ void NiSkinPartition::Put(NiStream& stream) {
 				if (IsSkinned()) {
 					for (int j = 0; j < 4; j++) {
 						halfData = vertex.weights[j];
-						stream.write((char*)&halfData, 2);
+						stream.write((char*) &halfData, 2);
 					}
 
 					for (int j = 0; j < 4; j++)
@@ -391,7 +391,7 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<ushort>& vertIndice
 	// collapse map.  (It would be nice if notifyVerticesDelete had a
 	// numVertices parameter so we didn't have to calculate this.)
 	ushort maxVertInd = 0;
-	for (auto &p : partitions) {
+	for (auto& p : partitions) {
 		for (auto i : p.vertexMap)
 			maxVertInd = std::max(maxVertInd, i);
 		if (!bMappedIndices)
@@ -401,7 +401,7 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<ushort>& vertIndice
 	// Make collapse map for shape vertex indices
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, maxVertInd + 1);
 
-	for (auto &p : partitions) {
+	for (auto& p : partitions) {
 		int oldNumVertices = p.vertexMap.size();
 
 		// Make list of deleted vertexMap indices
@@ -443,12 +443,12 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<ushort>& vertIndice
 	}
 }
 
-void NiSkinPartition::DeletePartitions(const std::vector<int> &partInds) {
+void NiSkinPartition::DeletePartitions(const std::vector<int>& partInds) {
 	if (partInds.empty())
 		return;
 	if (!triParts.empty()) {
 		std::vector<int> piMap = GenerateIndexCollapseMap(partInds, numPartitions);
-		for (int &pi : triParts) {
+		for (int& pi : triParts) {
 			if (pi >= 0 && pi < piMap.size())
 				pi = piMap[pi];
 		}
@@ -482,7 +482,7 @@ bool NiSkinPartition::PartitionBlock::ConvertStripsToTriangles() {
 
 bool NiSkinPartition::ConvertStripsToTriangles() {
 	bool triangulated = false;
-	for (PartitionBlock &p : partitions) {
+	for (PartitionBlock& p : partitions) {
 		if (p.ConvertStripsToTriangles())
 			triangulated = true;
 	}
@@ -500,7 +500,7 @@ void NiSkinPartition::PartitionBlock::GenerateTrueTrianglesFromMappedTriangles()
 	trueTriangles = triangles;
 	ApplyMapToTriangles(trueTriangles, vertexMap);
 
-	for (Triangle &t : trueTriangles)
+	for (Triangle& t : trueTriangles)
 		t.rot();
 
 	if (triangles.size() != trueTriangles.size()) {
@@ -528,7 +528,7 @@ void NiSkinPartition::PartitionBlock::GenerateMappedTrianglesFromTrueTrianglesAn
 	triangles = trueTriangles;
 	ApplyMapToTriangles(triangles, invmap);
 
-	for (Triangle &t : triangles)
+	for (Triangle& t : triangles)
 		t.rot();
 
 	if (triangles.size() != trueTriangles.size()) {
@@ -556,7 +556,7 @@ void NiSkinPartition::PartitionBlock::GenerateVertexMapFromTrueTriangles() {
 }
 
 void NiSkinPartition::PrepareTrueTriangles() {
-	for (PartitionBlock &p : partitions) {
+	for (PartitionBlock& p : partitions) {
 		if (!p.trueTriangles.empty())
 			continue;
 
@@ -571,7 +571,7 @@ void NiSkinPartition::PrepareTrueTriangles() {
 }
 
 void NiSkinPartition::PrepareVertexMapsAndTriangles() {
-	for (PartitionBlock &p : partitions) {
+	for (PartitionBlock& p : partitions) {
 		if (p.vertexMap.empty())
 			p.GenerateVertexMapFromTrueTriangles();
 
@@ -584,7 +584,7 @@ void NiSkinPartition::PrepareVertexMapsAndTriangles() {
 	}
 }
 
-void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triangle> &shapeTris) {
+void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triangle>& shapeTris) {
 	triParts.clear();
 	triParts.resize(shapeTris.size());
 
@@ -598,7 +598,7 @@ void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triang
 
 	// Set triParts for each partition triangle
 	for (int partInd = 0; partInd < partitions.size(); ++partInd) {
-		for (const Triangle &pt : partitions[partInd].trueTriangles) {
+		for (const Triangle& pt : partitions[partInd].trueTriangles) {
 			Triangle t = pt;
 			t.rot();
 			auto it = shapeTriInds.find(t);
@@ -608,10 +608,10 @@ void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triang
 	}
 }
 
-void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triangle> &shapeTris) {
+void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triangle>& shapeTris) {
 	if (shapeTris.size() != triParts.size())
 		return;
-	for (PartitionBlock &p : partitions) {
+	for (PartitionBlock& p : partitions) {
 		p.trueTriangles.clear();
 		p.triangles.clear();
 		p.numStrips = 0;
@@ -627,11 +627,11 @@ void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triang
 		if (partInd >= 0 && partInd < partitions.size())
 			partitions[partInd].trueTriangles.push_back(shapeTris[triInd]);
 	}
-	for (PartitionBlock &p : partitions)
+	for (PartitionBlock& p : partitions)
 		p.numTriangles = p.trueTriangles.size();
 }
 
-void NiSkinPartition::PrepareTriParts(const std::vector<Triangle> &shapeTris) {
+void NiSkinPartition::PrepareTriParts(const std::vector<Triangle>& shapeTris) {
 	if (shapeTris.size() == triParts.size())
 		return;
 	PrepareTrueTriangles();
@@ -707,7 +707,7 @@ void BSDismemberSkinInstance::AddPartition(const BSDismemberSkinInstance::Partit
 	numPartitions++;
 }
 
-void BSDismemberSkinInstance::DeletePartitions(const std::vector<int> &partInds) {
+void BSDismemberSkinInstance::DeletePartitions(const std::vector<int>& partInds) {
 	if (partInds.empty())
 		return;
 	EraseVectorIndices(partitions, partInds);

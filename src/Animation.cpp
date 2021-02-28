@@ -482,7 +482,7 @@ void NiMorphData::Put(NiStream& stream) {
 void NiMorphData::GetStringRefs(std::set<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
-	for (auto &m : morphs)
+	for (auto& m : morphs)
 		m.GetStringRefs(refs);
 }
 
@@ -517,7 +517,7 @@ void NiGeomMorpherController::GetChildRefs(std::set<Ref*>& refs) {
 
 	refs.insert(&dataRef);
 
-	for (auto &m : interpWeights)
+	for (auto& m : interpWeights)
 		m.GetChildRefs(refs);
 }
 
@@ -526,7 +526,7 @@ void NiGeomMorpherController::GetChildIndices(std::vector<int>& indices) {
 
 	indices.push_back(dataRef.GetIndex());
 
-	for (auto &m : interpWeights)
+	for (auto& m : interpWeights)
 		m.GetChildIndices(indices);
 }
 
@@ -1169,7 +1169,7 @@ void NiPathInterpolator::GetChildIndices(std::vector<int>& indices) {
 
 void NiLookAtInterpolator::Get(NiStream& stream) {
 	NiInterpolator::Get(stream);
-	
+
 	stream >> flags;
 	lookAtRef.Get(stream);
 	lookAtName.Get(stream);

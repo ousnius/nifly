@@ -7,14 +7,7 @@ See the included LICENSE file
 
 #include "BasicTypes.hpp"
 
-enum KeyType : uint {
-	NO_INTERP,
-	LINEAR_KEY,
-	QUADRATIC_KEY,
-	TBC_KEY,
-	XYZ_ROTATION_KEY,
-	CONST_KEY
-};
+enum KeyType : uint { NO_INTERP, LINEAR_KEY, QUADRATIC_KEY, TBC_KEY, XYZ_ROTATION_KEY, CONST_KEY };
 
 struct TBC {
 	float tension = 0.0f;
@@ -52,15 +45,12 @@ public:
 				stream >> key.value;
 
 				switch (interpolation) {
-				case QUADRATIC_KEY:
-					stream >> key.forward;
-					stream >> key.backward;
-					break;
-				case TBC_KEY:
-					stream >> key.tbc;
-					break;
-				default:
-					break;
+					case QUADRATIC_KEY:
+						stream >> key.forward;
+						stream >> key.backward;
+						break;
+					case TBC_KEY: stream >> key.tbc; break;
+					default: break;
 				}
 
 				keys[i] = std::move(key);
@@ -79,39 +69,26 @@ public:
 				stream << keys[i].value;
 
 				switch (interpolation) {
-				case QUADRATIC_KEY:
-					stream << keys[i].forward;
-					stream << keys[i].backward;
-					break;
-				case TBC_KEY:
-					stream << keys[i].tbc;
-					break;
-				default:
-					break;
+					case QUADRATIC_KEY:
+						stream << keys[i].forward;
+						stream << keys[i].backward;
+						break;
+					case TBC_KEY: stream << keys[i].tbc; break;
+					default: break;
 				}
 			}
 		}
 	}
 
-	KeyType GetInterpolationType() {
-		return interpolation;
-	}
+	KeyType GetInterpolationType() { return interpolation; }
 
-	void SetInterpolationType(const KeyType interp) {
-		interpolation = interp;
-	}
+	void SetInterpolationType(const KeyType interp) { interpolation = interp; }
 
-	uint GetNumKeys() {
-		return numKeys;
-	}
+	uint GetNumKeys() { return numKeys; }
 
-	Key<T> GetKey(const int id) {
-		return keys[id];
-	}
+	Key<T> GetKey(const int id) { return keys[id]; }
 
-	void SetKey(const int id, const Key<T>& key) {
-		keys[id] = key;
-	}
+	void SetKey(const int id, const Key<T>& key) { keys[id] = key; }
 
 	void AddKey(const Key<T>& key) {
 		keys.push_back(key);

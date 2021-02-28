@@ -34,7 +34,7 @@ enum VertexFlags : ushort {
 };
 
 const uint64_t DESC_MASK_VERT = 0xFFFFFFFFFFFFFFF0;
-const uint64_t DESC_MASK_UVS  = 0xFFFFFFFFFFFFFF0F;
+const uint64_t DESC_MASK_UVS = 0xFFFFFFFFFFFFFF0F;
 const uint64_t DESC_MASK_NBT = 0xFFFFFFFFFFFFF0FF;
 const uint64_t DESC_MASK_SKCOL = 0xFFFFFFFFFFFF0FFF;
 const uint64_t DESC_MASK_DATA = 0xFFFFFFFFFFF0FFFF;
@@ -47,24 +47,18 @@ private:
 
 public:
 	// Sets a specific flag
-	void SetFlag(VertexFlags flag) {
-		desc |= ((uint64_t)flag << 44);
-	}
+	void SetFlag(VertexFlags flag) { desc |= ((uint64_t) flag << 44); }
 
 	// Removes a specific flag
-	void RemoveFlag(VertexFlags flag) {
-		desc &= ~((uint64_t)flag << 44);
-	}
+	void RemoveFlag(VertexFlags flag) { desc &= ~((uint64_t) flag << 44); }
 
 	// Checks for a specific flag
-	bool HasFlag(VertexFlags flag) {
-		return ((desc >> 44) & flag) != 0;
-	}
+	bool HasFlag(VertexFlags flag) { return ((desc >> 44) & flag) != 0; }
 
 	// Sets the vertex size
 	void SetSize(uint size) {
 		desc &= DESC_MASK_VERT;
-		desc |= (uint64_t)size >> 2;
+		desc |= (uint64_t) size >> 2;
 	}
 
 	// Sets the dynamic vertex size
@@ -74,43 +68,31 @@ public:
 	}
 
 	// Return offset to a specific vertex attribute in the description
-	uint GetAttributeOffset(VertexAttribute attr) {
-		return (desc >> (4 * (byte)attr + 2)) & 0x3C;
-	}
+	uint GetAttributeOffset(VertexAttribute attr) { return (desc >> (4 * (byte) attr + 2)) & 0x3C; }
 
 	// Set offset to a specific vertex attribute in the description
 	void SetAttributeOffset(VertexAttribute attr, uint offset) {
 		if (attr != VA_POSITION) {
-			desc = ((uint64_t)offset << (4 * (byte)attr + 2)) | (desc & ~(15 << (4 * (byte)attr + 4)));
+			desc = ((uint64_t) offset << (4 * (byte) attr + 2)) | (desc & ~(15 << (4 * (byte) attr + 4)));
 		}
 	}
 
-	void ClearAttributeOffsets() {
-		desc &= DESC_MASK_OFFSET;
-	}
+	void ClearAttributeOffsets() { desc &= DESC_MASK_OFFSET; }
 
-	VertexFlags GetFlags() {
-		return VertexFlags((desc & DESC_MASK_OFFSET) >> 44);
-	}
+	VertexFlags GetFlags() { return VertexFlags((desc & DESC_MASK_OFFSET) >> 44); }
 
-	void SetFlags(VertexFlags flags) {
-		desc |= ((uint64_t)flags << 44) | (desc & DESC_MASK_FLAGS);
-	}
+	void SetFlags(VertexFlags flags) { desc |= ((uint64_t) flags << 44) | (desc & DESC_MASK_FLAGS); }
 
-	void Get(NiStream& stream) {
-		stream >> desc;
-	}
+	void Get(NiStream& stream) { stream >> desc; }
 
-	void Put(NiStream& stream) {
-		stream << desc;
-	}
+	void Put(NiStream& stream) { stream << desc; }
 };
 
 struct BSVertexData {
 	// Single- or half-precision depending on IsFullPrecision() being true
 	Vector3 vert;
-	float bitangentX;	// Maybe the dot product of the vert normal and the z-axis?
-	
+	float bitangentX; // Maybe the dot product of the vert normal and the z-axis?
+
 	Vector2 uv;
 
 	byte normal[3];

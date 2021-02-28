@@ -7,15 +7,15 @@ See the included LICENSE file
 
 #include "Object3d.hpp"
 
-#include <set>
-#include <unordered_set>
+#include <algorithm>
+#include <iostream>
 #include <map>
-#include <unordered_map>
+#include <memory>
+#include <set>
 #include <streambuf>
 #include <string>
-#include <algorithm>
-#include <memory>
-#include <iostream>
+#include <unordered_map>
+#include <unordered_set>
 
 enum NiFileVersion : uint {
 	V2_3 = 0x02030000,
@@ -82,7 +82,7 @@ public:
 
 	// Return file version as individual values
 	static std::vector<byte> ToArray(NiFileVersion file) {
-		return { byte(file >> 24), byte(file >> 16), byte(file >> 8), byte(file) };
+		return {byte(file >> 24), byte(file >> 16), byte(file >> 8), byte(file)};
 	}
 
 	std::string GetVersionInfo();
@@ -104,8 +104,7 @@ public:
 
 	bool IsOB() {
 		return ((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11)
-			|| (file == V20_0_0_4 && (user == 10 || user == 11))
-			|| (file == V20_0_0_5 && user == 11);
+			   || (file == V20_0_0_4 && (user == 10 || user == 11)) || (file == V20_0_0_5 && user == 11);
 	}
 
 	bool IsFO3() { return file == V20_2_0_7 && stream > 11 && stream < 83; }
@@ -122,10 +121,7 @@ public:
 	static NiVersion getFO76() { return NiVersion(NiFileVersion::V20_2_0_7, 0, 155); }
 };
 
-enum NiEndian : byte {
-	ENDIAN_BIG,
-	ENDIAN_LITTLE
-};
+enum NiEndian : byte { ENDIAN_BIG, ENDIAN_LITTLE };
 
 class NiStream {
 private:
@@ -150,43 +146,31 @@ public:
 		blockSize += count + 1;
 	}
 
-	void read(char* ptr, std::streamsize count) {
-		stream->read(ptr, count);
-	}
+	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
 
-	void getline(char* ptr, std::streamsize maxCount) {
-		stream->getline(ptr, maxCount);
-	}
+	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
 
-	std::streampos tellp() {
-		return stream->tellp();
-	}
+	std::streampos tellp() { return stream->tellp(); }
 
 	// Be careful with sizes of structs and classes
 	template<typename T>
 	NiStream& operator<<(const T& t) {
-		write((const char*)&t, sizeof(T));
+		write((const char*) &t, sizeof(T));
 		return *this;
 	}
 
 	// Be careful with sizes of structs and classes
 	template<typename T>
 	NiStream& operator>>(T& t) {
-		read((char*)&t, sizeof(T));
+		read((char*) &t, sizeof(T));
 		return *this;
 	}
 
-	void InitBlockSize() {
-		blockSize = 0;
-	}
+	void InitBlockSize() { blockSize = 0; }
 
-	int GetBlockSize() {
-		return blockSize;
-	}
+	int GetBlockSize() { return blockSize; }
 
-	NiVersion& GetVersion() {
-		return *version;
-	}
+	NiVersion& GetVersion() { return *version; }
 };
 
 class NiString {
@@ -194,23 +178,15 @@ private:
 	std::string str;
 
 public:
-	NiString() {};
+	NiString(){};
 
-	std::string GetString() {
-		return str;
-	}
+	std::string GetString() { return str; }
 
-	void SetString(const std::string& s) {
-		this->str = s;
-	}
+	void SetString(const std::string& s) { this->str = s; }
 
-	size_t GetLength() {
-		return str.length();
-	}
+	size_t GetLength() { return str.length(); }
 
-	void Clear() {
-		str.clear();
-	}
+	void Clear() { str.clear(); }
 
 	void Get(NiStream& stream, const int szSize);
 	void Put(NiStream& stream, const int szSize, const bool wantNullOutput = true);
@@ -223,21 +199,13 @@ private:
 	NiString str;
 
 public:
-	std::string GetString() {
-		return str.GetString();
-	}
+	std::string GetString() { return str.GetString(); }
 
-	void SetString(const std::string& s) {
-		str.SetString(s);
-	}
+	void SetString(const std::string& s) { str.SetString(s); }
 
-	int GetIndex() {
-		return index;
-	}
+	int GetIndex() { return index; }
 
-	void SetIndex(const int id) {
-		index = id;
-	}
+	void SetIndex(const int id) { index = id; }
 
 	void Clear() {
 		index = 0xFFFFFFFF;
@@ -264,34 +232,22 @@ protected:
 	int index = 0xFFFFFFFF;
 
 public:
-    int GetIndex() {
-		return index;
-	}
+	int GetIndex() { return index; }
 
-	void SetIndex(const int id) {
-		index = id;
-	}
+	void SetIndex(const int id) { index = id; }
 
-	void Clear() {
-		index = 0xFFFFFFFF;
-	}
+	void Clear() { index = 0xFFFFFFFF; }
 };
 
-template <typename T>
+template<typename T>
 class BlockRef : public Ref {
 public:
 	BlockRef() {}
-	BlockRef(const int id) {
-		index = id;
-	}
+	BlockRef(const int id) { index = id; }
 
-	void Get(NiStream& stream) {
-		stream >> index;
-	}
+	void Get(NiStream& stream) { stream >> index; }
 
-	void Put(NiStream& stream) {
-		stream << index;
-	}
+	void Put(NiStream& stream) { stream << index; }
 };
 
 class RefArray {
@@ -302,13 +258,9 @@ protected:
 public:
 	RefArray() {}
 
-	int GetSize() {
-		return arraySize;
-	}
+	int GetSize() { return arraySize; }
 
-	void SetKeepEmptyRefs(const bool keep = true) {
-		keepEmptyRefs = keep;
-	}
+	void SetKeepEmptyRefs(const bool keep = true) { keepEmptyRefs = keep; }
 
 	virtual void Get(NiStream& stream) = 0;
 	virtual void Put(NiStream& stream) = 0;
@@ -322,7 +274,7 @@ public:
 	virtual void SetIndices(const std::vector<int>& indices) = 0;
 };
 
-template <typename T>
+template<typename T>
 class BlockRefArray : public RefArray {
 protected:
 	std::vector<BlockRef<T>> refs;
@@ -331,12 +283,15 @@ protected:
 		if (keepEmptyRefs)
 			return;
 
-		refs.erase(std::remove_if(refs.begin(), refs.end(), [](BlockRef<T> r) {
-			if (r.GetIndex() == 0xFFFFFFFF)
-				return true;
-			else
-				return false;
-		}), refs.end());
+		refs.erase(std::remove_if(refs.begin(),
+								  refs.end(),
+								  [](BlockRef<T> r) {
+									  if (r.GetIndex() == 0xFFFFFFFF)
+										  return true;
+									  else
+										  return false;
+								  }),
+				   refs.end());
 
 		arraySize = refs.size();
 	}
@@ -345,21 +300,13 @@ public:
 	typedef typename std::vector<BlockRef<T>>::iterator iterator;
 	typedef typename std::vector<BlockRef<T>>::const_iterator const_iterator;
 
-	typename std::vector<BlockRef<T>>::iterator begin() {
-		return refs.begin();
-	}
+	typename std::vector<BlockRef<T>>::iterator begin() { return refs.begin(); }
 
-	typename std::vector<BlockRef<T>>::iterator end() {
-		return refs.end();
-	}
+	typename std::vector<BlockRef<T>>::iterator end() { return refs.end(); }
 
-	typename std::vector<BlockRef<T>>::const_iterator begin() const {
-		return refs.begin();
-	}
+	typename std::vector<BlockRef<T>>::const_iterator begin() const { return refs.begin(); }
 
-	typename std::vector<BlockRef<T>>::const_iterator end() const {
-		return refs.end();
-	}
+	typename std::vector<BlockRef<T>>::const_iterator end() const { return refs.end(); }
 
 	void Clear() {
 		refs.clear();
@@ -371,7 +318,7 @@ public:
 		stream >> arraySize;
 		refs.resize(arraySize);
 
-		for (auto &r : refs)
+		for (auto& r : refs)
 			r.Get(stream);
 	}
 
@@ -379,7 +326,7 @@ public:
 		CleanInvalidRefs();
 		stream << arraySize;
 
-		for (auto &r : refs)
+		for (auto& r : refs)
 			r.Put(stream);
 	}
 
@@ -390,7 +337,7 @@ public:
 
 		stream << arraySize;
 
-		for (auto &r : refs)
+		for (auto& r : refs)
 			r.Put(stream);
 	}
 
@@ -419,12 +366,12 @@ public:
 	}
 
 	virtual void GetIndices(std::vector<int>& indices) override {
-		for (auto &r : refs)
+		for (auto& r : refs)
 			indices.push_back(r.GetIndex());
 	}
 
 	virtual void GetIndexPtrs(std::set<Ref*>& indices) override {
-		for (auto &r : refs)
+		for (auto& r : refs)
 			indices.insert(&r);
 	}
 
@@ -437,36 +384,36 @@ public:
 	}
 };
 
-template <typename T>
+template<typename T>
 class BlockRefShortArray : public BlockRefArray<T> {
 public:
 	typedef BlockRefArray<T> base;
 	using base::arraySize;
 	using base::refs;
 	virtual void Get(NiStream& stream) override {
-		stream.read((char*)&arraySize, 2);
+		stream.read((char*) &arraySize, 2);
 		refs.resize(arraySize);
 
-		for (auto &r : refs)
+		for (auto& r : refs)
 			r.Get(stream);
 	}
 
 	virtual void Put(NiStream& stream) override {
 		base::CleanInvalidRefs();
-		stream.write((char*)&arraySize, 2);
+		stream.write((char*) &arraySize, 2);
 
-		for (auto &r : refs)
+		for (auto& r : refs)
 			r.Put(stream);
 	}
-	
+
 	virtual void Put(NiStream& stream, const int forcedSize) override {
 		base::CleanInvalidRefs();
 		arraySize = forcedSize;
 		refs.resize(forcedSize);
 
-		stream.write((char*)&arraySize, 2);
+		stream.write((char*) &arraySize, 2);
 
-		for (auto &r : refs)
+		for (auto& r : refs)
 			r.Put(stream);
 	}
 };
@@ -493,9 +440,9 @@ public:
 
 	virtual NiObject* Clone() { return new NiObject(*this); }
 
-	template <typename T>
-    bool HasType() {
-        return dynamic_cast<const T*>(this) != nullptr;
+	template<typename T>
+	bool HasType() {
+		return dynamic_cast<const T*>(this) != nullptr;
 	}
 };
 
@@ -548,24 +495,18 @@ private:
 	std::vector<uint> groupSizes;
 
 public:
-	NiHeader() {};
+	NiHeader(){};
 
 	static constexpr const char* BlockName = "NiHeader";
 	virtual const char* GetBlockName() { return BlockName; }
 
 	void Clear();
 
-	bool IsValid() {
-		return valid;
-	}
+	bool IsValid() { return valid; }
 
-	NiVersion& GetVersion() {
-		return version;
-	};
+	NiVersion& GetVersion() { return version; };
 
-	void SetVersion(const NiVersion& ver) {
-		version = ver;
-	}
+	void SetVersion(const NiVersion& ver) { version = ver; }
 
 	std::string GetCreatorInfo();
 	void SetCreatorInfo(const std::string& creatorInfo);
@@ -573,16 +514,12 @@ public:
 	std::string GetExportInfo();
 	void SetExportInfo(const std::string& exportInfo);
 
-	void SetBlockReference(std::vector<std::shared_ptr<NiObject>>* blockRef) {
-		blocks = blockRef;
-	};
+	void SetBlockReference(std::vector<std::shared_ptr<NiObject>>* blockRef) { blocks = blockRef; };
 
-	uint GetNumBlocks() {
-		return numBlocks;
-	}
+	uint GetNumBlocks() { return numBlocks; }
 
-	template <class T>
-    T* GetBlock(const int blockId) {
+	template<class T>
+	T* GetBlock(const int blockId) {
 		if (blockId >= 0 && blockId < numBlocks)
 			return dynamic_cast<T*>((*blocks)[blockId].get());
 
@@ -612,7 +549,7 @@ public:
 	bool IsBlockReferenced(const int blockId);
 	int GetBlockRefCount(const int blockId);
 
-	template <class T>
+	template<class T>
 	bool DeleteUnreferencedBlocks(const int rootId, int* deletionCount = nullptr) {
 		if (rootId == 0xFFFFFFFF)
 			return false;
