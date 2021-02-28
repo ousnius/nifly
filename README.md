@@ -11,7 +11,7 @@ C++ NIF library for the GameBryo/NetImmerse File Format.
 
 ### Usage/Building
 - Simply include the headers/source in your project.
-- You may use the included Visual Studio project or CMake list.
+- You may use the included CMake list.
 - Tested with MSVC++ 14.x (VS 2017) or higher
 - Should work with most compilers. If not, please feel free to add an issue or make a PR.
 
