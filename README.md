@@ -21,7 +21,7 @@ C++ NIF library for the GameBryo/NetImmerse File Format.
 
 ### Used by
 - [BodySlide and Outfit Studio](https://github.com/ousnius/BodySlide-and-Outfit-Studio)
-- SSE NIF Optimizer
+- [SSE NIF Optimizer](https://github.com/ousnius/SSE-NIF-Optimizer)
 - [Cathedral Assets Optimizer](https://gitlab.com/G_ka/Cathedral_Assets_Optimizer)
 
 ### Credits
