@@ -415,7 +415,7 @@ int NiHeader::GetStringCount() {
 
 int NiHeader::FindStringId(const std::string& str) {
 	for (int i = 0; i < strings.size(); i++)
-		if (strings[i].GetString().compare(str) == 0)
+		if (strings[i].GetString() == str)
 			return i;
 
 	return 0xFFFFFFFF;
@@ -423,7 +423,7 @@ int NiHeader::FindStringId(const std::string& str) {
 
 int NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty) {
 	for (int i = 0; i < strings.size(); i++)
-		if (strings[i].GetString().compare(str) == 0)
+		if (strings[i].GetString() == str)
 			return i;
 
 	if (!addEmpty && str.empty())
