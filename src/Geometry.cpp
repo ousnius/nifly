@@ -363,22 +363,22 @@ NiGeometryData* NiShape::GetGeomData() {
 void NiShape::SetGeomData(NiGeometryData*){};
 
 int NiShape::GetSkinInstanceRef() {
-	return 0xFFFFFFFF;
+	return NIF_NPOS;
 }
 void NiShape::SetSkinInstanceRef(int) {}
 
 int NiShape::GetShaderPropertyRef() {
-	return 0xFFFFFFFF;
+	return NIF_NPOS;
 }
 void NiShape::SetShaderPropertyRef(int) {}
 
 int NiShape::GetAlphaPropertyRef() {
-	return 0xFFFFFFFF;
+	return NIF_NPOS;
 }
 void NiShape::SetAlphaPropertyRef(int) {}
 
 int NiShape::GetDataRef() {
-	return 0xFFFFFFFF;
+	return NIF_NPOS;
 }
 void NiShape::SetDataRef(int) {}
 
@@ -519,7 +519,7 @@ int NiShape::GetBoneID(NiHeader& hdr, const std::string& boneName) {
 		}
 	}
 
-	return 0xFFFFFFFF;
+	return NIF_NPOS;
 }
 
 bool NiShape::ReorderTriangles(const std::vector<uint>& triInds) {
@@ -2037,7 +2037,7 @@ void NiGeometry::GetChildIndices(std::vector<int>& indices) {
 }
 
 bool NiGeometry::IsSkinned() {
-	return skinInstanceRef.GetIndex() != 0xFFFFFFFF;
+	return skinInstanceRef.GetIndex() != NIF_NPOS;
 }
 
 int NiGeometry::GetDataRef() {
