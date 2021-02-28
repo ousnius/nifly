@@ -5,6 +5,8 @@ See the included LICENSE file
 
 #include "Objects.hpp"
 
+using namespace nifly;
+
 void NiObjectNET::Get(NiStream& stream) {
 	NiObject::Get(stream);
 

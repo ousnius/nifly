@@ -12,6 +12,7 @@ See the included LICENSE file
 
 #pragma warning(disable : 4018 4244 4267 4389)
 
+namespace nifly {
 const double EPSILON = 0.0001;
 
 const float PI = 3.141592f;
@@ -1276,31 +1277,6 @@ struct Triangle {
 	}
 };
 
-namespace std {
-template<>
-struct hash<Edge> {
-	std::size_t operator()(const Edge& t) const { return ((t.p2 << 16) | (t.p1 & 0xFFFF)); }
-};
-
-template<>
-struct hash<Triangle> {
-	std::size_t operator()(const Triangle& t) const {
-		char* d = (char*) &t;
-		std::size_t len = sizeof(Triangle);
-		std::size_t hash, i;
-		for (hash = i = 0; i < len; ++i) {
-			hash += d[i];
-			hash += (hash << 10);
-			hash ^= (hash >> 6);
-		}
-		hash += (hash << 3);
-		hash ^= (hash >> 11);
-		hash += (hash << 15);
-		return hash;
-	}
-};
-} // namespace std
-
 inline bool operator==(const Edge& t1, const Edge& t2) {
 	return ((t1.p1 == t2.p1) && (t1.p2 == t2.p2));
 }
@@ -1448,3 +1424,31 @@ struct Rect {
 		return true;
 	}
 };
+} // namespace nifly
+
+namespace std {
+using namespace nifly;
+
+template<>
+struct hash<Edge> {
+	std::size_t operator()(const Edge& t) const { return ((t.p2 << 16) | (t.p1 & 0xFFFF)); }
+};
+
+template<>
+struct hash<Triangle> {
+	std::size_t operator()(const Triangle& t) const {
+		char* d = (char*) &t;
+		std::size_t len = sizeof(Triangle);
+		std::size_t hash, i;
+		for (hash = i = 0; i < len; ++i) {
+			hash += d[i];
+			hash += (hash << 10);
+			hash ^= (hash >> 6);
+		}
+		hash += (hash << 3);
+		hash ^= (hash >> 11);
+		hash += (hash << 15);
+		return hash;
+	}
+};
+} // namespace std

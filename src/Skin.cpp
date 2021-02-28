@@ -9,6 +9,8 @@ See the included LICENSE file
 
 #include <unordered_map>
 
+using namespace nifly;
+
 void NiSkinData::Get(NiStream& stream) {
 	NiObject::Get(stream);
 

@@ -18,6 +18,7 @@ See the included LICENSE file
 
 #include <unordered_map>
 
+namespace nifly {
 class NiFactory {
 public:
 	virtual std::shared_ptr<NiObject> Create() = 0;
@@ -64,3 +65,4 @@ public:
 protected:
 	std::unordered_map<std::string, std::shared_ptr<NiFactory>> m_registrations;
 };
+} // namespace nifly

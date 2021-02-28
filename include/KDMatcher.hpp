@@ -11,6 +11,7 @@ See the included LICENSE file
 
 // A specialized KD tree that finds duplicate vertices in a point cloud.
 
+namespace nifly {
 class kd_matcher {
 public:
 	class kd_node {
@@ -277,3 +278,4 @@ public:
 		return queryResult.size();
 	}
 };
+} // namespace nifly

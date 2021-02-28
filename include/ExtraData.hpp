@@ -10,6 +10,7 @@ See the included LICENSE file
 #include "VertexData.hpp"
 #include "half.hpp"
 
+namespace nifly {
 class NiExtraData : public NiObject {
 private:
 	StringRef name;
@@ -548,3 +549,4 @@ public:
 	bool ToHKX(const std::string& fileName);
 	bool FromHKX(const std::string& fileName);
 };
+} // namespace nifly

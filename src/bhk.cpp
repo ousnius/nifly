@@ -5,6 +5,8 @@ See the included LICENSE file
 
 #include "bhk.hpp"
 
+using namespace nifly;
+
 void NiCollisionObject::Get(NiStream& stream) {
 	NiObject::Get(stream);
 

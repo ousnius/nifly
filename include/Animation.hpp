@@ -9,6 +9,7 @@ See the included LICENSE file
 #include "ExtraData.hpp"
 #include "Keys.hpp"
 
+namespace nifly {
 class NiKeyframeData : public NiObject {
 private:
 	uint numRotationKeys = 0;
@@ -1431,3 +1432,4 @@ public:
 	int GetObjectPaletteRef();
 	void SetObjectPaletteRef(int paletteRef);
 };
+} // namespace nifly

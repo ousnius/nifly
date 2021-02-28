@@ -9,6 +9,7 @@ See the included LICENSE file
 #include "Geometry.hpp"
 #include "Nodes.hpp"
 
+namespace nifly {
 class NiParticles : public NiGeometry {
 public:
 	static constexpr const char* BlockName = "NiParticles";
@@ -924,3 +925,4 @@ public:
 
 	BlockRefArray<NiAVObject>& GetMeshes();
 };
+} // namespace nifly

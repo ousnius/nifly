@@ -9,6 +9,7 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 #include "ExtraData.hpp"
 
+namespace nifly {
 typedef uint HavokMaterial;
 
 struct HavokFilter {
@@ -1352,3 +1353,4 @@ public:
 	float GetRadius() { return radius; }
 	void SetRadius(const float r) { radius = r; }
 };
+} // namespace nifly

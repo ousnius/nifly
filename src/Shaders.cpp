@@ -5,6 +5,8 @@ See the included LICENSE file
 
 #include "Shaders.hpp"
 
+using namespace nifly;
+
 void NiShadeProperty::Get(NiStream& stream) {
 	NiProperty::Get(stream);
 

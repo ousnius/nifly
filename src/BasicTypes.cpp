@@ -6,6 +6,8 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 #include <regex>
 
+using namespace nifly;
+
 static const std::string NIF_GAMEBRYO = "Gamebryo File Format";
 static const std::string NIF_NETIMMERSE = "NetImmerse File Format";
 static const std::string NIF_NDS = "NDSNIF....@....@....";

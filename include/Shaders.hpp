@@ -8,6 +8,7 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 #include "Objects.hpp"
 
+namespace nifly {
 enum BSShaderType : uint {
 	SHADER_TALL_GRASS,
 	SHADER_DEFAULT,
@@ -818,3 +819,4 @@ public:
 	void Put(NiStream& stream);
 	NiStencilProperty* Clone() { return new NiStencilProperty(*this); }
 };
+} // namespace nifly

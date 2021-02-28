@@ -5,6 +5,8 @@ See the included LICENSE file
 
 #include "Factory.hpp"
 
+using namespace nifly;
+
 NiFactoryRegister& NiFactoryRegister::Get() {
 	static NiFactoryRegister instance;
 	return instance;

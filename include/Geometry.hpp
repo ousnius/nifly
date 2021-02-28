@@ -11,6 +11,7 @@ See the included LICENSE file
 
 #include <deque>
 
+namespace nifly {
 struct AdditionalDataInfo {
 	int dataType = 0;
 	uint numChannelBytesPerElement = 0;
@@ -853,3 +854,4 @@ public:
 	void Put(NiStream& stream);
 	BSSegmentedTriShape* Clone() { return new BSSegmentedTriShape(*this); }
 };
+} // namespace nifly

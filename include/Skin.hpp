@@ -8,6 +8,7 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 #include "VertexData.hpp"
 
+namespace nifly {
 struct SkinWeight {
 	ushort index;
 	float weight;
@@ -287,3 +288,4 @@ public:
 	int GetDataRef() { return dataRef.GetIndex(); }
 	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
 };
+} // namespace nifly

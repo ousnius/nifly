@@ -8,6 +8,8 @@ See the included LICENSE file
 
 #include <fstream>
 
+using namespace nifly;
+
 void NiExtraData::Get(NiStream& stream) {
 	NiObject::Get(stream);
 

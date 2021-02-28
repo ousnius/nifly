@@ -12,6 +12,8 @@ See the included LICENSE file
 #include <unordered_set>
 #include <queue>
 
+using namespace nifly;
+
 template<class T>
 T* NifFile::FindBlockByName(const std::string& name) {
 	for (auto& block : blocks) {

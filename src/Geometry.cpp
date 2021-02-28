@@ -10,6 +10,8 @@ See the included LICENSE file
 #include "KDMatcher.hpp"
 #include "NifUtil.hpp"
 
+using namespace nifly;
+
 void NiAdditionalGeometryData::Get(NiStream& stream) {
 	AdditionalGeomData::Get(stream);
 

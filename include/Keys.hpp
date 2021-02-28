@@ -7,6 +7,7 @@ See the included LICENSE file
 
 #include "BasicTypes.hpp"
 
+namespace nifly {
 enum KeyType : uint { NO_INTERP, LINEAR_KEY, QUADRATIC_KEY, TBC_KEY, XYZ_ROTATION_KEY, CONST_KEY };
 
 struct TBC {
@@ -105,3 +106,4 @@ public:
 		numKeys = 0;
 	}
 };
+} // namespace nifly

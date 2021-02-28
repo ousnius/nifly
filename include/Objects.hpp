@@ -9,6 +9,7 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 #include "ExtraData.hpp"
 
+namespace nifly {
 class NiObjectNET : public NiObject {
 protected:
 	StringRef name;
@@ -422,3 +423,4 @@ public:
 	void Put(NiStream& stream);
 	NiSpotLight* Clone() { return new NiSpotLight(*this); }
 };
+} // namespace nifly

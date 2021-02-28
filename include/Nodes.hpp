@@ -8,6 +8,7 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 #include "Objects.hpp"
 
+namespace nifly {
 class NiNode : public NiAVObject {
 private:
 	BlockRefArray<NiAVObject> childRefs;
@@ -350,3 +351,4 @@ public:
 
 	NiSortAdjustNode* Clone() { return new NiSortAdjustNode(*this); }
 };
+} // namespace nifly

@@ -5,6 +5,8 @@ See the included LICENSE file
 
 #include "Animation.hpp"
 
+using namespace nifly;
+
 void NiKeyframeData::Get(NiStream& stream) {
 	NiObject::Get(stream);
 

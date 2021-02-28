@@ -5,6 +5,8 @@ See the included LICENSE file
 
 #include "Particles.hpp"
 
+using namespace nifly;
+
 NiParticlesData::NiParticlesData() {
 	NiGeometryData::isPSys = true;
 }

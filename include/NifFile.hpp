@@ -7,6 +7,7 @@ See the included LICENSE file
 
 #include "Factory.hpp"
 
+namespace nifly {
 struct OptOptions {
 	NiVersion targetVersion;
 	bool headParts = false;
@@ -329,3 +330,4 @@ std::vector<T*> NifFile::GetChildren(NiNode* parent, bool searchExtraData) {
 
 	return result;
 }
+} // namespace nifly

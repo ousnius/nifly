@@ -17,6 +17,7 @@ See the included LICENSE file
 #include <unordered_map>
 #include <unordered_set>
 
+namespace nifly {
 constexpr auto NIF_NPOS = static_cast<uint>(-1);
 
 enum NiFileVersion : uint {
@@ -616,3 +617,4 @@ public:
 
 	std::vector<char> GetData() { return data; }
 };
+} // namespace nifly

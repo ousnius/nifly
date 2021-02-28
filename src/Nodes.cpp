@@ -5,6 +5,8 @@ See the included LICENSE file
 
 #include "Nodes.hpp"
 
+using namespace nifly;
+
 void NiNode::Get(NiStream& stream) {
 	NiAVObject::Get(stream);
 

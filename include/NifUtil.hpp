@@ -7,6 +7,7 @@ See the included LICENSE file
 
 #include "Object3d.hpp"
 
+namespace nifly {
 // ApplyMapToTriangles applies a vertex index renumbering map to p1, p2,
 // and p3 of a vector of Triangles "tris".  If a triangle has an index out
 // of range of the map or if an index maps to a negative number, the
@@ -148,3 +149,4 @@ std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<
 	}
 	return tris;
 }
+} // namespace nifly
