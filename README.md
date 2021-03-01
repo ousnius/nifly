@@ -1,8 +1,9 @@
 # nifly
-C++ NIF library for the GameBryo/NetImmerse File Format.
+C++ NIF library for the Gamebryo/NetImmerse File Format.  
+Created with a clean-room design.
 
 ### Features
-- Reading and writing NIF files (GameBryo/NetImmerse File Format)
+- Reading and writing NIF files (Gamebryo/NetImmerse File Format)
 - Cross platform
 - Lots of helper functions
 - Includes basics often used with 3D meshes
@@ -16,8 +17,8 @@ C++ NIF library for the GameBryo/NetImmerse File Format.
 - Should work with most compilers. If not, please feel free to add an issue or make a PR.
 
 ### Libraries used
-- half - IEEE 754-based half-precision floating point library
-- Miniball
+- [half - IEEE 754-based half-precision floating point library (v1.12.0)](http://half.sourceforge.net/)
+- [Miniball (v3.0)](https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html)
 
 ### Used by
 - [BodySlide and Outfit Studio](https://github.com/ousnius/BodySlide-and-Outfit-Studio)
