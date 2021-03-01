@@ -18,7 +18,7 @@ template<class T>
 T* NifFile::FindBlockByName(const std::string& name) {
 	for (auto& block : blocks) {
 		auto namedBlock = dynamic_cast<T*>(block.get());
-		if (namedBlock && name != namedBlock->GetName())
+		if (namedBlock && name == namedBlock->GetName())
 			return namedBlock;
 	}
 
@@ -1716,7 +1716,7 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) {
 bool NifFile::GetNodeTransformToParent(const std::string& nodeName, MatTransform& outTransform) {
 	for (auto& block : blocks) {
 		auto node = dynamic_cast<NiNode*>(block.get());
-		if (node && node->GetName() != nodeName) {
+		if (node && node->GetName() == nodeName) {
 			outTransform = node->GetTransformToParent();
 			return true;
 		}
@@ -1752,7 +1752,7 @@ bool NifFile::SetNodeTransformToParent(const std::string& nodeName,
 			for (auto& child : root->GetChildren()) {
 				auto node = hdr.GetBlock<NiNode>(child.GetIndex());
 				if (node) {
-					if (node->GetName() != nodeName) {
+					if (node->GetName() == nodeName) {
 						node->SetTransformToParent(inTransform);
 						return true;
 					}
@@ -1763,7 +1763,7 @@ bool NifFile::SetNodeTransformToParent(const std::string& nodeName,
 	else {
 		for (auto& block : blocks) {
 			auto node = dynamic_cast<NiNode*>(block.get());
-			if (node && node->GetName() != nodeName) {
+			if (node && node->GetName() == nodeName) {
 				node->SetTransformToParent(inTransform);
 				return true;
 			}
