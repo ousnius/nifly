@@ -247,12 +247,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiCollisionObject";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	NiCollisionObject* Clone() { return new NiCollisionObject(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	NiCollisionObject* Clone() override { return new NiCollisionObject(*this); }
 
 	int GetTargetRef() { return targetRef.GetIndex(); }
 	void SetTargetRef(const int ref) { targetRef.SetIndex(ref); }
@@ -338,11 +338,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiCollisionData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiCollisionData* Clone() { return new NiCollisionData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiCollisionData* Clone() override { return new NiCollisionData(*this); }
 };
 
 class bhkNiCollisionObject : public NiCollisionObject {
@@ -352,13 +352,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkNiCollisionObject";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkNiCollisionObject* Clone() { return new bhkNiCollisionObject(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkNiCollisionObject* Clone() override { return new bhkNiCollisionObject(*this); }
 
 	int GetBodyRef() { return bodyRef.GetIndex(); }
 	void SetBodyRef(const int ref) { bodyRef.SetIndex(ref); }
@@ -367,9 +367,9 @@ public:
 class bhkCollisionObject : public bhkNiCollisionObject {
 public:
 	static constexpr const char* BlockName = "bhkCollisionObject";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	bhkCollisionObject* Clone() { return new bhkCollisionObject(*this); }
+	bhkCollisionObject* Clone() override { return new bhkCollisionObject(*this); }
 };
 
 class bhkNPCollisionObject : public bhkCollisionObject {
@@ -378,27 +378,27 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkNPCollisionObject";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkNPCollisionObject* Clone() { return new bhkNPCollisionObject(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkNPCollisionObject* Clone() override { return new bhkNPCollisionObject(*this); }
 };
 
 class bhkPCollisionObject : public bhkNiCollisionObject {
 public:
 	static constexpr const char* BlockName = "bhkPCollisionObject";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	bhkPCollisionObject* Clone() { return new bhkPCollisionObject(*this); }
+	bhkPCollisionObject* Clone() override { return new bhkPCollisionObject(*this); }
 };
 
 class bhkSPCollisionObject : public bhkPCollisionObject {
 public:
 	static constexpr const char* BlockName = "bhkSPCollisionObject";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	bhkSPCollisionObject* Clone() { return new bhkSPCollisionObject(*this); }
+	bhkSPCollisionObject* Clone() override { return new bhkSPCollisionObject(*this); }
 };
 
 class bhkBlendCollisionObject : public bhkCollisionObject {
@@ -408,11 +408,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkBlendCollisionObject";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkBlendCollisionObject* Clone() { return new bhkBlendCollisionObject(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkBlendCollisionObject* Clone() override { return new bhkBlendCollisionObject(*this); }
 };
 
 class bhkPhysicsSystem : public BSExtraData {
@@ -424,11 +424,11 @@ public:
 	bhkPhysicsSystem(const uint size = 0);
 
 	static constexpr const char* BlockName = "bhkPhysicsSystem";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkPhysicsSystem* Clone() { return new bhkPhysicsSystem(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkPhysicsSystem* Clone() override { return new bhkPhysicsSystem(*this); }
 };
 
 class bhkRagdollSystem : public BSExtraData {
@@ -440,11 +440,11 @@ public:
 	bhkRagdollSystem(const uint size = 0);
 
 	static constexpr const char* BlockName = "bhkRagdollSystem";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkRagdollSystem* Clone() { return new bhkRagdollSystem(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkRagdollSystem* Clone() override { return new bhkRagdollSystem(*this); }
 };
 
 class bhkBlendController : public NiTimeController {
@@ -453,11 +453,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkBlendController";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkBlendController* Clone() { return new bhkBlendController(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkBlendController* Clone() override { return new bhkBlendController(*this); }
 };
 
 class bhkRefObject : public NiObject {};
@@ -483,14 +483,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkPlaneShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkPlaneShape* Clone() { return new bhkPlaneShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkPlaneShape* Clone() override { return new bhkPlaneShape(*this); }
 
-	HavokMaterial GetMaterial() { return material; }
-	void SetMaterial(HavokMaterial mat) { material = mat; }
+	HavokMaterial GetMaterial() override { return material; }
+	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
 class bhkSphereRepShape : public bhkShape {
@@ -499,8 +499,8 @@ private:
 	float radius = 0.0f;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
 	HavokMaterial GetMaterial() { return material; }
 	void SetMaterial(HavokMaterial mat) { material = mat; }
@@ -518,11 +518,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkMultiSphereShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkMultiSphereShape* Clone() { return new bhkMultiSphereShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkMultiSphereShape* Clone() override { return new bhkMultiSphereShape(*this); }
 };
 
 class bhkConvexShape : public bhkSphereRepShape {};
@@ -540,13 +540,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkConvexListShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkConvexListShape* Clone() { return new bhkConvexListShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkConvexListShape* Clone() override { return new bhkConvexListShape(*this); }
 
 	BlockRefArray<bhkConvexShape>& GetShapes();
 
@@ -570,11 +570,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkConvexVerticesShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkConvexVerticesShape* Clone() { return new bhkConvexVerticesShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkConvexVerticesShape* Clone() override { return new bhkConvexVerticesShape(*this); }
 };
 
 class bhkBoxShape : public bhkConvexShape {
@@ -585,11 +585,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkBoxShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkBoxShape* Clone() { return new bhkBoxShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkBoxShape* Clone() override { return new bhkBoxShape(*this); }
 
 	Vector3 GetDimensions() { return dimensions; }
 	void SetDimensions(const Vector3 d) { dimensions = d; }
@@ -601,9 +601,9 @@ public:
 class bhkSphereShape : public bhkConvexShape {
 public:
 	static constexpr const char* BlockName = "bhkSphereShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	bhkSphereShape* Clone() { return new bhkSphereShape(*this); }
+	bhkSphereShape* Clone() override { return new bhkSphereShape(*this); }
 };
 
 class bhkTransformShape : public bhkShape {
@@ -616,13 +616,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkTransformShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkTransformShape* Clone() { return new bhkTransformShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkTransformShape* Clone() override { return new bhkTransformShape(*this); }
 
 	int GetShapeRef() { return shapeRef.GetIndex(); }
 	void SetShapeRef(const int ref) { shapeRef.SetIndex(ref); }
@@ -637,9 +637,9 @@ public:
 class bhkConvexTransformShape : public bhkTransformShape {
 public:
 	static constexpr const char* BlockName = "bhkConvexTransformShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	bhkConvexTransformShape* Clone() { return new bhkConvexTransformShape(*this); }
+	bhkConvexTransformShape* Clone() override { return new bhkConvexTransformShape(*this); }
 };
 
 class bhkCapsuleShape : public bhkConvexShape {
@@ -652,11 +652,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkCapsuleShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkCapsuleShape* Clone() { return new bhkCapsuleShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkCapsuleShape* Clone() override { return new bhkCapsuleShape(*this); }
 
 	Vector3 GetPoint1() { return point1; }
 	void SetPoint1(const Vector3 p) { point1 = p; }
@@ -687,13 +687,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkMoppBvTreeShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkMoppBvTreeShape* Clone() { return new bhkMoppBvTreeShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkMoppBvTreeShape* Clone() override { return new bhkMoppBvTreeShape(*this); }
 
 	int GetShapeRef() { return shapeRef.GetIndex(); }
 	void SetShapeRef(const int ref) { shapeRef.SetIndex(ref); }
@@ -720,13 +720,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkNiTriStripsShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkNiTriStripsShape* Clone() { return new bhkNiTriStripsShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkNiTriStripsShape* Clone() override { return new bhkNiTriStripsShape(*this); }
 
 	BlockRefArray<NiTriStripsData>& GetParts();
 
@@ -750,13 +750,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkListShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkListShape* Clone() { return new bhkListShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkListShape* Clone() override { return new bhkListShape(*this); }
 
 	BlockRefArray<bhkShape>& GetSubShapes();
 
@@ -796,11 +796,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "hkPackedNiTriStripsData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	hkPackedNiTriStripsData* Clone() { return new hkPackedNiTriStripsData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	hkPackedNiTriStripsData* Clone() override { return new hkPackedNiTriStripsData(*this); }
 };
 
 class bhkPackedNiTriStripsShape : public bhkShapeCollection {
@@ -819,13 +819,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkPackedNiTriStripsShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkPackedNiTriStripsShape* Clone() { return new bhkPackedNiTriStripsShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkPackedNiTriStripsShape* Clone() override { return new bhkPackedNiTriStripsShape(*this); }
 
 	float GetRadius() { return radius; }
 	void SetRadius(const float r) { radius = r; }
@@ -849,11 +849,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkLiquidAction";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkLiquidAction* Clone() { return new bhkLiquidAction(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkLiquidAction* Clone() override { return new bhkLiquidAction(*this); }
 };
 
 class bhkOrientHingedBodyAction : public bhkSerializable {
@@ -870,12 +870,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkOrientHingedBodyAction";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	bhkOrientHingedBodyAction* Clone() { return new bhkOrientHingedBodyAction(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	bhkOrientHingedBodyAction* Clone() override { return new bhkOrientHingedBodyAction(*this); }
 
 	int GetBodyRef() { return bodyRef.GetIndex(); }
 	void SetBodyRef(const int ref) { bodyRef.SetIndex(ref); }
@@ -891,11 +891,11 @@ private:
 	hkWorldObjCInfoProperty prop;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkWorldObject* Clone() { return new bhkWorldObject(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkWorldObject* Clone() override { return new bhkWorldObject(*this); }
 
 	int GetShapeRef() { return shapeRef.GetIndex(); }
 	void SetShapeRef(const int ref) { shapeRef.SetIndex(ref); }
@@ -918,11 +918,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkSimpleShapePhantom";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkSimpleShapePhantom* Clone() { return new bhkSimpleShapePhantom(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkSimpleShapePhantom* Clone() override { return new bhkSimpleShapePhantom(*this); }
 };
 
 class bhkAabbPhantom : public bhkShapePhantom {
@@ -933,11 +933,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkAabbPhantom";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkAabbPhantom* Clone() { return new bhkAabbPhantom(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkAabbPhantom* Clone() override { return new bhkAabbPhantom(*this); }
 };
 
 class bhkEntity : public bhkWorldObject {};
@@ -948,9 +948,9 @@ private:
 	uint priority;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
 
 	BlockRefArray<bhkEntity>& GetEntities();
 };
@@ -961,11 +961,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkHingeConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkHingeConstraint* Clone() { return new bhkHingeConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkHingeConstraint* Clone() override { return new bhkHingeConstraint(*this); }
 };
 
 class bhkLimitedHingeConstraint : public bhkConstraint {
@@ -974,11 +974,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkLimitedHingeConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkLimitedHingeConstraint* Clone() { return new bhkLimitedHingeConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkLimitedHingeConstraint* Clone() override { return new bhkLimitedHingeConstraint(*this); }
 };
 
 class ConstraintData {
@@ -1011,12 +1011,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkBreakableConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	bhkBreakableConstraint* Clone() { return new bhkBreakableConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	bhkBreakableConstraint* Clone() override { return new bhkBreakableConstraint(*this); }
 };
 
 class bhkRagdollConstraint : public bhkConstraint {
@@ -1025,11 +1025,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkRagdollConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkRagdollConstraint* Clone() { return new bhkRagdollConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkRagdollConstraint* Clone() override { return new bhkRagdollConstraint(*this); }
 };
 
 class bhkStiffSpringConstraint : public bhkConstraint {
@@ -1038,11 +1038,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkStiffSpringConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkStiffSpringConstraint* Clone() { return new bhkStiffSpringConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkStiffSpringConstraint* Clone() override { return new bhkStiffSpringConstraint(*this); }
 };
 
 class bhkPrismaticConstraint : public bhkConstraint {
@@ -1051,11 +1051,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkPrismaticConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkPrismaticConstraint* Clone() { return new bhkPrismaticConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkPrismaticConstraint* Clone() override { return new bhkPrismaticConstraint(*this); }
 };
 
 class bhkMalleableConstraint : public bhkConstraint {
@@ -1064,11 +1064,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkMalleableConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkMalleableConstraint* Clone() { return new bhkMalleableConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkMalleableConstraint* Clone() override { return new bhkMalleableConstraint(*this); }
 };
 
 class bhkBallAndSocketConstraint : public bhkConstraint {
@@ -1077,11 +1077,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkBallAndSocketConstraint";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkBallAndSocketConstraint* Clone() { return new bhkBallAndSocketConstraint(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkBallAndSocketConstraint* Clone() override { return new bhkBallAndSocketConstraint(*this); }
 };
 
 class bhkBallSocketConstraintChain : public bhkSerializable {
@@ -1103,12 +1103,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkBallSocketConstraintChain";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	bhkBallSocketConstraintChain* Clone() { return new bhkBallSocketConstraintChain(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	bhkBallSocketConstraintChain* Clone() override { return new bhkBallSocketConstraintChain(*this); }
 
 	BlockRefArray<bhkEntity>& GetEntitiesA();
 
@@ -1163,13 +1163,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkRigidBody";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkRigidBody* Clone() { return new bhkRigidBody(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkRigidBody* Clone() override { return new bhkRigidBody(*this); }
 
 	HavokFilter GetCollisionFilterCopy() { return collisionFilterCopy; }
 	void SetCollisionFilterCopy(const HavokFilter cf) { collisionFilterCopy = cf; }
@@ -1180,9 +1180,9 @@ public:
 class bhkRigidBodyT : public bhkRigidBody {
 public:
 	static constexpr const char* BlockName = "bhkRigidBodyT";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	bhkRigidBodyT* Clone() { return new bhkRigidBodyT(*this); }
+	bhkRigidBodyT* Clone() override { return new bhkRigidBodyT(*this); }
 };
 
 class bhkCompressedMeshShapeData : public bhkRefObject {
@@ -1225,11 +1225,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkCompressedMeshShapeData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	bhkCompressedMeshShapeData* Clone() { return new bhkCompressedMeshShapeData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	bhkCompressedMeshShapeData* Clone() override { return new bhkCompressedMeshShapeData(*this); }
 };
 
 class bhkCompressedMeshShape : public bhkShape {
@@ -1245,14 +1245,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkCompressedMeshShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	bhkCompressedMeshShape* Clone() { return new bhkCompressedMeshShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	bhkCompressedMeshShape* Clone() override { return new bhkCompressedMeshShape(*this); }
 
 	int GetTargetRef() { return targetRef.GetIndex(); }
 	void SetTargetRef(const int ref) { targetRef.SetIndex(ref); }
@@ -1301,12 +1301,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkPoseArray";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetStringRefs(std::set<StringRef*>& refs);
-	bhkPoseArray* Clone() { return new bhkPoseArray(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetStringRefs(std::set<StringRef*>& refs) override;
+	bhkPoseArray* Clone() override { return new bhkPoseArray(*this); }
 };
 
 class bhkRagdollTemplate : public NiExtraData {
@@ -1316,13 +1316,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkRagdollTemplate";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	bhkRagdollTemplate* Clone() { return new bhkRagdollTemplate(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	bhkRagdollTemplate* Clone() override { return new bhkRagdollTemplate(*this); }
 
 	BlockRefArray<NiObject>& GetBones();
 };
@@ -1340,12 +1340,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "bhkRagdollTemplateData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetStringRefs(std::set<StringRef*>& refs);
-	bhkRagdollTemplateData* Clone() { return new bhkRagdollTemplateData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetStringRefs(std::set<StringRef*>& refs) override;
+	bhkRagdollTemplateData* Clone() override { return new bhkRagdollTemplateData(*this); }
 
 	HavokMaterial GetMaterial() { return material; }
 	void SetMaterial(HavokMaterial mat) { material = mat; }

@@ -13,33 +13,33 @@ namespace nifly {
 class NiParticles : public NiGeometry {
 public:
 	static constexpr const char* BlockName = "NiParticles";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiParticles* Clone() { return new NiParticles(*this); }
+	NiParticles* Clone() override { return new NiParticles(*this); }
 };
 
 class NiAutoNormalParticles : public NiParticles {
 public:
 	static constexpr const char* BlockName = "NiAutoNormalParticles";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiAutoNormalParticles* Clone() { return new NiAutoNormalParticles(*this); }
+	NiAutoNormalParticles* Clone() override { return new NiAutoNormalParticles(*this); }
 };
 
 class NiParticleMeshes : public NiParticles {
 public:
 	static constexpr const char* BlockName = "NiParticleMeshes";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiParticleMeshes* Clone() { return new NiParticleMeshes(*this); }
+	NiParticleMeshes* Clone() override { return new NiParticleMeshes(*this); }
 };
 
 class NiRotatingParticles : public NiParticles {
 public:
 	static constexpr const char* BlockName = "NiRotatingParticles";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiRotatingParticles* Clone() { return new NiRotatingParticles(*this); }
+	NiRotatingParticles* Clone() override { return new NiRotatingParticles(*this); }
 };
 
 class NiParticlesData : public NiGeometryData {
@@ -65,27 +65,27 @@ public:
 	NiParticlesData();
 
 	static constexpr const char* BlockName = "NiParticlesData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiParticlesData* Clone() { return new NiParticlesData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiParticlesData* Clone() override { return new NiParticlesData(*this); }
 };
 
 class NiAutoNormalParticlesData : public NiParticlesData {
 public:
 	static constexpr const char* BlockName = "NiAutoNormalParticlesData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiAutoNormalParticlesData* Clone() { return new NiAutoNormalParticlesData(*this); }
+	NiAutoNormalParticlesData* Clone() override { return new NiAutoNormalParticlesData(*this); }
 };
 
 class NiRotatingParticlesData : public NiParticlesData {
 public:
 	static constexpr const char* BlockName = "NiRotatingParticlesData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiRotatingParticlesData* Clone() { return new NiRotatingParticlesData(*this); }
+	NiRotatingParticlesData* Clone() override { return new NiRotatingParticlesData(*this); }
 };
 
 class NiParticleMeshesData : public NiRotatingParticlesData {
@@ -94,14 +94,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiParticleMeshesData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 
-	NiParticleMeshesData* Clone() { return new NiParticleMeshesData(*this); }
+	NiParticleMeshesData* Clone() override { return new NiParticleMeshesData(*this); }
 };
 
 class NiPSysData : public NiRotatingParticlesData {
@@ -111,11 +111,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysData* Clone() { return new NiPSysData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysData* Clone() override { return new NiPSysData(*this); }
 };
 
 class NiMeshPSysData : public NiPSysData {
@@ -130,13 +130,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiMeshPSysData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiMeshPSysData* Clone() { return new NiMeshPSysData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiMeshPSysData* Clone() override { return new NiMeshPSysData(*this); }
 };
 
 class BSStripPSysData : public NiPSysData {
@@ -148,11 +148,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSStripPSysData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSStripPSysData* Clone() { return new BSStripPSysData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSStripPSysData* Clone() override { return new BSStripPSysData(*this); }
 };
 
 class NiPSysEmitterCtlrData : public NiObject {
@@ -163,11 +163,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterCtlrData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysEmitterCtlrData* Clone() { return new NiPSysEmitterCtlrData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysEmitterCtlrData* Clone() override { return new NiPSysEmitterCtlrData(*this); }
 };
 
 class NiParticleSystem;
@@ -180,10 +180,10 @@ private:
 	bool isActive;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetStringRefs(std::set<StringRef*>& refs);
-	void GetPtrs(std::set<Ref*>& ptrs);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
 class BSPSysStripUpdateModifier : public NiPSysModifier {
@@ -192,11 +192,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysStripUpdateModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSPSysStripUpdateModifier* Clone() { return new BSPSysStripUpdateModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSPSysStripUpdateModifier* Clone() override { return new BSPSysStripUpdateModifier(*this); }
 };
 
 class NiPSysSpawnModifier : public NiPSysModifier {
@@ -212,11 +212,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysSpawnModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysSpawnModifier* Clone() { return new NiPSysSpawnModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysSpawnModifier* Clone() override { return new NiPSysSpawnModifier(*this); }
 };
 
 class NiPSysAgeDeathModifier : public NiPSysModifier {
@@ -226,13 +226,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysAgeDeathModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiPSysAgeDeathModifier* Clone() { return new NiPSysAgeDeathModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiPSysAgeDeathModifier* Clone() override { return new NiPSysAgeDeathModifier(*this); }
 };
 
 class BSPSysLODModifier : public NiPSysModifier {
@@ -244,11 +244,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysLODModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSPSysLODModifier* Clone() { return new BSPSysLODModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSPSysLODModifier* Clone() override { return new BSPSysLODModifier(*this); }
 };
 
 class BSPSysSimpleColorModifier : public NiPSysModifier {
@@ -266,11 +266,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysSimpleColorModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSPSysSimpleColorModifier* Clone() { return new BSPSysSimpleColorModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSPSysSimpleColorModifier* Clone() override { return new BSPSysSimpleColorModifier(*this); }
 };
 
 class NiPSysRotationModifier : public NiPSysModifier {
@@ -287,11 +287,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysRotationModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysRotationModifier* Clone() { return new NiPSysRotationModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysRotationModifier* Clone() override { return new NiPSysRotationModifier(*this); }
 };
 
 class BSPSysScaleModifier : public NiPSysModifier {
@@ -301,11 +301,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysScaleModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSPSysScaleModifier* Clone() { return new BSPSysScaleModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSPSysScaleModifier* Clone() override { return new BSPSysScaleModifier(*this); }
 };
 
 enum ForceType : uint { FORCE_PLANAR, FORCE_SPHERICAL, FORCE_UNKNOWN };
@@ -323,20 +323,20 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysGravityModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	NiPSysGravityModifier* Clone() { return new NiPSysGravityModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	NiPSysGravityModifier* Clone() override { return new NiPSysGravityModifier(*this); }
 };
 
 class NiPSysPositionModifier : public NiPSysModifier {
 public:
 	static constexpr const char* BlockName = "NiPSysPositionModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiPSysPositionModifier* Clone() { return new NiPSysPositionModifier(*this); }
+	NiPSysPositionModifier* Clone() override { return new NiPSysPositionModifier(*this); }
 };
 
 class NiPSysBoundUpdateModifier : public NiPSysModifier {
@@ -345,11 +345,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysBoundUpdateModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysBoundUpdateModifier* Clone() { return new NiPSysBoundUpdateModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysBoundUpdateModifier* Clone() override { return new NiPSysBoundUpdateModifier(*this); }
 };
 
 class NiPSysDragModifier : public NiPSysModifier {
@@ -362,12 +362,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysDragModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	NiPSysDragModifier* Clone() { return new NiPSysDragModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	NiPSysDragModifier* Clone() override { return new NiPSysDragModifier(*this); }
 };
 
 class BSPSysInheritVelocityModifier : public NiPSysModifier {
@@ -379,12 +379,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysInheritVelocityModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	BSPSysInheritVelocityModifier* Clone() { return new BSPSysInheritVelocityModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	BSPSysInheritVelocityModifier* Clone() override { return new BSPSysInheritVelocityModifier(*this); }
 };
 
 class BSPSysSubTexModifier : public NiPSysModifier {
@@ -399,11 +399,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysSubTexModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSPSysSubTexModifier* Clone() { return new BSPSysSubTexModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSPSysSubTexModifier* Clone() override { return new BSPSysSubTexModifier(*this); }
 };
 
 enum DecayType : uint { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
@@ -421,12 +421,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysBombModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	NiPSysBombModifier* Clone() { return new NiPSysBombModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	NiPSysBombModifier* Clone() override { return new NiPSysBombModifier(*this); }
 };
 
 class NiColorData : public NiObject {
@@ -435,11 +435,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiColorData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiColorData* Clone() { return new NiColorData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiColorData* Clone() override { return new NiColorData(*this); }
 };
 
 class NiPSysColorModifier : public NiPSysModifier {
@@ -448,13 +448,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysColorModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiPSysColorModifier* Clone() { return new NiPSysColorModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiPSysColorModifier* Clone() override { return new NiPSysColorModifier(*this); }
 };
 
 class NiPSysGrowFadeModifier : public NiPSysModifier {
@@ -467,11 +467,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysGrowFadeModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysGrowFadeModifier* Clone() { return new NiPSysGrowFadeModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysGrowFadeModifier* Clone() override { return new NiPSysGrowFadeModifier(*this); }
 };
 
 class NiPSysMeshUpdateModifier : public NiPSysModifier {
@@ -480,13 +480,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysMeshUpdateModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiPSysMeshUpdateModifier* Clone() { return new NiPSysMeshUpdateModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiPSysMeshUpdateModifier* Clone() override { return new NiPSysMeshUpdateModifier(*this); }
 
 	BlockRefArray<NiAVObject>& GetMeshes();
 };
@@ -500,10 +500,10 @@ private:
 	float maxDistance = 0.0f;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 };
 
 class NiPSysVortexFieldModifier : public NiPSysFieldModifier {
@@ -512,11 +512,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysVortexFieldModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysVortexFieldModifier* Clone() { return new NiPSysVortexFieldModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysVortexFieldModifier* Clone() override { return new NiPSysVortexFieldModifier(*this); }
 };
 
 class NiPSysGravityFieldModifier : public NiPSysFieldModifier {
@@ -525,11 +525,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysGravityFieldModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysGravityFieldModifier* Clone() { return new NiPSysGravityFieldModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysGravityFieldModifier* Clone() override { return new NiPSysGravityFieldModifier(*this); }
 };
 
 class NiPSysDragFieldModifier : public NiPSysFieldModifier {
@@ -539,11 +539,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysDragFieldModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysDragFieldModifier* Clone() { return new NiPSysDragFieldModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysDragFieldModifier* Clone() override { return new NiPSysDragFieldModifier(*this); }
 };
 
 class NiPSysTurbulenceFieldModifier : public NiPSysFieldModifier {
@@ -552,11 +552,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysTurbulenceFieldModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysTurbulenceFieldModifier* Clone() { return new NiPSysTurbulenceFieldModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysTurbulenceFieldModifier* Clone() override { return new NiPSysTurbulenceFieldModifier(*this); }
 };
 
 class NiPSysAirFieldModifier : public NiPSysFieldModifier {
@@ -571,11 +571,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysAirFieldModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysAirFieldModifier* Clone() { return new NiPSysAirFieldModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysAirFieldModifier* Clone() override { return new NiPSysAirFieldModifier(*this); }
 };
 
 class NiPSysRadialFieldModifier : public NiPSysFieldModifier {
@@ -584,11 +584,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysRadialFieldModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysRadialFieldModifier* Clone() { return new NiPSysRadialFieldModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysRadialFieldModifier* Clone() override { return new NiPSysRadialFieldModifier(*this); }
 };
 
 class BSWindModifier : public NiPSysModifier {
@@ -597,11 +597,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSWindModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSWindModifier* Clone() { return new BSWindModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSWindModifier* Clone() override { return new BSWindModifier(*this); }
 };
 
 class BSPSysRecycleBoundModifier : public NiPSysModifier {
@@ -612,12 +612,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysRecycleBoundModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	BSPSysRecycleBoundModifier* Clone() { return new BSPSysRecycleBoundModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	BSPSysRecycleBoundModifier* Clone() override { return new BSPSysRecycleBoundModifier(*this); }
 };
 
 class BSPSysHavokUpdateModifier : public NiPSysModifier {
@@ -627,13 +627,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPSysHavokUpdateModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	BSPSysHavokUpdateModifier* Clone() { return new BSPSysHavokUpdateModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	BSPSysHavokUpdateModifier* Clone() override { return new BSPSysHavokUpdateModifier(*this); }
 
 	BlockRefArray<NiNode>& GetNodes();
 
@@ -647,11 +647,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSParentVelocityModifier";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSParentVelocityModifier* Clone() { return new BSParentVelocityModifier(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSParentVelocityModifier* Clone() override { return new BSParentVelocityModifier(*this); }
 };
 
 class BSMasterParticleSystem : public NiNode {
@@ -661,14 +661,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSMasterParticleSystem";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	BSMasterParticleSystem* Clone() { return new BSMasterParticleSystem(*this); }
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	BSMasterParticleSystem* Clone() override { return new BSMasterParticleSystem(*this); }
 
 	BlockRefArray<NiAVObject>& GetParticleSystems();
 };
@@ -710,14 +710,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiParticleSystem";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetStringRefs(std::set<StringRef*>& refs);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiParticleSystem* Clone() { return new NiParticleSystem(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiParticleSystem* Clone() override { return new NiParticleSystem(*this); }
 
 	int GetDataRef();
 	void SetDataRef(int datRef);
@@ -740,17 +740,17 @@ public:
 class NiMeshParticleSystem : public NiParticleSystem {
 public:
 	static constexpr const char* BlockName = "NiMeshParticleSystem";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiMeshParticleSystem* Clone() { return new NiMeshParticleSystem(*this); }
+	NiMeshParticleSystem* Clone() override { return new NiMeshParticleSystem(*this); }
 };
 
 class BSStripParticleSystem : public NiParticleSystem {
 public:
 	static constexpr const char* BlockName = "BSStripParticleSystem";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	BSStripParticleSystem* Clone() { return new BSStripParticleSystem(*this); }
+	BSStripParticleSystem* Clone() override { return new BSStripParticleSystem(*this); }
 };
 
 class NiPSysColliderManager;
@@ -766,11 +766,11 @@ private:
 	BlockRef<NiNode> colliderNodeRef;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	void GetPtrs(std::set<Ref*>& ptrs);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
 class NiPSysSphericalCollider : public NiPSysCollider {
@@ -779,11 +779,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysSphericalCollider";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysSphericalCollider* Clone() { return new NiPSysSphericalCollider(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysSphericalCollider* Clone() override { return new NiPSysSphericalCollider(*this); }
 };
 
 class NiPSysPlanarCollider : public NiPSysCollider {
@@ -795,11 +795,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysPlanarCollider";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysPlanarCollider* Clone() { return new NiPSysPlanarCollider(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysPlanarCollider* Clone() override { return new NiPSysPlanarCollider(*this); }
 };
 
 class NiPSysColliderManager : public NiPSysModifier {
@@ -808,13 +808,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysColliderManager";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiPSysColliderManager* Clone() { return new NiPSysColliderManager(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiPSysColliderManager* Clone() override { return new NiPSysColliderManager(*this); }
 };
 
 class NiPSysEmitter : public NiPSysModifier {
@@ -832,8 +832,8 @@ private:
 	float lifeSpanVariation;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 };
 
 class NiPSysVolumeEmitter : public NiPSysEmitter {
@@ -841,9 +841,9 @@ private:
 	BlockRef<NiNode> emitterNodeRef;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
 class NiPSysSphereEmitter : public NiPSysVolumeEmitter {
@@ -852,11 +852,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysSphereEmitter";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysSphereEmitter* Clone() { return new NiPSysSphereEmitter(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysSphereEmitter* Clone() override { return new NiPSysSphereEmitter(*this); }
 };
 
 class NiPSysCylinderEmitter : public NiPSysVolumeEmitter {
@@ -866,11 +866,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysCylinderEmitter";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysCylinderEmitter* Clone() { return new NiPSysCylinderEmitter(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysCylinderEmitter* Clone() override { return new NiPSysCylinderEmitter(*this); }
 };
 
 class NiPSysBoxEmitter : public NiPSysVolumeEmitter {
@@ -881,19 +881,19 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysBoxEmitter";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPSysBoxEmitter* Clone() { return new NiPSysBoxEmitter(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPSysBoxEmitter* Clone() override { return new NiPSysBoxEmitter(*this); }
 };
 
 class BSPSysArrayEmitter : public NiPSysVolumeEmitter {
 public:
 	static constexpr const char* BlockName = "BSPSysArrayEmitter";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	BSPSysArrayEmitter* Clone() { return new BSPSysArrayEmitter(*this); }
+	BSPSysArrayEmitter* Clone() override { return new BSPSysArrayEmitter(*this); }
 };
 
 enum VelocityType : uint { VELOCITY_USE_NORMALS, VELOCITY_USE_RANDOM, VELOCITY_USE_DIRECTION };
@@ -915,13 +915,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPSysMeshEmitter";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiPSysMeshEmitter* Clone() { return new NiPSysMeshEmitter(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiPSysMeshEmitter* Clone() override { return new NiPSysMeshEmitter(*this); }
 
 	BlockRefArray<NiAVObject>& GetMeshes();
 };

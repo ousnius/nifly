@@ -22,11 +22,11 @@ public:
 	uint bslspShaderType = 0; // BSLightingShaderProperty && User Version >= 12
 	bool bBSLightingShaderProperty = false;
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetStringRefs(std::set<StringRef*>& refs);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 
 	std::string GetName();
 	void SetName(const std::string& str);
@@ -53,10 +53,10 @@ public:
 	Recommendation: rename "transform" to "transformToParent". */
 	MatTransform transform;
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 
 	BlockRefArray<NiProperty>& GetProperties();
 
@@ -82,12 +82,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiDefaultAVObjectPalette";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	NiDefaultAVObjectPalette* Clone() { return new NiDefaultAVObjectPalette(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	NiDefaultAVObjectPalette* Clone() override { return new NiDefaultAVObjectPalette(*this); }
 };
 
 class NiCamera : public NiAVObject {
@@ -112,13 +112,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiCamera";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiCamera* Clone() { return new NiCamera(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiCamera* Clone() override { return new NiCamera(*this); }
 
 	int GetSceneRef();
 	void SetSceneRef(int scRef);
@@ -127,9 +127,9 @@ public:
 class NiSequenceStreamHelper : public NiObjectNET {
 public:
 	static constexpr const char* BlockName = "NiSequenceStreamHelper";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiSequenceStreamHelper* Clone() { return new NiSequenceStreamHelper(*this); }
+	NiSequenceStreamHelper* Clone() override { return new NiSequenceStreamHelper(*this); }
 };
 
 class NiPalette : public NiObject {
@@ -140,12 +140,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPalette";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiPalette* Clone() { return new NiPalette(*this); }
+	NiPalette* Clone() override { return new NiPalette(*this); }
 };
 
 enum PixelFormat : uint {
@@ -199,10 +199,10 @@ private:
 	std::vector<MipMapInfo> mipmaps;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 
 	int GetPaletteRef();
 	void SetPaletteRef(int palRef);
@@ -219,12 +219,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPersistentSrcTextureRendererData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiPersistentSrcTextureRendererData* Clone() { return new NiPersistentSrcTextureRendererData(*this); }
+	NiPersistentSrcTextureRendererData* Clone() override { return new NiPersistentSrcTextureRendererData(*this); }
 };
 
 class NiPixelData : public TextureRenderData {
@@ -236,12 +236,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPixelData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiPixelData* Clone() { return new NiPixelData(*this); }
+	NiPixelData* Clone() override { return new NiPixelData(*this); }
 };
 
 enum PixelLayout : uint {
@@ -278,14 +278,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiSourceTexture";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetStringRefs(std::set<StringRef*>& refs);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiSourceTexture* Clone() { return new NiSourceTexture(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiSourceTexture* Clone() override { return new NiSourceTexture(*this); }
 
 	int GetDataRef();
 	void SetDataRef(int datRef);
@@ -294,9 +294,9 @@ public:
 class NiSourceCubeMap : public NiSourceTexture {
 public:
 	static constexpr const char* BlockName = "NiSourceCubeMap";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiSourceCubeMap* Clone() { return new NiSourceCubeMap(*this); }
+	NiSourceCubeMap* Clone() override { return new NiSourceCubeMap(*this); }
 };
 
 enum TexFilterMode : uint {
@@ -331,10 +331,10 @@ private:
 	BlockRefArray<NiNode> affectedNodes;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 
 	BlockRefArray<NiNode>& GetAffectedNodes();
 };
@@ -354,13 +354,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiTextureEffect";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiTextureEffect* Clone() { return new NiTextureEffect(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiTextureEffect* Clone() override { return new NiTextureEffect(*this); }
 
 	int GetSourceTextureRef();
 	void SetSourceTextureRef(int srcTexRef);
@@ -374,24 +374,24 @@ private:
 	Color3 specularColor;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 };
 
 class NiAmbientLight : public NiLight {
 public:
 	static constexpr const char* BlockName = "NiAmbientLight";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiAmbientLight* Clone() { return new NiAmbientLight(*this); }
+	NiAmbientLight* Clone() override { return new NiAmbientLight(*this); }
 };
 
 class NiDirectionalLight : public NiLight {
 public:
 	static constexpr const char* BlockName = "NiDirectionalLight";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiDirectionalLight* Clone() { return new NiDirectionalLight(*this); }
+	NiDirectionalLight* Clone() override { return new NiDirectionalLight(*this); }
 };
 
 class NiPointLight : public NiLight {
@@ -402,11 +402,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiPointLight";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiPointLight* Clone() { return new NiPointLight(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiPointLight* Clone() override { return new NiPointLight(*this); }
 };
 
 class NiSpotLight : public NiPointLight {
@@ -417,10 +417,10 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiSpotLight";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiSpotLight* Clone() { return new NiSpotLight(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiSpotLight* Clone() override { return new NiSpotLight(*this); }
 };
 } // namespace nifly

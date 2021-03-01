@@ -317,7 +317,7 @@ public:
 		keepEmptyRefs = false;
 	}
 
-	virtual void Get(NiStream& stream) override {
+	void Get(NiStream& stream) override {
 		stream >> arraySize;
 		refs.resize(arraySize);
 
@@ -325,7 +325,7 @@ public:
 			r.Get(stream);
 	}
 
-	virtual void Put(NiStream& stream) override {
+	void Put(NiStream& stream) override {
 		CleanInvalidRefs();
 		stream << arraySize;
 
@@ -333,7 +333,7 @@ public:
 			r.Put(stream);
 	}
 
-	virtual void Put(NiStream& stream, const int forcedSize) override {
+	void Put(NiStream& stream, const int forcedSize) override {
 		CleanInvalidRefs();
 		arraySize = forcedSize;
 		refs.resize(forcedSize);
@@ -344,41 +344,41 @@ public:
 			r.Put(stream);
 	}
 
-	virtual void AddBlockRef(const int index) override {
+	void AddBlockRef(const int index) override {
 		refs.push_back(BlockRef<T>(index));
 		arraySize++;
 	}
 
-	virtual int GetBlockRef(const int id) override {
+	int GetBlockRef(const int id) override {
 		if (id >= 0 && refs.size() > id)
 			return refs[id].GetIndex();
 
 		return NIF_NPOS;
 	}
 
-	virtual void SetBlockRef(const int id, const int index) override {
+	void SetBlockRef(const int id, const int index) override {
 		if (id >= 0 && refs.size() > id)
 			refs[id].SetIndex(index);
 	}
 
-	virtual void RemoveBlockRef(const int id) override {
+	void RemoveBlockRef(const int id) override {
 		if (id >= 0 && refs.size() > id) {
 			refs.erase(refs.begin() + id);
 			arraySize--;
 		}
 	}
 
-	virtual void GetIndices(std::vector<int>& indices) override {
+	void GetIndices(std::vector<int>& indices) override {
 		for (auto& r : refs)
 			indices.push_back(r.GetIndex());
 	}
 
-	virtual void GetIndexPtrs(std::set<Ref*>& indices) override {
+	void GetIndexPtrs(std::set<Ref*>& indices) override {
 		for (auto& r : refs)
 			indices.insert(&r);
 	}
 
-	virtual void SetIndices(const std::vector<int>& indices) override {
+	void SetIndices(const std::vector<int>& indices) override {
 		arraySize = indices.size();
 		refs.resize(arraySize);
 
@@ -393,7 +393,8 @@ public:
 	typedef BlockRefArray<T> base;
 	using base::arraySize;
 	using base::refs;
-	virtual void Get(NiStream& stream) override {
+
+	void Get(NiStream& stream) override {
 		stream.read((char*) &arraySize, 2);
 		refs.resize(arraySize);
 
@@ -401,7 +402,7 @@ public:
 			r.Get(stream);
 	}
 
-	virtual void Put(NiStream& stream) override {
+	void Put(NiStream& stream) override {
 		base::CleanInvalidRefs();
 		stream.write((char*) &arraySize, 2);
 
@@ -409,7 +410,7 @@ public:
 			r.Put(stream);
 	}
 
-	virtual void Put(NiStream& stream, const int forcedSize) override {
+	void Put(NiStream& stream, const int forcedSize) override {
 		base::CleanInvalidRefs();
 		arraySize = forcedSize;
 		refs.resize(forcedSize);
@@ -501,7 +502,7 @@ public:
 	NiHeader(){};
 
 	static constexpr const char* BlockName = "NiHeader";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
 	void Clear();
 
@@ -598,8 +599,8 @@ public:
 	static void BlockDeleted(NiObject* o, int blockId);
 	static void BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi);
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 };
 
 class NiUnknown : public NiObject {
@@ -611,9 +612,9 @@ public:
 	NiUnknown(NiStream& stream, const uint size);
 	NiUnknown(const uint size);
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	NiUnknown* Clone() { return new NiUnknown(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	NiUnknown* Clone() override { return new NiUnknown(*this); }
 
 	std::vector<char> GetData() { return data; }
 };

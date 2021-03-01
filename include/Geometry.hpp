@@ -113,12 +113,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiAdditionalGeometryData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiAdditionalGeometryData* Clone() { return new NiAdditionalGeometryData(*this); }
+	NiAdditionalGeometryData* Clone() override { return new NiAdditionalGeometryData(*this); }
 };
 
 struct BSPackedAdditionalDataBlock {
@@ -195,12 +195,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSPackedAdditionalGeometryData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	BSPackedAdditionalGeometryData* Clone() { return new BSPackedAdditionalGeometryData(*this); }
+	BSPackedAdditionalGeometryData* Clone() override { return new BSPackedAdditionalGeometryData(*this); }
 };
 
 class NiGeometryData : public NiObject {
@@ -230,12 +230,12 @@ public:
 
 	ushort consistencyFlags = 0;
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
 
 	int GetAdditionalDataRef();
 	void SetAdditionalDataRef(int dataRef);
@@ -362,23 +362,23 @@ public:
 	BSTriShape();
 
 	static constexpr const char* BlockName = "BSTriShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	BSTriShape* Clone() { return new BSTriShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	BSTriShape* Clone() override { return new BSTriShape(*this); }
 
-	int GetSkinInstanceRef();
-	void SetSkinInstanceRef(int skinInstRef);
+	int GetSkinInstanceRef() override;
+	void SetSkinInstanceRef(int skinInstRef) override;
 
-	int GetShaderPropertyRef();
-	void SetShaderPropertyRef(int shaderPropRef);
+	int GetShaderPropertyRef() override;
+	void SetShaderPropertyRef(int shaderPropRef) override;
 
-	int GetAlphaPropertyRef();
-	void SetAlphaPropertyRef(int alphaPropRef);
+	int GetAlphaPropertyRef() override;
+	void SetAlphaPropertyRef(int alphaPropRef) override;
 
 	std::vector<Vector3>* GetRawVerts();
 	std::vector<Vector3>* GetNormalData(bool xform = true);
@@ -388,27 +388,27 @@ public:
 	std::vector<Color4>* GetColorData();
 	std::vector<float>* GetEyeData();
 
-	ushort GetNumVertices();
-	void SetVertices(const bool enable);
-	bool HasVertices() { return vertexDesc.HasFlag(VF_VERTEX); }
+	ushort GetNumVertices() override;
+	void SetVertices(const bool enable) override;
+	bool HasVertices() override { return vertexDesc.HasFlag(VF_VERTEX); }
 
-	void SetUVs(const bool enable);
-	bool HasUVs() { return vertexDesc.HasFlag(VF_UV); }
+	void SetUVs(const bool enable) override;
+	bool HasUVs() override { return vertexDesc.HasFlag(VF_UV); }
 
 	void SetSecondUVs(const bool enable);
 	bool HasSecondUVs() { return vertexDesc.HasFlag(VF_UV_2); }
 
-	void SetNormals(const bool enable);
-	bool HasNormals() { return vertexDesc.HasFlag(VF_NORMAL); }
+	void SetNormals(const bool enable) override;
+	bool HasNormals() override { return vertexDesc.HasFlag(VF_NORMAL); }
 
-	void SetTangents(const bool enable);
-	bool HasTangents() { return vertexDesc.HasFlag(VF_TANGENT); }
+	void SetTangents(const bool enable) override;
+	bool HasTangents() override { return vertexDesc.HasFlag(VF_TANGENT); }
 
-	void SetVertexColors(const bool enable);
-	bool HasVertexColors() { return vertexDesc.HasFlag(VF_COLORS); }
+	void SetVertexColors(const bool enable) override;
+	bool HasVertexColors() override { return vertexDesc.HasFlag(VF_COLORS); }
 
-	void SetSkinned(const bool enable);
-	bool IsSkinned() { return vertexDesc.HasFlag(VF_SKINNED); }
+	void SetSkinned(const bool enable) override;
+	bool IsSkinned() override { return vertexDesc.HasFlag(VF_SKINNED); }
 
 	void SetEyeData(const bool enable);
 	bool HasEyeData() { return vertexDesc.HasFlag(VF_EYEDATA); }
@@ -417,13 +417,13 @@ public:
 	bool IsFullPrecision() { return vertexDesc.HasFlag(VF_FULLPREC); }
 	bool CanChangePrecision() { return (HasVertices()); }
 
-	uint GetNumTriangles();
-	bool GetTriangles(std::vector<Triangle>&);
-	void SetTriangles(const std::vector<Triangle>&);
+	uint GetNumTriangles() override;
+	bool GetTriangles(std::vector<Triangle>&) override;
+	void SetTriangles(const std::vector<Triangle>&) override;
 
-	void SetBounds(const BoundingSphere& newBounds) { bounds = newBounds; }
-	BoundingSphere GetBounds() { return bounds; }
-	void UpdateBounds();
+	void SetBounds(const BoundingSphere& newBounds) override { bounds = newBounds; }
+	BoundingSphere GetBounds() override { return bounds; }
+	void UpdateBounds() override;
 
 	void SetVertexData(const std::vector<BSVertexData>& bsVertData);
 
@@ -543,12 +543,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSSubIndexTriShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
-	BSSubIndexTriShape* Clone() { return new BSSubIndexTriShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	BSSubIndexTriShape* Clone() override { return new BSSubIndexTriShape(*this); }
 
 	void GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts);
 	void SetSegmentation(const NifSegmentationInfo& inf, const std::vector<int>& triParts);
@@ -558,7 +558,7 @@ public:
 				const std::vector<Vector3>* verts,
 				const std::vector<Triangle>* tris,
 				const std::vector<Vector2>* uvs,
-				const std::vector<Vector3>* normals = nullptr);
+				const std::vector<Vector3>* normals = nullptr) override;
 };
 
 class BSMeshLODTriShape : public BSTriShape {
@@ -568,12 +568,12 @@ public:
 	uint lodSize2 = 0;
 
 	static constexpr const char* BlockName = "BSMeshLODTriShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
-	BSMeshLODTriShape* Clone() { return new BSMeshLODTriShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	BSMeshLODTriShape* Clone() override { return new BSMeshLODTriShape(*this); }
 };
 
 class BSDynamicTriShape : public BSTriShape {
@@ -584,19 +584,19 @@ public:
 	BSDynamicTriShape();
 
 	static constexpr const char* BlockName = "BSDynamicTriShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
 	void CalcDynamicData();
-	BSDynamicTriShape* Clone() { return new BSDynamicTriShape(*this); }
+	BSDynamicTriShape* Clone() override { return new BSDynamicTriShape(*this); }
 
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
 				const std::vector<Triangle>* tris,
 				const std::vector<Vector2>* uvs,
-				const std::vector<Vector3>* normals = nullptr);
+				const std::vector<Vector3>* normals = nullptr) override;
 };
 
 class NiSkinInstance;
@@ -619,11 +619,11 @@ protected:
 	uint implementation = 0;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetStringRefs(std::set<StringRef*>& refs);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
 
 	bool IsSkinned();
 
@@ -647,14 +647,14 @@ protected:
 	ushort numTriangles = 0;
 
 public:
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
 				const std::vector<Triangle>* tris,
 				const std::vector<Vector2>* uvs,
-				const std::vector<Vector3>* norms);
+				const std::vector<Vector3>* norms) override;
 };
 
 struct MatchGroup {
@@ -673,24 +673,24 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiTriShapeData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
 				const std::vector<Triangle>* tris,
 				const std::vector<Vector2>* uvs,
-				const std::vector<Vector3>* norms);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
+				const std::vector<Vector3>* norms) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
 
-	uint GetNumTriangles();
-	bool GetTriangles(std::vector<Triangle>& tris);
-	void SetTriangles(const std::vector<Triangle>& tris);
+	uint GetNumTriangles() override;
+	bool GetTriangles(std::vector<Triangle>& tris) override;
+	void SetTriangles(const std::vector<Triangle>& tris) override;
 
-	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f);
-	void CalcTangentSpace();
-	NiTriShapeData* Clone() { return new NiTriShapeData(*this); }
+	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f) override;
+	void CalcTangentSpace() override;
+	NiTriShapeData* Clone() override { return new NiTriShapeData(*this); }
 };
 
 class NiTriShape : public NiTriBasedGeom {
@@ -699,12 +699,12 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiTriShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	NiTriShape* Clone() { return new NiTriShape(*this); }
+	NiTriShape* Clone() override { return new NiTriShape(*this); }
 };
 
 class NiTriStripsData : public NiTriBasedGeomData {
@@ -716,20 +716,20 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiTriStripsData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
 
-	uint GetNumTriangles();
-	bool GetTriangles(std::vector<Triangle>& tris);
-	void SetTriangles(const std::vector<Triangle>& tris);
+	uint GetNumTriangles() override;
+	bool GetTriangles(std::vector<Triangle>& tris) override;
+	void SetTriangles(const std::vector<Triangle>& tris) override;
 	std::vector<Triangle> StripsToTris();
 
-	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f);
-	void CalcTangentSpace();
-	NiTriStripsData* Clone() { return new NiTriStripsData(*this); }
+	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f) override;
+	void CalcTangentSpace() override;
+	NiTriStripsData* Clone() override { return new NiTriStripsData(*this); }
 };
 
 class NiTriStrips : public NiTriBasedGeom {
@@ -738,14 +738,14 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiTriStrips";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	virtual bool ReorderTriangles(const std::vector<uint>&) { return false; }
+	bool ReorderTriangles(const std::vector<uint>&) override { return false; }
 
-	NiTriStrips* Clone() { return new NiTriStrips(*this); }
+	NiTriStrips* Clone() override { return new NiTriStrips(*this); }
 };
 
 class NiLinesData : public NiGeometryData {
@@ -754,13 +754,13 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiLinesData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
 
-	NiLinesData* Clone() { return new NiLinesData(*this); }
+	NiLinesData* Clone() override { return new NiLinesData(*this); }
 };
 
 class NiLines : public NiTriBasedGeom {
@@ -769,12 +769,12 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiLines";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	NiLines* Clone() { return new NiLines(*this); }
+	NiLines* Clone() override { return new NiLines(*this); }
 };
 
 struct PolygonInfo {
@@ -799,13 +799,13 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiScreenElementsData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
 
-	NiScreenElementsData* Clone() { return new NiScreenElementsData(*this); }
+	NiScreenElementsData* Clone() override { return new NiScreenElementsData(*this); }
 };
 
 class NiScreenElements : public NiTriShape {
@@ -814,12 +814,12 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "NiScreenElements";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	NiScreenElements* Clone() { return new NiScreenElements(*this); }
+	NiScreenElements* Clone() override { return new NiScreenElements(*this); }
 };
 
 class BSLODTriShape : public NiTriBasedGeom {
@@ -832,14 +832,14 @@ protected:
 
 public:
 	static constexpr const char* BlockName = "BSLODTriShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSLODTriShape* Clone() { return new BSLODTriShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSLODTriShape* Clone() override { return new BSLODTriShape(*this); }
 };
 
 class BSSegmentedTriShape : public NiTriShape {
@@ -848,10 +848,10 @@ public:
 	std::vector<BSGeometrySegmentData> segments;
 
 	static constexpr const char* BlockName = "BSSegmentedTriShape";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSSegmentedTriShape* Clone() { return new BSSegmentedTriShape(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSSegmentedTriShape* Clone() override { return new BSSegmentedTriShape(*this); }
 };
 } // namespace nifly

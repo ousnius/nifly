@@ -52,12 +52,12 @@ public:
 	std::vector<BoneData> bones;
 
 	static constexpr const char* BlockName = "NiSkinData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
-	NiSkinData* Clone() { return new NiSkinData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	NiSkinData* Clone() override { return new NiSkinData(*this); }
 };
 
 class NiSkinPartition : public NiObject {
@@ -125,15 +125,15 @@ public:
 	bool IsFullPrecision() { return true; }
 
 	static constexpr const char* BlockName = "NiSkinPartition";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
 	void DeletePartitions(const std::vector<int>& partInds);
 	int RemoveEmptyPartitions(std::vector<int>& outDeletedIndices);
-	NiSkinPartition* Clone() { return new NiSkinPartition(*this); }
+	NiSkinPartition* Clone() override { return new NiSkinPartition(*this); }
 	// ConvertStripsToTriangles returns true if any conversions were
 	// actually performed.  After calling this function, all of the
 	// strips will be empty.
@@ -180,14 +180,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiSkinInstance";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	NiSkinInstance* Clone() { return new NiSkinInstance(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	NiSkinInstance* Clone() override { return new NiSkinInstance(*this); }
 
 	int GetDataRef() { return dataRef.GetIndex(); }
 	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
@@ -215,11 +215,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSDismemberSkinInstance";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSDismemberSkinInstance* Clone() { return new BSDismemberSkinInstance(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSDismemberSkinInstance* Clone() override { return new BSDismemberSkinInstance(*this); }
 
 	int GetNumPartitions() { return numPartitions; }
 	std::vector<PartitionInfo> GetPartitions() { return partitions; }
@@ -254,11 +254,11 @@ public:
 	std::vector<BoneData> boneXforms;
 
 	static constexpr const char* BlockName = "BSSkin::BoneData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSSkinBoneData* Clone() { return new BSSkinBoneData(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSSkinBoneData* Clone() override { return new BSSkinBoneData(*this); }
 };
 
 class NiAVObject;
@@ -273,14 +273,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSSkin::Instance";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	void GetPtrs(std::set<Ref*>& ptrs);
-	BSSkinInstance* Clone() { return new BSSkinInstance(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	void GetPtrs(std::set<Ref*>& ptrs) override;
+	BSSkinInstance* Clone() override { return new BSSkinInstance(*this); }
 
 	int GetTargetRef() { return targetRef.GetIndex(); }
 	void SetTargetRef(const int targRef) { targetRef.SetIndex(targRef); }

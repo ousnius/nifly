@@ -16,14 +16,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiNode* Clone() { return new NiNode(*this); }
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiNode* Clone() override { return new NiNode(*this); }
 
 	BlockRefArray<NiAVObject>& GetChildren();
 	BlockRefArray<NiDynamicEffect>& GetEffects();
@@ -32,9 +32,9 @@ public:
 class BSFadeNode : public NiNode {
 public:
 	static constexpr const char* BlockName = "BSFadeNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	BSFadeNode* Clone() { return new BSFadeNode(*this); }
+	BSFadeNode* Clone() override { return new BSFadeNode(*this); }
 };
 
 enum BSValueNodeFlags : byte { BSVN_NONE = 0x0, BSVN_BILLBOARD_WORLD_Z = 0x1, BSVN_USE_PLAYER_ADJUST = 0x2 };
@@ -46,18 +46,18 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSValueNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	BSValueNode* Clone() { return new BSValueNode(*this); }
+	BSValueNode* Clone() override { return new BSValueNode(*this); }
 };
 
 class BSLeafAnimNode : public NiNode {
 public:
 	static constexpr const char* BlockName = "BSLeafAnimNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 };
 
 class BSTreeNode : public NiNode {
@@ -67,14 +67,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSTreeNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	BSTreeNode* Clone() { return new BSTreeNode(*this); }
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	BSTreeNode* Clone() override { return new BSTreeNode(*this); }
 
 	BlockRefArray<NiNode>& GetBones1();
 	BlockRefArray<NiNode>& GetBones2();
@@ -87,12 +87,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSOrderedNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	BSOrderedNode* Clone() { return new BSOrderedNode(*this); }
+	BSOrderedNode* Clone() override { return new BSOrderedNode(*this); }
 };
 
 class BSMultiBoundData : public NiObject {};
@@ -105,11 +105,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSMultiBoundOBB";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSMultiBoundOBB* Clone() { return new BSMultiBoundOBB(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSMultiBoundOBB* Clone() override { return new BSMultiBoundOBB(*this); }
 };
 
 class BSMultiBoundAABB : public BSMultiBoundData {
@@ -119,11 +119,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSMultiBoundAABB";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSMultiBoundAABB* Clone() { return new BSMultiBoundAABB(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSMultiBoundAABB* Clone() override { return new BSMultiBoundAABB(*this); }
 };
 
 class BSMultiBoundSphere : public BSMultiBoundData {
@@ -133,11 +133,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSMultiBoundSphere";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	BSMultiBoundSphere* Clone() { return new BSMultiBoundSphere(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	BSMultiBoundSphere* Clone() override { return new BSMultiBoundSphere(*this); }
 };
 
 class BSMultiBound : public NiObject {
@@ -146,13 +146,13 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSMultiBound";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	BSMultiBound* Clone() { return new BSMultiBound(*this); }
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	BSMultiBound* Clone() override { return new BSMultiBound(*this); }
 
 	int GetDataRef();
 	void SetDataRef(int datRef);
@@ -173,14 +173,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSMultiBoundNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	BSMultiBoundNode* Clone() { return new BSMultiBoundNode(*this); }
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	BSMultiBoundNode* Clone() override { return new BSMultiBoundNode(*this); }
 
 	int GetMultiBoundRef();
 	void SetMultiBoundRef(int multBoundRef);
@@ -194,36 +194,36 @@ private:
 
 public:
 	static constexpr const char* BlockName = "BSRangeNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	BSRangeNode* Clone() { return new BSRangeNode(*this); }
+	BSRangeNode* Clone() override { return new BSRangeNode(*this); }
 };
 
 class BSDebrisNode : public BSRangeNode {
 public:
 	static constexpr const char* BlockName = "BSDebrisNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	BSDebrisNode* Clone() { return new BSDebrisNode(*this); }
+	BSDebrisNode* Clone() override { return new BSDebrisNode(*this); }
 };
 
 class BSBlastNode : public BSRangeNode {
 public:
 	static constexpr const char* BlockName = "BSBlastNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	BSBlastNode* Clone() { return new BSBlastNode(*this); }
+	BSBlastNode* Clone() override { return new BSBlastNode(*this); }
 };
 
 class BSDamageStage : public BSBlastNode {
 public:
 	static constexpr const char* BlockName = "BSDamageStage";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	BSDamageStage* Clone() { return new BSDamageStage(*this); }
+	BSDamageStage* Clone() override { return new BSDamageStage(*this); }
 };
 
 enum BillboardMode : ushort {
@@ -242,12 +242,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiBillboardNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiBillboardNode* Clone() { return new NiBillboardNode(*this); }
+	NiBillboardNode* Clone() override { return new NiBillboardNode(*this); }
 };
 
 enum NiSwitchFlags : ushort { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
@@ -259,12 +259,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiSwitchNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiSwitchNode* Clone() { return new NiSwitchNode(*this); }
+	NiSwitchNode* Clone() override { return new NiSwitchNode(*this); }
 };
 
 struct LODRange {
@@ -282,12 +282,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiRangeLODData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiRangeLODData* Clone() { return new NiRangeLODData(*this); }
+	NiRangeLODData* Clone() override { return new NiRangeLODData(*this); }
 };
 
 class NiScreenLODData : public NiLODData {
@@ -301,12 +301,12 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiScreenLODData";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiScreenLODData* Clone() { return new NiScreenLODData(*this); }
+	NiScreenLODData* Clone() override { return new NiScreenLODData(*this); }
 };
 
 class NiLODNode : public NiSwitchNode {
@@ -315,14 +315,14 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiLODNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	void GetChildRefs(std::set<Ref*>& refs);
-	void GetChildIndices(std::vector<int>& indices);
-	NiLODNode* Clone() { return new NiLODNode(*this); }
+	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildIndices(std::vector<int>& indices) override;
+	NiLODNode* Clone() override { return new NiLODNode(*this); }
 
 	int GetLodLevelDataRef();
 	void SetLodLevelDataRef(int dataRef);
@@ -331,9 +331,9 @@ public:
 class NiBone : public NiNode {
 public:
 	static constexpr const char* BlockName = "NiBone";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	NiBone* Clone() { return new NiBone(*this); }
+	NiBone* Clone() override { return new NiBone(*this); }
 };
 
 enum SortingMode { SORTING_INHERIT, SORTING_OFF };
@@ -344,11 +344,11 @@ private:
 
 public:
 	static constexpr const char* BlockName = "NiSortAdjustNode";
-	virtual const char* GetBlockName() { return BlockName; }
+	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiStream& stream) override;
+	void Put(NiStream& stream) override;
 
-	NiSortAdjustNode* Clone() { return new NiSortAdjustNode(*this); }
+	NiSortAdjustNode* Clone() override { return new NiSortAdjustNode(*this); }
 };
 } // namespace nifly

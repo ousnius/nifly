@@ -29,10 +29,10 @@ template<typename T>
 class NiFactoryType : public NiFactory {
 public:
 	// Create new NiObject
-	virtual std::shared_ptr<NiObject> Create() override { return std::make_shared<T>(); }
+	std::shared_ptr<NiObject> Create() override { return std::make_shared<T>(); }
 
 	// Load new NiObject from file
-	virtual std::shared_ptr<NiObject> Load(NiStream& stream) override {
+	std::shared_ptr<NiObject> Load(NiStream& stream) override {
 		auto nio = std::make_shared<T>();
 		nio->Get(stream);
 		return nio;
