@@ -65,6 +65,9 @@ void NifFile::SetParentNode(NiObject* childBlock, NiNode* newParent) {
 			return;
 	}
 
+	if (childBlock == newParent)
+		return;
+
 	int childId = GetBlockID(childBlock);
 	for (auto& block : blocks) {
 		auto node = dynamic_cast<NiNode*>(block.get());
