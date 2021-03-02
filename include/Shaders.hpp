@@ -9,7 +9,7 @@ See the included LICENSE file
 #include "Objects.hpp"
 
 namespace nifly {
-enum BSShaderType : uint {
+enum BSShaderType : uint32_t {
 	SHADER_TALL_GRASS,
 	SHADER_DEFAULT,
 	SHADER_SKY = 10,
@@ -20,7 +20,7 @@ enum BSShaderType : uint {
 	SHADER_NOLIGHTING
 };
 
-enum BSLightingShaderPropertyShaderType : uint {
+enum BSLightingShaderPropertyShaderType : uint32_t {
 	BSLSP_DEFAULT,
 	BSLSP_ENVMAP,
 	BSLSP_GLOWMAP,
@@ -49,7 +49,7 @@ class NiProperty : public NiObjectNET {};
 
 class NiShadeProperty : public NiProperty {
 private:
-	ushort flags = 0;
+	uint16_t flags = 0;
 
 public:
 	static constexpr const char* BlockName = "NiShadeProperty";
@@ -63,7 +63,7 @@ public:
 
 class NiSpecularProperty : public NiProperty {
 private:
-	ushort flags = 0;
+	uint16_t flags = 0;
 
 public:
 	static constexpr const char* BlockName = "NiSpecularProperty";
@@ -79,14 +79,14 @@ struct TexTransform {
 	Vector2 translation;
 	Vector2 tiling;
 	float wRotation = 0.0f;
-	uint transformType = 0;
+	uint32_t transformType = 0;
 	Vector2 offset;
 };
 
 class TexDesc {
 private:
 	BlockRef<NiSourceTexture> sourceRef;
-	ushort flags = 0;
+	uint16_t flags = 0;
 	bool hasTexTransform = false;
 	TexTransform transform;
 
@@ -122,7 +122,7 @@ class ShaderTexDesc {
 private:
 	bool isUsed = false;
 	TexDesc data;
-	uint mapIndex = 0;
+	uint32_t mapIndex = 0;
 
 public:
 	void Get(NiStream& stream) {
@@ -150,8 +150,8 @@ public:
 
 class NiTexturingProperty : public NiProperty {
 private:
-	ushort flags = 0;
-	uint textureCount = 0;
+	uint16_t flags = 0;
+	uint32_t textureCount = 0;
 
 	bool hasBaseTex = false;
 	TexDesc baseTex;
@@ -193,7 +193,7 @@ private:
 	bool hasDecalTex3 = false;
 	TexDesc decalTex3;
 
-	uint numShaderTex = 0;
+	uint32_t numShaderTex = 0;
 	std::vector<ShaderTexDesc> shaderTex;
 
 public:
@@ -210,7 +210,7 @@ public:
 
 class NiVertexColorProperty : public NiProperty {
 private:
-	ushort flags = 0;
+	uint16_t flags = 0;
 
 public:
 	static constexpr const char* BlockName = "NiVertexColorProperty";
@@ -224,7 +224,7 @@ public:
 
 class NiDitherProperty : public NiProperty {
 private:
-	ushort flags = 0;
+	uint16_t flags = 0;
 
 public:
 	static constexpr const char* BlockName = "NiDitherProperty";
@@ -238,7 +238,7 @@ public:
 
 class NiFogProperty : public NiProperty {
 private:
-	ushort flags = 0;
+	uint16_t flags = 0;
 	float fogDepth = 1.0f;
 	Color3 fogColor;
 
@@ -254,7 +254,7 @@ public:
 
 class NiWireframeProperty : public NiProperty {
 private:
-	ushort flags = 0;
+	uint16_t flags = 0;
 
 public:
 	static constexpr const char* BlockName = "NiWireframeProperty";
@@ -268,7 +268,7 @@ public:
 
 class NiZBufferProperty : public NiProperty {
 private:
-	ushort flags = 3;
+	uint16_t flags = 3;
 
 public:
 	static constexpr const char* BlockName = "NiZBufferProperty";
@@ -300,8 +300,8 @@ public:
 	virtual bool HasGlowmap() { return false; }
 	virtual bool HasGreyscaleColor() { return false; }
 	virtual bool HasEnvironmentMapping() { return false; }
-	virtual uint GetShaderType() { return 0; }
-	virtual void SetShaderType(const uint) {}
+	virtual uint32_t GetShaderType() { return 0; }
+	virtual void SetShaderType(const uint32_t) {}
 	virtual Vector2 GetUVOffset() { return Vector2(); }
 	virtual Vector2 GetUVScale() { return Vector2(1.0f, 1.0f); }
 	virtual Vector3 GetSpecularColor() { return Vector3(); }
@@ -330,16 +330,16 @@ public:
 
 class BSShaderProperty : public NiShader {
 public:
-	ushort shaderFlags = 1;
+	uint16_t shaderFlags = 1;
 	BSShaderType shaderType = SHADER_DEFAULT;
-	uint shaderFlags1 = 0x82000000;
-	uint shaderFlags2 = 1;
+	uint32_t shaderFlags1 = 0x82000000;
+	uint32_t shaderFlags2 = 1;
 	float environmentMapScale = 1.0f;
 
-	uint numSF1 = 0;
-	uint numSF2 = 0;
-	std::vector<uint> SF1;
-	std::vector<uint> SF2;
+	uint32_t numSF1 = 0;
+	uint32_t numSF2 = 0;
+	std::vector<uint32_t> SF1;
+	std::vector<uint32_t> SF2;
 
 	Vector2 uvOffset;
 	Vector2 uvScale = Vector2(1.0f, 1.0f);
@@ -347,8 +347,8 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 
-	uint GetShaderType() override;
-	void SetShaderType(const uint type) override;
+	uint32_t GetShaderType() override;
+	void SetShaderType(const uint32_t type) override;
 	bool IsSkinTinted() override;
 	bool IsFaceTinted() override;
 	bool IsSkinned() override;
@@ -444,7 +444,7 @@ public:
 
 class BSTextureArray {
 private:
-	uint textureArrayWidth = 0;
+	uint32_t textureArrayWidth = 0;
 	std::vector<NiString> textureArray;
 
 public:
@@ -475,7 +475,7 @@ private:
 public:
 	Vector3 emissiveColor;
 	float emissiveMultiple = 1.0f;
-	uint textureClampMode = 3;
+	uint32_t textureClampMode = 3;
 	float alpha = 1.0f;
 	float refractionStrength = 0.0f;
 	float glossiness = 1.0f;
@@ -511,7 +511,7 @@ public:
 	bool mixAlbedo = false;			// User Version == 12, User Version 2 == 155
 
 	bool hasTextureArrays = false;			   // User Version == 12, User Version 2 == 155
-	uint numTextureArrays = 0;				   // User Version == 12, User Version 2 == 155
+	uint32_t numTextureArrays = 0;				   // User Version == 12, User Version 2 == 155
 	std::vector<BSTextureArray> textureArrays; // User Version == 12, User Version 2 == 155
 
 	bool useSSR = false;		// Shader Type == 1, User Version == 12, User Version 2 == 130
@@ -551,8 +551,8 @@ public:
 	bool IsFaceTinted() override;
 	bool HasGlowmap() override;
 	bool HasEnvironmentMapping() override;
-	uint GetShaderType() override;
-	void SetShaderType(const uint type) override;
+	uint32_t GetShaderType() override;
+	void SetShaderType(const uint32_t type) override;
 	Vector3 GetSpecularColor() override;
 	void SetSpecularColor(const Vector3& color) override;
 	float GetSpecularStrength() override;
@@ -579,7 +579,7 @@ public:
 class BSEffectShaderProperty : public BSShaderProperty {
 public:
 	NiString sourceTexture;
-	uint textureClampMode = 0;
+	uint32_t textureClampMode = 0;
 	float falloffStartAngle = 1.0f;
 	float falloffStopAngle = 1.0f;
 	float falloffStartOpacity = 0.0f;
@@ -621,7 +621,7 @@ public:
 
 class BSWaterShaderProperty : public BSShaderProperty {
 private:
-	uint waterFlags = 0;
+	uint32_t waterFlags = 0;
 
 public:
 	static constexpr const char* BlockName = "BSWaterShaderProperty";
@@ -635,7 +635,7 @@ public:
 class BSSkyShaderProperty : public BSShaderProperty {
 private:
 	NiString baseTexture;
-	uint skyFlags = 0;
+	uint32_t skyFlags = 0;
 
 public:
 	static constexpr const char* BlockName = "BSSkyShaderProperty";
@@ -648,13 +648,13 @@ public:
 
 class BSShaderLightingProperty : public BSShaderProperty {
 public:
-	uint textureClampMode = 3; // User Version <= 11
+	uint32_t textureClampMode = 3; // User Version <= 11
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 };
 
-enum SkyObjectType : uint {
+enum SkyObjectType : uint32_t {
 	BSSM_SKY_TEXTURE,
 	BSSM_SKY_SUNGLARE,
 	BSSM_SKY,
@@ -747,8 +747,8 @@ public:
 
 class NiAlphaProperty : public NiProperty {
 public:
-	ushort flags = 4844;
-	byte threshold = 128;
+	uint16_t flags = 4844;
+	uint8_t threshold = 128;
 
 	static constexpr const char* BlockName = "NiAlphaProperty";
 	const char* GetBlockName() override { return BlockName; }
@@ -808,9 +808,9 @@ enum DrawMode { DRAW_CCW_OR_BOTH, DRAW_CCW, DRAW_CW, DRAW_BOTH, DRAW_MAX };
 
 class NiStencilProperty : public NiProperty {
 public:
-	ushort flags = 19840;
-	uint stencilRef = 0;
-	uint stencilMask = 0xFFFFFFFF;
+	uint16_t flags = 19840;
+	uint32_t stencilRef = 0;
+	uint32_t stencilMask = 0xFFFFFFFF;
 
 	static constexpr const char* BlockName = "NiStencilProperty";
 	const char* GetBlockName() override { return BlockName; }

@@ -45,18 +45,18 @@ public:
 class NiParticlesData : public NiGeometryData {
 private:
 	bool hasRadii = false;
-	ushort numActive = 0;
+	uint16_t numActive = 0;
 	bool hasSizes = false;
 	bool hasRotations = false;
 	bool hasRotationAngles = false;
 	bool hasRotationAxes = false;
 	bool hasTextureIndices = false;
 
-	uint numSubtexOffsets = 0;
+	uint32_t numSubtexOffsets = 0;
 	std::vector<Vector4> subtexOffsets;
 
 	float aspectRatio;
-	ushort aspectFlags;
+	uint16_t aspectFlags;
 	float speedToAspectAspect2;
 	float speedToAspectSpeed1;
 	float speedToAspectSpeed2;
@@ -120,11 +120,11 @@ public:
 
 class NiMeshPSysData : public NiPSysData {
 private:
-	uint defaultPoolSize = 0;
+	uint32_t defaultPoolSize = 0;
 	bool fillPoolsOnLoad = false;
 
-	uint numGenerations = 0;
-	std::vector<uint> generationPoolSize;
+	uint32_t numGenerations = 0;
+	std::vector<uint32_t> generationPoolSize;
 
 	BlockRef<NiNode> nodeRef;
 
@@ -141,9 +141,9 @@ public:
 
 class BSStripPSysData : public NiPSysData {
 private:
-	ushort maxPointCount = 0;
-	uint startCapSize = 0;
-	uint endCapSize = 0;
+	uint16_t maxPointCount = 0;
+	uint32_t startCapSize = 0;
+	uint32_t endCapSize = 0;
 	bool doZPrepass = false;
 
 public:
@@ -158,8 +158,8 @@ public:
 class NiPSysEmitterCtlrData : public NiObject {
 private:
 	KeyGroup<float> floatKeys;
-	uint numVisibilityKeys = 0;
-	std::vector<Key<byte>> visibilityKeys;
+	uint32_t numVisibilityKeys = 0;
+	std::vector<Key<uint8_t>> visibilityKeys;
 
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterCtlrData";
@@ -175,7 +175,7 @@ class NiParticleSystem;
 class NiPSysModifier : public NiObject {
 private:
 	StringRef name;
-	uint order;
+	uint32_t order;
 	BlockRef<NiParticleSystem> targetRef;
 	bool isActive;
 
@@ -201,10 +201,10 @@ public:
 
 class NiPSysSpawnModifier : public NiPSysModifier {
 private:
-	ushort numSpawnGenerations = 0;
+	uint16_t numSpawnGenerations = 0;
 	float percentSpawned = 0.0f;
-	ushort minSpawned = 0;
-	ushort maxSpawned = 0;
+	uint16_t minSpawned = 0;
+	uint16_t maxSpawned = 0;
 	float spawnSpeedVariation = 0.0f;
 	float spawnDirVariation = 0.0f;
 	float lifeSpan = 0.0f;
@@ -262,7 +262,7 @@ private:
 	Color4 color1;
 	Color4 color2;
 	Color4 color3;
-	ushort unknownShorts[26];
+	uint16_t unknownShorts[26];
 
 public:
 	static constexpr const char* BlockName = "BSPSysSimpleColorModifier";
@@ -278,7 +278,7 @@ private:
 	float initialSpeed = 0.0f;
 	float initialSpeedVariation = 0.0f;
 	Vector4 unknownVector;
-	byte unknownByte;
+	uint8_t unknownByte;
 	float initialAngle = 0.0f;
 	float initialAngleVariation = 0.0f;
 	bool randomSpeedSign = false;
@@ -296,7 +296,7 @@ public:
 
 class BSPSysScaleModifier : public NiPSysModifier {
 private:
-	uint numFloats = 0;
+	uint32_t numFloats = 0;
 	std::vector<float> floats;
 
 public:
@@ -308,7 +308,7 @@ public:
 	BSPSysScaleModifier* Clone() override { return new BSPSysScaleModifier(*this); }
 };
 
-enum ForceType : uint { FORCE_PLANAR, FORCE_SPHERICAL, FORCE_UNKNOWN };
+enum ForceType : uint32_t { FORCE_PLANAR, FORCE_SPHERICAL, FORCE_UNKNOWN };
 
 class NiPSysGravityModifier : public NiPSysModifier {
 private:
@@ -341,7 +341,7 @@ public:
 
 class NiPSysBoundUpdateModifier : public NiPSysModifier {
 private:
-	ushort updateSkip = 0;
+	uint16_t updateSkip = 0;
 
 public:
 	static constexpr const char* BlockName = "NiPSysBoundUpdateModifier";
@@ -406,9 +406,9 @@ public:
 	BSPSysSubTexModifier* Clone() override { return new BSPSysSubTexModifier(*this); }
 };
 
-enum DecayType : uint { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
+enum DecayType : uint32_t { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
 
-enum SymmetryType : uint { SYMMETRY_SPHERICAL, SYMMETRY_CYLINDRICAL, SYMMETRY_PLANAR };
+enum SymmetryType : uint32_t { SYMMETRY_SPHERICAL, SYMMETRY_CYLINDRICAL, SYMMETRY_PLANAR };
 
 class NiPSysBombModifier : public NiPSysModifier {
 private:
@@ -460,9 +460,9 @@ public:
 class NiPSysGrowFadeModifier : public NiPSysModifier {
 private:
 	float growTime = 0.0f;
-	ushort growGeneration = 0;
+	uint16_t growGeneration = 0;
 	float fadeTime = 0.0f;
-	ushort fadeGeneration = 0;
+	uint16_t fadeGeneration = 0;
 	float baseScale = 0.0f;
 
 public:
@@ -580,7 +580,7 @@ public:
 
 class NiPSysRadialFieldModifier : public NiPSysFieldModifier {
 private:
-	uint radialType = 0;
+	uint32_t radialType = 0;
 
 public:
 	static constexpr const char* BlockName = "NiPSysRadialFieldModifier";
@@ -656,7 +656,7 @@ public:
 
 class BSMasterParticleSystem : public NiNode {
 private:
-	ushort maxEmitterObjs = 0;
+	uint16_t maxEmitterObjs = 0;
 	BlockRefArray<NiAVObject> particleSysRefs;
 
 public:
@@ -680,28 +680,28 @@ private:
 	BlockRef<NiProperty> shaderPropertyRef;
 	BlockRef<NiProperty> alphaPropertyRef;
 
-	uint numMaterials = 0;
+	uint32_t numMaterials = 0;
 	std::vector<StringRef> materialNameRefs;
-	std::vector<uint> materials;
+	std::vector<uint32_t> materials;
 
-	uint activeMaterial;
-	byte defaultMatNeedsUpdate;
+	uint32_t activeMaterial;
+	uint8_t defaultMatNeedsUpdate;
 
 	BoundingSphere bounds;
 	float boundMinMax[6];
-	byte vertFlags1 = 81;
-	byte vertFlags2 = 0;
-	byte vertFlags3 = 0;
-	byte vertFlags4 = 4;
-	byte vertFlags5 = 0;
-	byte vertFlags6 = 32;
-	byte vertFlags7 = 64;
-	byte vertFlags8 = 8;
+	uint8_t vertFlags1 = 81;
+	uint8_t vertFlags2 = 0;
+	uint8_t vertFlags3 = 0;
+	uint8_t vertFlags4 = 4;
+	uint8_t vertFlags5 = 0;
+	uint8_t vertFlags6 = 32;
+	uint8_t vertFlags7 = 64;
+	uint8_t vertFlags8 = 8;
 
-	ushort farBegin = 0;
-	ushort farEnd = 0;
-	ushort nearBegin = 0;
-	ushort nearEnd = 0;
+	uint16_t farBegin = 0;
+	uint16_t farEnd = 0;
+	uint16_t nearBegin = 0;
+	uint16_t nearEnd = 0;
 
 	BlockRef<NiPSysData> psysDataRef;
 
@@ -896,9 +896,9 @@ public:
 	BSPSysArrayEmitter* Clone() override { return new BSPSysArrayEmitter(*this); }
 };
 
-enum VelocityType : uint { VELOCITY_USE_NORMALS, VELOCITY_USE_RANDOM, VELOCITY_USE_DIRECTION };
+enum VelocityType : uint32_t { VELOCITY_USE_NORMALS, VELOCITY_USE_RANDOM, VELOCITY_USE_DIRECTION };
 
-enum EmitFrom : uint {
+enum EmitFrom : uint32_t {
 	EMIT_FROM_VERTICES,
 	EMIT_FROM_FACE_CENTER,
 	EMIT_FROM_EDGE_CENTER,

@@ -12,7 +12,7 @@ See the included LICENSE file
 namespace nifly {
 class NiKeyframeData : public NiObject {
 private:
-	uint numRotationKeys = 0;
+	uint32_t numRotationKeys = 0;
 	KeyType rotationType = NO_INTERP;
 	std::vector<Key<Quaternion>> quaternionKeys;
 	KeyGroup<float> xRotations;
@@ -53,7 +53,7 @@ public:
 
 class NiBoolData : public NiObject {
 private:
-	KeyGroup<byte> data;
+	KeyGroup<uint8_t> data;
 
 public:
 	static constexpr const char* BlockName = "NiBoolData";
@@ -79,10 +79,10 @@ public:
 
 class NiBSplineData : public NiObject {
 private:
-	uint numFloatControlPoints = 0;
+	uint32_t numFloatControlPoints = 0;
 	std::vector<float> floatControlPoints;
 
-	uint numShortControlPoints = 0;
+	uint32_t numShortControlPoints = 0;
 	std::vector<short> shortControlPoints;
 
 public:
@@ -96,7 +96,7 @@ public:
 
 class NiBSplineBasisData : public NiObject {
 private:
-	uint numControlPoints = 0;
+	uint32_t numControlPoints = 0;
 
 public:
 	static constexpr const char* BlockName = "NiBSplineBasisData";
@@ -128,7 +128,7 @@ class NiBSplineFloatInterpolator : public NiBSplineInterpolator {};
 class NiBSplineCompFloatInterpolator : public NiBSplineFloatInterpolator {
 private:
 	float base = 0.0f;
-	uint offset = 0;
+	uint32_t offset = 0;
 	float bias = 0.0f;
 	float multiplier = 0.0f;
 
@@ -169,9 +169,9 @@ private:
 	Quaternion rotation;
 	float scale = 1.0f;
 
-	uint translationOffset = 0;
-	uint rotationOffset = 0;
-	uint scaleOffset = 0;
+	uint32_t translationOffset = 0;
+	uint32_t rotationOffset = 0;
+	uint32_t scaleOffset = 0;
 
 public:
 	static constexpr const char* BlockName = "NiBSplineTransformInterpolator";
@@ -204,8 +204,8 @@ public:
 
 class NiBlendInterpolator : public NiInterpolator {
 private:
-	ushort flags;
-	uint unkInt;
+	uint16_t flags;
+	uint32_t unkInt;
 
 public:
 	void Get(NiStream& stream) override;
@@ -263,7 +263,7 @@ class NiKeyBasedInterpolator : public NiInterpolator {};
 
 class NiBoolInterpolator : public NiKeyBasedInterpolator {
 private:
-	byte boolValue = 0;
+	uint8_t boolValue = 0;
 	BlockRef<NiBoolData> dataRef;
 
 public:
@@ -357,11 +357,11 @@ public:
 
 class NiPathInterpolator : public NiKeyBasedInterpolator {
 private:
-	ushort flags = 0;
-	uint bankDir = 0;
+	uint16_t flags = 0;
+	uint32_t bankDir = 0;
 	float maxBankAngle = 0.0f;
 	float smoothing = 0.0f;
-	ushort followAxis = 0;
+	uint16_t followAxis = 0;
 
 	BlockRef<NiPosData> pathDataRef;
 	BlockRef<NiFloatData> percentDataRef;
@@ -377,7 +377,7 @@ public:
 	NiPathInterpolator* Clone() override { return new NiPathInterpolator(*this); }
 };
 
-enum LookAtFlags : ushort {
+enum LookAtFlags : uint16_t {
 	LOOK_X_AXIS = 0x0000,
 	LOOK_FLIP = 0x0001,
 	LOOK_Y_AXIS = 0x0002,
@@ -439,7 +439,7 @@ struct BSTreadTransform {
 
 class BSTreadTransfInterpolator : public NiInterpolator {
 private:
-	uint numTreadTransforms = 0;
+	uint32_t numTreadTransforms = 0;
 	std::vector<BSTreadTransform> treadTransforms;
 	BlockRef<NiFloatData> dataRef;
 
@@ -460,7 +460,7 @@ class NiObjectNET;
 class NiTimeController : public NiObject {
 private:
 	BlockRef<NiTimeController> nextControllerRef;
-	ushort flags = 0x000C;
+	uint16_t flags = 0x000C;
 	float frequency = 1.0f;
 	float phase = 0.0f;
 	float startTime = 0.0f;
@@ -483,7 +483,7 @@ public:
 
 class NiLookAtController : public NiTimeController {
 private:
-	ushort unkShort1 = 0;
+	uint16_t unkShort1 = 0;
 	BlockRef<NiNode> lookAtNodePtr;
 
 public:
@@ -498,11 +498,11 @@ public:
 
 class NiPathController : public NiTimeController {
 private:
-	ushort unkShort1 = 0;
-	uint unkInt1 = 1;
+	uint16_t unkShort1 = 0;
+	uint32_t unkInt1 = 1;
 	float unkFloat1 = 0.0f;
 	float unkFloat2 = 0.0f;
-	ushort unkShort2 = 0;
+	uint16_t unkShort2 = 0;
 	BlockRef<NiPosData> posDataRef;
 	BlockRef<NiFloatData> floatDataRef;
 
@@ -543,7 +543,7 @@ public:
 
 class NiUVController : public NiTimeController {
 private:
-	ushort textureSet = 0;
+	uint16_t textureSet = 0;
 	BlockRef<NiUVData> dataRef;
 
 public:
@@ -604,9 +604,9 @@ private:
 	BlockRef<NiInterpolator> widthInterpRef;
 	BlockRef<NiInterpolator> arcOffsetInterpRef;
 
-	ushort subdivisions = 0;
-	ushort numBranches = 0;
-	ushort numBranchesPerVariation = 0;
+	uint16_t subdivisions = 0;
+	uint16_t numBranches = 0;
+	uint16_t numBranchesPerVariation = 0;
 
 	float length = 0.0f;
 	float lengthVariation = 0.0f;
@@ -662,9 +662,9 @@ public:
 
 class NiBoneLODController : public NiTimeController {
 private:
-	uint lod = 0;
-	uint numLODs = 0;
-	uint boneArraysSize = 0;
+	uint32_t lod = 0;
+	uint32_t numLODs = 0;
+	uint32_t boneArraysSize = 0;
 	std::vector<BlockRefArray<NiNode>> boneArrays;
 
 public:
@@ -689,14 +689,14 @@ struct Morph {
 	StringRef frameName;
 	std::vector<Vector3> vectors;
 
-	void Get(NiStream& stream, uint numVerts) {
+	void Get(NiStream& stream, uint32_t numVerts) {
 		frameName.Get(stream);
 		vectors.resize(numVerts);
 		for (int i = 0; i < numVerts; i++)
 			stream >> vectors[i];
 	}
 
-	void Put(NiStream& stream, uint numVerts) {
+	void Put(NiStream& stream, uint32_t numVerts) {
 		frameName.Put(stream);
 		for (int i = 0; i < numVerts; i++)
 			stream << vectors[i];
@@ -707,9 +707,9 @@ struct Morph {
 
 class NiMorphData : public NiObject {
 private:
-	uint numMorphs = 0;
-	uint numVertices = 0;
-	byte relativeTargets = 1;
+	uint32_t numMorphs = 0;
+	uint32_t numVertices = 0;
+	uint8_t relativeTargets = 1;
 	std::vector<Morph> morphs;
 
 public:
@@ -746,11 +746,11 @@ struct MorphWeight {
 
 class NiGeomMorpherController : public NiInterpController {
 private:
-	ushort extraFlags = 0;
+	uint16_t extraFlags = 0;
 	BlockRef<NiMorphData> dataRef;
 	bool alwaysUpdate = false;
 
-	uint numTargets = 0;
+	uint32_t numTargets = 0;
 	std::vector<MorphWeight> interpWeights;
 
 public:
@@ -795,7 +795,7 @@ public:
 	NiRollController* Clone() override { return new NiRollController(*this); }
 };
 
-enum TargetColor : ushort { TC_AMBIENT, TC_DIFFUSE, TC_SPECULAR, TC_SELF_ILLUM };
+enum TargetColor : uint16_t { TC_AMBIENT, TC_DIFFUSE, TC_SPECULAR, TC_SELF_ILLUM };
 
 class NiPoint3InterpController : public NiSingleInterpController {
 private:
@@ -840,8 +840,8 @@ public:
 
 class NiVisData : public NiObject {
 private:
-	uint numKeys = 0;
-	std::vector<Key<byte>> keys;
+	uint32_t numKeys = 0;
+	std::vector<Key<uint8_t>> keys;
 
 public:
 	static constexpr const char* BlockName = "NiVisData";
@@ -863,7 +863,7 @@ public:
 	NiVisController* Clone() override { return new NiVisController(*this); }
 };
 
-enum TexType : uint {
+enum TexType : uint32_t {
 	BASE_MAP,
 	DARK_MAP,
 	DETAIL_MAP,
@@ -909,11 +909,11 @@ public:
 	BlockRefArray<NiSourceTexture>& GetSources();
 };
 
-enum TexTransformType : uint { TT_TRANSLATE_U, TT_TRANSLATE_V, TT_ROTATE, TT_SCALE_U, TT_SCALE_V };
+enum TexTransformType : uint32_t { TT_TRANSLATE_U, TT_TRANSLATE_V, TT_ROTATE, TT_SCALE_U, TT_SCALE_V };
 
 class NiTextureTransformController : public NiFloatInterpController {
 private:
-	byte unkByte1 = 0;
+	uint8_t unkByte1 = 0;
 	TexType textureSlot = BASE_MAP;
 	TexTransformType operation = TT_TRANSLATE_U;
 
@@ -1005,7 +1005,7 @@ public:
 
 class BSLightingShaderPropertyColorController : public NiFloatInterpController {
 private:
-	uint typeOfControlledColor = 0;
+	uint32_t typeOfControlledColor = 0;
 
 public:
 	static constexpr const char* BlockName = "BSLightingShaderPropertyColorController";
@@ -1020,7 +1020,7 @@ public:
 
 class BSLightingShaderPropertyFloatController : public NiFloatInterpController {
 private:
-	uint typeOfControlledVariable = 0;
+	uint32_t typeOfControlledVariable = 0;
 
 public:
 	static constexpr const char* BlockName = "BSLightingShaderPropertyFloatController";
@@ -1035,7 +1035,7 @@ public:
 
 class BSLightingShaderPropertyUShortController : public NiFloatInterpController {
 private:
-	uint typeOfControlledVariable = 0;
+	uint32_t typeOfControlledVariable = 0;
 
 public:
 	static constexpr const char* BlockName = "BSLightingShaderPropertyUShortController";
@@ -1050,7 +1050,7 @@ public:
 
 class BSEffectShaderPropertyColorController : public NiFloatInterpController {
 private:
-	uint typeOfControlledColor = 0;
+	uint32_t typeOfControlledColor = 0;
 
 public:
 	static constexpr const char* BlockName = "BSEffectShaderPropertyColorController";
@@ -1065,7 +1065,7 @@ public:
 
 class BSEffectShaderPropertyFloatController : public NiFloatInterpController {
 private:
-	uint typeOfControlledVariable = 0;
+	uint32_t typeOfControlledVariable = 0;
 
 public:
 	static constexpr const char* BlockName = "BSEffectShaderPropertyFloatController";
@@ -1283,7 +1283,7 @@ class BSMasterParticleSystem;
 
 class BSPSysMultiTargetEmitterCtlr : public NiPSysEmitterCtlr {
 private:
-	ushort maxEmitters = 0;
+	uint16_t maxEmitters = 0;
 	BlockRef<BSMasterParticleSystem> masterParticleSystemRef;
 
 public:
@@ -1299,7 +1299,7 @@ public:
 class NiStringPalette : public NiObject {
 private:
 	NiString palette;
-	uint length = 0;
+	uint32_t length = 0;
 
 public:
 	static constexpr const char* BlockName = "NiStringPalette";
@@ -1314,7 +1314,7 @@ public:
 struct ControllerLink {
 	BlockRef<NiInterpolator> interpolatorRef;
 	BlockRef<NiTimeController> controllerRef;
-	byte priority;
+	uint8_t priority;
 
 	StringRef nodeName;
 	StringRef propType;
@@ -1326,8 +1326,8 @@ struct ControllerLink {
 class NiSequence : public NiObject {
 private:
 	StringRef name;
-	uint numControlledBlocks = 0;
-	uint arrayGrowBy = 0;
+	uint32_t numControlledBlocks = 0;
+	uint32_t arrayGrowBy = 0;
 	std::vector<ControllerLink> controlledBlocks;
 
 public:
@@ -1342,18 +1342,18 @@ public:
 	NiSequence* Clone() override { return new NiSequence(*this); }
 };
 
-enum CycleType : uint { CYCLE_LOOP, CYCLE_REVERSE, CYCLE_CLAMP };
+enum CycleType : uint32_t { CYCLE_LOOP, CYCLE_REVERSE, CYCLE_CLAMP };
 
 class BSAnimNote : public NiObject {
 public:
-	enum AnimNoteType : uint { ANT_INVALID, ANT_GRABIK, ANT_LOOKIK };
+	enum AnimNoteType : uint32_t { ANT_INVALID, ANT_GRABIK, ANT_LOOKIK };
 
 private:
 	AnimNoteType type = ANT_INVALID;
 	float time = 0.0f;
-	uint arm = 0;
+	uint32_t arm = 0;
 	float gain = 0.0f;
-	uint state = 0;
+	uint32_t state = 0;
 
 public:
 	static constexpr const char* BlockName = "BSAnimNote";

@@ -26,7 +26,7 @@ void NiParticlesData::Get(NiStream& stream) {
 		stream >> numSubtexOffsets;
 	}
 	else {
-		byte numOffsets = 0;
+		uint8_t numOffsets = 0;
 		stream >> numOffsets;
 		numSubtexOffsets = numOffsets;
 	}
@@ -59,7 +59,7 @@ void NiParticlesData::Put(NiStream& stream) {
 		stream << numSubtexOffsets;
 	}
 	else {
-		byte numOffsets = numSubtexOffsets > 255 ? 255 : numSubtexOffsets;
+		uint8_t numOffsets = numSubtexOffsets > 255 ? 255 : numSubtexOffsets;
 		stream << numOffsets;
 	}
 

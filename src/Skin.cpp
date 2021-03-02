@@ -62,7 +62,7 @@ void NiSkinData::Put(NiStream& stream) {
 		stream << bones[i].boneTransform.scale;
 		stream << bones[i].bounds;
 
-		ushort numVerts = 0;
+		uint16_t numVerts = 0;
 		if (hasVertWeights)
 			numVerts = bones[i].numVertices;
 
@@ -75,13 +75,13 @@ void NiSkinData::Put(NiStream& stream) {
 	}
 }
 
-void NiSkinData::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
-	ushort highestRemoved = vertIndices.back();
+void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
+	uint16_t highestRemoved = vertIndices.back();
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, highestRemoved + 1);
 
 	NiObject::notifyVerticesDelete(vertIndices);
 
-	ushort ival;
+	uint16_t ival;
 	for (auto& b : bones) {
 		for (int i = b.numVertices - 1; i >= 0; i--) {
 			ival = b.vertexWeights[i].index;
@@ -378,7 +378,7 @@ void NiSkinPartition::Put(NiStream& stream) {
 	}
 }
 
-void NiSkinPartition::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	if (vertIndices.empty())
 		return;
 
@@ -392,7 +392,7 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<ushort>& vertIndice
 	// Determine maximum vertex index used so we can make a complete
 	// collapse map.  (It would be nice if notifyVerticesDelete had a
 	// numVertices parameter so we didn't have to calculate this.)
-	ushort maxVertInd = 0;
+	uint16_t maxVertInd = 0;
 	for (auto& p : partitions) {
 		for (auto i : p.vertexMap)
 			maxVertInd = std::max(maxVertInd, i);
@@ -519,7 +519,7 @@ void NiSkinPartition::PartitionBlock::GenerateMappedTrianglesFromTrueTrianglesAn
 		return;
 	}
 
-	std::vector<ushort> invmap(vertexMap.back() + 1);
+	std::vector<uint16_t> invmap(vertexMap.back() + 1);
 	for (unsigned int mi = 0; mi < vertexMap.size(); ++mi) {
 		if (vertexMap[mi] >= invmap.size())
 			invmap.resize(vertexMap[mi] + 1);

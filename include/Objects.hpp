@@ -19,7 +19,7 @@ private:
 	BlockRefArray<NiExtraData> extraDataRefs;
 
 public:
-	uint bslspShaderType = 0; // BSLightingShaderProperty && User Version >= 12
+	uint32_t bslspShaderType = 0; // BSLightingShaderProperty && User Version >= 12
 	bool bBSLightingShaderProperty = false;
 
 	void Get(NiStream& stream) override;
@@ -47,7 +47,7 @@ protected:
 	BlockRef<NiCollisionObject> collisionRef;
 
 public:
-	uint flags = 524302;
+	uint32_t flags = 524302;
 	/* "transform" is the coordinate system (CS) transform from this
 	object's CS to its parent's CS.
 	Recommendation: rename "transform" to "transformToParent". */
@@ -77,7 +77,7 @@ class NiAVObjectPalette : public NiObject {};
 class NiDefaultAVObjectPalette : public NiAVObjectPalette {
 private:
 	BlockRef<NiAVObject> sceneRef;
-	uint numObjects = 0;
+	uint32_t numObjects = 0;
 	std::vector<AVObject> objects;
 
 public:
@@ -92,7 +92,7 @@ public:
 
 class NiCamera : public NiAVObject {
 private:
-	ushort obsoleteFlags;
+	uint16_t obsoleteFlags;
 	float frustumLeft;
 	float frustumRight;
 	float frustumTop;
@@ -107,8 +107,8 @@ private:
 	float lodAdjust;
 
 	BlockRef<NiAVObject> sceneRef;
-	uint numScreenPolygons = 0;
-	uint numScreenTextures = 0;
+	uint32_t numScreenPolygons = 0;
+	uint32_t numScreenTextures = 0;
 
 public:
 	static constexpr const char* BlockName = "NiCamera";
@@ -135,7 +135,7 @@ public:
 class NiPalette : public NiObject {
 private:
 	bool hasAlpha = false;
-	uint numEntries = 256;
+	uint32_t numEntries = 256;
 	std::vector<ByteColor4> palette = std::vector<ByteColor4>(256);
 
 public:
@@ -148,7 +148,7 @@ public:
 	NiPalette* Clone() override { return new NiPalette(*this); }
 };
 
-enum PixelFormat : uint {
+enum PixelFormat : uint32_t {
 	PX_FMT_RGB8,
 	PX_FMT_RGBA8,
 	PX_FMT_PAL8,
@@ -157,7 +157,7 @@ enum PixelFormat : uint {
 	PX_FMT_DXT5_ALT = 6,
 };
 
-enum ChannelType : uint {
+enum ChannelType : uint32_t {
 	CHNL_RED,
 	CHNL_GREEN,
 	CHNL_BLUE,
@@ -167,35 +167,35 @@ enum ChannelType : uint {
 	CHNL_EMPTY = 19,
 };
 
-enum ChannelConvention : uint { CC_FIXED, CC_INDEX = 3, CC_COMPRESSED = 4, CC_EMPTY = 5 };
+enum ChannelConvention : uint32_t { CC_FIXED, CC_INDEX = 3, CC_COMPRESSED = 4, CC_EMPTY = 5 };
 
 struct ChannelData {
 	ChannelType type = CHNL_EMPTY;
 	ChannelConvention convention = CC_EMPTY;
-	byte bitsPerChannel = 0;
-	byte unkByte1 = 0;
+	uint8_t bitsPerChannel = 0;
+	uint8_t unkByte1 = 0;
 };
 
 struct MipMapInfo {
-	uint width = 0;
-	uint height = 0;
-	uint offset = 0;
+	uint32_t width = 0;
+	uint32_t height = 0;
+	uint32_t offset = 0;
 };
 
 class TextureRenderData : public NiObject {
 private:
 	PixelFormat pixelFormat = PX_FMT_RGB8;
-	byte bitsPerPixel = 0;
+	uint8_t bitsPerPixel = 0;
 	int unkInt1 = 0xFFFFFFFF;
-	uint unkInt2 = 0;
-	byte flags = 0;
-	uint unkInt3 = 0;
+	uint32_t unkInt2 = 0;
+	uint8_t flags = 0;
+	uint32_t unkInt3 = 0;
 
 	std::vector<ChannelData> channels = std::vector<ChannelData>(4);
 
 	BlockRef<NiPalette> paletteRef;
-	uint numMipmaps = 0;
-	uint bytesPerPixel = 0;
+	uint32_t numMipmaps = 0;
+	uint32_t bytesPerPixel = 0;
 	std::vector<MipMapInfo> mipmaps;
 
 public:
@@ -210,12 +210,12 @@ public:
 
 class NiPersistentSrcTextureRendererData : public TextureRenderData {
 private:
-	uint numPixels = 0;
-	uint unkInt4 = 0;
-	uint numFaces = 0;
-	uint unkInt5 = 0;
+	uint32_t numPixels = 0;
+	uint32_t unkInt4 = 0;
+	uint32_t numFaces = 0;
+	uint32_t unkInt5 = 0;
 
-	std::vector<std::vector<byte>> pixelData;
+	std::vector<std::vector<uint8_t>> pixelData;
 
 public:
 	static constexpr const char* BlockName = "NiPersistentSrcTextureRendererData";
@@ -229,10 +229,10 @@ public:
 
 class NiPixelData : public TextureRenderData {
 private:
-	uint numPixels = 0;
-	uint numFaces = 0;
+	uint32_t numPixels = 0;
+	uint32_t numFaces = 0;
 
-	std::vector<std::vector<byte>> pixelData;
+	std::vector<std::vector<uint8_t>> pixelData;
 
 public:
 	static constexpr const char* BlockName = "NiPixelData";
@@ -244,7 +244,7 @@ public:
 	NiPixelData* Clone() override { return new NiPixelData(*this); }
 };
 
-enum PixelLayout : uint {
+enum PixelLayout : uint32_t {
 	PIX_LAY_PALETTISED,
 	PIX_LAY_HIGH_COLOR_16,
 	PIX_LAY_TRUE_COLOR_32,
@@ -254,9 +254,9 @@ enum PixelLayout : uint {
 	PIX_LAY_DEFAULT
 };
 
-enum MipMapFormat : uint { MIP_FMT_NO, MIP_FMT_YES, MIP_FMT_DEFAULT };
+enum MipMapFormat : uint32_t { MIP_FMT_NO, MIP_FMT_YES, MIP_FMT_DEFAULT };
 
-enum AlphaFormat : uint { ALPHA_NONE, ALPHA_BINARY, ALPHA_SMOOTH, ALPHA_DEFAULT };
+enum AlphaFormat : uint32_t { ALPHA_NONE, ALPHA_BINARY, ALPHA_SMOOTH, ALPHA_DEFAULT };
 
 class NiTexture : public NiObjectNET {};
 
@@ -299,7 +299,7 @@ public:
 	NiSourceCubeMap* Clone() override { return new NiSourceCubeMap(*this); }
 };
 
-enum TexFilterMode : uint {
+enum TexFilterMode : uint32_t {
 	FILTER_NEAREST,
 	FILTER_BILERP,
 	FILTER_TRILERP,
@@ -308,16 +308,16 @@ enum TexFilterMode : uint {
 	FILTER_BILERP_MIPNEAREST
 };
 
-enum TexClampMode : uint { CLAMP_S_CLAMP_T, CLAMP_S_WRAP_T, WRAP_S_CLAMP_T, WRAP_S_WRAP_T };
+enum TexClampMode : uint32_t { CLAMP_S_CLAMP_T, CLAMP_S_WRAP_T, WRAP_S_CLAMP_T, WRAP_S_WRAP_T };
 
-enum EffectType : uint {
+enum EffectType : uint32_t {
 	EFFECT_PROJECTED_LIGHT,
 	EFFECT_PROJECTED_SHADOW,
 	EFFECT_ENVIRONMENT_MAP,
 	EFFECT_FOG_MAP
 };
 
-enum CoordGenType : uint {
+enum CoordGenType : uint32_t {
 	CG_WORLD_PARALLEL,
 	CG_WORLD_PERSPECTIVE,
 	CG_SPHERE_MAP,
@@ -348,7 +348,7 @@ private:
 	EffectType textureType = EFFECT_ENVIRONMENT_MAP;
 	CoordGenType coordinateGenerationType = CG_SPHERE_MAP;
 	BlockRef<NiSourceTexture> sourceTexture;
-	byte clippingPlane = 0;
+	uint8_t clippingPlane = 0;
 	Vector3 unkVector = Vector3(1.0f, 0.0f, 0.0f);
 	float unkFloat = 0.0f;
 

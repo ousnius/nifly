@@ -54,11 +54,11 @@ void NiBinaryExtraData::Put(NiStream& stream) {
 		stream << data[i];
 }
 
-std::vector<byte> NiBinaryExtraData::GetData() {
+std::vector<uint8_t> NiBinaryExtraData::GetData() {
 	return data;
 }
 
-void NiBinaryExtraData::SetData(const std::vector<byte>& dat) {
+void NiBinaryExtraData::SetData(const std::vector<uint8_t>& dat) {
 	size = dat.size();
 	data = dat;
 }
@@ -199,11 +199,11 @@ void NiIntegerExtraData::Put(NiStream& stream) {
 	stream << integerData;
 }
 
-uint NiIntegerExtraData::GetIntegerData() {
+uint32_t NiIntegerExtraData::GetIntegerData() {
 	return integerData;
 }
 
-void NiIntegerExtraData::SetIntegerData(const uint intData) {
+void NiIntegerExtraData::SetIntegerData(const uint32_t intData) {
 	integerData = intData;
 }
 
@@ -225,11 +225,11 @@ void NiIntegersExtraData::Put(NiStream& stream) {
 		stream << integersData[i];
 }
 
-std::vector<uint> NiIntegersExtraData::GetIntegersData() {
+std::vector<uint32_t> NiIntegersExtraData::GetIntegersData() {
 	return integersData;
 }
 
-void NiIntegersExtraData::SetIntegersData(const std::vector<uint>& intData) {
+void NiIntegersExtraData::SetIntegersData(const std::vector<uint32_t>& intData) {
 	numIntegers = intData.size();
 	integersData = intData;
 }
@@ -294,11 +294,11 @@ void BSWArray::Put(NiStream& stream) {
 		stream << data[i];
 }
 
-std::vector<uint> BSWArray::GetData() {
+std::vector<uint32_t> BSWArray::GetData() {
 	return data;
 }
 
-void BSWArray::SetData(const std::vector<uint>& dat) {
+void BSWArray::SetData(const std::vector<uint32_t>& dat) {
 	numData = dat.size();
 	data = dat;
 }
@@ -750,7 +750,7 @@ void BSConnectPointChildren::SetTargets(const std::vector<NiString>& targ) {
 }
 
 
-BSClothExtraData::BSClothExtraData(const uint size) {
+BSClothExtraData::BSClothExtraData(const uint32_t size) {
 	numBytes = size;
 	data.resize(size);
 }

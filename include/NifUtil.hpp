@@ -36,8 +36,8 @@ void ApplyMapToTriangles(std::vector<Triangle>& tris,
 	tris.resize(di);
 }
 
-inline ushort CalcMaxTriangleIndex(const std::vector<Triangle>& v) {
-	ushort maxind = 0;
+inline uint16_t CalcMaxTriangleIndex(const std::vector<Triangle>& v) {
+	uint16_t maxind = 0;
 	for (unsigned int i = 0; i < v.size(); ++i) {
 		maxind = std::max(maxind, v[i].p1);
 		maxind = std::max(maxind, v[i].p2);
@@ -133,10 +133,10 @@ std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<
 	for (const std::vector<IndexType>& strip : strips) {
 		if (strip.size() < 3)
 			continue;
-		ushort a = strip[0];
-		ushort b = strip[1];
+		uint16_t a = strip[0];
+		uint16_t b = strip[1];
 		for (int i = 2; i < strip.size(); ++i) {
-			ushort c = strip[i];
+			uint16_t c = strip[i];
 			if (a != b && b != c && c != a) {
 				if ((i & 1) == 0)
 					tris.push_back(Triangle(a, b, c));

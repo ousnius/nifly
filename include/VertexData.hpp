@@ -8,7 +8,7 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 
 namespace nifly {
-enum VertexAttribute : byte {
+enum VertexAttribute : uint8_t {
 	VA_POSITION = 0x0,
 	VA_TEXCOORD0 = 0x1,
 	VA_TEXCOORD1 = 0x2,
@@ -21,7 +21,7 @@ enum VertexAttribute : byte {
 	VA_COUNT = 9
 };
 
-enum VertexFlags : ushort {
+enum VertexFlags : uint16_t {
 	VF_VERTEX = 1 << VA_POSITION,
 	VF_UV = 1 << VA_TEXCOORD0,
 	VF_UV_2 = 1 << VA_TEXCOORD1,
@@ -57,7 +57,7 @@ public:
 	bool HasFlag(VertexFlags flag) { return ((desc >> 44) & flag) != 0; }
 
 	// Sets the vertex size
-	void SetSize(uint size) {
+	void SetSize(uint32_t size) {
 		desc &= DESC_MASK_VERT;
 		desc |= (uint64_t) size >> 2;
 	}
@@ -69,12 +69,12 @@ public:
 	}
 
 	// Return offset to a specific vertex attribute in the description
-	uint GetAttributeOffset(VertexAttribute attr) { return (desc >> (4 * (byte) attr + 2)) & 0x3C; }
+	uint32_t GetAttributeOffset(VertexAttribute attr) { return (desc >> (4 * (uint8_t) attr + 2)) & 0x3C; }
 
 	// Set offset to a specific vertex attribute in the description
-	void SetAttributeOffset(VertexAttribute attr, uint offset) {
+	void SetAttributeOffset(VertexAttribute attr, uint32_t offset) {
 		if (attr != VA_POSITION) {
-			desc = ((uint64_t) offset << (4 * (byte) attr + 2)) | (desc & ~(15 << (4 * (byte) attr + 4)));
+			desc = ((uint64_t) offset << (4 * (uint8_t) attr + 2)) | (desc & ~(15 << (4 * (uint8_t) attr + 4)));
 		}
 	}
 
@@ -96,15 +96,15 @@ struct BSVertexData {
 
 	Vector2 uv;
 
-	byte normal[3];
-	byte bitangentY;
-	byte tangent[3];
-	byte bitangentZ;
+	uint8_t normal[3];
+	uint8_t bitangentY;
+	uint8_t tangent[3];
+	uint8_t bitangentZ;
 
-	byte colorData[4];
+	uint8_t colorData[4];
 
 	float weights[4];
-	byte weightBones[4];
+	uint8_t weightBones[4];
 
 	float eyeData;
 };

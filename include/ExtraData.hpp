@@ -26,8 +26,8 @@ public:
 
 class NiBinaryExtraData : public NiExtraData {
 private:
-	uint size = 0;
-	std::vector<byte> data;
+	uint32_t size = 0;
+	std::vector<uint8_t> data;
 
 public:
 	static constexpr const char* BlockName = "NiBinaryExtraData";
@@ -37,8 +37,8 @@ public:
 	void Put(NiStream& stream) override;
 	NiBinaryExtraData* Clone() override { return new NiBinaryExtraData(*this); }
 
-	std::vector<byte> GetData();
-	void SetData(const std::vector<byte>& dat);
+	std::vector<uint8_t> GetData();
+	void SetData(const std::vector<uint8_t>& dat);
 };
 
 class NiFloatExtraData : public NiExtraData {
@@ -59,7 +59,7 @@ public:
 
 class NiFloatsExtraData : public NiExtraData {
 private:
-	uint numFloats = 0;
+	uint32_t numFloats = 0;
 	std::vector<float> floatsData;
 
 public:
@@ -93,7 +93,7 @@ public:
 
 class NiStringsExtraData : public NiExtraData {
 private:
-	uint numStrings = 0;
+	uint32_t numStrings = 0;
 	std::vector<NiString> stringsData;
 
 public:
@@ -126,7 +126,7 @@ public:
 
 class NiIntegerExtraData : public NiExtraData {
 private:
-	uint integerData = 0;
+	uint32_t integerData = 0;
 
 public:
 	static constexpr const char* BlockName = "NiIntegerExtraData";
@@ -136,14 +136,14 @@ public:
 	void Put(NiStream& stream) override;
 	NiIntegerExtraData* Clone() override { return new NiIntegerExtraData(*this); }
 
-	uint GetIntegerData();
-	void SetIntegerData(const uint intData);
+	uint32_t GetIntegerData();
+	void SetIntegerData(const uint32_t intData);
 };
 
 class NiIntegersExtraData : public NiExtraData {
 private:
-	uint numIntegers = 0;
-	std::vector<uint> integersData;
+	uint32_t numIntegers = 0;
+	std::vector<uint32_t> integersData;
 
 public:
 	static constexpr const char* BlockName = "NiIntegersExtraData";
@@ -153,8 +153,8 @@ public:
 	void Put(NiStream& stream) override;
 	NiIntegersExtraData* Clone() override { return new NiIntegersExtraData(*this); }
 
-	std::vector<uint> GetIntegersData();
-	void SetIntegersData(const std::vector<uint>& intData);
+	std::vector<uint32_t> GetIntegersData();
+	void SetIntegersData(const std::vector<uint32_t>& intData);
 };
 
 class NiVectorExtraData : public NiExtraData {
@@ -199,8 +199,8 @@ public:
 
 class BSWArray : public NiExtraData {
 private:
-	uint numData = 0;
-	std::vector<uint> data;
+	uint32_t numData = 0;
+	std::vector<uint32_t> data;
 
 public:
 	static constexpr const char* BlockName = "BSWArray";
@@ -210,13 +210,13 @@ public:
 	void Put(NiStream& stream) override;
 	BSWArray* Clone() override { return new BSWArray(*this); }
 
-	std::vector<uint> GetData();
-	void SetData(const std::vector<uint>& dat);
+	std::vector<uint32_t> GetData();
+	void SetData(const std::vector<uint32_t>& dat);
 };
 
 class BSPositionData : public NiExtraData {
 private:
-	uint numData = 0;
+	uint32_t numData = 0;
 	std::vector<half_float::half> data;
 
 public:
@@ -233,7 +233,7 @@ public:
 
 class BSEyeCenterExtraData : public NiExtraData {
 private:
-	uint numData = 0;
+	uint32_t numData = 0;
 	std::vector<float> data;
 
 public:
@@ -249,13 +249,13 @@ public:
 };
 
 struct BSPackedGeomObject {
-	uint unkInt1 = 0;
-	uint objectHash = 0;
+	uint32_t unkInt1 = 0;
+	uint32_t objectHash = 0;
 };
 
 struct BSPackedGeomDataLOD {
-	uint triangleCount = 0;
-	uint triangleOffset = 0;
+	uint32_t triangleCount = 0;
+	uint32_t triangleOffset = 0;
 };
 
 struct BSPackedGeomDataCombined {
@@ -267,13 +267,13 @@ struct BSPackedGeomDataCombined {
 };
 
 struct BSPackedGeomData {
-	uint numVerts = 0;
-	uint lodLevels = 0;
+	uint32_t numVerts = 0;
+	uint32_t lodLevels = 0;
 	std::vector<BSPackedGeomDataLOD> lod;
-	uint numCombined = 0;
+	uint32_t numCombined = 0;
 	std::vector<BSPackedGeomDataCombined> combined;
-	uint unkInt1 = 0;
-	uint unkInt2 = 0;
+	uint32_t unkInt1 = 0;
+	uint32_t unkInt2 = 0;
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
@@ -282,11 +282,11 @@ struct BSPackedGeomData {
 class BSPackedCombinedSharedGeomDataExtra : public NiExtraData {
 private:
 	VertexDesc vertDesc;
-	uint numVertices = 0;
-	uint numTriangles = 0;
-	uint unkFlags1 = 0;
-	uint unkFlags2 = 0;
-	uint numData = 0;
+	uint32_t numVertices = 0;
+	uint32_t numTriangles = 0;
+	uint32_t unkFlags1 = 0;
+	uint32_t unkFlags2 = 0;
+	uint32_t numData = 0;
 	std::vector<BSPackedGeomObject> objects;
 	std::vector<BSPackedGeomData> data;
 
@@ -303,9 +303,9 @@ public:
 
 class BSInvMarker : public NiExtraData {
 private:
-	ushort rotationX = 4712;
-	ushort rotationY = 6283;
-	ushort rotationZ = 0;
+	uint16_t rotationX = 4712;
+	uint16_t rotationY = 6283;
+	uint16_t rotationZ = 0;
 	float zoom = 1.0f;
 
 public:
@@ -316,14 +316,14 @@ public:
 	void Put(NiStream& stream) override;
 	BSInvMarker* Clone() override { return new BSInvMarker(*this); }
 
-	ushort GetRotationX() { return rotationX; }
-	void SetRotationX(const ushort x) { rotationX = x; }
+	uint16_t GetRotationX() { return rotationX; }
+	void SetRotationX(const uint16_t x) { rotationX = x; }
 
-	ushort GetRotationY() { return rotationY; }
-	void SetRotationY(const ushort y) { rotationY = y; }
+	uint16_t GetRotationY() { return rotationY; }
+	void SetRotationY(const uint16_t y) { rotationY = y; }
 
-	ushort GetRotationZ() { return rotationZ; }
-	void SetRotationZ(const ushort z) { rotationZ = z; }
+	uint16_t GetRotationZ() { return rotationZ; }
+	void SetRotationZ(const uint16_t z) { rotationZ = z; }
 
 	float GetZoom() { return zoom; }
 	void SetZoom(const float z) { zoom = z; }
@@ -332,18 +332,18 @@ public:
 struct FurniturePosition {
 	Vector3 offset;
 
-	ushort orientation; // User Version <= 11
-	byte posRef1;		// User Version <= 11
-	byte posRef2;		// User Version <= 11
+	uint16_t orientation; // User Version <= 11
+	uint8_t posRef1;		// User Version <= 11
+	uint8_t posRef2;		// User Version <= 11
 
 	float heading;		  // User Version >= 12
-	ushort animationType; // User Version >= 12
-	ushort entryPoints;	  // User Version >= 12
+	uint16_t animationType; // User Version >= 12
+	uint16_t entryPoints;	  // User Version >= 12
 };
 
 class BSFurnitureMarker : public NiExtraData {
 private:
-	uint numPositions = 0;
+	uint32_t numPositions = 0;
 	std::vector<FurniturePosition> positions;
 
 public:
@@ -367,14 +367,14 @@ public:
 };
 
 struct DecalVectorBlock {
-	ushort numVectors;
+	uint16_t numVectors;
 	std::vector<Vector3> points;
 	std::vector<Vector3> normals;
 };
 
 class BSDecalPlacementVectorExtraData : public NiFloatExtraData {
 private:
-	ushort numVectorBlocks = 0;
+	uint16_t numVectorBlocks = 0;
 	std::vector<DecalVectorBlock> decalVectorBlocks;
 
 public:
@@ -425,13 +425,13 @@ public:
 };
 
 struct BoneLOD {
-	uint distance;
+	uint32_t distance;
 	StringRef boneName;
 };
 
 class BSBoneLODExtraData : public NiExtraData {
 private:
-	uint numBoneLODs = 0;
+	uint32_t numBoneLODs = 0;
 	std::vector<BoneLOD> boneLODs;
 
 public:
@@ -449,7 +449,7 @@ public:
 
 class NiTextKeyExtraData : public NiExtraData {
 private:
-	uint numTextKeys = 0;
+	uint32_t numTextKeys = 0;
 	std::vector<Key<StringRef>> textKeys;
 
 public:
@@ -494,7 +494,7 @@ struct BSConnectPoint {
 
 class BSConnectPointParents : public NiExtraData {
 private:
-	uint numConnectPoints = 0;
+	uint32_t numConnectPoints = 0;
 	std::vector<BSConnectPoint> connectPoints;
 
 public:
@@ -511,8 +511,8 @@ public:
 
 class BSConnectPointChildren : public NiExtraData {
 private:
-	byte unkByte = 1;
-	uint numTargets = 0;
+	uint8_t unkByte = 1;
+	uint32_t numTargets = 0;
 	std::vector<NiString> targets;
 
 public:
@@ -531,12 +531,12 @@ class BSExtraData : public NiObject {};
 
 class BSClothExtraData : public BSExtraData {
 private:
-	uint numBytes = 0;
+	uint32_t numBytes = 0;
 	std::vector<char> data;
 
 public:
 	BSClothExtraData() {}
-	BSClothExtraData(const uint size);
+	BSClothExtraData(const uint32_t size);
 
 	static constexpr const char* BlockName = "BSClothExtraData";
 	const char* GetBlockName() override { return BlockName; }

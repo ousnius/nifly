@@ -186,7 +186,7 @@ public:
 	void SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList);
 	int GetShapeBoneWeights(NiShape* shape,
 							const int boneIndex,
-							std::unordered_map<ushort, float>& outWeights);
+							std::unordered_map<uint16_t, float>& outWeights);
 
 	// Looks up the shape's global-to-skin transform if it has it.
 	// Otherwise, try to calculate it using skin-to-bone and node-to-global
@@ -219,10 +219,10 @@ public:
 	void UpdateShapeBoneID(const std::string& shapeName, const int oldID, const int newID);
 	void SetShapeBoneWeights(const std::string& shapeName,
 							 const int boneIndex,
-							 std::unordered_map<ushort, float>& inWeights);
+							 std::unordered_map<uint16_t, float>& inWeights);
 	void SetShapeVertWeights(const std::string& shapeName,
 							 const int vertIndex,
-							 std::vector<byte>& boneids,
+							 std::vector<uint8_t>& boneids,
 							 std::vector<float>& weights);
 	void ClearShapeVertWeights(const std::string& shapeName);
 
@@ -241,7 +241,7 @@ public:
 	void DeletePartitions(NiShape* shape, std::vector<int>& partInds);
 
 	const std::vector<Vector3>* GetRawVertsForShape(NiShape* shape);
-	bool ReorderTriangles(NiShape* shape, const std::vector<uint>& triangleIndices);
+	bool ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices);
 	const std::vector<Vector3>* GetNormalsForShape(NiShape* shape, bool transform = true);
 	const std::vector<Vector2>* GetUvsForShape(NiShape* shape);
 	const std::vector<Color4>* GetColorsForShape(const std::string& shapeName);
@@ -270,28 +270,28 @@ public:
 	void GetRootTranslation(Vector3& outVec);
 
 	void MoveVertex(NiShape* shape, const Vector3& pos, const int id);
-	void OffsetShape(NiShape* shape, const Vector3& offset, std::unordered_map<ushort, float>* mask = nullptr);
-	void ScaleShape(NiShape* shape, const Vector3& scale, std::unordered_map<ushort, float>* mask = nullptr);
-	void RotateShape(NiShape* shape, const Vector3& angle, std::unordered_map<ushort, float>* mask = nullptr);
+	void OffsetShape(NiShape* shape, const Vector3& offset, std::unordered_map<uint16_t, float>* mask = nullptr);
+	void ScaleShape(NiShape* shape, const Vector3& scale, std::unordered_map<uint16_t, float>* mask = nullptr);
+	void RotateShape(NiShape* shape, const Vector3& angle, std::unordered_map<uint16_t, float>* mask = nullptr);
 
 	NiAlphaProperty* GetAlphaProperty(NiShape* shape);
 	int AssignAlphaProperty(NiShape* shape,
-							NiAlphaProperty* alphaProp); // ushort flags = 4844, ushort threshold = 128
+							NiAlphaProperty* alphaProp); // uint16_t flags = 4844, uint16_t threshold = 128
 	void RemoveAlphaProperty(NiShape* shape);
 
 	void DeleteShape(NiShape* shape);
 	void DeleteShader(NiShape* shape);
 	void DeleteSkinning(NiShape* shape);
 	void RemoveEmptyPartitions(NiShape* shape);
-	bool DeleteVertsForShape(NiShape* shape, const std::vector<ushort>& indices);
+	bool DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& indices);
 
 	int CalcShapeDiff(NiShape* shape,
 					  const std::vector<Vector3>* targetData,
-					  std::unordered_map<ushort, Vector3>& outDiffData,
+					  std::unordered_map<uint16_t, Vector3>& outDiffData,
 					  float scale = 1.0f);
 	int CalcUVDiff(NiShape* shape,
 				   const std::vector<Vector2>* targetData,
-				   std::unordered_map<ushort, Vector3>& outDiffData,
+				   std::unordered_map<uint16_t, Vector3>& outDiffData,
 				   float scale = 1.0f);
 
 	void CreateSkinning(NiShape* shape);

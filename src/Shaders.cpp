@@ -395,11 +395,11 @@ void BSShaderProperty::Put(NiStream& stream) {
 	}
 }
 
-uint BSShaderProperty::GetShaderType() {
+uint32_t BSShaderProperty::GetShaderType() {
 	return shaderType;
 }
 
-void BSShaderProperty::SetShaderType(uint type) {
+void BSShaderProperty::SetShaderType(uint32_t type) {
 	shaderType = (BSShaderType) type;
 }
 
@@ -867,11 +867,11 @@ bool BSLightingShaderProperty::HasEnvironmentMapping() {
 	return bslspShaderType == BSLSP_ENVMAP && BSShaderProperty::HasEnvironmentMapping();
 }
 
-uint BSLightingShaderProperty::GetShaderType() {
+uint32_t BSLightingShaderProperty::GetShaderType() {
 	return bslspShaderType;
 }
 
-void BSLightingShaderProperty::SetShaderType(const uint type) {
+void BSLightingShaderProperty::SetShaderType(const uint32_t type) {
 	bslspShaderType = type;
 }
 

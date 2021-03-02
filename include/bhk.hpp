@@ -10,21 +10,21 @@ See the included LICENSE file
 #include "ExtraData.hpp"
 
 namespace nifly {
-typedef uint HavokMaterial;
+typedef uint32_t HavokMaterial;
 
 struct HavokFilter {
-	byte layer = 1;
-	byte flagsAndParts = 0;
-	ushort group = 0;
+	uint8_t layer = 1;
+	uint8_t flagsAndParts = 0;
+	uint16_t group = 0;
 };
 
 struct hkWorldObjCInfoProperty {
-	uint data = 0;
-	uint size = 0;
-	uint capacityAndFlags = 0x80000000;
+	uint32_t data = 0;
+	uint32_t size = 0;
+	uint32_t capacityAndFlags = 0x80000000;
 };
 
-enum MotorType : byte { MOTOR_NONE = 0, MOTOR_POSITION = 1, MOTOR_VELOCITY = 2, MOTOR_SPRING = 3 };
+enum MotorType : uint8_t { MOTOR_NONE = 0, MOTOR_POSITION = 1, MOTOR_VELOCITY = 2, MOTOR_SPRING = 3 };
 
 struct bhkLimitedForceConstraintMotor {
 	float minForce = -1000000.0f;
@@ -196,7 +196,7 @@ struct PrismaticDesc {
 	MotorDesc motorDesc;
 };
 
-enum hkConstraintType : uint {
+enum hkConstraintType : uint32_t {
 	BallAndSocket = 0,
 	Hinge = 1,
 	LimitedHinge = 2,
@@ -211,11 +211,11 @@ struct bhkCMSDMaterial {
 };
 
 struct bhkCMSDBigTris {
-	ushort triangle1 = 0;
-	ushort triangle2 = 0;
-	ushort triangle3 = 0;
+	uint16_t triangle1 = 0;
+	uint16_t triangle2 = 0;
+	uint16_t triangle3 = 0;
 	HavokMaterial material = 0;
-	ushort weldingInfo = 0;
+	uint16_t weldingInfo = 0;
 };
 
 struct bhkCMSDTransform {
@@ -225,18 +225,18 @@ struct bhkCMSDTransform {
 
 struct bhkCMSDChunk {
 	Vector4 translation;
-	uint matIndex = 0;
-	ushort reference = 0;
-	ushort transformIndex = 0;
+	uint32_t matIndex = 0;
+	uint16_t reference = 0;
+	uint16_t transformIndex = 0;
 
-	uint numVerts = 0;
-	std::vector<ushort> verts;
-	uint numIndices = 0;
-	std::vector<ushort> indices;
-	uint numStrips = 0;
-	std::vector<ushort> strips;
-	uint numWeldingInfo = 0;
-	std::vector<ushort> weldingInfo;
+	uint32_t numVerts = 0;
+	std::vector<uint16_t> verts;
+	uint32_t numIndices = 0;
+	std::vector<uint16_t> indices;
+	uint32_t numStrips = 0;
+	std::vector<uint16_t> strips;
+	uint32_t numWeldingInfo = 0;
+	std::vector<uint16_t> weldingInfo;
 };
 
 class NiAVObject;
@@ -258,11 +258,11 @@ public:
 	void SetTargetRef(const int ref) { targetRef.SetIndex(ref); }
 };
 
-enum PropagationMode : uint { PROPAGATE_ON_SUCCESS, PROPAGATE_ON_FAILURE, PROPAGATE_ALWAYS, PROPAGATE_NEVER };
+enum PropagationMode : uint32_t { PROPAGATE_ON_SUCCESS, PROPAGATE_ON_FAILURE, PROPAGATE_ALWAYS, PROPAGATE_NEVER };
 
-enum CollisionMode : uint { CM_USE_OBB, CM_USE_TRI, CM_USE_ABV, CM_NOTEST, CM_USE_NIBOUND };
+enum CollisionMode : uint32_t { CM_USE_OBB, CM_USE_TRI, CM_USE_ABV, CM_NOTEST, CM_USE_NIBOUND };
 
-enum BoundVolumeType : uint {
+enum BoundVolumeType : uint32_t {
 	BASE_BV = 0xFFFFFFFF,
 	SPHERE_BV = 0,
 	BOX_BV = 1,
@@ -312,7 +312,7 @@ struct BoundingVolume {
 };
 
 struct UnionBV {
-	uint numBV = 0;
+	uint32_t numBV = 0;
 	std::vector<BoundingVolume> boundingVolumes;
 
 	void Get(NiStream& stream) {
@@ -347,7 +347,7 @@ public:
 
 class bhkNiCollisionObject : public NiCollisionObject {
 private:
-	ushort flags = 1;
+	uint16_t flags = 1;
 	BlockRef<NiObject> bodyRef;
 
 public:
@@ -374,7 +374,7 @@ public:
 
 class bhkNPCollisionObject : public bhkCollisionObject {
 private:
-	uint bodyID = 0;
+	uint32_t bodyID = 0;
 
 public:
 	static constexpr const char* BlockName = "bhkNPCollisionObject";
@@ -417,11 +417,11 @@ public:
 
 class bhkPhysicsSystem : public BSExtraData {
 private:
-	uint numBytes = 0;
+	uint32_t numBytes = 0;
 	std::vector<char> data;
 
 public:
-	bhkPhysicsSystem(const uint size = 0);
+	bhkPhysicsSystem(const uint32_t size = 0);
 
 	static constexpr const char* BlockName = "bhkPhysicsSystem";
 	const char* GetBlockName() override { return BlockName; }
@@ -433,11 +433,11 @@ public:
 
 class bhkRagdollSystem : public BSExtraData {
 private:
-	uint numBytes = 0;
+	uint32_t numBytes = 0;
 	std::vector<char> data;
 
 public:
-	bhkRagdollSystem(const uint size = 0);
+	bhkRagdollSystem(const uint32_t size = 0);
 
 	static constexpr const char* BlockName = "bhkRagdollSystem";
 	const char* GetBlockName() override { return BlockName; }
@@ -449,7 +449,7 @@ public:
 
 class bhkBlendController : public NiTimeController {
 private:
-	uint keys = 0;
+	uint32_t keys = 0;
 
 public:
 	static constexpr const char* BlockName = "bhkBlendController";
@@ -513,7 +513,7 @@ class bhkMultiSphereShape : public bhkSphereRepShape {
 private:
 	float unkFloat1 = 0.0f;
 	float unkFloat2 = 0.0f;
-	uint numSpheres = 0;
+	uint32_t numSpheres = 0;
 	std::vector<BoundingSphere> spheres;
 
 public:
@@ -532,10 +532,10 @@ private:
 	BlockRefArray<bhkConvexShape> shapeRefs;
 	HavokMaterial material = 0;
 	float radius = 0.0f;
-	uint unkInt1 = 0;
+	uint32_t unkInt1 = 0;
 	float unkFloat1 = 0.0f;
 	hkWorldObjCInfoProperty childShapeProp;
-	byte unkByte1 = 0;
+	uint8_t unkByte1 = 0;
 	float unkFloat2 = 0.0f;
 
 public:
@@ -562,10 +562,10 @@ private:
 	hkWorldObjCInfoProperty vertsProp;
 	hkWorldObjCInfoProperty normalsProp;
 
-	uint numVerts = 0;
+	uint32_t numVerts = 0;
 	std::vector<Vector4> verts;
 
-	uint numNormals = 0;
+	uint32_t numNormals = 0;
 	std::vector<Vector4> normals;
 
 public:
@@ -676,14 +676,14 @@ class bhkBvTreeShape : public bhkShape {};
 class bhkMoppBvTreeShape : public bhkBvTreeShape {
 private:
 	BlockRef<bhkShape> shapeRef;
-	uint userData = 0;
-	uint shapeCollection = 0;
-	uint code = 0;
+	uint32_t userData = 0;
+	uint32_t shapeCollection = 0;
+	uint32_t code = 0;
 	float scale = 0.0f;
-	uint dataSize = 0;
+	uint32_t dataSize = 0;
 	Vector4 offset;
-	byte buildType = 2; // User Version >= 12
-	std::vector<byte> data;
+	uint8_t buildType = 2; // User Version >= 12
+	std::vector<uint8_t> data;
 
 public:
 	static constexpr const char* BlockName = "bhkMoppBvTreeShape";
@@ -705,18 +705,18 @@ class bhkNiTriStripsShape : public bhkShape {
 private:
 	HavokMaterial material = 0;
 	float radius = 0.1f;
-	uint unused1 = 0;
-	uint unused2 = 0;
-	uint unused3 = 0;
-	uint unused4 = 0;
-	uint unused5 = 0;
-	uint growBy = 1;
+	uint32_t unused1 = 0;
+	uint32_t unused2 = 0;
+	uint32_t unused3 = 0;
+	uint32_t unused4 = 0;
+	uint32_t unused5 = 0;
+	uint32_t growBy = 1;
 	Vector4 scale = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	BlockRefArray<NiTriStripsData> partRefs;
 
-	uint numFilters = 0;
-	std::vector<uint> filters;
+	uint32_t numFilters = 0;
+	std::vector<uint32_t> filters;
 
 public:
 	static constexpr const char* BlockName = "bhkNiTriStripsShape";
@@ -745,8 +745,8 @@ private:
 	HavokMaterial material = 0;
 	hkWorldObjCInfoProperty childShapeProp;
 	hkWorldObjCInfoProperty childFilterProp;
-	uint numUnkInts = 0;
-	std::vector<uint> unkInts;
+	uint32_t numUnkInts = 0;
+	std::vector<uint32_t> unkInts;
 
 public:
 	static constexpr const char* BlockName = "bhkListShape";
@@ -766,32 +766,32 @@ public:
 
 struct hkTriangleData {
 	Triangle tri;
-	ushort weldingInfo = 0;
+	uint16_t weldingInfo = 0;
 };
 
 struct hkTriangleNormalData {
 	Triangle tri;
-	ushort weldingInfo = 0;
+	uint16_t weldingInfo = 0;
 	Vector3 normal;
 };
 
 struct hkSubPartData {
 	HavokFilter filter;
-	uint numVerts = 0;
+	uint32_t numVerts = 0;
 	HavokMaterial material = 0;
 };
 
 class hkPackedNiTriStripsData : public bhkShapeCollection {
 private:
-	uint keyCount = 0;
+	uint32_t keyCount = 0;
 	std::vector<hkTriangleData> triData;
 	std::vector<hkTriangleNormalData> triNormData;
 
-	uint numVerts = 0;
-	byte unkByte = 0;
+	uint32_t numVerts = 0;
+	uint8_t unkByte = 0;
 	std::vector<Vector3> compressedVertData;
 
-	ushort partCount = 0;
+	uint16_t partCount = 0;
 	std::vector<hkSubPartData> data;
 
 public:
@@ -805,13 +805,13 @@ public:
 
 class bhkPackedNiTriStripsShape : public bhkShapeCollection {
 private:
-	ushort partCount = 0;
+	uint16_t partCount = 0;
 	std::vector<hkSubPartData> data;
 
-	uint userData = 0;
-	uint unused1 = 0;
+	uint32_t userData = 0;
+	uint32_t unused1 = 0;
 	float radius = 0.0f;
-	uint unused2 = 0;
+	uint32_t unused2 = 0;
 	Vector4 scaling;
 	float radius2 = 0.0f;
 	Vector4 scaling2;
@@ -839,9 +839,9 @@ public:
 
 class bhkLiquidAction : public bhkSerializable {
 private:
-	uint userData = 0;
-	uint unkInt1 = 0;
-	uint unkInt2 = 0;
+	uint32_t userData = 0;
+	uint32_t unkInt1 = 0;
+	uint32_t unkInt2 = 0;
 	float initialStickForce = 0.0f;
 	float stickStrength = 0.0f;
 	float neighborDistance = 0.0f;
@@ -859,8 +859,8 @@ public:
 class bhkOrientHingedBodyAction : public bhkSerializable {
 private:
 	BlockRef<NiObject> bodyRef;
-	uint unkInt1 = 0;
-	uint unkInt2 = 0;
+	uint32_t unkInt1 = 0;
+	uint32_t unkInt2 = 0;
 	uint64_t padding = 0;
 	Vector4 hingeAxisLS;
 	Vector4 forwardLS;
@@ -886,8 +886,8 @@ private:
 	BlockRef<bhkShape> shapeRef;
 	HavokFilter collisionFilter;
 	int unkInt1;
-	byte broadPhaseType;
-	byte unkBytes[3];
+	uint8_t broadPhaseType;
+	uint8_t unkBytes[3];
 	hkWorldObjCInfoProperty prop;
 
 public:
@@ -903,8 +903,8 @@ public:
 	HavokFilter GetCollisionFilter() { return collisionFilter; }
 	void SetCollisionFilter(const HavokFilter cf) { collisionFilter = cf; }
 
-	byte GetBroadPhaseType() { return broadPhaseType; }
-	void SetBroadPhaseType(const byte bpt) { broadPhaseType = bpt; }
+	uint8_t GetBroadPhaseType() { return broadPhaseType; }
+	void SetBroadPhaseType(const uint8_t bpt) { broadPhaseType = bpt; }
 };
 
 class bhkPhantom : public bhkWorldObject {};
@@ -945,7 +945,7 @@ class bhkEntity : public bhkWorldObject {};
 class bhkConstraint : public bhkSerializable {
 private:
 	BlockRefArray<bhkEntity> entityRefs;
-	uint priority;
+	uint32_t priority;
 
 public:
 	void Get(NiStream& stream) override;
@@ -985,7 +985,7 @@ class ConstraintData {
 private:
 	hkConstraintType type;
 	BlockRefArray<bhkEntity> entityRefs;
-	uint priority = 1;
+	uint32_t priority = 1;
 
 	BallAndSocketDesc desc1;
 	HingeDesc desc2;
@@ -1086,7 +1086,7 @@ public:
 
 class bhkBallSocketConstraintChain : public bhkSerializable {
 private:
-	uint numPivots = 0;
+	uint32_t numPivots = 0;
 	std::vector<Vector4> pivots;
 
 	float tau = 1.0f;
@@ -1096,10 +1096,10 @@ private:
 
 	BlockRefArray<bhkEntity> entityARefs;
 
-	uint numEntities = 0;
+	uint32_t numEntities = 0;
 	BlockRef<bhkEntity> entityARef;
 	BlockRef<bhkEntity> entityBRef;
-	uint priority = 0;
+	uint32_t priority = 0;
 
 public:
 	static constexpr const char* BlockName = "bhkBallSocketConstraintChain";
@@ -1119,16 +1119,16 @@ public:
 	void SetEntityBRef(int entityRef);
 };
 
-enum hkResponseType : byte { RESPONSE_INVALID, RESPONSE_SIMPLE_CONTACT, RESPONSE_REPORTING, RESPONSE_NONE };
+enum hkResponseType : uint8_t { RESPONSE_INVALID, RESPONSE_SIMPLE_CONTACT, RESPONSE_REPORTING, RESPONSE_NONE };
 
 class bhkRigidBody : public bhkEntity {
 private:
 	hkResponseType collisionResponse = RESPONSE_SIMPLE_CONTACT;
-	byte unusedByte1 = 0;
-	ushort processContactCallbackDelay = 0xFFFF;
-	uint unkInt1 = 0;
+	uint8_t unusedByte1 = 0;
+	uint16_t processContactCallbackDelay = 0xFFFF;
+	uint32_t unkInt1 = 0;
 	HavokFilter collisionFilterCopy;
-	ushort unkShorts2[6];
+	uint16_t unkShorts2[6];
 	Vector4 translation;
 	QuaternionXYZW rotation;
 	Vector4 linearVelocity;
@@ -1146,20 +1146,20 @@ private:
 	float maxLinearVelocity = 104.4f;
 	float maxAngularVelocity = 31.57f;
 	float penetrationDepth = 0.15f;
-	byte motionSystem = 1;
-	byte deactivatorType = 1;
-	byte solverDeactivation = 1;
-	byte qualityType = 1;
-	byte autoRemoveLevel = 0;
-	byte responseModifierFlag = 0;
-	byte numShapeKeysInContactPointProps = 0;
+	uint8_t motionSystem = 1;
+	uint8_t deactivatorType = 1;
+	uint8_t solverDeactivation = 1;
+	uint8_t qualityType = 1;
+	uint8_t autoRemoveLevel = 0;
+	uint8_t responseModifierFlag = 0;
+	uint8_t numShapeKeysInContactPointProps = 0;
 	bool forceCollideOntoPpu = false;
-	uint unkInt2 = 0;
-	uint unkInt3 = 0;
-	uint unkInt4 = 0; // User Version >= 12
+	uint32_t unkInt2 = 0;
+	uint32_t unkInt3 = 0;
+	uint32_t unkInt4 = 0; // User Version >= 12
 	BlockRefArray<bhkSerializable> constraintRefs;
-	uint unkInt5 = 0;	  // User Version <= 11
-	ushort bodyFlags = 0; // User Version >= 12
+	uint32_t unkInt5 = 0;	  // User Version <= 11
+	uint16_t bodyFlags = 0; // User Version >= 12
 
 public:
 	static constexpr const char* BlockName = "bhkRigidBody";
@@ -1187,41 +1187,41 @@ public:
 
 class bhkCompressedMeshShapeData : public bhkRefObject {
 private:
-	uint bitsPerIndex = 0;
-	uint bitsPerWIndex = 0;
-	uint maskWIndex = 0;
-	uint maskIndex = 0;
+	uint32_t bitsPerIndex = 0;
+	uint32_t bitsPerWIndex = 0;
+	uint32_t maskWIndex = 0;
+	uint32_t maskIndex = 0;
 	float error = 0.0f;
 	Vector4 aabbBoundMin;
 	Vector4 aabbBoundMax;
-	byte weldingType = 0;
-	byte materialType = 0;
+	uint8_t weldingType = 0;
+	uint8_t materialType = 0;
 
-	uint numMat32 = 0;
-	std::vector<uint> mat32;
-	uint numMat16 = 0;
-	std::vector<uint> mat16;
-	uint numMat8 = 0;
-	std::vector<uint> mat8;
+	uint32_t numMat32 = 0;
+	std::vector<uint32_t> mat32;
+	uint32_t numMat16 = 0;
+	std::vector<uint32_t> mat16;
+	uint32_t numMat8 = 0;
+	std::vector<uint32_t> mat8;
 
-	uint numMaterials = 0;
+	uint32_t numMaterials = 0;
 	std::vector<bhkCMSDMaterial> materials;
 
-	uint numNamedMat = 0;
+	uint32_t numNamedMat = 0;
 
-	uint numTransforms = 0;
+	uint32_t numTransforms = 0;
 	std::vector<bhkCMSDTransform> transforms;
 
-	uint numBigVerts = 0;
+	uint32_t numBigVerts = 0;
 	std::vector<Vector4> bigVerts;
 
-	uint numBigTris = 0;
+	uint32_t numBigTris = 0;
 	std::vector<bhkCMSDBigTris> bigTris;
 
-	uint numChunks = 0;
+	uint32_t numChunks = 0;
 	std::vector<bhkCMSDChunk> chunks;
 
-	uint numConvexPieceA = 0;
+	uint32_t numConvexPieceA = 0;
 
 public:
 	static constexpr const char* BlockName = "bhkCompressedMeshShapeData";
@@ -1235,7 +1235,7 @@ public:
 class bhkCompressedMeshShape : public bhkShape {
 private:
 	BlockRef<NiAVObject> targetRef;
-	uint userData = 0;
+	uint32_t userData = 0;
 	float radius = 0.005f;
 	float unkFloat = 0.0f;
 	Vector4 scaling = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1274,7 +1274,7 @@ struct BoneMatrix {
 };
 
 struct BonePose {
-	uint numMatrices = 0;
+	uint32_t numMatrices = 0;
 	std::vector<BoneMatrix> matrices;
 
 	void Get(NiStream& stream) {
@@ -1293,10 +1293,10 @@ struct BonePose {
 
 class bhkPoseArray : public NiObject {
 private:
-	uint numBones = 0;
+	uint32_t numBones = 0;
 	std::vector<StringRef> bones;
 
-	uint numPoses = 0;
+	uint32_t numPoses = 0;
 	std::vector<BonePose> poses;
 
 public:
@@ -1311,7 +1311,7 @@ public:
 
 class bhkRagdollTemplate : public NiExtraData {
 private:
-	uint numBones = 0;
+	uint32_t numBones = 0;
 	BlockRefArray<NiObject> boneRefs;
 
 public:
@@ -1335,7 +1335,7 @@ private:
 	float friction = 0.3f;
 	float radius = 1.0f;
 	HavokMaterial material = 7;
-	uint numConstraints = 0;
+	uint32_t numConstraints = 0;
 	std::vector<ConstraintData> constraints;
 
 public:

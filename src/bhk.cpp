@@ -139,7 +139,7 @@ void bhkBlendCollisionObject::Put(NiStream& stream) {
 }
 
 
-bhkPhysicsSystem::bhkPhysicsSystem(const uint size) {
+bhkPhysicsSystem::bhkPhysicsSystem(const uint32_t size) {
 	numBytes = size;
 	data.resize(size);
 }
@@ -166,7 +166,7 @@ void bhkPhysicsSystem::Put(NiStream& stream) {
 }
 
 
-bhkRagdollSystem::bhkRagdollSystem(const uint size) {
+bhkRagdollSystem::bhkRagdollSystem(const uint32_t size) {
 	numBytes = size;
 	data.resize(size);
 }

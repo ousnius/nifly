@@ -113,7 +113,7 @@ public:
 class kd_query_result {
 public:
 	Vector3* v;
-	ushort vertex_index;
+	uint16_t vertex_index;
 	float distance;
 	bool operator<(const kd_query_result& other) const { return distance < other.distance; }
 };

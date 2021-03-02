@@ -10,10 +10,10 @@ See the included LICENSE file
 
 namespace nifly {
 struct SkinWeight {
-	ushort index;
+	uint16_t index;
 	float weight;
 
-	SkinWeight(const ushort index = 0, const float weight = 0.0f) {
+	SkinWeight(const uint16_t index = 0, const float weight = 0.0f) {
 		this->index = index;
 		this->weight = weight;
 	}
@@ -27,10 +27,10 @@ struct VertexWeight {
 };
 
 struct BoneIndices {
-	byte i1 = 0;
-	byte i2 = 0;
-	byte i3 = 0;
-	byte i4 = 0;
+	uint8_t i1 = 0;
+	uint8_t i2 = 0;
+	uint8_t i3 = 0;
+	uint8_t i4 = 0;
 };
 
 class NiSkinData : public NiObject {
@@ -40,15 +40,15 @@ public:
 		// Recommend renaming boneTransform to transformSkinToBone.
 		MatTransform boneTransform;
 		BoundingSphere bounds;
-		ushort numVertices = 0;
+		uint16_t numVertices = 0;
 		std::vector<SkinWeight> vertexWeights;
 	};
 
 	// skinTransform transforms from the global CS to the skin CS.
 	// Recommend renaming to "transformGlobalToSkin".
 	MatTransform skinTransform;
-	uint numBones = 0;
-	byte hasVertWeights = 1;
+	uint32_t numBones = 0;
+	uint8_t hasVertWeights = 1;
 	std::vector<BoneData> bones;
 
 	static constexpr const char* BlockName = "NiSkinData";
@@ -56,31 +56,31 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	NiSkinData* Clone() override { return new NiSkinData(*this); }
 };
 
 class NiSkinPartition : public NiObject {
 public:
 	struct PartitionBlock {
-		ushort numVertices = 0;
-		ushort numTriangles = 0;
-		ushort numBones = 0;
-		ushort numStrips = 0;
-		ushort numWeightsPerVertex = 0;
-		std::vector<ushort> bones;
+		uint16_t numVertices = 0;
+		uint16_t numTriangles = 0;
+		uint16_t numBones = 0;
+		uint16_t numStrips = 0;
+		uint16_t numWeightsPerVertex = 0;
+		std::vector<uint16_t> bones;
 		bool hasVertexMap = false;
-		std::vector<ushort> vertexMap;
+		std::vector<uint16_t> vertexMap;
 		bool hasVertexWeights = false;
 		std::vector<VertexWeight> vertexWeights;
-		std::vector<ushort> stripLengths;
+		std::vector<uint16_t> stripLengths;
 		bool hasFaces = false;
-		std::vector<std::vector<ushort>> strips;
+		std::vector<std::vector<uint16_t>> strips;
 		std::vector<Triangle> triangles;
 		bool hasBoneIndices = false;
 		std::vector<BoneIndices> boneIndices;
 
-		ushort unkShort = 0;   // User Version >= 12
+		uint16_t unkShort = 0;   // User Version >= 12
 		VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 		// When trueTriangles is changed so it's no longer in sync with
 		// triParts, triParts should be cleared.
@@ -92,12 +92,12 @@ public:
 		void GenerateVertexMapFromTrueTriangles();
 	};
 
-	uint numPartitions = 0;
-	uint dataSize = 0;	   // User Version >= 12, User Version 2 == 100
-	uint vertexSize = 0;   // User Version >= 12, User Version 2 == 100
+	uint32_t numPartitions = 0;
+	uint32_t dataSize = 0;	   // User Version >= 12, User Version 2 == 100
+	uint32_t vertexSize = 0;   // User Version >= 12, User Version 2 == 100
 	VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 
-	uint numVertices = 0;				// Not in file
+	uint32_t numVertices = 0;				// Not in file
 	std::vector<BSVertexData> vertData; // User Version >= 12, User Version 2 == 100
 	std::vector<PartitionBlock> partitions;
 
@@ -129,7 +129,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
 	void DeletePartitions(const std::vector<int>& partInds);
 	int RemoveEmptyPartitions(std::vector<int>& outDeletedIndices);
@@ -200,13 +200,13 @@ public:
 };
 
 
-enum PartitionFlags : ushort { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
+enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
 class BSDismemberSkinInstance : public NiSkinInstance {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
-		ushort partID;
+		uint16_t partID;
 	};
 
 private:
@@ -238,7 +238,7 @@ public:
 
 class BSSkinBoneData : public NiObject {
 public:
-	uint nBones = 0;
+	uint32_t nBones = 0;
 
 	struct BoneData {
 		BoundingSphere bounds;
@@ -268,7 +268,7 @@ private:
 	BlockRef<NiAVObject> targetRef;
 	BlockRef<BSSkinBoneData> dataRef;
 
-	uint numScales = 0;
+	uint32_t numScales = 0;
 	std::vector<Vector3> scales;
 
 public:

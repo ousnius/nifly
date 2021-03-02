@@ -37,7 +37,7 @@ public:
 	BSFadeNode* Clone() override { return new BSFadeNode(*this); }
 };
 
-enum BSValueNodeFlags : byte { BSVN_NONE = 0x0, BSVN_BILLBOARD_WORLD_Z = 0x1, BSVN_USE_PLAYER_ADJUST = 0x2 };
+enum BSValueNodeFlags : uint8_t { BSVN_NONE = 0x0, BSVN_BILLBOARD_WORLD_Z = 0x1, BSVN_USE_PLAYER_ADJUST = 0x2 };
 
 class BSValueNode : public NiNode {
 private:
@@ -158,7 +158,7 @@ public:
 	void SetDataRef(int datRef);
 };
 
-enum BSCPCullingType : uint {
+enum BSCPCullingType : uint32_t {
 	BSCP_CULL_NORMAL,
 	BSCP_CULL_ALLPASS,
 	BSCP_CULL_ALLFAIL,
@@ -188,9 +188,9 @@ public:
 
 class BSRangeNode : public NiNode {
 private:
-	byte min = 0;
-	byte max = 0;
-	byte current = 0;
+	uint8_t min = 0;
+	uint8_t max = 0;
+	uint8_t current = 0;
 
 public:
 	static constexpr const char* BlockName = "BSRangeNode";
@@ -226,7 +226,7 @@ public:
 	BSDamageStage* Clone() override { return new BSDamageStage(*this); }
 };
 
-enum BillboardMode : ushort {
+enum BillboardMode : uint16_t {
 	ALWAYS_FACE_CAMERA,
 	ROTATE_ABOUT_UP,
 	RIGID_FACE_CAMERA,
@@ -250,12 +250,12 @@ public:
 	NiBillboardNode* Clone() override { return new NiBillboardNode(*this); }
 };
 
-enum NiSwitchFlags : ushort { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
+enum NiSwitchFlags : uint16_t { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
 
 class NiSwitchNode : public NiNode {
 private:
 	NiSwitchFlags flags = UPDATE_ONLY_ACTIVE_CHILD;
-	uint index = 0;
+	uint32_t index = 0;
 
 public:
 	static constexpr const char* BlockName = "NiSwitchNode";
@@ -277,7 +277,7 @@ class NiLODData : public NiObject {};
 class NiRangeLODData : public NiLODData {
 private:
 	Vector3 lodCenter;
-	uint numLODLevels = 0;
+	uint32_t numLODLevels = 0;
 	std::vector<LODRange> lodLevels;
 
 public:
@@ -296,7 +296,7 @@ private:
 	float boundRadius = 0.0f;
 	Vector3 worldCenter;
 	float worldRadius = 0.0f;
-	uint numProportions = 0;
+	uint32_t numProportions = 0;
 	std::vector<float> proportionLevels;
 
 public:

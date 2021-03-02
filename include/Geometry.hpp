@@ -14,12 +14,12 @@ See the included LICENSE file
 namespace nifly {
 struct AdditionalDataInfo {
 	int dataType = 0;
-	uint numChannelBytesPerElement = 0;
-	uint numChannelBytes = 0;
-	uint numTotalBytesPerElement = 0;
-	uint blockIndex = 0;
-	uint channelOffset = 0;
-	byte unkByte1 = 2;
+	uint32_t numChannelBytesPerElement = 0;
+	uint32_t numChannelBytes = 0;
+	uint32_t numTotalBytesPerElement = 0;
+	uint32_t blockIndex = 0;
+	uint32_t channelOffset = 0;
+	uint8_t unkByte1 = 2;
 
 	void Get(NiStream& stream) {
 		stream >> dataType;
@@ -44,14 +44,14 @@ struct AdditionalDataInfo {
 
 struct AdditionalDataBlock {
 	bool hasData = false;
-	uint blockSize = 0;
+	uint32_t blockSize = 0;
 
-	uint numBlocks = 0;
-	std::vector<uint> blockOffsets;
+	uint32_t numBlocks = 0;
+	std::vector<uint32_t> blockOffsets;
 
-	uint numData = 0;
-	std::vector<uint> dataSizes;
-	std::vector<std::vector<byte>> data;
+	uint32_t numData = 0;
+	std::vector<uint32_t> dataSizes;
+	std::vector<std::vector<uint8_t>> data;
 
 	void Get(NiStream& stream) {
 		stream >> hasData;
@@ -103,12 +103,12 @@ class AdditionalGeomData : public NiObject {};
 
 class NiAdditionalGeometryData : public AdditionalGeomData {
 private:
-	ushort numVertices = 0;
+	uint16_t numVertices = 0;
 
-	uint numBlockInfos = 0;
+	uint32_t numBlockInfos = 0;
 	std::vector<AdditionalDataInfo> blockInfos;
 
-	uint numBlocks = 0;
+	uint32_t numBlocks = 0;
 	std::vector<AdditionalDataBlock> blocks;
 
 public:
@@ -123,17 +123,17 @@ public:
 
 struct BSPackedAdditionalDataBlock {
 	bool hasData = false;
-	uint numTotalBytes = 0;
+	uint32_t numTotalBytes = 0;
 
-	uint numBlocks = 0;
-	std::vector<uint> blockOffsets;
+	uint32_t numBlocks = 0;
+	std::vector<uint32_t> blockOffsets;
 
-	uint numAtoms = 0;
-	std::vector<uint> atomSizes;
-	std::vector<byte> data;
+	uint32_t numAtoms = 0;
+	std::vector<uint32_t> atomSizes;
+	std::vector<uint8_t> data;
 
-	uint unkInt1 = 0;
-	uint numTotalBytesPerElement = 0;
+	uint32_t unkInt1 = 0;
+	uint32_t numTotalBytesPerElement = 0;
 
 	void Get(NiStream& stream) {
 		stream >> hasData;
@@ -185,12 +185,12 @@ struct BSPackedAdditionalDataBlock {
 
 class BSPackedAdditionalGeometryData : public AdditionalGeomData {
 private:
-	ushort numVertices = 0;
+	uint16_t numVertices = 0;
 
-	uint numBlockInfos = 0;
+	uint32_t numBlockInfos = 0;
 	std::vector<AdditionalDataInfo> blockInfos;
 
-	uint numBlocks = 0;
+	uint32_t numBlocks = 0;
 	std::vector<BSPackedAdditionalDataBlock> blocks;
 
 public:
@@ -207,11 +207,11 @@ class NiGeometryData : public NiObject {
 protected:
 	bool isPSys = false;
 
-	ushort numVertices = 0;
+	uint16_t numVertices = 0;
 	int groupID = 0;
-	byte compressFlags = 0;
+	uint8_t compressFlags = 0;
 	bool hasVertices = true;
-	uint materialCRC = 0;
+	uint32_t materialCRC = 0;
 	bool hasNormals = false;
 	bool hasVertexColors = false;
 	BlockRef<AdditionalGeomData> additionalDataRef;
@@ -224,23 +224,23 @@ public:
 	std::vector<Vector3> bitangents;
 	std::vector<Color4> vertexColors;
 
-	byte keepFlags = 0;
-	ushort numUVSets = 0;
+	uint8_t keepFlags = 0;
+	uint16_t numUVSets = 0;
 	std::vector<std::vector<Vector2>> uvSets;
 
-	ushort consistencyFlags = 0;
+	uint16_t consistencyFlags = 0;
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	int GetAdditionalDataRef();
 	void SetAdditionalDataRef(int dataRef);
 
-	ushort GetNumVertices();
+	uint16_t GetNumVertices();
 	void SetVertices(const bool enable);
 	bool HasVertices() { return hasVertices; }
 
@@ -256,7 +256,7 @@ public:
 	void SetTangents(const bool enable);
 	bool HasTangents() { return (numUVSets & (1 << 12)) != 0; }
 
-	virtual uint GetNumTriangles();
+	virtual uint32_t GetNumTriangles();
 	virtual bool GetTriangles(std::vector<Triangle>& tris);
 	virtual void SetTriangles(const std::vector<Triangle>& tris);
 
@@ -290,7 +290,7 @@ public:
 	virtual int GetAlphaPropertyRef();
 	virtual void SetAlphaPropertyRef(int alphaPropertyRef);
 
-	virtual ushort GetNumVertices();
+	virtual uint16_t GetNumVertices();
 	virtual void SetVertices(const bool enable);
 	virtual bool HasVertices();
 
@@ -309,10 +309,10 @@ public:
 	virtual void SetSkinned(const bool enable);
 	virtual bool IsSkinned();
 
-	virtual uint GetNumTriangles();
+	virtual uint32_t GetNumTriangles();
 	virtual bool GetTriangles(std::vector<Triangle>& tris);
 	virtual void SetTriangles(const std::vector<Triangle>& tris);
-	virtual bool ReorderTriangles(const std::vector<uint>& triInds);
+	virtual bool ReorderTriangles(const std::vector<uint32_t>& triInds);
 
 	virtual void SetBounds(const BoundingSphere& bounds);
 	virtual BoundingSphere GetBounds();
@@ -331,18 +331,18 @@ protected:
 	BoundingSphere bounds;
 	float boundMinMax[6];
 
-	uint numTriangles = 0;
+	uint32_t numTriangles = 0;
 	std::vector<Triangle> triangles;
 
-	ushort numVertices = 0;
+	uint16_t numVertices = 0;
 
 public:
 	VertexDesc vertexDesc;
 
-	uint dataSize = 0;
-	uint vertexSize = 0; // Not in file
+	uint32_t dataSize = 0;
+	uint32_t vertexSize = 0; // Not in file
 
-	uint particleDataSize = 0;
+	uint32_t particleDataSize = 0;
 	std::vector<Vector3> particleVerts;
 	std::vector<Vector3> particleNorms;
 	std::vector<Triangle> particleTris;
@@ -355,7 +355,7 @@ public:
 	std::vector<Color4> rawColors;		// filled by GetColorData function and returned.
 	std::vector<float> rawEyeData;
 
-	std::vector<uint> deletedTris; // temporary storage for BSSubIndexTriShape
+	std::vector<uint32_t> deletedTris; // temporary storage for BSSubIndexTriShape
 
 	std::vector<BSVertexData> vertData;
 
@@ -366,7 +366,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	BSTriShape* Clone() override { return new BSTriShape(*this); }
@@ -388,7 +388,7 @@ public:
 	std::vector<Color4>* GetColorData();
 	std::vector<float>* GetEyeData();
 
-	ushort GetNumVertices() override;
+	uint16_t GetNumVertices() override;
 	void SetVertices(const bool enable) override;
 	bool HasVertices() override { return vertexDesc.HasFlag(VF_VERTEX); }
 
@@ -417,7 +417,7 @@ public:
 	bool IsFullPrecision() { return vertexDesc.HasFlag(VF_FULLPREC); }
 	bool CanChangePrecision() { return (HasVertices()); }
 
-	uint GetNumTriangles() override;
+	uint32_t GetNumTriangles() override;
 	bool GetTriangles(std::vector<Triangle>&) override;
 	void SetTriangles(const std::vector<Triangle>&) override;
 
@@ -430,7 +430,7 @@ public:
 	void SetNormals(const std::vector<Vector3>& inNorms);
 	void RecalcNormals(const bool smooth = true,
 					   const float smoothThres = 60.0f,
-					   std::unordered_set<uint>* lockedIndices = nullptr);
+					   std::unordered_set<uint32_t>* lockedIndices = nullptr);
 	void CalcTangentSpace();
 	int CalcDataSizes(NiVersion& version);
 
@@ -453,8 +453,8 @@ struct NifSubSegmentInfo {
 	// subsegment among all the segments and subsegments.  Used as a value
 	// in triParts.  Not in the file.
 	int partID;
-	uint userSlotID;
-	uint material;
+	uint32_t userSlotID;
+	uint32_t material;
 	std::vector<float> extraData;
 };
 
@@ -480,9 +480,9 @@ struct NifSegmentationInfo {
 
 class BSGeometrySegmentData {
 public:
-	byte flags = 0;
-	uint index = 0;
-	uint numTris = 0;
+	uint8_t flags = 0;
+	uint32_t index = 0;
+	uint32_t numTris = 0;
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
@@ -492,49 +492,49 @@ class BSSubIndexTriShape : public BSTriShape {
 public:
 	class BSSITSSubSegment {
 	public:
-		uint startIndex = 0;
-		uint numPrimitives = 0;
-		uint arrayIndex = 0;
-		uint unkInt1 = 0;
+		uint32_t startIndex = 0;
+		uint32_t numPrimitives = 0;
+		uint32_t arrayIndex = 0;
+		uint32_t unkInt1 = 0;
 	};
 
 	class BSSITSSegment {
 	public:
-		uint startIndex = 0;
-		uint numPrimitives = 0;
-		uint parentArrayIndex = 0xFFFFFFFF;
-		uint numSubSegments = 0;
+		uint32_t startIndex = 0;
+		uint32_t numPrimitives = 0;
+		uint32_t parentArrayIndex = 0xFFFFFFFF;
+		uint32_t numSubSegments = 0;
 		std::vector<BSSITSSubSegment> subSegments;
 	};
 
 	class BSSITSSubSegmentDataRecord {
 	public:
-		uint userSlotID = 0;
-		uint material = 0xFFFFFFFF;
-		uint numData = 0;
+		uint32_t userSlotID = 0;
+		uint32_t material = 0xFFFFFFFF;
+		uint32_t numData = 0;
 		std::vector<float> extraData;
 	};
 
 	class BSSITSSubSegmentData {
 	public:
-		uint numSegments = 0;
-		uint numTotalSegments = 0;
-		std::vector<uint> arrayIndices;
+		uint32_t numSegments = 0;
+		uint32_t numTotalSegments = 0;
+		std::vector<uint32_t> arrayIndices;
 		std::vector<BSSITSSubSegmentDataRecord> dataRecords;
 		NiString ssfFile;
 	};
 
 	class BSSITSSegmentation {
 	public:
-		uint numPrimitives = 0;
-		uint numSegments = 0;
-		uint numTotalSegments = 0;
+		uint32_t numPrimitives = 0;
+		uint32_t numSegments = 0;
+		uint32_t numTotalSegments = 0;
 		std::vector<BSSITSSegment> segments;
 		BSSITSSubSegmentData subSegmentData;
 	};
 
 	// SSE
-	uint numSegments = 0;
+	uint32_t numSegments = 0;
 	std::vector<BSGeometrySegmentData> segments;
 
 private:
@@ -547,7 +547,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	BSSubIndexTriShape* Clone() override { return new BSSubIndexTriShape(*this); }
 
 	void GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts);
@@ -563,22 +563,22 @@ public:
 
 class BSMeshLODTriShape : public BSTriShape {
 public:
-	uint lodSize0 = 0;
-	uint lodSize1 = 0;
-	uint lodSize2 = 0;
+	uint32_t lodSize0 = 0;
+	uint32_t lodSize1 = 0;
+	uint32_t lodSize2 = 0;
 
 	static constexpr const char* BlockName = "BSMeshLODTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	BSMeshLODTriShape* Clone() override { return new BSMeshLODTriShape(*this); }
 };
 
 class BSDynamicTriShape : public BSTriShape {
 public:
-	uint dynamicDataSize;
+	uint32_t dynamicDataSize;
 	std::vector<Vector4> dynamicData;
 
 	BSDynamicTriShape();
@@ -588,7 +588,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void CalcDynamicData();
 	BSDynamicTriShape* Clone() override { return new BSDynamicTriShape(*this); }
 
@@ -608,15 +608,15 @@ protected:
 	BlockRef<NiProperty> shaderPropertyRef;
 	BlockRef<NiProperty> alphaPropertyRef;
 
-	uint numMaterials = 0;
+	uint32_t numMaterials = 0;
 	std::vector<StringRef> materialNameRefs;
-	std::vector<uint> materials;
+	std::vector<uint32_t> materials;
 	int activeMaterial = 0;
-	byte defaultMatNeedsUpdateFlag = 0;
+	uint8_t defaultMatNeedsUpdateFlag = 0;
 
 	bool shader = false;
 	StringRef shaderName;
-	uint implementation = 0;
+	uint32_t implementation = 0;
 
 public:
 	void Get(NiStream& stream) override;
@@ -644,7 +644,7 @@ class NiTriBasedGeom : public NiGeometry {};
 
 class NiTriBasedGeomData : public NiGeometryData {
 protected:
-	ushort numTriangles = 0;
+	uint16_t numTriangles = 0;
 
 public:
 	void Get(NiStream& stream) override;
@@ -658,17 +658,17 @@ public:
 };
 
 struct MatchGroup {
-	ushort count = 0;
-	std::vector<ushort> matches;
+	uint16_t count = 0;
+	std::vector<uint16_t> matches;
 };
 
 class NiTriShapeData : public NiTriBasedGeomData {
 protected:
-	uint numTrianglePoints = 0;
+	uint32_t numTrianglePoints = 0;
 	bool hasTriangles = false;
 	std::vector<Triangle> triangles;
 
-	ushort numMatchGroups = 0;
+	uint16_t numMatchGroups = 0;
 	std::vector<MatchGroup> matchGroups;
 
 public:
@@ -682,9 +682,9 @@ public:
 				const std::vector<Triangle>* tris,
 				const std::vector<Vector2>* uvs,
 				const std::vector<Vector3>* norms) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
-	uint GetNumTriangles() override;
+	uint32_t GetNumTriangles() override;
 	bool GetTriangles(std::vector<Triangle>& tris) override;
 	void SetTriangles(const std::vector<Triangle>& tris) override;
 
@@ -709,10 +709,10 @@ public:
 
 class NiTriStripsData : public NiTriBasedGeomData {
 protected:
-	ushort numStrips = 0;
-	std::vector<ushort> stripLengths;
+	uint16_t numStrips = 0;
+	std::vector<uint16_t> stripLengths;
 	bool hasPoints = false;
-	std::vector<std::vector<ushort>> points;
+	std::vector<std::vector<uint16_t>> points;
 
 public:
 	static constexpr const char* BlockName = "NiTriStripsData";
@@ -720,9 +720,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
-	uint GetNumTriangles() override;
+	uint32_t GetNumTriangles() override;
 	bool GetTriangles(std::vector<Triangle>& tris) override;
 	void SetTriangles(const std::vector<Triangle>& tris) override;
 	std::vector<Triangle> StripsToTris();
@@ -743,7 +743,7 @@ public:
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	bool ReorderTriangles(const std::vector<uint>&) override { return false; }
+	bool ReorderTriangles(const std::vector<uint32_t>&) override { return false; }
 
 	NiTriStrips* Clone() override { return new NiTriStrips(*this); }
 };
@@ -758,7 +758,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	NiLinesData* Clone() override { return new NiLinesData(*this); }
 };
@@ -778,24 +778,24 @@ public:
 };
 
 struct PolygonInfo {
-	ushort numVertices = 0;
-	ushort vertexOffset = 0;
-	ushort numTriangles = 0;
-	ushort triangleOffset = 0;
+	uint16_t numVertices = 0;
+	uint16_t vertexOffset = 0;
+	uint16_t numTriangles = 0;
+	uint16_t triangleOffset = 0;
 };
 
 class NiScreenElementsData : public NiTriShapeData {
 protected:
-	ushort maxPolygons = 0;
+	uint16_t maxPolygons = 0;
 	std::vector<PolygonInfo> polygons;
-	std::vector<ushort> polygonIndices;
+	std::vector<uint16_t> polygonIndices;
 
-	ushort unkShort1 = 1;
-	ushort numPolygons = 0;
-	ushort usedVertices = 0;
-	ushort unkShort2 = 1;
-	ushort usedTrianglePoints = 0;
-	ushort unkShort3 = 1;
+	uint16_t unkShort1 = 1;
+	uint16_t numPolygons = 0;
+	uint16_t usedVertices = 0;
+	uint16_t unkShort2 = 1;
+	uint16_t usedTrianglePoints = 0;
+	uint16_t unkShort3 = 1;
 
 public:
 	static constexpr const char* BlockName = "NiScreenElementsData";
@@ -803,7 +803,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void notifyVerticesDelete(const std::vector<ushort>& vertIndices) override;
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	NiScreenElementsData* Clone() override { return new NiScreenElementsData(*this); }
 };
@@ -826,9 +826,9 @@ class BSLODTriShape : public NiTriBasedGeom {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
-	uint level0 = 0;
-	uint level1 = 0;
-	uint level2 = 0;
+	uint32_t level0 = 0;
+	uint32_t level1 = 0;
+	uint32_t level2 = 0;
 
 public:
 	static constexpr const char* BlockName = "BSLODTriShape";
@@ -844,7 +844,7 @@ public:
 
 class BSSegmentedTriShape : public NiTriShape {
 public:
-	uint numSegments = 0;
+	uint32_t numSegments = 0;
 	std::vector<BSGeometrySegmentData> segments;
 
 	static constexpr const char* BlockName = "BSSegmentedTriShape";

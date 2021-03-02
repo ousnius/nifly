@@ -91,8 +91,8 @@ void NiGeometryData::Get(NiStream& stream) {
 
 	stream >> numUVSets;
 
-	ushort nbtMethod = numUVSets & 0xF000;
-	byte numTextureSets = numUVSets & 0x3F;
+	uint16_t nbtMethod = numUVSets & 0xF000;
+	uint8_t numTextureSets = numUVSets & 0x3F;
 	if (stream.GetVersion().Stream() >= 34)
 		numTextureSets = numUVSets & 0x1;
 
@@ -156,8 +156,8 @@ void NiGeometryData::Put(NiStream& stream) {
 
 	stream << numUVSets;
 
-	ushort nbtMethod = numUVSets & 0xF000;
-	byte numTextureSets = numUVSets & 0x3F;
+	uint16_t nbtMethod = numUVSets & 0xF000;
+	uint8_t numTextureSets = numUVSets & 0x3F;
 	if (stream.GetVersion().Stream() >= 34)
 		numTextureSets = numUVSets & 0x1;
 
@@ -216,7 +216,7 @@ void NiGeometryData::SetAdditionalDataRef(int dataRef) {
 	additionalDataRef.SetIndex(dataRef);
 }
 
-ushort NiGeometryData::GetNumVertices() {
+uint16_t NiGeometryData::GetNumVertices() {
 	return numVertices;
 }
 
@@ -277,7 +277,7 @@ void NiGeometryData::SetTangents(const bool enable) {
 	}
 }
 
-uint NiGeometryData::GetNumTriangles() {
+uint32_t NiGeometryData::GetNumTriangles() {
 	return 0;
 }
 bool NiGeometryData::GetTriangles(std::vector<Triangle>&) {
@@ -295,12 +295,12 @@ void NiGeometryData::Create(NiVersion&,
 							const std::vector<Vector2>* texcoords,
 							const std::vector<Vector3>* norms) {
 	size_t vertCount = verts->size();
-	ushort maxIndex = std::numeric_limits<ushort>().max();
+	uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
 
 	if (vertCount > (size_t) maxIndex)
 		numVertices = maxIndex;
 	else
-		numVertices = ushort(vertCount);
+		numVertices = uint16_t(vertCount);
 
 	vertices.resize(numVertices);
 	for (int v = 0; v < numVertices; v++)
@@ -335,7 +335,7 @@ void NiGeometryData::Create(NiVersion&,
 	}
 }
 
-void NiGeometryData::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void NiGeometryData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	EraseVectorIndices(vertices, vertIndices);
 	numVertices = vertices.size();
 	if (!normals.empty())
@@ -384,7 +384,7 @@ int NiShape::GetDataRef() {
 }
 void NiShape::SetDataRef(int) {}
 
-ushort NiShape::GetNumVertices() {
+uint16_t NiShape::GetNumVertices() {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->GetNumVertices();
@@ -467,7 +467,7 @@ bool NiShape::IsSkinned() {
 	return false;
 };
 
-uint NiShape::GetNumTriangles() {
+uint32_t NiShape::GetNumTriangles() {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->GetNumTriangles();
@@ -524,7 +524,7 @@ int NiShape::GetBoneID(NiHeader& hdr, const std::string& boneName) {
 	return NIF_NPOS;
 }
 
-bool NiShape::ReorderTriangles(const std::vector<uint>& triInds) {
+bool NiShape::ReorderTriangles(const std::vector<uint32_t>& triInds) {
 	std::vector<Triangle> trisOrdered;
 	std::vector<Triangle> tris;
 	if (!GetTriangles(tris))
@@ -533,7 +533,7 @@ bool NiShape::ReorderTriangles(const std::vector<uint>& triInds) {
 	if (tris.size() != triInds.size())
 		return false;
 
-	for (uint id : triInds)
+	for (uint32_t id : triInds)
 		if (id < tris.size())
 			trisOrdered.push_back(tris[id]);
 
@@ -578,7 +578,7 @@ void BSTriShape::Get(NiStream& stream) {
 	vertexDesc.Get(stream);
 
 	if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130) {
-		ushort num = 0;
+		uint16_t num = 0;
 		stream >> num;
 		numTriangles = num;
 	}
@@ -721,8 +721,8 @@ void BSTriShape::Put(NiStream& stream) {
 
 	if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130 && IsSkinned()) {
 		// Triangle and vertex data is in partition instead
-		ushort numUShort = 0;
-		uint numUInt = 0;
+		uint16_t numUShort = 0;
+		uint32_t numUInt = 0;
 		stream << numUShort;
 
 		if (HasType<BSDynamicTriShape>())
@@ -734,7 +734,7 @@ void BSTriShape::Put(NiStream& stream) {
 	}
 	else {
 		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130) {
-			ushort numUShort = numTriangles;
+			uint16_t numUShort = numTriangles;
 			stream << numUShort;
 		}
 		else
@@ -843,7 +843,7 @@ void BSTriShape::Put(NiStream& stream) {
 	}
 }
 
-void BSTriShape::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void BSTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	deletedTris.clear();
 
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, vertData.size());
@@ -1024,7 +1024,7 @@ std::vector<float>* BSTriShape::GetEyeData() {
 	return &rawEyeData;
 }
 
-ushort BSTriShape::GetNumVertices() {
+uint16_t BSTriShape::GetNumVertices() {
 	return numVertices;
 }
 
@@ -1115,7 +1115,7 @@ void BSTriShape::SetFullPrecision(const bool enable) {
 		vertexDesc.RemoveFlag(VF_FULLPREC);
 }
 
-uint BSTriShape::GetNumTriangles() {
+uint32_t BSTriShape::GetNumTriangles() {
 	return numTriangles;
 }
 
@@ -1228,7 +1228,7 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 
 void BSTriShape::RecalcNormals(const bool smooth,
 							   const float smoothThresh,
-							   std::unordered_set<uint>* lockedIndices) {
+							   std::unordered_set<uint32_t>* lockedIndices) {
 	GetRawVerts();
 	SetNormals(true);
 
@@ -1360,7 +1360,7 @@ int BSTriShape::CalcDataSizes(NiVersion& version) {
 	VertexFlags vf = vertexDesc.GetFlags();
 	vertexDesc.ClearAttributeOffsets();
 
-	uint attributeSizes[VA_COUNT] = {};
+	uint32_t attributeSizes[VA_COUNT] = {};
 	if (HasVertices()) {
 		if (IsFullPrecision() || version.Stream() == 100)
 			attributeSizes[VA_POSITION] = 4;
@@ -1415,16 +1415,16 @@ void BSTriShape::Create(NiVersion& version,
 						const std::vector<Vector3>* normals) {
 	flags = 14;
 
-	ushort maxVertIndex = std::numeric_limits<ushort>().max();
+	uint16_t maxVertIndex = std::numeric_limits<uint16_t>().max();
 	size_t vertCount = verts->size();
 	if (vertCount > (size_t) maxVertIndex)
 		numVertices = maxVertIndex;
 	else
-		numVertices = ushort(vertCount);
+		numVertices = uint16_t(vertCount);
 
-	uint maxTriIndex = std::numeric_limits<uint>().max();
+	uint32_t maxTriIndex = std::numeric_limits<uint32_t>().max();
 	if (version.User() >= 12 && version.Stream() < 130)
-		maxTriIndex = std::numeric_limits<ushort>().max();
+		maxTriIndex = std::numeric_limits<uint16_t>().max();
 
 	size_t triCount = tris ? tris->size() : 0;
 	if (numVertices == 0)
@@ -1432,7 +1432,7 @@ void BSTriShape::Create(NiVersion& version,
 	else if (triCount > (size_t) maxTriIndex)
 		numTriangles = maxTriIndex;
 	else
-		numTriangles = uint(triCount);
+		numTriangles = uint32_t(triCount);
 
 	vertData.resize(numVertices);
 
@@ -1577,7 +1577,7 @@ void BSSubIndexTriShape::Put(NiStream& stream) {
 	}
 }
 
-void BSSubIndexTriShape::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void BSSubIndexTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	BSTriShape::notifyVerticesDelete(vertIndices);
 
 	//Remove triangles from segments and re-fit lists
@@ -1690,7 +1690,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 	inf.segs.resize(segmentation.segments.size());
 	triParts.clear();
 
-	uint numTris = GetNumTriangles();
+	uint32_t numTris = GetNumTriangles();
 	triParts.resize(numTris, -1);
 
 	int partID = 0;
@@ -1698,10 +1698,10 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 
 	for (int i = 0; i < segmentation.segments.size(); ++i) {
 		BSSITSSegment& seg = segmentation.segments[i];
-		uint startIndex = seg.startIndex / 3;
-		uint endIndex = std::min(numTris, startIndex + seg.numPrimitives);
+		uint32_t startIndex = seg.startIndex / 3;
+		uint32_t endIndex = std::min(numTris, startIndex + seg.numPrimitives);
 
-		for (uint id = startIndex; id < endIndex; id++)
+		for (uint32_t id = startIndex; id < endIndex; id++)
 			triParts[id] = partID;
 
 		inf.segs[i].partID = partID++;
@@ -1712,7 +1712,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 			startIndex = sub.startIndex / 3;
 
 			endIndex = std::min(numTris, startIndex + sub.numPrimitives);
-			for (uint id = startIndex; id < endIndex; id++)
+			for (uint32_t id = startIndex; id < endIndex; id++)
 				triParts[id] = partID;
 
 			inf.segs[i].subs[j].partID = partID++;
@@ -1728,7 +1728,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 }
 
 void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const std::vector<int>& inTriParts) {
-	uint numTris = GetNumTriangles();
+	uint32_t numTris = GetNumTriangles();
 	if (inTriParts.size() != numTris)
 		return;
 
@@ -1753,7 +1753,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 			triParts[i] = oldToNewPartIDs[inTriParts[i]];
 
 	// Sort triangles by partition ID
-	std::vector<uint> triInds(numTris);
+	std::vector<uint32_t> triInds(numTris);
 	for (int i = 0; i < numTris; ++i)
 		triInds[i] = i;
 
@@ -1788,8 +1788,8 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	partTriInds.back() = triInds.size();
 
 	segmentation = std::move(BSSITSSegmentation());
-	uint parentArrayIndex = 0;
-	uint segmentIndex = 0;
+	uint32_t parentArrayIndex = 0;
+	uint32_t segmentIndex = 0;
 	int partID = 0;
 
 	for (const NifSegmentInfo& seg : inf.segs) {
@@ -1808,7 +1808,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 		segmentation.subSegmentData.arrayIndices.push_back(parentArrayIndex);
 		segmentation.subSegmentData.dataRecords.push_back(segmentDataRecord);
 
-		uint subSegmentNumber = 1;
+		uint32_t subSegmentNumber = 1;
 		for (const NifSubSegmentInfo& sub : seg.subs) {
 			// Create new subsegment
 			segment.subSegments.emplace_back();
@@ -1860,7 +1860,7 @@ void BSMeshLODTriShape::Put(NiStream& stream) {
 	stream << lodSize2;
 }
 
-void BSMeshLODTriShape::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void BSMeshLODTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	BSTriShape::notifyVerticesDelete(vertIndices);
 
 	// Force full LOD (workaround)
@@ -1896,7 +1896,7 @@ void BSDynamicTriShape::Put(NiStream& stream) {
 		stream << dynamicData[i];
 }
 
-void BSDynamicTriShape::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void BSDynamicTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	BSTriShape::notifyVerticesDelete(vertIndices);
 
 	EraseVectorIndices(dynamicData, vertIndices);
@@ -1928,12 +1928,12 @@ void BSDynamicTriShape::Create(NiVersion& version,
 							   const std::vector<Vector3>* normals) {
 	BSTriShape::Create(version, verts, tris, uvs, normals);
 
-	uint maxIndex = std::numeric_limits<uint>().max();
+	uint32_t maxIndex = std::numeric_limits<uint32_t>().max();
 	size_t vertCount = verts->size();
 	if (vertCount > (size_t) maxIndex)
 		dynamicDataSize = maxIndex;
 	else
-		dynamicDataSize = uint(vertCount);
+		dynamicDataSize = uint32_t(vertCount);
 
 	dynamicData.resize(dynamicDataSize);
 	for (int i = 0; i < dynamicDataSize; i++) {
@@ -2095,7 +2095,7 @@ void NiTriBasedGeomData::Create(NiVersion& version,
 	NiGeometryData::Create(version, verts, inTris, texcoords, norms);
 
 	if (inTris) {
-		ushort maxIndex = std::numeric_limits<ushort>().max();
+		uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
 		size_t triCount = inTris ? inTris->size() : 0;
 
 		if (numVertices == 0)
@@ -2103,7 +2103,7 @@ void NiTriBasedGeomData::Create(NiVersion& version,
 		else if (triCount > (size_t) maxIndex)
 			numTriangles = maxIndex;
 		else
-			numTriangles = ushort(triCount);
+			numTriangles = uint16_t(triCount);
 	}
 }
 
@@ -2174,7 +2174,7 @@ void NiTriShapeData::Create(NiVersion& version,
 
 	if (inTris) {
 		triangles.resize(numTriangles);
-		for (ushort t = 0; t < numTriangles; t++)
+		for (uint16_t t = 0; t < numTriangles; t++)
 			triangles[t] = (*inTris)[t];
 	}
 
@@ -2184,7 +2184,7 @@ void NiTriShapeData::Create(NiVersion& version,
 	CalcTangentSpace();
 }
 
-void NiTriShapeData::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void NiTriShapeData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, vertices.size());
 	ApplyMapToTriangles(triangles, indexCollapse);
 	numTriangles = triangles.size();
@@ -2193,7 +2193,7 @@ void NiTriShapeData::notifyVerticesDelete(const std::vector<ushort>& vertIndices
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
 }
 
-uint NiTriShapeData::GetNumTriangles() {
+uint32_t NiTriShapeData::GetNumTriangles() {
 	return numTriangles;
 }
 
@@ -2346,7 +2346,7 @@ void NiTriStripsData::Put(NiStream& stream) {
 	}
 }
 
-void NiTriStripsData::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, vertices.size());
 
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
@@ -2370,7 +2370,7 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<ushort>& vertIndice
 			numTriangles += len - 2;
 }
 
-uint NiTriStripsData::GetNumTriangles() {
+uint32_t NiTriStripsData::GetNumTriangles() {
 	return StripsToTris().size();
 }
 
@@ -2509,7 +2509,7 @@ void NiLinesData::Put(NiStream& stream) {
 		stream << lineFlags[i];
 }
 
-void NiLinesData::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void NiLinesData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	NiGeometryData::notifyVerticesDelete(vertIndices);
 
 	EraseVectorIndices(lineFlags, vertIndices);
@@ -2565,7 +2565,7 @@ void NiScreenElementsData::Put(NiStream& stream) {
 	stream << unkShort3;
 }
 
-void NiScreenElementsData::notifyVerticesDelete(const std::vector<ushort>& vertIndices) {
+void NiScreenElementsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	NiTriShapeData::notifyVerticesDelete(vertIndices);
 
 	// Clearing as workaround

@@ -18,10 +18,6 @@ const double EPSILON = 0.0001;
 const float PI = 3.141592f;
 const float DEG2RAD = PI / 180.0f;
 
-typedef unsigned char byte;
-typedef unsigned short ushort;
-typedef unsigned int uint;
-
 inline bool FloatsAreNearlyEqual(float a, float b) {
 	float scale = std::max(std::max(std::fabs(a), std::fabs(b)), 1.0f);
 	return std::fabs(a - b) <= EPSILON * scale;
@@ -135,9 +131,9 @@ struct Vector3 {
 		z /= d;
 	}
 
-	uint hash() {
-		uint* h = (uint*) this;
-		uint f = (h[0] + h[1] * 11 - h[2] * 17) & 0x7fffffff;
+	uint32_t hash() {
+		uint32_t* h = (uint32_t*) this;
+		uint32_t f = (h[0] + h[1] * 11 - h[2] * 17) & 0x7fffffff;
 		return (f >> 22) ^ (f >> 12) ^ (f);
 	}
 
@@ -398,19 +394,19 @@ struct Color4 {
 };
 
 struct ByteColor3 {
-	byte r = 0;
-	byte g = 0;
-	byte b = 0;
+	uint8_t r = 0;
+	uint8_t g = 0;
+	uint8_t b = 0;
 
 	bool operator==(const ByteColor3& other) { return (r == other.r && g == other.g && b == other.b); }
 	bool operator!=(const ByteColor3& other) { return !(*this == other); }
 };
 
 struct ByteColor4 {
-	byte r = 0;
-	byte g = 0;
-	byte b = 0;
-	byte a = 0;
+	uint8_t r = 0;
+	uint8_t g = 0;
+	uint8_t b = 0;
+	uint8_t a = 0;
 
 	bool operator==(const ByteColor4& other) {
 		return (r == other.r && g == other.g && b == other.b && a == other.a);
@@ -1019,11 +1015,11 @@ MatTransform CalcMedianMatTransform(const std::vector<MatTransform>& ts);
 
 
 struct Edge {
-	ushort p1;
-	ushort p2;
+	uint16_t p1;
+	uint16_t p2;
 
 	Edge() { p1 = p2 = 0; }
-	Edge(ushort P1, ushort P2) {
+	Edge(uint16_t P1, uint16_t P2) {
 		p1 = P1;
 		p2 = P2;
 	}
@@ -1032,18 +1028,18 @@ struct Edge {
 };
 
 struct Triangle {
-	ushort p1;
-	ushort p2;
-	ushort p3;
+	uint16_t p1;
+	uint16_t p2;
+	uint16_t p3;
 
 	Triangle() { p1 = p2 = p3 = 0.0f; }
-	Triangle(ushort P1, ushort P2, ushort P3) {
+	Triangle(uint16_t P1, uint16_t P2, uint16_t P3) {
 		p1 = P1;
 		p2 = P2;
 		p3 = P3;
 	}
 
-	void set(ushort P1, ushort P2, ushort P3) {
+	void set(uint16_t P1, uint16_t P2, uint16_t P3) {
 		p1 = P1;
 		p2 = P2;
 		p3 = P3;
@@ -1243,8 +1239,8 @@ struct Triangle {
 		return true;
 	}
 
-	ushort& operator[](int ind) { return ind ? (ind == 2 ? p3 : p2) : p1; }
-	const ushort& operator[](int ind) const { return ind ? (ind == 2 ? p3 : p2) : p1; }
+	uint16_t& operator[](int ind) { return ind ? (ind == 2 ? p3 : p2) : p1; }
+	const uint16_t& operator[](int ind) const { return ind ? (ind == 2 ? p3 : p2) : p1; }
 
 	bool operator<(const Triangle& other) const {
 		int d = 0;
@@ -1282,15 +1278,15 @@ inline bool operator==(const Edge& t1, const Edge& t2) {
 }
 
 struct Face {
-	byte nPoints;
-	ushort p1;
-	ushort uv1;
-	ushort p2;
-	ushort uv2;
-	ushort p3;
-	ushort uv3;
-	ushort p4;
-	ushort uv4;
+	uint8_t nPoints;
+	uint16_t p1;
+	uint16_t uv1;
+	uint16_t p2;
+	uint16_t uv2;
+	uint16_t p3;
+	uint16_t uv3;
+	uint16_t p4;
+	uint16_t uv4;
 
 	Face(int npts = 0, int* points = nullptr, int* tc = nullptr) {
 		nPoints = npts;

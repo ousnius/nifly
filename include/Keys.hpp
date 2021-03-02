@@ -8,7 +8,7 @@ See the included LICENSE file
 #include "BasicTypes.hpp"
 
 namespace nifly {
-enum KeyType : uint { NO_INTERP, LINEAR_KEY, QUADRATIC_KEY, TBC_KEY, XYZ_ROTATION_KEY, CONST_KEY };
+enum KeyType : uint32_t { NO_INTERP, LINEAR_KEY, QUADRATIC_KEY, TBC_KEY, XYZ_ROTATION_KEY, CONST_KEY };
 
 struct TBC {
 	float tension = 0.0f;
@@ -28,7 +28,7 @@ struct Key {
 template<typename T>
 class KeyGroup {
 private:
-	uint numKeys = 0;
+	uint32_t numKeys = 0;
 	KeyType interpolation = NO_INTERP;
 	std::vector<Key<T>> keys;
 
@@ -85,7 +85,7 @@ public:
 
 	void SetInterpolationType(const KeyType interp) { interpolation = interp; }
 
-	uint GetNumKeys() { return numKeys; }
+	uint32_t GetNumKeys() { return numKeys; }
 
 	Key<T> GetKey(const int id) { return keys[id]; }
 

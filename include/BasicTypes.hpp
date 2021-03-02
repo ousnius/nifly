@@ -18,9 +18,9 @@ See the included LICENSE file
 #include <unordered_set>
 
 namespace nifly {
-constexpr auto NIF_NPOS = static_cast<uint>(-1);
+constexpr auto NIF_NPOS = static_cast<uint32_t>(-1);
 
-enum NiFileVersion : uint {
+enum NiFileVersion : uint32_t {
 	V2_3 = 0x02030000,
 	V3_0 = 0x03000000,
 	V3_03 = 0x03000300,
@@ -70,22 +70,22 @@ class NiVersion {
 private:
 	std::string vstr;
 	NiFileVersion file = UNKNOWN;
-	uint user = 0;
-	uint stream = 0;
-	uint nds = 0;
+	uint32_t user = 0;
+	uint32_t stream = 0;
+	uint32_t nds = 0;
 
 public:
 	NiVersion() = default;
-	NiVersion(NiFileVersion _file, uint _user, uint _stream);
+	NiVersion(NiFileVersion _file, uint32_t _user, uint32_t _stream);
 
 	// Construct a file version enumeration from individual values
-	static NiFileVersion ToFile(byte major, byte minor, byte patch, byte internal) {
+	static NiFileVersion ToFile(uint8_t major, uint8_t minor, uint8_t patch, uint8_t internal) {
 		return NiFileVersion((major << 24) | (minor << 16) | (patch << 8) | internal);
 	}
 
 	// Return file version as individual values
-	static std::vector<byte> ToArray(NiFileVersion file) {
-		return {byte(file >> 24), byte(file >> 16), byte(file >> 8), byte(file)};
+	static std::vector<uint8_t> ToArray(NiFileVersion file) {
+		return {uint8_t(file >> 24), uint8_t(file >> 16), uint8_t(file >> 8), uint8_t(file)};
 	}
 
 	std::string GetVersionInfo();
@@ -94,14 +94,14 @@ public:
 	NiFileVersion File() { return file; }
 	void SetFile(NiFileVersion fileVer);
 
-	uint User() { return user; }
-	void SetUser(const uint userVer) { user = userVer; }
+	uint32_t User() { return user; }
+	void SetUser(const uint32_t userVer) { user = userVer; }
 
-	uint Stream() { return stream; }
-	void SetStream(const uint streamVer) { stream = streamVer; }
+	uint32_t Stream() { return stream; }
+	void SetStream(const uint32_t streamVer) { stream = streamVer; }
 
-	uint NDS() { return nds; }
-	void SetNDS(const uint ndsVer) { nds = ndsVer; }
+	uint32_t NDS() { return nds; }
+	void SetNDS(const uint32_t ndsVer) { nds = ndsVer; }
 
 	bool IsBethesda() { return (file == V20_2_0_7 && user >= 11) || IsOB(); }
 
@@ -124,7 +124,7 @@ public:
 	static NiVersion getFO76() { return NiVersion(NiFileVersion::V20_2_0_7, 0, 155); }
 };
 
-enum NiEndian : byte { ENDIAN_BIG, ENDIAN_LITTLE };
+enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
 
 class NiStream {
 private:
@@ -424,7 +424,7 @@ public:
 
 class NiObject {
 protected:
-	uint blockSize = 0;
+	uint32_t blockSize = 0;
 
 public:
 	virtual ~NiObject() {}
@@ -432,7 +432,7 @@ public:
 	static constexpr const char* BlockName = "NiUnknown";
 	virtual const char* GetBlockName() { return BlockName; }
 
-	virtual void notifyVerticesDelete(const std::vector<ushort>&) {}
+	virtual void notifyVerticesDelete(const std::vector<uint16_t>&) {}
 
 	virtual void Get(NiStream&) {}
 	virtual void Put(NiStream&) {}
@@ -470,7 +470,7 @@ private:
 	NiVersion version;
 	NiEndian endian = ENDIAN_LITTLE;
 	NiString creator;
-	uint unkInt1 = 0;
+	uint32_t unkInt1 = 0;
 	NiString exportInfo1;
 	NiString exportInfo2;
 	NiString exportInfo3;
@@ -479,24 +479,24 @@ private:
 	std::string copyright2;
 	std::string copyright3;
 
-	uint embedDataSize = 0;
-	std::vector<byte> embedData;
+	uint32_t embedDataSize = 0;
+	std::vector<uint8_t> embedData;
 
 	// Foreign reference to the blocks list in NifFile.
 	std::vector<std::shared_ptr<NiObject>>* blocks = nullptr;
 
-	uint numBlocks = 0;
-	ushort numBlockTypes = 0;
+	uint32_t numBlocks = 0;
+	uint16_t numBlockTypes = 0;
 	std::vector<NiString> blockTypes;
-	std::vector<ushort> blockTypeIndices;
-	std::vector<uint> blockSizes;
+	std::vector<uint16_t> blockTypeIndices;
+	std::vector<uint32_t> blockSizes;
 
-	uint numStrings = 0;
-	uint maxStringLen = 0;
+	uint32_t numStrings = 0;
+	uint32_t maxStringLen = 0;
 	std::vector<NiString> strings;
 
-	uint numGroups = 0;
-	std::vector<uint> groupSizes;
+	uint32_t numGroups = 0;
+	std::vector<uint32_t> groupSizes;
 
 public:
 	NiHeader(){};
@@ -520,7 +520,7 @@ public:
 
 	void SetBlockReference(std::vector<std::shared_ptr<NiObject>>* blockRef) { blocks = blockRef; };
 
-	uint GetNumBlocks() { return numBlocks; }
+	uint32_t GetNumBlocks() { return numBlocks; }
 
 	template<class T>
 	T* GetBlock(const int blockId) {
@@ -577,11 +577,11 @@ public:
 		return true;
 	}
 
-	ushort AddOrFindBlockTypeId(const std::string& blockTypeName);
+	uint16_t AddOrFindBlockTypeId(const std::string& blockTypeName);
 	std::string GetBlockTypeStringById(const int blockId);
-	ushort GetBlockTypeIndex(const int blockId);
+	uint16_t GetBlockTypeIndex(const int blockId);
 
-	uint GetBlockSize(const uint blockId);
+	uint32_t GetBlockSize(const uint32_t blockId);
 	std::streampos GetBlockSizeStreamPos();
 	void ResetBlockSizeStreamPos();
 
@@ -609,8 +609,8 @@ private:
 
 public:
 	NiUnknown() {}
-	NiUnknown(NiStream& stream, const uint size);
-	NiUnknown(const uint size);
+	NiUnknown(NiStream& stream, const uint32_t size);
+	NiUnknown(const uint32_t size);
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
