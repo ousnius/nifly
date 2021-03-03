@@ -570,7 +570,7 @@ Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots);
 
 // 4D Matrix class for calculating and applying transformations.
 class Matrix4 {
-	float m[16];
+	float m[16]{};
 
 public:
 	Matrix4() { Identity(); }
@@ -1278,15 +1278,15 @@ inline bool operator==(const Edge& t1, const Edge& t2) {
 }
 
 struct Face {
-	uint8_t nPoints;
-	uint16_t p1;
-	uint16_t uv1;
-	uint16_t p2;
-	uint16_t uv2;
-	uint16_t p3;
-	uint16_t uv3;
-	uint16_t p4;
-	uint16_t uv4;
+	uint8_t nPoints = 0;
+	uint16_t p1 = 0;
+	uint16_t uv1 = 0;
+	uint16_t p2 = 0;
+	uint16_t uv2 = 0;
+	uint16_t p3 = 0;
+	uint16_t uv3 = 0;
+	uint16_t p4 = 0;
+	uint16_t uv4 = 0;
 
 	Face(int npts = 0, int* points = nullptr, int* tc = nullptr) {
 		nPoints = npts;

@@ -204,8 +204,8 @@ public:
 
 class NiBlendInterpolator : public NiInterpolator {
 private:
-	uint16_t flags;
-	uint32_t unkInt;
+	uint16_t flags = 0;
+	uint32_t unkInt = 0;
 
 public:
 	void Get(NiStream& stream) override;
@@ -1314,7 +1314,7 @@ public:
 struct ControllerLink {
 	BlockRef<NiInterpolator> interpolatorRef;
 	BlockRef<NiTimeController> controllerRef;
-	uint8_t priority;
+	uint8_t priority = 0;
 
 	StringRef nodeName;
 	StringRef propType;

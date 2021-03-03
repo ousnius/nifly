@@ -258,7 +258,12 @@ public:
 	void SetTargetRef(const int ref) { targetRef.SetIndex(ref); }
 };
 
-enum PropagationMode : uint32_t { PROPAGATE_ON_SUCCESS, PROPAGATE_ON_FAILURE, PROPAGATE_ALWAYS, PROPAGATE_NEVER };
+enum PropagationMode : uint32_t {
+	PROPAGATE_ON_SUCCESS,
+	PROPAGATE_ON_FAILURE,
+	PROPAGATE_ALWAYS,
+	PROPAGATE_NEVER
+};
 
 enum CollisionMode : uint32_t { CM_USE_OBB, CM_USE_TRI, CM_USE_ABV, CM_NOTEST, CM_USE_NIBOUND };
 
@@ -885,9 +890,9 @@ class bhkWorldObject : public bhkSerializable {
 private:
 	BlockRef<bhkShape> shapeRef;
 	HavokFilter collisionFilter;
-	int unkInt1;
-	uint8_t broadPhaseType;
-	uint8_t unkBytes[3];
+	int unkInt1 = 0;
+	uint8_t broadPhaseType = 0;
+	uint8_t unkBytes[3]{};
 	hkWorldObjCInfoProperty prop;
 
 public:
@@ -945,7 +950,7 @@ class bhkEntity : public bhkWorldObject {};
 class bhkConstraint : public bhkSerializable {
 private:
 	BlockRefArray<bhkEntity> entityRefs;
-	uint32_t priority;
+	uint32_t priority = 0;
 
 public:
 	void Get(NiStream& stream) override;
@@ -983,7 +988,7 @@ public:
 
 class ConstraintData {
 private:
-	hkConstraintType type;
+	hkConstraintType type = BallAndSocket;
 	BlockRefArray<bhkEntity> entityRefs;
 	uint32_t priority = 1;
 
@@ -1119,7 +1124,12 @@ public:
 	void SetEntityBRef(int entityRef);
 };
 
-enum hkResponseType : uint8_t { RESPONSE_INVALID, RESPONSE_SIMPLE_CONTACT, RESPONSE_REPORTING, RESPONSE_NONE };
+enum hkResponseType : uint8_t {
+	RESPONSE_INVALID,
+	RESPONSE_SIMPLE_CONTACT,
+	RESPONSE_REPORTING,
+	RESPONSE_NONE
+};
 
 class bhkRigidBody : public bhkEntity {
 private:
@@ -1128,12 +1138,12 @@ private:
 	uint16_t processContactCallbackDelay = 0xFFFF;
 	uint32_t unkInt1 = 0;
 	HavokFilter collisionFilterCopy;
-	uint16_t unkShorts2[6];
+	uint16_t unkShorts2[6]{};
 	Vector4 translation;
 	QuaternionXYZW rotation;
 	Vector4 linearVelocity;
 	Vector4 angularVelocity;
-	float inertiaMatrix[12];
+	float inertiaMatrix[12]{};
 	Vector4 center;
 	float mass = 1.0f;
 	float linearDamping = 0.1f;
@@ -1158,7 +1168,7 @@ private:
 	uint32_t unkInt3 = 0;
 	uint32_t unkInt4 = 0; // User Version >= 12
 	BlockRefArray<bhkSerializable> constraintRefs;
-	uint32_t unkInt5 = 0;	  // User Version <= 11
+	uint32_t unkInt5 = 0;	// User Version <= 11
 	uint16_t bodyFlags = 0; // User Version >= 12
 
 public:

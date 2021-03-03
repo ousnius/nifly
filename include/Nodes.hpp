@@ -37,7 +37,11 @@ public:
 	BSFadeNode* Clone() override { return new BSFadeNode(*this); }
 };
 
-enum BSValueNodeFlags : uint8_t { BSVN_NONE = 0x0, BSVN_BILLBOARD_WORLD_Z = 0x1, BSVN_USE_PLAYER_ADJUST = 0x2 };
+enum BSValueNodeFlags : uint8_t {
+	BSVN_NONE = 0x0,
+	BSVN_BILLBOARD_WORLD_Z = 0x1,
+	BSVN_USE_PLAYER_ADJUST = 0x2
+};
 
 class BSValueNode : public NiNode {
 private:

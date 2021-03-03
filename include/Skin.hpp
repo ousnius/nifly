@@ -80,7 +80,7 @@ public:
 		bool hasBoneIndices = false;
 		std::vector<BoneIndices> boneIndices;
 
-		uint16_t unkShort = 0;   // User Version >= 12
+		uint16_t unkShort = 0; // User Version >= 12
 		VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 		// When trueTriangles is changed so it's no longer in sync with
 		// triParts, triParts should be cleared.
@@ -93,11 +93,11 @@ public:
 	};
 
 	uint32_t numPartitions = 0;
-	uint32_t dataSize = 0;	   // User Version >= 12, User Version 2 == 100
-	uint32_t vertexSize = 0;   // User Version >= 12, User Version 2 == 100
-	VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
+	uint32_t dataSize = 0;	 // User Version >= 12, User Version 2 == 100
+	uint32_t vertexSize = 0; // User Version >= 12, User Version 2 == 100
+	VertexDesc vertexDesc;	 // User Version >= 12, User Version 2 == 100
 
-	uint32_t numVertices = 0;				// Not in file
+	uint32_t numVertices = 0;			// Not in file
 	std::vector<BSVertexData> vertData; // User Version >= 12, User Version 2 == 100
 	std::vector<PartitionBlock> partitions;
 
@@ -206,7 +206,7 @@ class BSDismemberSkinInstance : public NiSkinInstance {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
-		uint16_t partID;
+		uint16_t partID = 0;
 	};
 
 private:

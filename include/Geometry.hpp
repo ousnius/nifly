@@ -329,7 +329,7 @@ protected:
 	BlockRef<NiProperty> alphaPropertyRef;
 
 	BoundingSphere bounds;
-	float boundMinMax[6];
+	float boundMinMax[6]{};
 
 	uint32_t numTriangles = 0;
 	std::vector<Triangle> triangles;
@@ -452,9 +452,9 @@ struct NifSubSegmentInfo {
 	// partID: a small nonnegative integer uniquely identifying this
 	// subsegment among all the segments and subsegments.  Used as a value
 	// in triParts.  Not in the file.
-	int partID;
-	uint32_t userSlotID;
-	uint32_t material;
+	int partID = 0;
+	uint32_t userSlotID = 0;
+	uint32_t material = 0;
 	std::vector<float> extraData;
 };
 
@@ -464,7 +464,7 @@ struct NifSegmentInfo {
 	// partID: a small nonnegative integer uniquely identifying this
 	// segment among all the segments and subsegments.  Used as a value
 	// in triParts.  Not in the file.
-	int partID;
+	int partID = 0;
 	std::vector<NifSubSegmentInfo> subs;
 };
 

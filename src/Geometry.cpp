@@ -295,7 +295,7 @@ void NiGeometryData::Create(NiVersion&,
 							const std::vector<Vector2>* texcoords,
 							const std::vector<Vector3>* norms) {
 	size_t vertCount = verts->size();
-	uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
+	constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
 
 	if (vertCount > (size_t) maxIndex)
 		numVertices = maxIndex;
@@ -1415,7 +1415,7 @@ void BSTriShape::Create(NiVersion& version,
 						const std::vector<Vector3>* normals) {
 	flags = 14;
 
-	uint16_t maxVertIndex = std::numeric_limits<uint16_t>().max();
+	constexpr uint16_t maxVertIndex = std::numeric_limits<uint16_t>().max();
 	size_t vertCount = verts->size();
 	if (vertCount > (size_t) maxVertIndex)
 		numVertices = maxVertIndex;
@@ -1598,10 +1598,10 @@ void BSSubIndexTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertI
 	}
 
 	// Align segments
-	int i = 0;
+	size_t i = 0;
 	for (auto& segment : segmentation.segments) {
 		// Align sub segments
-		int j = 0;
+		size_t j = 0;
 		for (auto& subSegment : segment.subSegments) {
 			if (j == 0)
 				subSegment.startIndex = segment.startIndex;
@@ -1733,7 +1733,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 		return;
 
 	// Renumber partitions so that the partition IDs are increasing.
-	int newPartID = 0;
+	size_t newPartID = 0;
 	std::vector<int> oldToNewPartIDs;
 	for (const NifSegmentInfo& seg : inf.segs) {
 		if (seg.partID >= oldToNewPartIDs.size())
@@ -1928,7 +1928,7 @@ void BSDynamicTriShape::Create(NiVersion& version,
 							   const std::vector<Vector3>* normals) {
 	BSTriShape::Create(version, verts, tris, uvs, normals);
 
-	uint32_t maxIndex = std::numeric_limits<uint32_t>().max();
+	constexpr uint32_t maxIndex = std::numeric_limits<uint32_t>().max();
 	size_t vertCount = verts->size();
 	if (vertCount > (size_t) maxIndex)
 		dynamicDataSize = maxIndex;
@@ -2095,7 +2095,7 @@ void NiTriBasedGeomData::Create(NiVersion& version,
 	NiGeometryData::Create(version, verts, inTris, texcoords, norms);
 
 	if (inTris) {
-		uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
+		constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
 		size_t triCount = inTris ? inTris->size() : 0;
 
 		if (numVertices == 0)

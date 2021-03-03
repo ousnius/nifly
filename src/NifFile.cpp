@@ -153,7 +153,7 @@ void NifFile::RemoveInvalidTris() {
 }
 
 size_t NifFile::GetVertexLimit() {
-	size_t maxVertIndex = std::numeric_limits<uint16_t>().max();
+	constexpr size_t maxVertIndex = std::numeric_limits<uint16_t>().max();
 	return maxVertIndex;
 }
 

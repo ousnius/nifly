@@ -19,9 +19,9 @@ struct TBC {
 template<typename T>
 struct Key {
 	float time = 0.0f;
-	T value;
-	T forward;
-	T backward;
+	T value{};
+	T forward{};
+	T backward{};
 	TBC tbc;
 };
 

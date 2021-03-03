@@ -92,19 +92,19 @@ public:
 
 class NiCamera : public NiAVObject {
 private:
-	uint16_t obsoleteFlags;
-	float frustumLeft;
-	float frustumRight;
-	float frustumTop;
-	float frustomBottom;
-	float frustumNear;
-	float frustumFar;
-	bool useOrtho;
-	float viewportLeft;
-	float viewportRight;
-	float viewportTop;
-	float viewportBottom;
-	float lodAdjust;
+	uint16_t obsoleteFlags = 0;
+	float frustumLeft = 0.0f;
+	float frustumRight = 0.0f;
+	float frustumTop = 0.0f;
+	float frustomBottom = 0.0f;
+	float frustumNear = 0.0f;
+	float frustumFar = 0.0f;
+	bool useOrtho = false;
+	float viewportLeft = 0.0f;
+	float viewportRight = 0.0f;
+	float viewportTop = 0.0f;
+	float viewportBottom = 0.0f;
+	float lodAdjust = 0.0f;
 
 	BlockRef<NiAVObject> sceneRef;
 	uint32_t numScreenPolygons = 0;
@@ -224,7 +224,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 
-	NiPersistentSrcTextureRendererData* Clone() override { return new NiPersistentSrcTextureRendererData(*this); }
+	NiPersistentSrcTextureRendererData* Clone() override {
+		return new NiPersistentSrcTextureRendererData(*this);
+	}
 };
 
 class NiPixelData : public TextureRenderData {

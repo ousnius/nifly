@@ -248,7 +248,7 @@ void NiPalette::Put(NiStream& stream) {
 	NiObject::Put(stream);
 
 	// Size can only be 16 or 256
-	if (numEntries != 16 || numEntries != 256) {
+	if (numEntries != 16 && numEntries != 256) {
 		if (numEntries >= 128)
 			numEntries = 256;
 		else

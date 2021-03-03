@@ -270,9 +270,13 @@ public:
 	void GetRootTranslation(Vector3& outVec);
 
 	void MoveVertex(NiShape* shape, const Vector3& pos, const int id);
-	void OffsetShape(NiShape* shape, const Vector3& offset, std::unordered_map<uint16_t, float>* mask = nullptr);
+	void OffsetShape(NiShape* shape,
+					 const Vector3& offset,
+					 std::unordered_map<uint16_t, float>* mask = nullptr);
 	void ScaleShape(NiShape* shape, const Vector3& scale, std::unordered_map<uint16_t, float>* mask = nullptr);
-	void RotateShape(NiShape* shape, const Vector3& angle, std::unordered_map<uint16_t, float>* mask = nullptr);
+	void RotateShape(NiShape* shape,
+					 const Vector3& angle,
+					 std::unordered_map<uint16_t, float>* mask = nullptr);
 
 	NiAlphaProperty* GetAlphaProperty(NiShape* shape);
 	int AssignAlphaProperty(NiShape* shape,

@@ -55,11 +55,11 @@ private:
 	uint32_t numSubtexOffsets = 0;
 	std::vector<Vector4> subtexOffsets;
 
-	float aspectRatio;
-	uint16_t aspectFlags;
-	float speedToAspectAspect2;
-	float speedToAspectSpeed1;
-	float speedToAspectSpeed2;
+	float aspectRatio = 0.0f;
+	uint16_t aspectFlags = 0;
+	float speedToAspectAspect2 = 0.0f;
+	float speedToAspectSpeed1 = 0.0f;
+	float speedToAspectSpeed2 = 0.0f;
 
 public:
 	NiParticlesData();
@@ -175,9 +175,9 @@ class NiParticleSystem;
 class NiPSysModifier : public NiObject {
 private:
 	StringRef name;
-	uint32_t order;
+	uint32_t order = 0;
 	BlockRef<NiParticleSystem> targetRef;
-	bool isActive;
+	bool isActive = false;
 
 public:
 	void Get(NiStream& stream) override;
@@ -262,7 +262,7 @@ private:
 	Color4 color1;
 	Color4 color2;
 	Color4 color3;
-	uint16_t unknownShorts[26];
+	uint16_t unknownShorts[26]{};
 
 public:
 	static constexpr const char* BlockName = "BSPSysSimpleColorModifier";
@@ -278,7 +278,7 @@ private:
 	float initialSpeed = 0.0f;
 	float initialSpeedVariation = 0.0f;
 	Vector4 unknownVector;
-	uint8_t unknownByte;
+	uint8_t unknownByte = 0;
 	float initialAngle = 0.0f;
 	float initialAngleVariation = 0.0f;
 	bool randomSpeedSign = false;
@@ -684,11 +684,11 @@ private:
 	std::vector<StringRef> materialNameRefs;
 	std::vector<uint32_t> materials;
 
-	uint32_t activeMaterial;
-	uint8_t defaultMatNeedsUpdate;
+	uint32_t activeMaterial = 0;
+	uint8_t defaultMatNeedsUpdate = 0;
 
 	BoundingSphere bounds;
-	float boundMinMax[6];
+	float boundMinMax[6]{};
 	uint8_t vertFlags1 = 81;
 	uint8_t vertFlags2 = 0;
 	uint8_t vertFlags3 = 0;
@@ -705,7 +705,7 @@ private:
 
 	BlockRef<NiPSysData> psysDataRef;
 
-	bool isWorldSpace;
+	bool isWorldSpace = false;
 	BlockRefArray<NiPSysModifier> modifierRefs;
 
 public:
@@ -757,9 +757,9 @@ class NiPSysColliderManager;
 
 class NiPSysCollider : public NiObject {
 private:
-	float bounce;
-	bool spawnOnCollide;
-	bool dieOnCollide;
+	float bounce = 0.0f;
+	bool spawnOnCollide = false;
+	bool dieOnCollide = false;
 	BlockRef<NiPSysSpawnModifier> spawnModifierRef;
 	BlockRef<NiPSysColliderManager> managerRef;
 	BlockRef<NiPSysCollider> nextColliderRef;
@@ -819,17 +819,17 @@ public:
 
 class NiPSysEmitter : public NiPSysModifier {
 private:
-	float speed;
-	float speedVariation;
-	float declination;
-	float declinationVariation;
-	float planarAngle;
-	float planarAngleVariation;
+	float speed = 0.0f;
+	float speedVariation = 0.0f;
+	float declination = 0.0f;
+	float declinationVariation = 0.0f;
+	float planarAngle = 0.0f;
+	float planarAngleVariation = 0.0f;
 	Color4 color;
-	float radius;
-	float radiusVariation;
-	float lifeSpan;
-	float lifeSpanVariation;
+	float radius = 0.0f;
+	float radiusVariation = 0.0f;
+	float lifeSpan = 0.0f;
+	float lifeSpanVariation = 0.0f;
 
 public:
 	void Get(NiStream& stream) override;

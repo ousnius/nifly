@@ -74,7 +74,8 @@ public:
 	// Set offset to a specific vertex attribute in the description
 	void SetAttributeOffset(VertexAttribute attr, uint32_t offset) {
 		if (attr != VA_POSITION) {
-			desc = ((uint64_t) offset << (4 * (uint8_t) attr + 2)) | (desc & ~(15 << (4 * (uint8_t) attr + 4)));
+			desc = ((uint64_t) offset << (4 * (uint8_t) attr + 2))
+				   | (desc & ~(15 << (4 * (uint8_t) attr + 4)));
 		}
 	}
 
@@ -92,20 +93,20 @@ public:
 struct BSVertexData {
 	// Single- or half-precision depending on IsFullPrecision() being true
 	Vector3 vert;
-	float bitangentX; // Maybe the dot product of the vert normal and the z-axis?
+	float bitangentX = 0.0f; // Maybe the dot product of the vert normal and the z-axis?
 
 	Vector2 uv;
 
-	uint8_t normal[3];
-	uint8_t bitangentY;
-	uint8_t tangent[3];
-	uint8_t bitangentZ;
+	uint8_t normal[3]{};
+	uint8_t bitangentY = 0;
+	uint8_t tangent[3]{};
+	uint8_t bitangentZ = 0;
 
-	uint8_t colorData[4];
+	uint8_t colorData[4]{};
 
-	float weights[4];
-	uint8_t weightBones[4];
+	float weights[4]{};
+	uint8_t weightBones[4]{};
 
-	float eyeData;
+	float eyeData = 0.0f;
 };
 } // namespace nifly

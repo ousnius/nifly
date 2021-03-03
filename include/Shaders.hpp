@@ -511,7 +511,7 @@ public:
 	bool mixAlbedo = false;			// User Version == 12, User Version 2 == 155
 
 	bool hasTextureArrays = false;			   // User Version == 12, User Version 2 == 155
-	uint32_t numTextureArrays = 0;				   // User Version == 12, User Version 2 == 155
+	uint32_t numTextureArrays = 0;			   // User Version == 12, User Version 2 == 155
 	std::vector<BSTextureArray> textureArrays; // User Version == 12, User Version 2 == 155
 
 	bool useSSR = false;		// Shader Type == 1, User Version == 12, User Version 2 == 130

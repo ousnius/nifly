@@ -332,13 +332,13 @@ public:
 struct FurniturePosition {
 	Vector3 offset;
 
-	uint16_t orientation; // User Version <= 11
-	uint8_t posRef1;		// User Version <= 11
-	uint8_t posRef2;		// User Version <= 11
+	uint16_t orientation = 0; // User Version <= 11
+	uint8_t posRef1 = 0;	  // User Version <= 11
+	uint8_t posRef2 = 0;	  // User Version <= 11
 
-	float heading;		  // User Version >= 12
-	uint16_t animationType; // User Version >= 12
-	uint16_t entryPoints;	  // User Version >= 12
+	float heading = 0.0f;		// User Version >= 12
+	uint16_t animationType = 0; // User Version >= 12
+	uint16_t entryPoints = 0;	// User Version >= 12
 };
 
 class BSFurnitureMarker : public NiExtraData {
@@ -367,7 +367,7 @@ public:
 };
 
 struct DecalVectorBlock {
-	uint16_t numVectors;
+	uint16_t numVectors = 0;
 	std::vector<Vector3> points;
 	std::vector<Vector3> normals;
 };
@@ -425,7 +425,7 @@ public:
 };
 
 struct BoneLOD {
-	uint32_t distance;
+	uint32_t distance = 0;
 	StringRef boneName;
 };
 
