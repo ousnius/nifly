@@ -1141,16 +1141,13 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 								std::floor(f == 1.0f ? 255 : f * 256.0));
 
 							f = std::max(0.0f, std::min(1.0f, colors[i].g));
-							vertex.colorData[1] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f)
-																	   * 256.0);
+							vertex.colorData[1] = (std::floor<uint8_t>(f == 1.0f ? 255 : f) * 256.0);
 
 							f = std::max(0.0f, std::min(1.0f, colors[i].b));
-							vertex.colorData[2] = static_cast<uint8_t>(
-								std::floor(f == 1.0f ? 255 : f * 256.0));
+							vertex.colorData[2] = std::floor<uint8_t>(f == 1.0f ? 255 : f * 256.0);
 
 							f = std::max(0.0f, std::min(1.0f, colors[i].a));
-							vertex.colorData[3] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f)
-																	   * 256.0);
+							vertex.colorData[3] = std::floor<uint8_t>(f == 1.0f ? 255 : f) * 256.0;
 						}
 					}
 
