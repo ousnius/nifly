@@ -1,8 +1,8 @@
-project(nifly-tests)
-
 cmake_minimum_required(VERSION 3.10)
 
-set( HEADER_DIR ${CATCH_DIR}/single_include )
+project(nifly-tests)
+
+find_package( Catch2 REQUIRED )
 
 set( SOURCES_SINGLE_FILE
     TestCase.cpp
@@ -17,12 +17,12 @@ set( TARGETS_ALL
 )
 
 foreach( name ${TARGETS_SINGLE_FILE} )
-    add_executable( ${name} ${TESTS_DIR}/${name}.cpp ${HEADER_DIR}/catch2/catch.hpp )
+    add_executable( ${name} ${TESTS_DIR}/${name}.cpp )
 endforeach()
 
 foreach( name ${TARGETS_ALL} )
-    target_include_directories( ${name} PRIVATE ${HEADER_DIR} ${CATCH_DIR} ${NIFLY_DIR}/include ${NIFLY_DIR}/external )
-    target_link_libraries( ${name} nifly )
+    target_include_directories( ${name} PRIVATE ${NIFLY_DIR}/include ${NIFLY_DIR}/external )
+    target_link_libraries( ${name} PRIVATE nifly Catch2::Catch2 )
 
     set_property(TARGET ${name} PROPERTY CXX_STANDARD 11)
     set_property(TARGET ${name} PROPERTY CXX_EXTENSIONS OFF)
@@ -39,4 +39,8 @@ foreach( name ${TARGETS_ALL} )
     if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
         target_compile_options( ${name}  PRIVATE /W4 /w44265 /WX )
     endif()
+
+    include( CTest )
+    include( Catch )
+    catch_discover_tests( ${name} )
 endforeach()

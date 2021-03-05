@@ -1,6 +1,6 @@
-project(nifly)
-
 cmake_minimum_required(VERSION 3.10)
+
+project(nifly)
 
 add_library(nifly STATIC
     external/half.hpp
@@ -45,8 +45,6 @@ if(MSVC)
     target_compile_options(nifly PUBLIC "/EHsc" "/bigobj")
 endif()
 
-set( CATCH_DIR ${NIFLY_DIR}/external/Catch2 )
 set( TESTS_DIR ${NIFLY_DIR}/tests )
 
-add_subdirectory(external/Catch2)
-add_subdirectory(tests)
+add_subdirectory( ${TESTS_DIR} )
