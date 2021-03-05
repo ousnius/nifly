@@ -1137,16 +1137,20 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 							auto& vertex = bsOptShape->vertData[i];
 
 							float f = std::max(0.0f, std::min(1.0f, colors[i].r));
-							vertex.colorData[0] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+							vertex.colorData[0] = static_cast<uint8_t>(
+								std::floor(f == 1.0f ? 255 : f * 256.0));
 
 							f = std::max(0.0f, std::min(1.0f, colors[i].g));
-							vertex.colorData[1] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+							vertex.colorData[1] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f)
+																	   * 256.0);
 
 							f = std::max(0.0f, std::min(1.0f, colors[i].b));
-							vertex.colorData[2] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+							vertex.colorData[2] = static_cast<uint8_t>(
+								std::floor(f == 1.0f ? 255 : f * 256.0));
 
 							f = std::max(0.0f, std::min(1.0f, colors[i].a));
-							vertex.colorData[3] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+							vertex.colorData[3] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f)
+																	   * 256.0);
 						}
 					}
 
@@ -2167,7 +2171,7 @@ void NifFile::SetShapeBoneWeights(const std::string& shapeName,
 		if (sw.second >= 0.0001f)
 			bone->vertexWeights.emplace_back(SkinWeight(sw.first, sw.second));
 
-	bone->numVertices = (uint16_t) bone->vertexWeights.size();
+	bone->numVertices = static_cast<uint16_t>(bone->vertexWeights.size());
 }
 
 void NifFile::SetShapeVertWeights(const std::string& shapeName,
@@ -2689,16 +2693,16 @@ void NifFile::SetColorsForShape(const std::string& shapeName, const std::vector<
 				auto& vertex = bsTriShape->vertData[i];
 
 				float f = std::max(0.0f, std::min(1.0f, colors[i].r));
-				vertex.colorData[0] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+				vertex.colorData[0] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
 
 				f = std::max(0.0f, std::min(1.0f, colors[i].g));
-				vertex.colorData[1] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+				vertex.colorData[1] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
 
 				f = std::max(0.0f, std::min(1.0f, colors[i].b));
-				vertex.colorData[2] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+				vertex.colorData[2] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
 
 				f = std::max(0.0f, std::min(1.0f, colors[i].a));
-				vertex.colorData[3] = (uint8_t) std::floor(f == 1.0f ? 255 : f * 256.0);
+				vertex.colorData[3] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
 			}
 		}
 	}

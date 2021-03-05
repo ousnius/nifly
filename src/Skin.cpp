@@ -126,22 +126,22 @@ void NiSkinPartition::Get(NiStream& stream) {
 					}
 					else {
 						// Half precision
-						stream.read((char*) &halfData, 2);
+						stream.read(reinterpret_cast<char*>(&halfData), 2);
 						vertex.vert.x = halfData;
-						stream.read((char*) &halfData, 2);
+						stream.read(reinterpret_cast<char*>(&halfData), 2);
 						vertex.vert.y = halfData;
-						stream.read((char*) &halfData, 2);
+						stream.read(reinterpret_cast<char*>(&halfData), 2);
 						vertex.vert.z = halfData;
 
-						stream.read((char*) &halfData, 2);
+						stream.read(reinterpret_cast<char*>(&halfData), 2);
 						vertex.bitangentX = halfData;
 					}
 				}
 
 				if (HasUVs()) {
-					stream.read((char*) &halfData, 2);
+					stream.read(reinterpret_cast<char*>(&halfData), 2);
 					vertex.uv.u = halfData;
-					stream.read((char*) &halfData, 2);
+					stream.read(reinterpret_cast<char*>(&halfData), 2);
 					vertex.uv.v = halfData;
 				}
 
@@ -165,7 +165,7 @@ void NiSkinPartition::Get(NiStream& stream) {
 
 				if (IsSkinned()) {
 					for (int j = 0; j < 4; j++) {
-						stream.read((char*) &halfData, 2);
+						stream.read(reinterpret_cast<char*>(&halfData), 2);
 						vertex.weights[j] = halfData;
 					}
 
@@ -272,22 +272,22 @@ void NiSkinPartition::Put(NiStream& stream) {
 					else {
 						// Half precision
 						halfData = vertex.vert.x;
-						stream.write((char*) &halfData, 2);
+						stream.write(reinterpret_cast<char*>(&halfData), 2);
 						halfData = vertex.vert.y;
-						stream.write((char*) &halfData, 2);
+						stream.write(reinterpret_cast<char*>(&halfData), 2);
 						halfData = vertex.vert.z;
-						stream.write((char*) &halfData, 2);
+						stream.write(reinterpret_cast<char*>(&halfData), 2);
 
 						halfData = vertex.bitangentX;
-						stream.write((char*) &halfData, 2);
+						stream.write(reinterpret_cast<char*>(&halfData), 2);
 					}
 				}
 
 				if (HasUVs()) {
 					halfData = vertex.uv.u;
-					stream.write((char*) &halfData, 2);
+					stream.write(reinterpret_cast<char*>(&halfData), 2);
 					halfData = vertex.uv.v;
-					stream.write((char*) &halfData, 2);
+					stream.write(reinterpret_cast<char*>(&halfData), 2);
 				}
 
 				if (HasNormals()) {
@@ -311,7 +311,7 @@ void NiSkinPartition::Put(NiStream& stream) {
 				if (IsSkinned()) {
 					for (int j = 0; j < 4; j++) {
 						halfData = vertex.weights[j];
-						stream.write((char*) &halfData, 2);
+						stream.write(reinterpret_cast<char*>(&halfData), 2);
 					}
 
 					for (int j = 0; j < 4; j++)

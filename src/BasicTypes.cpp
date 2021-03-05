@@ -362,7 +362,7 @@ int NiHeader::GetBlockRefCount(const int blockId) {
 
 uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 	NiString niStr;
-	uint16_t typeId = (uint16_t) blockTypes.size();
+	uint16_t typeId = static_cast<uint16_t>(blockTypes.size());
 	for (uint16_t i = 0; i < blockTypes.size(); i++) {
 		if (blockTypes[i].GetString() == blockTypeName) {
 			typeId = i;

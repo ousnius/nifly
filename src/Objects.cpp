@@ -81,7 +81,7 @@ void NiAVObject::Get(NiStream& stream) {
 
 	flags = 0;
 	if (stream.GetVersion().Stream() <= 26)
-		stream.read((char*) &flags, 2);
+		stream.read(reinterpret_cast<char*>(&flags), 2);
 	else
 		stream >> flags;
 
@@ -100,7 +100,7 @@ void NiAVObject::Put(NiStream& stream) {
 	NiObjectNET::Put(stream);
 
 	if (stream.GetVersion().Stream() <= 26)
-		stream.write((char*) &flags, 2);
+		stream.write(reinterpret_cast<char*>(&flags), 2);
 	else
 		stream << flags;
 

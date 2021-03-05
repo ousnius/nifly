@@ -752,7 +752,7 @@ void bhkWorldObject::Get(NiStream& stream) {
 	stream >> collisionFilter;
 	stream >> unkInt1;
 	stream >> broadPhaseType;
-	stream.read((char*) unkBytes, 3);
+	stream.read(reinterpret_cast<char*>(unkBytes), 3);
 	stream >> prop;
 }
 
@@ -763,7 +763,7 @@ void bhkWorldObject::Put(NiStream& stream) {
 	stream << collisionFilter;
 	stream << unkInt1;
 	stream << broadPhaseType;
-	stream.write((char*) unkBytes, 3);
+	stream.write(reinterpret_cast<char*>(unkBytes), 3);
 	stream << prop;
 }
 
@@ -880,8 +880,8 @@ void ConstraintData::Get(NiStream& stream) {
 	stream >> priority;
 
 	switch (type) {
-		case BallAndSocket: stream.read((char*) &desc1, 32); break;
-		case Hinge: stream.read((char*) &desc2, 128); break;
+		case BallAndSocket: stream.read(reinterpret_cast<char*>(&desc1), 32); break;
+		case Hinge: stream.read(reinterpret_cast<char*>(&desc2), 128); break;
 		case LimitedHinge:
 			stream >> desc3.hinge;
 			stream >> desc3.minAngle;
@@ -920,7 +920,7 @@ void ConstraintData::Get(NiStream& stream) {
 			stream >> desc5.maxFriction;
 			desc5.motorDesc.Get(stream);
 			break;
-		case StiffSpring: stream.read((char*) &desc6, 36); break;
+		case StiffSpring: stream.read(reinterpret_cast<char*>(&desc6), 36); break;
 	}
 
 	stream >> strength;
@@ -933,8 +933,8 @@ void ConstraintData::Put(NiStream& stream) {
 	stream << priority;
 
 	switch (type) {
-		case BallAndSocket: stream.write((char*) &desc1, 32); break;
-		case Hinge: stream.write((char*) &desc2, 128); break;
+		case BallAndSocket: stream.write(reinterpret_cast<char*>(&desc1), 32); break;
+		case Hinge: stream.write(reinterpret_cast<char*>(&desc2), 128); break;
 		case LimitedHinge:
 			stream << desc3.hinge;
 			stream << desc3.minAngle;
@@ -973,7 +973,7 @@ void ConstraintData::Put(NiStream& stream) {
 			stream << desc5.maxFriction;
 			desc5.motorDesc.Put(stream);
 			break;
-		case StiffSpring: stream.write((char*) &desc6, 36); break;
+		case StiffSpring: stream.write(reinterpret_cast<char*>(&desc6), 36); break;
 	}
 
 	stream << strength;
@@ -1156,7 +1156,7 @@ void bhkBallSocketConstraintChain::Put(NiStream& stream) {
 
 	stream << numPivots;
 	for (int i = 0; i < numPivots; i++)
-		stream.write((char*) &pivots[i], 16);
+		stream.write(reinterpret_cast<char*>(&pivots[i]), 16);
 
 	stream << tau;
 	stream << damping;
@@ -1208,12 +1208,12 @@ void bhkRigidBody::Get(NiStream& stream) {
 	stream >> processContactCallbackDelay;
 	stream >> unkInt1;
 	stream >> collisionFilterCopy;
-	stream.read((char*) unkShorts2, 12);
+	stream.read(reinterpret_cast<char*>(unkShorts2), 12);
 	stream >> translation;
 	stream >> rotation;
 	stream >> linearVelocity;
 	stream >> angularVelocity;
-	stream.read((char*) inertiaMatrix, 48);
+	stream.read(reinterpret_cast<char*>(inertiaMatrix), 48);
 	stream >> center;
 	stream >> mass;
 	stream >> linearDamping;
@@ -1264,12 +1264,12 @@ void bhkRigidBody::Put(NiStream& stream) {
 	stream << processContactCallbackDelay;
 	stream << unkInt1;
 	stream << collisionFilterCopy;
-	stream.write((char*) unkShorts2, 12);
+	stream.write(reinterpret_cast<char*>(unkShorts2), 12);
 	stream << translation;
 	stream << rotation;
 	stream << linearVelocity;
 	stream << angularVelocity;
-	stream.write((char*) inertiaMatrix, 48);
+	stream.write(reinterpret_cast<char*>(inertiaMatrix), 48);
 	stream << center;
 	stream << mass;
 	stream << linearDamping;
@@ -1377,7 +1377,7 @@ void bhkCompressedMeshShapeData::Get(NiStream& stream) {
 	stream >> numBigTris;
 	bigTris.resize(numBigTris);
 	for (int i = 0; i < numBigTris; i++)
-		stream.read((char*) &bigTris[i], 12);
+		stream.read(reinterpret_cast<char*>(&bigTris[i]), 12);
 
 	stream >> numChunks;
 	chunks.resize(numChunks);
@@ -1452,7 +1452,7 @@ void bhkCompressedMeshShapeData::Put(NiStream& stream) {
 
 	stream << numBigTris;
 	for (int i = 0; i < numBigTris; i++)
-		stream.write((char*) &bigTris[i], 12);
+		stream.write(reinterpret_cast<char*>(&bigTris[i]), 12);
 
 	stream << numChunks;
 	for (int i = 0; i < numChunks; i++) {

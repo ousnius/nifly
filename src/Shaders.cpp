@@ -400,7 +400,7 @@ uint32_t BSShaderProperty::GetShaderType() {
 }
 
 void BSShaderProperty::SetShaderType(uint32_t type) {
-	shaderType = (BSShaderType) type;
+	shaderType = static_cast<BSShaderType>(type);
 }
 
 bool BSShaderProperty::IsSkinTinted() {
