@@ -16,6 +16,10 @@ set( TARGETS_ALL
     ${TARGETS_SINGLE_FILE}
 )
 
+enable_testing()
+include( CTest )
+include( Catch )
+
 foreach( name ${TARGETS_SINGLE_FILE} )
     add_executable( ${name} ${TESTS_DIR}/${name}.cpp )
 endforeach()
@@ -40,7 +44,5 @@ foreach( name ${TARGETS_ALL} )
         target_compile_options( ${name}  PRIVATE /W4 /w44265 /WX )
     endif()
 
-    include( CTest )
-    include( Catch )
     catch_discover_tests( ${name} )
 endforeach()

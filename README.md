@@ -2,23 +2,33 @@
 C++ NIF library for the Gamebryo/NetImmerse File Format.  
 Created with a clean-room design.
 
+[![CMake](https://github.com/ousnius/nifly/actions/workflows/cmake.yml/badge.svg)](https://github.com/ousnius/nifly/actions/workflows/cmake.yml)
+
 ### Features
 - Reading and writing NIF files (Gamebryo/NetImmerse File Format)
 - Cross platform
 - Lots of helper functions
 - Includes basics often used with 3D meshes
 - Unknown NIF blocks are kept untouched where possible.
-- No external dependencies (at this point)
+- No external dependencies except for the test framework
 
 ### Usage/Building
 - Simply include the headers/source in your project.
 - You may use the included CMake list.
 - Tested with MSVC++ 14.x (VS 2017) or higher
 - Should work with most compilers. If not, please feel free to add an issue or make a PR.
+- To get Catch2, install the [CMake package](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository) (or vcpkg):
+```bash
+git clone -b v2.x https://github.com/catchorg/Catch2.git
+cd Catch2
+cmake -Bbuild -H. -DBUILD_TESTING=OFF
+cmake --build build/ --target install  #with admin privileges (or sudo) depending on your cmake prefix path
+```
 
 ### Libraries used
 - [half - IEEE 754-based half-precision floating point library (v1.12.0)](http://half.sourceforge.net/)
 - [Miniball (v3.0)](https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html)
+- [Catch2 (v2.x)](https://github.com/catchorg/Catch2/) as the test framework
 
 ### Used by
 - [BodySlide and Outfit Studio](https://github.com/ousnius/BodySlide-and-Outfit-Studio)
