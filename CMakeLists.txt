@@ -1,4 +1,4 @@
-Project(nifly)
+project(nifly)
 
 cmake_minimum_required(VERSION 3.10)
 
@@ -37,9 +37,16 @@ add_library(nifly STATIC
     src/Object3d.cpp
     )
 
-target_include_directories(nifly PUBLIC "include" "external")
+set( NIFLY_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
+target_include_directories(nifly PUBLIC ${NIFLY_DIR}/include ${NIFLY_DIR}/external)
 
 target_compile_features(nifly PUBLIC cxx_std_17)
 if(MSVC)
     target_compile_options(nifly PUBLIC "/EHsc" "/bigobj")
 endif()
+
+set( CATCH_DIR ${NIFLY_DIR}/external/Catch2 )
+set( TESTS_DIR ${NIFLY_DIR}/tests )
+
+add_subdirectory(external/Catch2)
+add_subdirectory(tests)
