@@ -259,7 +259,7 @@ protected:
 	bool keepEmptyRefs = false;
 
 public:
-	RefArray() {}
+	virtual ~RefArray() {}
 
 	int GetSize() { return arraySize; }
 
