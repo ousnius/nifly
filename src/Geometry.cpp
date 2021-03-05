@@ -21,12 +21,12 @@ void NiAdditionalGeometryData::Get(NiStream& stream) {
 
 	stream >> numBlockInfos;
 	blockInfos.resize(numBlockInfos);
-	for (int i = 0; i < numBlockInfos; i++)
+	for (uint32_t i = 0; i < numBlockInfos; i++)
 		blockInfos[i].Get(stream);
 
 	stream >> numBlocks;
 	blocks.resize(numBlocks);
-	for (int i = 0; i < numBlocks; i++)
+	for (uint32_t i = 0; i < numBlocks; i++)
 		blocks[i].Get(stream);
 }
 
@@ -36,11 +36,11 @@ void NiAdditionalGeometryData::Put(NiStream& stream) {
 	stream << numVertices;
 
 	stream << numBlockInfos;
-	for (int i = 0; i < numBlockInfos; i++)
+	for (uint32_t i = 0; i < numBlockInfos; i++)
 		blockInfos[i].Put(stream);
 
 	stream << numBlocks;
-	for (int i = 0; i < numBlocks; i++)
+	for (uint32_t i = 0; i < numBlocks; i++)
 		blocks[i].Put(stream);
 }
 
@@ -52,12 +52,12 @@ void BSPackedAdditionalGeometryData::Get(NiStream& stream) {
 
 	stream >> numBlockInfos;
 	blockInfos.resize(numBlockInfos);
-	for (int i = 0; i < numBlockInfos; i++)
+	for (uint32_t i = 0; i < numBlockInfos; i++)
 		blockInfos[i].Get(stream);
 
 	stream >> numBlocks;
 	blocks.resize(numBlocks);
-	for (int i = 0; i < numBlocks; i++)
+	for (uint32_t i = 0; i < numBlocks; i++)
 		blocks[i].Get(stream);
 }
 
@@ -67,11 +67,11 @@ void BSPackedAdditionalGeometryData::Put(NiStream& stream) {
 	stream << numVertices;
 
 	stream << numBlockInfos;
-	for (int i = 0; i < numBlockInfos; i++)
+	for (uint32_t i = 0; i < numBlockInfos; i++)
 		blockInfos[i].Put(stream);
 
 	stream << numBlocks;
-	for (int i = 0; i < numBlocks; i++)
+	for (uint32_t i = 0; i < numBlocks; i++)
 		blocks[i].Put(stream);
 }
 
@@ -87,7 +87,7 @@ void NiGeometryData::Get(NiStream& stream) {
 
 	if (hasVertices && !isPSys) {
 		vertices.resize(numVertices);
-		for (int i = 0; i < numVertices; i++)
+		for (uint32_t i = 0; i < numVertices; i++)
 			stream >> vertices[i];
 	}
 
@@ -105,17 +105,17 @@ void NiGeometryData::Get(NiStream& stream) {
 	if (hasNormals && !isPSys) {
 		normals.resize(numVertices);
 
-		for (int i = 0; i < numVertices; i++)
+		for (uint32_t i = 0; i < numVertices; i++)
 			stream >> normals[i];
 
 		if (nbtMethod) {
 			tangents.resize(numVertices);
 			bitangents.resize(numVertices);
 
-			for (int i = 0; i < numVertices; i++)
+			for (uint32_t i = 0; i < numVertices; i++)
 				stream >> tangents[i];
 
-			for (int i = 0; i < numVertices; i++)
+			for (uint32_t i = 0; i < numVertices; i++)
 				stream >> bitangents[i];
 		}
 	}
@@ -125,15 +125,15 @@ void NiGeometryData::Get(NiStream& stream) {
 	stream >> hasVertexColors;
 	if (hasVertexColors && !isPSys) {
 		vertexColors.resize(numVertices);
-		for (int i = 0; i < numVertices; i++)
+		for (uint32_t i = 0; i < numVertices; i++)
 			stream >> vertexColors[i];
 	}
 
 	if (numTextureSets > 0 && !isPSys) {
 		uvSets.resize(numTextureSets);
-		for (int i = 0; i < numTextureSets; i++) {
+		for (uint32_t i = 0; i < numTextureSets; i++) {
 			uvSets[i].resize(numVertices);
-			for (int j = 0; j < numVertices; j++)
+			for (uint32_t j = 0; j < numVertices; j++)
 				stream >> uvSets[i][j];
 		}
 	}
@@ -152,7 +152,7 @@ void NiGeometryData::Put(NiStream& stream) {
 	stream << hasVertices;
 
 	if (hasVertices && !isPSys) {
-		for (int i = 0; i < numVertices; i++)
+		for (uint32_t i = 0; i < numVertices; i++)
 			stream << vertices[i];
 	}
 
@@ -168,14 +168,14 @@ void NiGeometryData::Put(NiStream& stream) {
 
 	stream << hasNormals;
 	if (hasNormals && !isPSys) {
-		for (int i = 0; i < numVertices; i++)
+		for (uint32_t i = 0; i < numVertices; i++)
 			stream << normals[i];
 
 		if (nbtMethod) {
-			for (int i = 0; i < numVertices; i++)
+			for (uint32_t i = 0; i < numVertices; i++)
 				stream << tangents[i];
 
-			for (int i = 0; i < numVertices; i++)
+			for (uint32_t i = 0; i < numVertices; i++)
 				stream << bitangents[i];
 		}
 	}
@@ -184,13 +184,13 @@ void NiGeometryData::Put(NiStream& stream) {
 
 	stream << hasVertexColors;
 	if (hasVertexColors && !isPSys) {
-		for (int i = 0; i < numVertices; i++)
+		for (uint32_t i = 0; i < numVertices; i++)
 			stream << vertexColors[i];
 	}
 
 	if (numTextureSets > 0 && !isPSys) {
-		for (int i = 0; i < numTextureSets; i++)
-			for (int j = 0; j < numVertices; j++)
+		for (uint32_t i = 0; i < numTextureSets; i++)
+			for (uint32_t j = 0; j < numVertices; j++)
 				stream << uvSets[i][j];
 	}
 
@@ -594,7 +594,7 @@ void BSTriShape::Get(NiStream& stream) {
 
 	if (dataSize > 0) {
 		half_float::half halfData;
-		for (int i = 0; i < numVertices; i++) {
+		for (uint32_t i = 0; i < numVertices; i++) {
 			auto& vertex = vertData[i];
 			if (HasVertices()) {
 				if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
@@ -660,7 +660,7 @@ void BSTriShape::Get(NiStream& stream) {
 	triangles.resize(numTriangles);
 
 	if (dataSize > 0) {
-		for (int i = 0; i < numTriangles; i++)
+		for (uint32_t i = 0; i < numTriangles; i++)
 			stream >> triangles[i];
 	}
 
@@ -673,7 +673,7 @@ void BSTriShape::Get(NiStream& stream) {
 			particleTris.resize(numTriangles);
 
 			half_float::half halfData;
-			for (int i = 0; i < numVertices; i++) {
+			for (uint32_t i = 0; i < numVertices; i++) {
 				stream.read(reinterpret_cast<char*>(&halfData), 2);
 				particleVerts[i].x = halfData;
 				stream.read(reinterpret_cast<char*>(&halfData), 2);
@@ -682,7 +682,7 @@ void BSTriShape::Get(NiStream& stream) {
 				particleVerts[i].z = halfData;
 			}
 
-			for (int i = 0; i < numVertices; i++) {
+			for (uint32_t i = 0; i < numVertices; i++) {
 				stream.read(reinterpret_cast<char*>(&halfData), 2);
 				particleNorms[i].x = halfData;
 				stream.read(reinterpret_cast<char*>(&halfData), 2);
@@ -691,7 +691,7 @@ void BSTriShape::Get(NiStream& stream) {
 				particleNorms[i].z = halfData;
 			}
 
-			for (int i = 0; i < numTriangles; i++)
+			for (uint32_t i = 0; i < numTriangles; i++)
 				stream >> particleTris[i];
 		}
 	}
@@ -747,7 +747,7 @@ void BSTriShape::Put(NiStream& stream) {
 
 		if (dataSize > 0) {
 			half_float::half halfData;
-			for (int i = 0; i < numVertices; i++) {
+			for (uint32_t i = 0; i < numVertices; i++) {
 				auto& vertex = vertData[i];
 				if (HasVertices()) {
 					if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
@@ -811,7 +811,7 @@ void BSTriShape::Put(NiStream& stream) {
 		}
 
 		if (dataSize > 0) {
-			for (int i = 0; i < numTriangles; i++)
+			for (uint32_t i = 0; i < numTriangles; i++)
 				stream << triangles[i];
 		}
 	}
@@ -821,7 +821,7 @@ void BSTriShape::Put(NiStream& stream) {
 
 		if (particleDataSize > 0) {
 			half_float::half halfData;
-			for (int i = 0; i < numVertices; i++) {
+			for (uint32_t i = 0; i < numVertices; i++) {
 				halfData = particleVerts[i].x;
 				stream.write(reinterpret_cast<char*>(&halfData), 2);
 				halfData = particleVerts[i].y;
@@ -830,7 +830,7 @@ void BSTriShape::Put(NiStream& stream) {
 				stream.write(reinterpret_cast<char*>(&halfData), 2);
 			}
 
-			for (int i = 0; i < numVertices; i++) {
+			for (uint32_t i = 0; i < numVertices; i++) {
 				halfData = particleNorms[i].x;
 				stream.write(reinterpret_cast<char*>(&halfData), 2);
 				halfData = particleNorms[i].y;
@@ -839,7 +839,7 @@ void BSTriShape::Put(NiStream& stream) {
 				stream.write(reinterpret_cast<char*>(&halfData), 2);
 			}
 
-			for (int i = 0; i < numTriangles; i++)
+			for (uint32_t i = 0; i < numTriangles; i++)
 				stream << particleTris[i];
 		}
 	}
@@ -901,7 +901,7 @@ void BSTriShape::SetAlphaPropertyRef(int alphaPropRef) {
 
 std::vector<Vector3>* BSTriShape::GetRawVerts() {
 	rawVertices.resize(numVertices);
-	for (int i = 0; i < numVertices; i++)
+	for (uint32_t i = 0; i < numVertices; i++)
 		rawVertices[i] = vertData[i].vert;
 
 	return &rawVertices;
@@ -912,7 +912,7 @@ std::vector<Vector3>* BSTriShape::GetNormalData(bool xform) {
 		return nullptr;
 
 	rawNormals.resize(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		float q1 = ((static_cast<float>(vertData[i].normal[0])) / 255.0f) * 2.0f - 1.0f;
 		float q2 = ((static_cast<float>(vertData[i].normal[1])) / 255.0f) * 2.0f - 1.0f;
 		float q3 = ((static_cast<float>(vertData[i].normal[2])) / 255.0f) * 2.0f - 1.0f;
@@ -941,7 +941,7 @@ std::vector<Vector3>* BSTriShape::GetTangentData(bool xform) {
 		return nullptr;
 
 	rawTangents.resize(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		float q6 = ((static_cast<float>(vertData[i].tangent[0])) / 255.0f) * 2.0f - 1.0f;
 		float q7 = ((static_cast<float>(vertData[i].tangent[1])) / 255.0f) * 2.0f - 1.0f;
 		float q8 = ((static_cast<float>(vertData[i].tangent[2])) / 255.0f) * 2.0f - 1.0f;
@@ -969,7 +969,7 @@ std::vector<Vector3>* BSTriShape::GetBitangentData(bool xform) {
 		return nullptr;
 
 	rawBitangents.resize(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		float x = (vertData[i].bitangentX);
 		float y = ((static_cast<float>(vertData[i].bitangentY)) / 255.0f) * 2.0f - 1.0f;
 		float z = ((static_cast<float>(vertData[i].bitangentZ)) / 255.0f) * 2.0f - 1.0f;
@@ -994,7 +994,7 @@ std::vector<Vector2>* BSTriShape::GetUVData() {
 		return nullptr;
 
 	rawUvs.resize(numVertices);
-	for (int i = 0; i < numVertices; i++)
+	for (uint32_t i = 0; i < numVertices; i++)
 		rawUvs[i] = vertData[i].uv;
 
 	return &rawUvs;
@@ -1005,7 +1005,7 @@ std::vector<Color4>* BSTriShape::GetColorData() {
 		return nullptr;
 
 	rawColors.resize(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		rawColors[i].r = vertData[i].colorData[0] / 255.0f;
 		rawColors[i].g = vertData[i].colorData[1] / 255.0f;
 		rawColors[i].b = vertData[i].colorData[2] / 255.0f;
@@ -1020,7 +1020,7 @@ std::vector<float>* BSTriShape::GetEyeData() {
 		return nullptr;
 
 	rawEyeData.resize(numVertices);
-	for (int i = 0; i < numVertices; ++i)
+	for (uint32_t i = 0; i < numVertices; ++i)
 		rawEyeData[i] = vertData[i].eyeData;
 
 	return &rawEyeData;
@@ -1145,7 +1145,7 @@ void BSTriShape::SetNormals(const std::vector<Vector3>& inNorms) {
 	SetNormals(true);
 
 	rawNormals.resize(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		rawNormals[i] = inNorms[i];
 		vertData[i].normal[0] = static_cast<uint8_t>(round((((inNorms[i].x + 1.0f) / 2.0f) * 255.0f)));
 		vertData[i].normal[1] = static_cast<uint8_t>(round((((inNorms[i].y + 1.0f) / 2.0f) * 255.0f)));
@@ -1156,7 +1156,7 @@ void BSTriShape::SetNormals(const std::vector<Vector3>& inNorms) {
 void BSTriShape::SetTangentData(const std::vector<Vector3>& in) {
 	SetTangents(true);
 
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		vertData[i].tangent[0] = static_cast<uint8_t>(round((((in[i].x + 1.0f) / 2.0f) * 255.0f)));
 		vertData[i].tangent[1] = static_cast<uint8_t>(round((((in[i].y + 1.0f) / 2.0f) * 255.0f)));
 		vertData[i].tangent[2] = static_cast<uint8_t>(round((((in[i].z + 1.0f) / 2.0f) * 255.0f)));
@@ -1166,7 +1166,7 @@ void BSTriShape::SetTangentData(const std::vector<Vector3>& in) {
 void BSTriShape::SetBitangentData(const std::vector<Vector3>& in) {
 	SetTangents(true);
 
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		vertData[i].bitangentX = in[i].x;
 		vertData[i].bitangentY = static_cast<uint8_t>(round((((in[i].y + 1.0f) / 2.0f) * 255.0f)));
 		vertData[i].bitangentZ = static_cast<uint8_t>(round((((in[i].z + 1.0f) / 2.0f) * 255.0f)));
@@ -1176,7 +1176,7 @@ void BSTriShape::SetBitangentData(const std::vector<Vector3>& in) {
 void BSTriShape::SetEyeData(const std::vector<float>& in) {
 	SetEyeData(true);
 
-	for (int i = 0; i < numVertices; i++)
+	for (uint32_t i = 0; i < numVertices; i++)
 		vertData[i].eyeData = in[i];
 }
 
@@ -1208,10 +1208,10 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 		SortingMatcher matcher(verts.data(), verts.size());
 		for (const std::vector<int>& matchset : matcher.matches) {
 			seamNorms.resize(matchset.size());
-			for (int j = 0; j < matchset.size(); ++j) {
+			for (uint32_t j = 0; j < matchset.size(); ++j) {
 				const Vector3& n = norms[matchset[j]];
 				Vector3 sn = n;
-				for (int k = 0; k < matchset.size(); ++k) {
+				for (uint32_t k = 0; k < matchset.size(); ++k) {
 					if (j == k)
 						continue;
 					const Vector3& mn = norms[matchset[k]];
@@ -1222,7 +1222,7 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 				sn.Normalize();
 				seamNorms[j] = sn;
 			}
-			for (int j = 0; j < matchset.size(); ++j)
+			for (uint32_t j = 0; j < matchset.size(); ++j)
 				norms[matchset[j]] = seamNorms[j];
 		}
 	}
@@ -1235,7 +1235,7 @@ void BSTriShape::RecalcNormals(const bool smooth,
 	SetNormals(true);
 
 	std::vector<Vector3> verts(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		verts[i].x = rawVertices[i].x * -0.1f;
 		verts[i].z = rawVertices[i].y * 0.1f;
 		verts[i].y = rawVertices[i].z * 0.1f;
@@ -1245,7 +1245,7 @@ void BSTriShape::RecalcNormals(const bool smooth,
 	CalculateNormals(verts, triangles, norms, smooth, smoothThresh);
 
 	rawNormals.resize(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		if (lockedIndices) {
 			// Skip locked indices (keep current normal)
 			if (lockedIndices->find(i) != lockedIndices->end())
@@ -1322,7 +1322,7 @@ void BSTriShape::CalcTangentSpace() {
 	rawBitangents.resize(numVertices);
 	rawTangents.resize(numVertices);
 
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		rawTangents[i] = tan1[i];
 		rawBitangents[i] = tan2[i];
 
@@ -1441,7 +1441,7 @@ void BSTriShape::Create(NiVersion& version,
 	if (uvs && uvs->size() != numVertices)
 		SetUVs(false);
 
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		auto& vertex = vertData[i];
 		vertex.vert = (*verts)[i];
 
@@ -1459,7 +1459,7 @@ void BSTriShape::Create(NiVersion& version,
 	}
 
 	triangles.resize(numTriangles);
-	for (int i = 0; i < numTriangles; i++)
+	for (uint32_t i = 0; i < numTriangles; i++)
 		triangles[i] = (*tris)[i];
 
 	bounds = BoundingSphere(*GetRawVerts());
@@ -1658,7 +1658,7 @@ void BSSubIndexTriShape::SetDefaultSegments() {
 	segmentation.subSegmentData.ssfFile.Clear();
 
 	segmentation.segments.resize(4);
-	for (int i = 0; i < 3; i++) {
+	for (uint32_t i = 0; i < 3; i++) {
 		segmentation.segments[i].startIndex = 0;
 		segmentation.segments[i].numPrimitives = 0;
 		segmentation.segments[i].parentArrayIndex = 0xFFFFFFFF;
@@ -1698,7 +1698,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 	int partID = 0;
 	int arrayIndex = 0;
 
-	for (int i = 0; i < segmentation.segments.size(); ++i) {
+	for (uint32_t i = 0; i < segmentation.segments.size(); ++i) {
 		BSSITSSegment& seg = segmentation.segments[i];
 		uint32_t startIndex = seg.startIndex / 3;
 		uint32_t endIndex = std::min(numTris, startIndex + seg.numPrimitives);
@@ -1709,7 +1709,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 		inf.segs[i].partID = partID++;
 		inf.segs[i].subs.resize(seg.subSegments.size());
 
-		for (int j = 0; j < seg.subSegments.size(); ++j) {
+		for (uint32_t j = 0; j < seg.subSegments.size(); ++j) {
 			BSSITSSubSegment& sub = seg.subSegments[j];
 			startIndex = sub.startIndex / 3;
 
@@ -1750,13 +1750,13 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	}
 
 	std::vector<int> triParts(numTris);
-	for (int i = 0; i < numTris; ++i)
+	for (uint32_t i = 0; i < numTris; ++i)
 		if (triParts[i] >= 0)
 			triParts[i] = oldToNewPartIDs[inTriParts[i]];
 
 	// Sort triangles by partition ID
 	std::vector<uint32_t> triInds(numTris);
-	for (int i = 0; i < numTris; ++i)
+	for (uint32_t i = 0; i < numTris; ++i)
 		triInds[i] = i;
 
 	std::stable_sort(triInds.begin(), triInds.end(), [&triParts](int i, int j) {
@@ -1768,7 +1768,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 
 	// Find first triangle of each partition
 	std::vector<int> partTriInds(newPartID + 1);
-	for (int i = 0, j = 0; i < triInds.size(); ++i)
+	for (uint32_t i = 0, j = 0; i < triInds.size(); ++i)
 		while (triParts[triInds[i]] >= j)
 			partTriInds[j++] = i;
 
@@ -1885,7 +1885,7 @@ void BSDynamicTriShape::Get(NiStream& stream) {
 	stream >> dynamicDataSize;
 
 	dynamicData.resize(numVertices);
-	for (int i = 0; i < numVertices; i++)
+	for (uint32_t i = 0; i < numVertices; i++)
 		stream >> dynamicData[i];
 }
 
@@ -1894,7 +1894,7 @@ void BSDynamicTriShape::Put(NiStream& stream) {
 
 	stream << dynamicDataSize;
 
-	for (int i = 0; i < numVertices; i++)
+	for (uint32_t i = 0; i < numVertices; i++)
 		stream << dynamicData[i];
 }
 
@@ -1909,7 +1909,7 @@ void BSDynamicTriShape::CalcDynamicData() {
 	dynamicDataSize = numVertices * 16;
 
 	dynamicData.resize(numVertices);
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		auto& vertex = vertData[i];
 		dynamicData[i].x = vertex.vert.x;
 		dynamicData[i].y = vertex.vert.y;
@@ -1938,7 +1938,7 @@ void BSDynamicTriShape::Create(NiVersion& version,
 		dynamicDataSize = uint32_t(vertCount);
 
 	dynamicData.resize(dynamicDataSize);
-	for (int i = 0; i < dynamicDataSize; i++) {
+	for (uint32_t i = 0; i < dynamicDataSize; i++) {
 		dynamicData[i].x = (*verts)[i].x;
 		dynamicData[i].y = (*verts)[i].y;
 		dynamicData[i].z = (*verts)[i].z;
@@ -1958,7 +1958,7 @@ void NiGeometry::Get(NiStream& stream) {
 		materialNameRefs.resize(numMaterials);
 		materials.resize(numMaterials);
 
-		for (int i = 0; i < numMaterials; i++) {
+		for (uint32_t i = 0; i < numMaterials; i++) {
 			materialNameRefs[i].Get(stream);
 			stream >> materials[i];
 		}
@@ -1991,7 +1991,7 @@ void NiGeometry::Put(NiStream& stream) {
 
 	if (stream.GetVersion().File() >= V20_2_0_5) {
 		stream << numMaterials;
-		for (int i = 0; i < numMaterials; i++) {
+		for (uint32_t i = 0; i < numMaterials; i++) {
 			materialNameRefs[i].Put(stream);
 			stream << materials[i];
 		}
@@ -2118,17 +2118,17 @@ void NiTriShapeData::Get(NiStream& stream) {
 
 	if (hasTriangles) {
 		triangles.resize(numTriangles);
-		for (int i = 0; i < numTriangles; i++)
+		for (uint32_t i = 0; i < numTriangles; i++)
 			stream >> triangles[i];
 	}
 
 	MatchGroup mg;
 	stream >> numMatchGroups;
 	matchGroups.resize(numMatchGroups);
-	for (int i = 0; i < numMatchGroups; i++) {
+	for (uint32_t i = 0; i < numMatchGroups; i++) {
 		stream >> mg.count;
 		mg.matches.resize(mg.count);
-		for (int j = 0; j < mg.count; j++)
+		for (uint32_t j = 0; j < mg.count; j++)
 			stream >> mg.matches[j];
 
 		matchGroups[i] = mg;
@@ -2146,14 +2146,14 @@ void NiTriShapeData::Put(NiStream& stream) {
 	stream << hasTriangles;
 
 	if (hasTriangles) {
-		for (int i = 0; i < numTriangles; i++)
+		for (uint32_t i = 0; i < numTriangles; i++)
 			stream << triangles[i];
 	}
 
 	stream << numMatchGroups;
-	for (int i = 0; i < numMatchGroups; i++) {
+	for (uint32_t i = 0; i < numMatchGroups; i++) {
 		stream << matchGroups[i].count;
-		for (int j = 0; j < matchGroups[i].count; j++)
+		for (uint32_t j = 0; j < matchGroups[i].count; j++)
 			stream << matchGroups[i].matches[j];
 	}
 }
@@ -2231,7 +2231,7 @@ void NiTriShapeData::CalcTangentSpace() {
 	tan1.resize(numVertices);
 	tan2.resize(numVertices);
 
-	for (int i = 0; i < numTriangles; i++) {
+	for (uint32_t i = 0; i < numTriangles; i++) {
 		int i1 = triangles[i].p1;
 		int i2 = triangles[i].p2;
 		int i3 = triangles[i].p3;
@@ -2277,7 +2277,7 @@ void NiTriShapeData::CalcTangentSpace() {
 		tan2[i3] += tdir;
 	}
 
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		bitangents[i] = tan1[i];
 		tangents[i] = tan2[i];
 
@@ -2319,15 +2319,15 @@ void NiTriStripsData::Get(NiStream& stream) {
 
 	stream >> numStrips;
 	stripLengths.resize(numStrips);
-	for (int i = 0; i < numStrips; i++)
+	for (uint32_t i = 0; i < numStrips; i++)
 		stream >> stripLengths[i];
 
 	stream >> hasPoints;
 	if (hasPoints) {
 		points.resize(numStrips);
-		for (int i = 0; i < numStrips; i++) {
+		for (uint32_t i = 0; i < numStrips; i++) {
 			points[i].resize(stripLengths[i]);
-			for (int j = 0; j < stripLengths[i]; j++)
+			for (uint32_t j = 0; j < stripLengths[i]; j++)
 				stream >> points[i][j];
 		}
 	}
@@ -2337,13 +2337,13 @@ void NiTriStripsData::Put(NiStream& stream) {
 	NiTriBasedGeomData::Put(stream);
 
 	stream << numStrips;
-	for (int i = 0; i < numStrips; i++)
+	for (uint32_t i = 0; i < numStrips; i++)
 		stream << stripLengths[i];
 
 	stream << hasPoints;
 	if (hasPoints) {
-		for (int i = 0; i < numStrips; i++)
-			for (int j = 0; j < stripLengths[i]; j++)
+		for (uint32_t i = 0; i < numStrips; i++)
+			for (uint32_t j = 0; j < stripLengths[i]; j++)
 				stream << points[i][j];
 	}
 }
@@ -2354,8 +2354,8 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
 
 	// This is not a healthy way to delete strip data. Probably need to restrip the shape.
-	for (int i = 0; i < numStrips; i++) {
-		for (int j = 0; j < stripLengths[i]; j++) {
+	for (uint32_t i = 0; i < numStrips; i++) {
+		for (uint32_t j = 0; j < stripLengths[i]; j++) {
 			if (indexCollapse[points[i][j]] == -1) {
 				points[i].erase(points[i].begin() + j);
 				stripLengths[i]--;
@@ -2459,7 +2459,7 @@ void NiTriStripsData::CalcTangentSpace() {
 		tan2[i3] += tdir;
 	}
 
-	for (int i = 0; i < numVertices; i++) {
+	for (uint32_t i = 0; i < numVertices; i++) {
 		bitangents[i] = tan1[i];
 		tangents[i] = tan2[i];
 
@@ -2500,14 +2500,14 @@ void NiLinesData::Get(NiStream& stream) {
 	NiGeometryData::Get(stream);
 
 	lineFlags.resize(numVertices);
-	for (int i = 0; i < numVertices; i++)
+	for (uint32_t i = 0; i < numVertices; i++)
 		stream >> lineFlags[i];
 }
 
 void NiLinesData::Put(NiStream& stream) {
 	NiGeometryData::Put(stream);
 
-	for (int i = 0; i < numVertices; i++)
+	for (uint32_t i = 0; i < numVertices; i++)
 		stream << lineFlags[i];
 }
 
@@ -2534,11 +2534,11 @@ void NiScreenElementsData::Get(NiStream& stream) {
 
 	stream >> maxPolygons;
 	polygons.resize(maxPolygons);
-	for (int i = 0; i < maxPolygons; i++)
+	for (uint32_t i = 0; i < maxPolygons; i++)
 		stream >> polygons[i];
 
 	polygonIndices.resize(maxPolygons);
-	for (int i = 0; i < maxPolygons; i++)
+	for (uint32_t i = 0; i < maxPolygons; i++)
 		stream >> polygonIndices[i];
 
 	stream >> unkShort1;
@@ -2553,10 +2553,10 @@ void NiScreenElementsData::Put(NiStream& stream) {
 	NiTriShapeData::Put(stream);
 
 	stream << maxPolygons;
-	for (int i = 0; i < maxPolygons; i++)
+	for (uint32_t i = 0; i < maxPolygons; i++)
 		stream << polygons[i];
 
-	for (int i = 0; i < maxPolygons; i++)
+	for (uint32_t i = 0; i < maxPolygons; i++)
 		stream << polygonIndices[i];
 
 	stream << unkShort1;

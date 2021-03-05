@@ -323,13 +323,13 @@ struct UnionBV {
 	void Get(NiStream& stream) {
 		stream >> numBV;
 		boundingVolumes.resize(numBV);
-		for (int i = 0; i < numBV; i++)
+		for (uint32_t i = 0; i < numBV; i++)
 			boundingVolumes[i].Get(stream);
 	}
 
 	void Put(NiStream& stream) {
 		stream << numBV;
-		for (int i = 0; i < numBV; i++)
+		for (uint32_t i = 0; i < numBV; i++)
 			boundingVolumes[i].Put(stream);
 	}
 };
@@ -1290,13 +1290,13 @@ struct BonePose {
 	void Get(NiStream& stream) {
 		stream >> numMatrices;
 		matrices.resize(numMatrices);
-		for (int i = 0; i < numMatrices; i++)
+		for (uint32_t i = 0; i < numMatrices; i++)
 			stream >> matrices[i];
 	}
 
 	void Put(NiStream& stream) {
 		stream << numMatrices;
-		for (int i = 0; i < numMatrices; i++)
+		for (uint32_t i = 0; i < numMatrices; i++)
 			stream << matrices[i];
 	}
 };

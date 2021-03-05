@@ -24,7 +24,7 @@ void NiSkinData::Get(NiStream& stream) {
 		hasVertWeights = 1;
 
 	bones.resize(numBones);
-	for (int i = 0; i < numBones; i++) {
+	for (uint32_t i = 0; i < numBones; i++) {
 		BoneData boneData;
 		stream >> boneData.boneTransform.rotation;
 		stream >> boneData.boneTransform.translation;
@@ -56,7 +56,7 @@ void NiSkinData::Put(NiStream& stream) {
 	stream << numBones;
 	stream << hasVertWeights;
 
-	for (int i = 0; i < numBones; i++) {
+	for (uint32_t i = 0; i < numBones; i++) {
 		stream << bones[i].boneTransform.rotation;
 		stream << bones[i].boneTransform.translation;
 		stream << bones[i].boneTransform.scale;
@@ -116,7 +116,7 @@ void NiSkinPartition::Get(NiStream& stream) {
 			vertData.resize(numVertices);
 
 			half_float::half halfData;
-			for (int i = 0; i < numVertices; i++) {
+			for (uint32_t i = 0; i < numVertices; i++) {
 				auto& vertex = vertData[i];
 				if (HasVertices()) {
 					if (IsFullPrecision()) {
@@ -179,7 +179,7 @@ void NiSkinPartition::Get(NiStream& stream) {
 		}
 	}
 
-	for (int p = 0; p < numPartitions; p++) {
+	for (uint32_t p = 0; p < numPartitions; p++) {
 		PartitionBlock partition;
 		stream >> partition.numVertices;
 		stream >> partition.numTriangles;
@@ -188,31 +188,31 @@ void NiSkinPartition::Get(NiStream& stream) {
 		stream >> partition.numWeightsPerVertex;
 
 		partition.bones.resize(partition.numBones);
-		for (int i = 0; i < partition.numBones; i++)
+		for (uint32_t i = 0; i < partition.numBones; i++)
 			stream >> partition.bones[i];
 
 		stream >> partition.hasVertexMap;
 		if (partition.hasVertexMap) {
 			partition.vertexMap.resize(partition.numVertices);
-			for (int i = 0; i < partition.numVertices; i++)
+			for (uint32_t i = 0; i < partition.numVertices; i++)
 				stream >> partition.vertexMap[i];
 		}
 
 		stream >> partition.hasVertexWeights;
 		if (partition.hasVertexWeights) {
 			partition.vertexWeights.resize(partition.numVertices);
-			for (int i = 0; i < partition.numVertices; i++)
+			for (uint32_t i = 0; i < partition.numVertices; i++)
 				stream >> partition.vertexWeights[i];
 		}
 
 		partition.stripLengths.resize(partition.numStrips);
-		for (int i = 0; i < partition.numStrips; i++)
+		for (uint32_t i = 0; i < partition.numStrips; i++)
 			stream >> partition.stripLengths[i];
 
 		stream >> partition.hasFaces;
 		if (partition.hasFaces) {
 			partition.strips.resize(partition.numStrips);
-			for (int i = 0; i < partition.numStrips; i++) {
+			for (uint32_t i = 0; i < partition.numStrips; i++) {
 				partition.strips[i].resize(partition.stripLengths[i]);
 				for (int j = 0; j < partition.stripLengths[i]; j++)
 					stream >> partition.strips[i][j];
@@ -221,14 +221,14 @@ void NiSkinPartition::Get(NiStream& stream) {
 
 		if (partition.numStrips == 0 && partition.hasFaces) {
 			partition.triangles.resize(partition.numTriangles);
-			for (int i = 0; i < partition.numTriangles; i++)
+			for (uint32_t i = 0; i < partition.numTriangles; i++)
 				stream >> partition.triangles[i];
 		}
 
 		stream >> partition.hasBoneIndices;
 		if (partition.hasBoneIndices) {
 			partition.boneIndices.resize(partition.numVertices);
-			for (int i = 0; i < partition.numVertices; i++)
+			for (uint32_t i = 0; i < partition.numVertices; i++)
 				stream >> partition.boneIndices[i];
 		}
 
@@ -239,7 +239,7 @@ void NiSkinPartition::Get(NiStream& stream) {
 			partition.vertexDesc.Get(stream);
 
 			partition.trueTriangles.resize(partition.numTriangles);
-			for (int i = 0; i < partition.numTriangles; i++)
+			for (uint32_t i = 0; i < partition.numTriangles; i++)
 				stream >> partition.trueTriangles[i];
 		}
 
@@ -261,7 +261,7 @@ void NiSkinPartition::Put(NiStream& stream) {
 
 		if (dataSize > 0) {
 			half_float::half halfData;
-			for (int i = 0; i < numVertices; i++) {
+			for (uint32_t i = 0; i < numVertices; i++) {
 				auto& vertex = vertData[i];
 				if (HasVertices()) {
 					if (IsFullPrecision()) {
@@ -330,42 +330,42 @@ void NiSkinPartition::Put(NiStream& stream) {
 	// unnecessary.  But it doesn't hurt to be safe.
 	PrepareVertexMapsAndTriangles();
 
-	for (int p = 0; p < numPartitions; p++) {
+	for (uint32_t p = 0; p < numPartitions; p++) {
 		stream << partitions[p].numVertices;
 		stream << partitions[p].numTriangles;
 		stream << partitions[p].numBones;
 		stream << partitions[p].numStrips;
 		stream << partitions[p].numWeightsPerVertex;
 
-		for (int i = 0; i < partitions[p].numBones; i++)
+		for (uint32_t i = 0; i < partitions[p].numBones; i++)
 			stream << partitions[p].bones[i];
 
 		stream << partitions[p].hasVertexMap;
 		if (partitions[p].hasVertexMap)
-			for (int i = 0; i < partitions[p].numVertices; i++)
+			for (uint32_t i = 0; i < partitions[p].numVertices; i++)
 				stream << partitions[p].vertexMap[i];
 
 		stream << partitions[p].hasVertexWeights;
 		if (partitions[p].hasVertexWeights)
-			for (int i = 0; i < partitions[p].numVertices; i++)
+			for (uint32_t i = 0; i < partitions[p].numVertices; i++)
 				stream << partitions[p].vertexWeights[i];
 
-		for (int i = 0; i < partitions[p].numStrips; i++)
+		for (uint32_t i = 0; i < partitions[p].numStrips; i++)
 			stream << partitions[p].stripLengths[i];
 
 		stream << partitions[p].hasFaces;
 		if (partitions[p].hasFaces)
-			for (int i = 0; i < partitions[p].numStrips; i++)
+			for (uint32_t i = 0; i < partitions[p].numStrips; i++)
 				for (int j = 0; j < partitions[p].stripLengths[i]; j++)
 					stream << partitions[p].strips[i][j];
 
 		if (partitions[p].numStrips == 0 && partitions[p].hasFaces)
-			for (int i = 0; i < partitions[p].numTriangles; i++)
+			for (uint32_t i = 0; i < partitions[p].numTriangles; i++)
 				stream << partitions[p].triangles[i];
 
 		stream << partitions[p].hasBoneIndices;
 		if (partitions[p].hasBoneIndices)
-			for (int i = 0; i < partitions[p].numVertices; i++)
+			for (uint32_t i = 0; i < partitions[p].numVertices; i++)
 				stream << partitions[p].boneIndices[i];
 
 		if (stream.GetVersion().User() >= 12)
@@ -374,7 +374,7 @@ void NiSkinPartition::Put(NiStream& stream) {
 		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() == 100) {
 			partitions[p].vertexDesc.Put(stream);
 
-			for (int i = 0; i < partitions[p].numTriangles; i++)
+			for (uint32_t i = 0; i < partitions[p].numTriangles; i++)
 				stream << partitions[p].trueTriangles[i];
 		}
 	}
@@ -410,7 +410,7 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 
 		// Make list of deleted vertexMap indices
 		std::vector<int> vertexMapDelList;
-		for (int i = 0; i < p.vertexMap.size(); i++)
+		for (uint32_t i = 0; i < p.vertexMap.size(); i++)
 			if (indexCollapse[p.vertexMap[i]] == -1)
 				vertexMapDelList.push_back(i);
 
@@ -463,7 +463,7 @@ void NiSkinPartition::DeletePartitions(const std::vector<int>& partInds) {
 
 int NiSkinPartition::RemoveEmptyPartitions(std::vector<int>& outDeletedIndices) {
 	outDeletedIndices.clear();
-	for (int i = 0; i < partitions.size(); ++i)
+	for (uint32_t i = 0; i < partitions.size(); ++i)
 		if (partitions[i].numTriangles == 0)
 			outDeletedIndices.push_back(i);
 	if (!outDeletedIndices.empty())
@@ -594,14 +594,14 @@ void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triang
 
 	// Make a map from Triangles to their indices in shapeTris
 	std::unordered_map<Triangle, int> shapeTriInds;
-	for (int triInd = 0; triInd < shapeTris.size(); ++triInd) {
+	for (uint32_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
 		Triangle t = shapeTris[triInd];
 		t.rot();
 		shapeTriInds[t] = triInd;
 	}
 
 	// Set triParts for each partition triangle
-	for (int partInd = 0; partInd < partitions.size(); ++partInd) {
+	for (uint32_t partInd = 0; partInd < partitions.size(); ++partInd) {
 		for (const Triangle& pt : partitions[partInd].trueTriangles) {
 			Triangle t = pt;
 			t.rot();
@@ -626,7 +626,7 @@ void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triang
 		p.vertexWeights.clear();
 		p.boneIndices.clear();
 	}
-	for (int triInd = 0; triInd < shapeTris.size(); ++triInd) {
+	for (uint32_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
 		int partInd = triParts[triInd];
 		if (partInd >= 0 && partInd < partitions.size())
 			partitions[partInd].trueTriangles.push_back(shapeTris[triInd]);
@@ -736,7 +736,7 @@ void BSSkinBoneData::Get(NiStream& stream) {
 
 	stream >> nBones;
 	boneXforms.resize(nBones);
-	for (int i = 0; i < nBones; i++) {
+	for (uint32_t i = 0; i < nBones; i++) {
 		stream >> boneXforms[i].bounds;
 		stream >> boneXforms[i].boneTransform.rotation;
 		stream >> boneXforms[i].boneTransform.translation;
@@ -748,7 +748,7 @@ void BSSkinBoneData::Put(NiStream& stream) {
 	NiObject::Put(stream);
 
 	stream << nBones;
-	for (int i = 0; i < nBones; i++) {
+	for (uint32_t i = 0; i < nBones; i++) {
 		stream << boneXforms[i].bounds;
 		stream << boneXforms[i].boneTransform.rotation;
 		stream << boneXforms[i].boneTransform.translation;
@@ -766,7 +766,7 @@ void BSSkinInstance::Get(NiStream& stream) {
 
 	stream >> numScales;
 	scales.resize(numScales);
-	for (int i = 0; i < numScales; i++)
+	for (uint32_t i = 0; i < numScales; i++)
 		stream >> scales[i];
 }
 
@@ -778,7 +778,7 @@ void BSSkinInstance::Put(NiStream& stream) {
 	boneRefs.Put(stream);
 
 	stream << numScales;
-	for (int i = 0; i < numScales; i++)
+	for (uint32_t i = 0; i < numScales; i++)
 		stream << scales[i];
 }
 

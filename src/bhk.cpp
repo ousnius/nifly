@@ -252,7 +252,7 @@ void bhkMultiSphereShape::Get(NiStream& stream) {
 
 	stream >> numSpheres;
 	spheres.resize(numSpheres);
-	for (int i = 0; i < numSpheres; i++)
+	for (uint32_t i = 0; i < numSpheres; i++)
 		stream >> spheres[i];
 }
 
@@ -263,7 +263,7 @@ void bhkMultiSphereShape::Put(NiStream& stream) {
 	stream << unkFloat2;
 
 	stream << numSpheres;
-	for (int i = 0; i < numSpheres; i++)
+	for (uint32_t i = 0; i < numSpheres; i++)
 		stream << spheres[i];
 }
 
@@ -319,12 +319,12 @@ void bhkConvexVerticesShape::Get(NiStream& stream) {
 
 	stream >> numVerts;
 	verts.resize(numVerts);
-	for (int i = 0; i < numVerts; i++)
+	for (uint32_t i = 0; i < numVerts; i++)
 		stream >> verts[i];
 
 	stream >> numNormals;
 	normals.resize(numNormals);
-	for (int i = 0; i < numNormals; i++)
+	for (uint32_t i = 0; i < numNormals; i++)
 		stream >> normals[i];
 }
 
@@ -335,11 +335,11 @@ void bhkConvexVerticesShape::Put(NiStream& stream) {
 	stream << normalsProp;
 
 	stream << numVerts;
-	for (int i = 0; i < numVerts; i++)
+	for (uint32_t i = 0; i < numVerts; i++)
 		stream << verts[i];
 
 	stream << numNormals;
-	for (int i = 0; i < numNormals; i++)
+	for (uint32_t i = 0; i < numNormals; i++)
 		stream << normals[i];
 }
 
@@ -430,7 +430,7 @@ void bhkMoppBvTreeShape::Get(NiStream& stream) {
 		stream >> buildType;
 
 	data.resize(dataSize);
-	for (int i = 0; i < dataSize; i++)
+	for (uint32_t i = 0; i < dataSize; i++)
 		stream >> data[i];
 }
 
@@ -448,7 +448,7 @@ void bhkMoppBvTreeShape::Put(NiStream& stream) {
 	if (stream.GetVersion().User() >= 12)
 		stream << buildType;
 
-	for (int i = 0; i < dataSize; i++)
+	for (uint32_t i = 0; i < dataSize; i++)
 		stream << data[i];
 }
 
@@ -482,7 +482,7 @@ void bhkNiTriStripsShape::Get(NiStream& stream) {
 
 	stream >> numFilters;
 	filters.resize(numFilters);
-	for (int i = 0; i < numFilters; i++)
+	for (uint32_t i = 0; i < numFilters; i++)
 		stream >> filters[i];
 }
 
@@ -502,7 +502,7 @@ void bhkNiTriStripsShape::Put(NiStream& stream) {
 	partRefs.Put(stream);
 
 	stream << numFilters;
-	for (int i = 0; i < numFilters; i++)
+	for (uint32_t i = 0; i < numFilters; i++)
 		stream << filters[i];
 }
 
@@ -535,7 +535,7 @@ void bhkListShape::Get(NiStream& stream) {
 	stream >> numUnkInts;
 	unkInts.resize(numUnkInts);
 
-	for (int i = 0; i < numUnkInts; i++)
+	for (uint32_t i = 0; i < numUnkInts; i++)
 		stream >> unkInts[i];
 }
 
@@ -549,7 +549,7 @@ void bhkListShape::Put(NiStream& stream) {
 	stream << childFilterProp;
 
 	stream << numUnkInts;
-	for (int i = 0; i < numUnkInts; i++)
+	for (uint32_t i = 0; i < numUnkInts; i++)
 		stream << unkInts[i];
 }
 
@@ -577,12 +577,12 @@ void hkPackedNiTriStripsData::Get(NiStream& stream) {
 
 	if (stream.GetVersion().Stream() > 11) {
 		triData.resize(keyCount);
-		for (int i = 0; i < keyCount; i++)
+		for (uint32_t i = 0; i < keyCount; i++)
 			stream >> triData[i];
 	}
 	else {
 		triNormData.resize(keyCount);
-		for (int i = 0; i < keyCount; i++)
+		for (uint32_t i = 0; i < keyCount; i++)
 			stream >> triNormData[i];
 	}
 
@@ -592,13 +592,13 @@ void hkPackedNiTriStripsData::Get(NiStream& stream) {
 		stream >> unkByte;
 
 	compressedVertData.resize(numVerts);
-	for (int i = 0; i < numVerts; i++)
+	for (uint32_t i = 0; i < numVerts; i++)
 		stream >> compressedVertData[i];
 
 	if (stream.GetVersion().Stream() > 11) {
 		stream >> partCount;
 		data.resize(partCount);
-		for (int i = 0; i < partCount; i++)
+		for (uint32_t i = 0; i < partCount; i++)
 			stream >> data[i];
 	}
 }
@@ -609,11 +609,11 @@ void hkPackedNiTriStripsData::Put(NiStream& stream) {
 	stream << keyCount;
 
 	if (stream.GetVersion().Stream() > 11) {
-		for (int i = 0; i < keyCount; i++)
+		for (uint32_t i = 0; i < keyCount; i++)
 			stream << triData[i];
 	}
 	else {
-		for (int i = 0; i < keyCount; i++)
+		for (uint32_t i = 0; i < keyCount; i++)
 			stream << triNormData[i];
 	}
 
@@ -622,12 +622,12 @@ void hkPackedNiTriStripsData::Put(NiStream& stream) {
 	if (stream.GetVersion().Stream() > 11)
 		stream << unkByte;
 
-	for (int i = 0; i < numVerts; i++)
+	for (uint32_t i = 0; i < numVerts; i++)
 		stream << compressedVertData[i];
 
 	if (stream.GetVersion().Stream() > 11) {
 		stream << partCount;
-		for (int i = 0; i < partCount; i++)
+		for (uint32_t i = 0; i < partCount; i++)
 			stream << data[i];
 	}
 }
@@ -1135,7 +1135,7 @@ void bhkBallSocketConstraintChain::Get(NiStream& stream) {
 
 	stream >> numPivots;
 	pivots.resize(numPivots);
-	for (int i = 0; i < numPivots; i++)
+	for (uint32_t i = 0; i < numPivots; i++)
 		stream >> pivots[i];
 
 	stream >> tau;
@@ -1155,7 +1155,7 @@ void bhkBallSocketConstraintChain::Put(NiStream& stream) {
 	bhkSerializable::Put(stream);
 
 	stream << numPivots;
-	for (int i = 0; i < numPivots; i++)
+	for (uint32_t i = 0; i < numPivots; i++)
 		stream.write(reinterpret_cast<char*>(&pivots[i]), 16);
 
 	stream << tau;
@@ -1344,44 +1344,44 @@ void bhkCompressedMeshShapeData::Get(NiStream& stream) {
 
 	stream >> numMat32;
 	mat32.resize(numMat32);
-	for (int i = 0; i < numMat32; i++)
+	for (uint32_t i = 0; i < numMat32; i++)
 		stream >> mat32[i];
 
 	stream >> numMat16;
 	mat16.resize(numMat16);
-	for (int i = 0; i < numMat16; i++)
+	for (uint32_t i = 0; i < numMat16; i++)
 		stream >> mat16[i];
 
 	stream >> numMat8;
 	mat8.resize(numMat8);
-	for (int i = 0; i < numMat8; i++)
+	for (uint32_t i = 0; i < numMat8; i++)
 		stream >> mat8[i];
 
 	stream >> numMaterials;
 	materials.resize(numMaterials);
-	for (int i = 0; i < numMaterials; i++)
+	for (uint32_t i = 0; i < numMaterials; i++)
 		stream >> materials[i];
 
 	stream >> numNamedMat;
 
 	stream >> numTransforms;
 	transforms.resize(numTransforms);
-	for (int i = 0; i < numTransforms; i++)
+	for (uint32_t i = 0; i < numTransforms; i++)
 		stream >> transforms[i];
 
 	stream >> numBigVerts;
 	bigVerts.resize(numBigVerts);
-	for (int i = 0; i < numBigVerts; i++)
+	for (uint32_t i = 0; i < numBigVerts; i++)
 		stream >> bigVerts[i];
 
 	stream >> numBigTris;
 	bigTris.resize(numBigTris);
-	for (int i = 0; i < numBigTris; i++)
+	for (uint32_t i = 0; i < numBigTris; i++)
 		stream.read(reinterpret_cast<char*>(&bigTris[i]), 12);
 
 	stream >> numChunks;
 	chunks.resize(numChunks);
-	for (int i = 0; i < numChunks; i++) {
+	for (uint32_t i = 0; i < numChunks; i++) {
 		stream >> chunks[i].translation;
 		stream >> chunks[i].matIndex;
 		stream >> chunks[i].reference;
@@ -1389,22 +1389,22 @@ void bhkCompressedMeshShapeData::Get(NiStream& stream) {
 
 		stream >> chunks[i].numVerts;
 		chunks[i].verts.resize(chunks[i].numVerts);
-		for (int j = 0; j < chunks[i].numVerts; j++)
+		for (uint32_t j = 0; j < chunks[i].numVerts; j++)
 			stream >> chunks[i].verts[j];
 
 		stream >> chunks[i].numIndices;
 		chunks[i].indices.resize(chunks[i].numIndices);
-		for (int j = 0; j < chunks[i].numIndices; j++)
+		for (uint32_t j = 0; j < chunks[i].numIndices; j++)
 			stream >> chunks[i].indices[j];
 
 		stream >> chunks[i].numStrips;
 		chunks[i].strips.resize(chunks[i].numStrips);
-		for (int j = 0; j < chunks[i].numStrips; j++)
+		for (uint32_t j = 0; j < chunks[i].numStrips; j++)
 			stream >> chunks[i].strips[j];
 
 		stream >> chunks[i].numWeldingInfo;
 		chunks[i].weldingInfo.resize(chunks[i].numWeldingInfo);
-		for (int j = 0; j < chunks[i].numWeldingInfo; j++)
+		for (uint32_t j = 0; j < chunks[i].numWeldingInfo; j++)
 			stream >> chunks[i].weldingInfo[j];
 	}
 
@@ -1425,56 +1425,56 @@ void bhkCompressedMeshShapeData::Put(NiStream& stream) {
 	stream << materialType;
 
 	stream << numMat32;
-	for (int i = 0; i < numMat32; i++)
+	for (uint32_t i = 0; i < numMat32; i++)
 		stream << mat32[i];
 
 	stream << numMat16;
-	for (int i = 0; i < numMat16; i++)
+	for (uint32_t i = 0; i < numMat16; i++)
 		stream << mat16[i];
 
 	stream << numMat8;
-	for (int i = 0; i < numMat8; i++)
+	for (uint32_t i = 0; i < numMat8; i++)
 		stream << mat8[i];
 
 	stream << numMaterials;
-	for (int i = 0; i < numMaterials; i++)
+	for (uint32_t i = 0; i < numMaterials; i++)
 		stream << materials[i];
 
 	stream << numNamedMat;
 
 	stream << numTransforms;
-	for (int i = 0; i < numTransforms; i++)
+	for (uint32_t i = 0; i < numTransforms; i++)
 		stream << transforms[i];
 
 	stream << numBigVerts;
-	for (int i = 0; i < numBigVerts; i++)
+	for (uint32_t i = 0; i < numBigVerts; i++)
 		stream << bigVerts[i];
 
 	stream << numBigTris;
-	for (int i = 0; i < numBigTris; i++)
+	for (uint32_t i = 0; i < numBigTris; i++)
 		stream.write(reinterpret_cast<char*>(&bigTris[i]), 12);
 
 	stream << numChunks;
-	for (int i = 0; i < numChunks; i++) {
+	for (uint32_t i = 0; i < numChunks; i++) {
 		stream << chunks[i].translation;
 		stream << chunks[i].matIndex;
 		stream << chunks[i].reference;
 		stream << chunks[i].transformIndex;
 
 		stream << chunks[i].numVerts;
-		for (int j = 0; j < chunks[i].numVerts; j++)
+		for (uint32_t j = 0; j < chunks[i].numVerts; j++)
 			stream << chunks[i].verts[j];
 
 		stream << chunks[i].numIndices;
-		for (int j = 0; j < chunks[i].numIndices; j++)
+		for (uint32_t j = 0; j < chunks[i].numIndices; j++)
 			stream << chunks[i].indices[j];
 
 		stream << chunks[i].numStrips;
-		for (int j = 0; j < chunks[i].numStrips; j++)
+		for (uint32_t j = 0; j < chunks[i].numStrips; j++)
 			stream << chunks[i].strips[j];
 
 		stream << chunks[i].numWeldingInfo;
-		for (int j = 0; j < chunks[i].numWeldingInfo; j++)
+		for (uint32_t j = 0; j < chunks[i].numWeldingInfo; j++)
 			stream << chunks[i].weldingInfo[j];
 	}
 
@@ -1532,12 +1532,12 @@ void bhkPoseArray::Get(NiStream& stream) {
 
 	stream >> numBones;
 	bones.resize(numBones);
-	for (int i = 0; i < numBones; i++)
+	for (uint32_t i = 0; i < numBones; i++)
 		bones[i].Get(stream);
 
 	stream >> numPoses;
 	poses.resize(numPoses);
-	for (int i = 0; i < numPoses; i++)
+	for (uint32_t i = 0; i < numPoses; i++)
 		poses[i].Get(stream);
 }
 
@@ -1545,11 +1545,11 @@ void bhkPoseArray::Put(NiStream& stream) {
 	NiObject::Put(stream);
 
 	stream << numBones;
-	for (int i = 0; i < numBones; i++)
+	for (uint32_t i = 0; i < numBones; i++)
 		bones[i].Put(stream);
 
 	stream << numPoses;
-	for (int i = 0; i < numPoses; i++)
+	for (uint32_t i = 0; i < numPoses; i++)
 		poses[i].Put(stream);
 }
 
@@ -1604,7 +1604,7 @@ void bhkRagdollTemplateData::Get(NiStream& stream) {
 
 	stream >> numConstraints;
 	constraints.resize(numConstraints);
-	for (int i = 0; i < numConstraints; i++)
+	for (uint32_t i = 0; i < numConstraints; i++)
 		constraints[i].Get(stream);
 }
 
@@ -1619,7 +1619,7 @@ void bhkRagdollTemplateData::Put(NiStream& stream) {
 	stream << material;
 
 	stream << numConstraints;
-	for (int i = 0; i < numConstraints; i++)
+	for (uint32_t i = 0; i < numConstraints; i++)
 		constraints[i].Put(stream);
 }
 

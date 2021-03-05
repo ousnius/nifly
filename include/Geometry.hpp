@@ -61,18 +61,18 @@ struct AdditionalDataBlock {
 
 			stream >> numBlocks;
 			blockOffsets.resize(numBlocks);
-			for (int i = 0; i < numBlocks; i++)
+			for (uint32_t i = 0; i < numBlocks; i++)
 				stream >> blockOffsets[i];
 
 			stream >> numData;
 			dataSizes.resize(numData);
-			for (int i = 0; i < numData; i++)
+			for (uint32_t i = 0; i < numData; i++)
 				stream >> dataSizes[i];
 
 			data.resize(numData);
-			for (int i = 0; i < numData; i++) {
+			for (uint32_t i = 0; i < numData; i++) {
 				data[i].resize(blockSize);
-				for (int j = 0; j < blockSize; j++)
+				for (uint32_t j = 0; j < blockSize; j++)
 					stream >> data[i][j];
 			}
 		}
@@ -85,15 +85,15 @@ struct AdditionalDataBlock {
 			stream << blockSize;
 
 			stream << numBlocks;
-			for (int i = 0; i < numBlocks; i++)
+			for (uint32_t i = 0; i < numBlocks; i++)
 				stream << blockOffsets[i];
 
 			stream << numData;
-			for (int i = 0; i < numData; i++)
+			for (uint32_t i = 0; i < numData; i++)
 				stream << dataSizes[i];
 
-			for (int i = 0; i < numData; i++)
-				for (int j = 0; j < blockSize; j++)
+			for (uint32_t i = 0; i < numData; i++)
+				for (uint32_t j = 0; j < blockSize; j++)
 					stream << data[i][j];
 		}
 	}
@@ -143,16 +143,16 @@ struct BSPackedAdditionalDataBlock {
 
 			stream >> numBlocks;
 			blockOffsets.resize(numBlocks);
-			for (int i = 0; i < numBlocks; i++)
+			for (uint32_t i = 0; i < numBlocks; i++)
 				stream >> blockOffsets[i];
 
 			stream >> numAtoms;
 			atomSizes.resize(numAtoms);
-			for (int i = 0; i < numAtoms; i++)
+			for (uint32_t i = 0; i < numAtoms; i++)
 				stream >> atomSizes[i];
 
 			data.resize(numTotalBytes);
-			for (int i = 0; i < numTotalBytes; i++)
+			for (uint32_t i = 0; i < numTotalBytes; i++)
 				stream >> data[i];
 		}
 
@@ -167,14 +167,14 @@ struct BSPackedAdditionalDataBlock {
 			stream << numTotalBytes;
 
 			stream << numBlocks;
-			for (int i = 0; i < numBlocks; i++)
+			for (uint32_t i = 0; i < numBlocks; i++)
 				stream << blockOffsets[i];
 
 			stream << numAtoms;
-			for (int i = 0; i < numAtoms; i++)
+			for (uint32_t i = 0; i < numAtoms; i++)
 				stream << atomSizes[i];
 
-			for (int i = 0; i < numTotalBytes; i++)
+			for (uint32_t i = 0; i < numTotalBytes; i++)
 				stream << data[i];
 		}
 

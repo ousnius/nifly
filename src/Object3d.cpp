@@ -106,14 +106,14 @@ Matrix3 CalcAverageRotation(const std::vector<Matrix3>& rots) {
 }
 
 MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts) {
-	int n = ts.size();
+	uint32_t n = ts.size();
 	if (n <= 0)
 		return MatTransform();
 
 	std::vector<Matrix3> rots(n);
 	Vector3 sumtrans;
 	float sumscale = 0.0f;
-	for (int i = 0; i < n; ++i) {
+	for (uint32_t i = 0; i < n; ++i) {
 		rots[i] = ts[i].rotation;
 		sumtrans += ts[i].translation;
 		sumscale += ts[i].scale;
@@ -127,22 +127,22 @@ MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts) {
 }
 
 Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data) {
-	int n = data.size();
+	uint32_t n = data.size();
 	if (n <= 0)
 		return Vector3();
 
 	Vector3 res;
 	std::vector<float> nums(n);
 
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		nums[i] = data[i].x;
 	res.x = CalcMedianOfFloats(nums);
 
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		nums[i] = data[i].y;
 	res.y = CalcMedianOfFloats(nums);
 
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		nums[i] = data[i].z;
 	res.z = CalcMedianOfFloats(nums);
 
@@ -150,7 +150,7 @@ Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data) {
 }
 
 Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
-	int n = rots.size();
+	uint32_t n = rots.size();
 	if (n <= 0)
 		return Matrix3();
 
@@ -165,7 +165,7 @@ Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
 	std::vector<Vector3> vecs(n);
 	Matrix3 base = RotVecToMat(sum1);
 	Matrix3 baseinv = base.Transpose();
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		vecs[i] = RotMatToVec(baseinv * rots[i]);
 
 	// Calculate median of the rebased rotation vectors.
@@ -176,14 +176,14 @@ Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
 }
 
 MatTransform CalcMedianMatTransform(const std::vector<MatTransform>& ts) {
-	int n = ts.size();
+	uint32_t n = ts.size();
 	if (n <= 0)
 		return MatTransform();
 
 	std::vector<Matrix3> rots(n);
 	std::vector<Vector3> trans(n);
 	std::vector<float> scales(n);
-	for (int i = 0; i < n; ++i) {
+	for (uint32_t i = 0; i < n; ++i) {
 		rots[i] = ts[i].rotation;
 		trans[i] = ts[i].translation;
 		scales[i] = ts[i].scale;

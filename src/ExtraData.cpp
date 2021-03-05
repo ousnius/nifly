@@ -42,7 +42,7 @@ void NiBinaryExtraData::Get(NiStream& stream) {
 
 	stream >> size;
 	data.resize(size);
-	for (int i = 0; i < size; i++)
+	for (uint32_t i = 0; i < size; i++)
 		stream >> data[i];
 }
 
@@ -50,7 +50,7 @@ void NiBinaryExtraData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << size;
-	for (int i = 0; i < size; i++)
+	for (uint32_t i = 0; i < size; i++)
 		stream << data[i];
 }
 
@@ -90,7 +90,7 @@ void NiFloatsExtraData::Get(NiStream& stream) {
 
 	stream >> numFloats;
 	floatsData.resize(numFloats);
-	for (int i = 0; i < numFloats; i++)
+	for (uint32_t i = 0; i < numFloats; i++)
 		stream >> floatsData[i];
 }
 
@@ -98,7 +98,7 @@ void NiFloatsExtraData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numFloats;
-	for (int i = 0; i < numFloats; i++)
+	for (uint32_t i = 0; i < numFloats; i++)
 		stream << floatsData[i];
 }
 
@@ -117,7 +117,7 @@ void NiStringsExtraData::Get(NiStream& stream) {
 
 	stream >> numStrings;
 	stringsData.resize(numStrings);
-	for (int i = 0; i < numStrings; i++)
+	for (uint32_t i = 0; i < numStrings; i++)
 		stringsData[i].Get(stream, 4);
 }
 
@@ -125,7 +125,7 @@ void NiStringsExtraData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numStrings;
-	for (int i = 0; i < numStrings; i++)
+	for (uint32_t i = 0; i < numStrings; i++)
 		stringsData[i].Put(stream, 4, false);
 }
 
@@ -213,7 +213,7 @@ void NiIntegersExtraData::Get(NiStream& stream) {
 
 	stream >> numIntegers;
 	integersData.resize(numIntegers);
-	for (int i = 0; i < numIntegers; i++)
+	for (uint32_t i = 0; i < numIntegers; i++)
 		stream >> integersData[i];
 }
 
@@ -221,7 +221,7 @@ void NiIntegersExtraData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numIntegers;
-	for (int i = 0; i < numIntegers; i++)
+	for (uint32_t i = 0; i < numIntegers; i++)
 		stream << integersData[i];
 }
 
@@ -282,7 +282,7 @@ void BSWArray::Get(NiStream& stream) {
 
 	stream >> numData;
 	data.resize(numData);
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream >> data[i];
 }
 
@@ -290,7 +290,7 @@ void BSWArray::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numData;
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream << data[i];
 }
 
@@ -309,7 +309,7 @@ void BSPositionData::Get(NiStream& stream) {
 
 	stream >> numData;
 	data.resize(numData);
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream >> data[i];
 }
 
@@ -317,7 +317,7 @@ void BSPositionData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numData;
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream << data[i];
 }
 
@@ -336,7 +336,7 @@ void BSEyeCenterExtraData::Get(NiStream& stream) {
 
 	stream >> numData;
 	data.resize(numData);
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream >> data[i];
 }
 
@@ -344,7 +344,7 @@ void BSEyeCenterExtraData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numData;
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream << data[i];
 }
 
@@ -363,12 +363,12 @@ void BSPackedGeomData::Get(NiStream& stream) {
 
 	stream >> lodLevels;
 	lod.resize(lodLevels);
-	for (int i = 0; i < lodLevels; i++)
+	for (uint32_t i = 0; i < lodLevels; i++)
 		stream >> lod[i];
 
 	stream >> numCombined;
 	combined.resize(numCombined);
-	for (int i = 0; i < numCombined; i++)
+	for (uint32_t i = 0; i < numCombined; i++)
 		stream >> combined[i];
 
 	stream >> unkInt1;
@@ -379,11 +379,11 @@ void BSPackedGeomData::Put(NiStream& stream) {
 	stream << numVerts;
 
 	stream << lodLevels;
-	for (int i = 0; i < lodLevels; i++)
+	for (uint32_t i = 0; i < lodLevels; i++)
 		stream << lod[i];
 
 	stream << numCombined;
-	for (int i = 0; i < numCombined; i++)
+	for (uint32_t i = 0; i < numCombined; i++)
 		stream << combined[i];
 
 	stream << unkInt1;
@@ -404,10 +404,10 @@ void BSPackedCombinedSharedGeomDataExtra::Get(NiStream& stream) {
 	objects.resize(numData);
 	data.resize(numData);
 
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream >> objects[i];
 
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		data[i].Get(stream);
 }
 
@@ -421,10 +421,10 @@ void BSPackedCombinedSharedGeomDataExtra::Put(NiStream& stream) {
 	stream << unkFlags2;
 	stream << numData;
 
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		stream << objects[i];
 
-	for (int i = 0; i < numData; i++)
+	for (uint32_t i = 0; i < numData; i++)
 		data[i].Put(stream);
 }
 
@@ -454,7 +454,7 @@ void BSFurnitureMarker::Get(NiStream& stream) {
 	stream >> numPositions;
 	positions.resize(numPositions);
 
-	for (int i = 0; i < numPositions; i++) {
+	for (uint32_t i = 0; i < numPositions; i++) {
 		stream >> positions[i].offset;
 
 		if (stream.GetVersion().User() <= 11) {
@@ -476,7 +476,7 @@ void BSFurnitureMarker::Put(NiStream& stream) {
 
 	stream << numPositions;
 
-	for (int i = 0; i < numPositions; i++) {
+	for (uint32_t i = 0; i < numPositions; i++) {
 		stream << positions[i].offset;
 
 		if (stream.GetVersion().User() <= 11) {
@@ -509,7 +509,7 @@ void BSDecalPlacementVectorExtraData::Get(NiStream& stream) {
 	stream >> numVectorBlocks;
 	decalVectorBlocks.resize(numVectorBlocks);
 
-	for (int i = 0; i < numVectorBlocks; i++) {
+	for (uint32_t i = 0; i < numVectorBlocks; i++) {
 		stream >> decalVectorBlocks[i].numVectors;
 
 		decalVectorBlocks[i].points.resize(decalVectorBlocks[i].numVectors);
@@ -527,7 +527,7 @@ void BSDecalPlacementVectorExtraData::Put(NiStream& stream) {
 
 	stream << numVectorBlocks;
 
-	for (int i = 0; i < numVectorBlocks; i++) {
+	for (uint32_t i = 0; i < numVectorBlocks; i++) {
 		stream << decalVectorBlocks[i].numVectors;
 
 		for (int j = 0; j < decalVectorBlocks[i].numVectors; j++)
@@ -589,7 +589,7 @@ void BSBoneLODExtraData::Get(NiStream& stream) {
 
 	stream >> numBoneLODs;
 	boneLODs.resize(numBoneLODs);
-	for (int i = 0; i < numBoneLODs; i++) {
+	for (uint32_t i = 0; i < numBoneLODs; i++) {
 		stream >> boneLODs[i].distance;
 		boneLODs[i].boneName.Get(stream);
 	}
@@ -599,7 +599,7 @@ void BSBoneLODExtraData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numBoneLODs;
-	for (int i = 0; i < numBoneLODs; i++) {
+	for (uint32_t i = 0; i < numBoneLODs; i++) {
 		stream << boneLODs[i].distance;
 		boneLODs[i].boneName.Put(stream);
 	}
@@ -608,7 +608,7 @@ void BSBoneLODExtraData::Put(NiStream& stream) {
 void BSBoneLODExtraData::GetStringRefs(std::set<StringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
-	for (int i = 0; i < numBoneLODs; i++)
+	for (uint32_t i = 0; i < numBoneLODs; i++)
 		refs.insert(&boneLODs[i].boneName);
 }
 
@@ -627,7 +627,7 @@ void NiTextKeyExtraData::Get(NiStream& stream) {
 
 	stream >> numTextKeys;
 	textKeys.resize(numTextKeys);
-	for (int i = 0; i < numTextKeys; i++) {
+	for (uint32_t i = 0; i < numTextKeys; i++) {
 		stream >> textKeys[i].time;
 		textKeys[i].value.Get(stream);
 	}
@@ -637,7 +637,7 @@ void NiTextKeyExtraData::Put(NiStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numTextKeys;
-	for (int i = 0; i < numTextKeys; i++) {
+	for (uint32_t i = 0; i < numTextKeys; i++) {
 		stream << textKeys[i].time;
 		textKeys[i].value.Put(stream);
 	}
@@ -646,7 +646,7 @@ void NiTextKeyExtraData::Put(NiStream& stream) {
 void NiTextKeyExtraData::GetStringRefs(std::set<StringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
-	for (int i = 0; i < numTextKeys; i++)
+	for (uint32_t i = 0; i < numTextKeys; i++)
 		refs.insert(&textKeys[i].value);
 }
 
@@ -696,7 +696,7 @@ void BSConnectPointParents::Get(NiStream& stream) {
 	stream >> numConnectPoints;
 	connectPoints.resize(numConnectPoints);
 
-	for (int i = 0; i < numConnectPoints; i++)
+	for (uint32_t i = 0; i < numConnectPoints; i++)
 		connectPoints[i].Get(stream);
 }
 
@@ -705,7 +705,7 @@ void BSConnectPointParents::Put(NiStream& stream) {
 
 	stream << numConnectPoints;
 
-	for (int i = 0; i < numConnectPoints; i++)
+	for (uint32_t i = 0; i < numConnectPoints; i++)
 		connectPoints[i].Put(stream);
 }
 
@@ -726,7 +726,7 @@ void BSConnectPointChildren::Get(NiStream& stream) {
 	stream >> numTargets;
 
 	targets.resize(numTargets);
-	for (int i = 0; i < numTargets; i++)
+	for (uint32_t i = 0; i < numTargets; i++)
 		targets[i].Get(stream, 4);
 }
 
@@ -736,7 +736,7 @@ void BSConnectPointChildren::Put(NiStream& stream) {
 	stream << unkByte;
 	stream << numTargets;
 
-	for (int i = 0; i < numTargets; i++)
+	for (uint32_t i = 0; i < numTargets; i++)
 		targets[i].Put(stream, 4, false);
 }
 

@@ -211,7 +211,7 @@ void NiHeader::DeleteBlockByType(const std::string& blockTypeStr, const bool orp
 		return;
 
 	std::vector<int> indices;
-	for (int i = 0; i < numBlocks; i++)
+	for (uint32_t i = 0; i < numBlocks; i++)
 		if (blockTypeIndices[i] == blockTypeId)
 			indices.push_back(i);
 
@@ -268,7 +268,7 @@ void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
 		return;
 
 	std::map<int, int> indices;
-	for (int i = 0; i < numBlocks; i++)
+	for (uint32_t i = 0; i < numBlocks; i++)
 		indices[i] = GetBlockID(currentTree[i]);
 
 	std::vector<uint16_t> newBlockTypeIndices(numBlocks);
@@ -363,7 +363,7 @@ int NiHeader::GetBlockRefCount(const int blockId) {
 uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 	NiString niStr;
 	auto typeId = static_cast<uint16_t>(blockTypes.size());
-	for (uint16_t i = 0; i < blockTypes.size(); i++) {
+	for (uint32_t i = 0; i < blockTypes.size(); i++) {
 		if (blockTypes[i].GetString() == blockTypeName) {
 			typeId = i;
 			break;
@@ -416,7 +416,7 @@ int NiHeader::GetStringCount() {
 }
 
 int NiHeader::FindStringId(const std::string& str) {
-	for (int i = 0; i < strings.size(); i++)
+	for (uint32_t i = 0; i < strings.size(); i++)
 		if (strings[i].GetString() == str)
 			return i;
 
@@ -424,7 +424,7 @@ int NiHeader::FindStringId(const std::string& str) {
 }
 
 int NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty) {
-	for (int i = 0; i < strings.size(); i++)
+	for (uint32_t i = 0; i < strings.size(); i++)
 		if (strings[i].GetString() == str)
 			return i;
 
@@ -623,24 +623,24 @@ void NiHeader::Get(NiStream& stream) {
 	else if (version.File() >= V30_0_0_2) {
 		stream >> embedDataSize;
 		embedData.resize(embedDataSize);
-		for (int i = 0; i < embedDataSize; i++)
+		for (uint32_t i = 0; i < embedDataSize; i++)
 			stream >> embedData[i];
 	}
 
 	if (version.File() >= V5_0_0_1) {
 		stream >> numBlockTypes;
 		blockTypes.resize(numBlockTypes);
-		for (int i = 0; i < numBlockTypes; i++)
+		for (uint32_t i = 0; i < numBlockTypes; i++)
 			blockTypes[i].Get(stream, 4);
 
 		blockTypeIndices.resize(numBlocks);
-		for (int i = 0; i < numBlocks; i++)
+		for (uint32_t i = 0; i < numBlocks; i++)
 			stream >> blockTypeIndices[i];
 	}
 
 	if (version.File() >= V20_2_0_5) {
 		blockSizes.resize(numBlocks);
-		for (int i = 0; i < numBlocks; i++)
+		for (uint32_t i = 0; i < numBlocks; i++)
 			stream >> blockSizes[i];
 	}
 
@@ -649,14 +649,14 @@ void NiHeader::Get(NiStream& stream) {
 		stream >> maxStringLen;
 
 		strings.resize(numStrings);
-		for (int i = 0; i < numStrings; i++)
+		for (uint32_t i = 0; i < numStrings; i++)
 			strings[i].Get(stream, 4);
 	}
 
 	if (version.File() >= NiVersion::ToFile(5, 0, 0, 6)) {
 		stream >> numGroups;
 		groupSizes.resize(numGroups);
-		for (int i = 0; i < numGroups; i++)
+		for (uint32_t i = 0; i < numGroups; i++)
 			stream >> groupSizes[i];
 	}
 
@@ -707,35 +707,35 @@ void NiHeader::Put(NiStream& stream) {
 	}
 	else if (version.File() >= V30_0_0_2) {
 		stream << embedDataSize;
-		for (int i = 0; i < embedDataSize; i++)
+		for (uint32_t i = 0; i < embedDataSize; i++)
 			stream << embedData[i];
 	}
 
 	if (version.File() >= V5_0_0_1) {
 		stream << numBlockTypes;
-		for (int i = 0; i < numBlockTypes; i++)
+		for (uint32_t i = 0; i < numBlockTypes; i++)
 			blockTypes[i].Put(stream, 4, false);
 
-		for (int i = 0; i < numBlocks; i++)
+		for (uint32_t i = 0; i < numBlocks; i++)
 			stream << blockTypeIndices[i];
 	}
 
 	if (version.File() >= V20_2_0_5) {
 		blockSizePos = stream.tellp();
-		for (int i = 0; i < numBlocks; i++)
+		for (uint32_t i = 0; i < numBlocks; i++)
 			stream << blockSizes[i];
 	}
 
 	if (version.File() >= V20_1_0_1) {
 		stream << numStrings;
 		stream << maxStringLen;
-		for (int i = 0; i < numStrings; i++)
+		for (uint32_t i = 0; i < numStrings; i++)
 			strings[i].Put(stream, 4, false);
 	}
 
 	if (version.File() >= NiVersion::ToFile(5, 0, 0, 6)) {
 		stream << numGroups;
-		for (int i = 0; i < numGroups; i++)
+		for (uint32_t i = 0; i < numGroups; i++)
 			stream << groupSizes[i];
 	}
 }
