@@ -42,7 +42,7 @@ void NiVersion::SetFile(NiFileVersion fileVer) {
 		vstr = NIF_GAMEBRYO;
 
 	vstr += NIF_VERSTRING;
-	vstr += verNum.data();
+	vstr += verNum;
 
 	file = fileVer;
 }
@@ -53,13 +53,13 @@ void NiString::Get(NiStream& stream, const int szSize) {
 	char buf[bufSize];
 
 	if (szSize == 1) {
-		uint8_t smSize;
+		uint8_t smSize = 0;
 		stream >> smSize;
 		stream.read(buf, smSize);
 		buf[smSize] = 0;
 	}
 	else if (szSize == 2) {
-		uint16_t medSize;
+		uint16_t medSize = 0;
 		stream >> medSize;
 		if (medSize < bufSize)
 			stream.read(buf, medSize);
@@ -69,7 +69,7 @@ void NiString::Get(NiStream& stream, const int szSize) {
 		buf[medSize] = 0;
 	}
 	else if (szSize == 4) {
-		uint32_t bigSize;
+		uint32_t bigSize = 0;
 		stream >> bigSize;
 		if (bigSize < bufSize)
 			stream.read(buf, bigSize);
@@ -86,7 +86,7 @@ void NiString::Get(NiStream& stream, const int szSize) {
 
 void NiString::Put(NiStream& stream, const int szSize, const bool wantNullOutput) {
 	if (szSize == 1) {
-		uint8_t sz = uint8_t(str.length());
+		auto sz = uint8_t(str.length());
 		str.resize(sz);
 
 		if (wantNullOutput)
@@ -95,7 +95,7 @@ void NiString::Put(NiStream& stream, const int szSize, const bool wantNullOutput
 		stream << sz;
 	}
 	else if (szSize == 2) {
-		uint16_t sz = uint16_t(str.length());
+		auto sz = uint16_t(str.length());
 		str.resize(sz);
 
 		if (wantNullOutput)
@@ -104,7 +104,7 @@ void NiString::Put(NiStream& stream, const int szSize, const bool wantNullOutput
 		stream << sz;
 	}
 	else if (szSize == 4) {
-		uint32_t sz = uint32_t(str.length());
+		auto sz = uint32_t(str.length());
 		str.resize(sz);
 
 		if (wantNullOutput)
@@ -202,7 +202,7 @@ void NiHeader::DeleteBlock(int blockId) {
 }
 
 void NiHeader::DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly) {
-	uint16_t blockTypeId;
+	uint16_t blockTypeId = 0;
 	for (blockTypeId = 0; blockTypeId < numBlockTypes; blockTypeId++)
 		if (blockTypes[blockTypeId].GetString() == blockTypeStr)
 			break;
@@ -224,7 +224,7 @@ int NiHeader::AddBlock(NiObject* newBlock) {
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices.push_back(btID);
 	blockSizes.push_back(0);
-	blocks->push_back(std::move(std::shared_ptr<NiObject>(newBlock)));
+	blocks->push_back(std::shared_ptr<NiObject>(newBlock));
 	numBlocks = blocks->size();
 	return numBlocks - 1;
 }
@@ -303,8 +303,8 @@ void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
 	}
 
 	for (int i = numBlocks - 1; i >= 0; i--) {
-		blockTypeIndices[i] = std::move(newBlockTypeIndices[i]);
-		blockSizes[i] = std::move(newBlockSizes[i]);
+		blockTypeIndices[i] = newBlockTypeIndices[i];
+		blockSizes[i] = newBlockSizes[i];
 		blocks->at(i) = std::move(newBlocks[i]);
 	}
 }
@@ -362,7 +362,7 @@ int NiHeader::GetBlockRefCount(const int blockId) {
 
 uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 	NiString niStr;
-	uint16_t typeId = static_cast<uint16_t>(blockTypes.size());
+	auto typeId = static_cast<uint16_t>(blockTypes.size());
 	for (uint16_t i = 0; i < blockTypes.size(); i++) {
 		if (blockTypes[i].GetString() == blockTypeName) {
 			typeId = i;

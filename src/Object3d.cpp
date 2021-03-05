@@ -1,5 +1,6 @@
 #include "Object3d.hpp"
 #include "Miniball.hpp"
+#include "math.h"
 
 namespace nifly {
 float CalcMedianOfFloats(std::vector<float>& data) {
@@ -22,7 +23,7 @@ Matrix3 RotVecToMat(const Vector3& v) {
 	double angle = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 	double cosang = std::cos(angle);
 	double sinang = std::sin(angle);
-	double onemcosang; // One minus cosang
+	double onemcosang = NAN; // One minus cosang
 	// Avoid loss of precision from cancellation in calculating onemcosang
 	if (cosang > .5)
 		onemcosang = sinang * sinang / (1 + cosang);

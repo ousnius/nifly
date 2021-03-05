@@ -295,7 +295,7 @@ void NiGeometryData::Create(NiVersion&,
 							const std::vector<Vector2>* texcoords,
 							const std::vector<Vector3>* norms) {
 	size_t vertCount = verts->size();
-	constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
+	constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>::max();
 
 	if (vertCount > static_cast<size_t>(maxIndex))
 		numVertices = maxIndex;
@@ -1415,16 +1415,16 @@ void BSTriShape::Create(NiVersion& version,
 						const std::vector<Vector3>* normals) {
 	flags = 14;
 
-	constexpr uint16_t maxVertIndex = std::numeric_limits<uint16_t>().max();
+	constexpr uint16_t maxVertIndex = std::numeric_limits<uint16_t>::max();
 	size_t vertCount = verts->size();
 	if (vertCount > static_cast<size_t>(maxVertIndex))
 		numVertices = maxVertIndex;
 	else
 		numVertices = uint16_t(vertCount);
 
-	uint32_t maxTriIndex = std::numeric_limits<uint32_t>().max();
+	uint32_t maxTriIndex = std::numeric_limits<uint32_t>::max();
 	if (version.User() >= 12 && version.Stream() < 130)
-		maxTriIndex = std::numeric_limits<uint16_t>().max();
+		maxTriIndex = std::numeric_limits<uint16_t>::max();
 
 	size_t triCount = tris ? tris->size() : 0;
 	if (numVertices == 0)
@@ -1928,7 +1928,7 @@ void BSDynamicTriShape::Create(NiVersion& version,
 							   const std::vector<Vector3>* normals) {
 	BSTriShape::Create(version, verts, tris, uvs, normals);
 
-	constexpr uint32_t maxIndex = std::numeric_limits<uint32_t>().max();
+	constexpr uint32_t maxIndex = std::numeric_limits<uint32_t>::max();
 	size_t vertCount = verts->size();
 	if (vertCount > static_cast<size_t>(maxIndex))
 		dynamicDataSize = maxIndex;
@@ -2095,7 +2095,7 @@ void NiTriBasedGeomData::Create(NiVersion& version,
 	NiGeometryData::Create(version, verts, inTris, texcoords, norms);
 
 	if (inTris) {
-		constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>().max();
+		constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>::max();
 		size_t triCount = inTris ? inTris->size() : 0;
 
 		if (numVertices == 0)
@@ -2379,7 +2379,7 @@ bool NiTriStripsData::GetTriangles(std::vector<Triangle>& tris) {
 	return hasPoints;
 }
 
-void NiTriStripsData::SetTriangles(const std::vector<Triangle>&) {
+void NiTriStripsData::SetTriangles(const std::vector<Triangle>& /*tris*/) {
 	// Not implemented, stripify here
 }
 

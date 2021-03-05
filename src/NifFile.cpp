@@ -118,7 +118,7 @@ void NifFile::CopyFrom(const NifFile& other) {
 	blocks.resize(nBlocks);
 
 	for (int i = 0; i < nBlocks; i++)
-		blocks[i] = std::move(std::shared_ptr<NiObject>(other.blocks[i]->Clone()));
+		blocks[i] = std::shared_ptr<NiObject>(other.blocks[i]->Clone());
 
 	hdr.SetBlockReference(&blocks);
 	LinkGeomData();
@@ -153,14 +153,14 @@ void NifFile::RemoveInvalidTris() {
 }
 
 size_t NifFile::GetVertexLimit() {
-	constexpr size_t maxVertIndex = std::numeric_limits<uint16_t>().max();
+	constexpr size_t maxVertIndex = std::numeric_limits<uint16_t>::max();
 	return maxVertIndex;
 }
 
 size_t NifFile::GetTriangleLimit() {
-	size_t maxTriIndex = std::numeric_limits<uint32_t>().max();
+	size_t maxTriIndex = std::numeric_limits<uint32_t>::max();
 	if (hdr.GetVersion().User() >= 12 && hdr.GetVersion().Stream() < 130)
-		maxTriIndex = std::numeric_limits<uint16_t>().max();
+		maxTriIndex = std::numeric_limits<uint16_t>::max();
 
 	return maxTriIndex;
 }
@@ -252,7 +252,7 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 	do {
 		std::vector<std::string> oldOrder = GetShapeNames();
 		std::vector<int> oldOrderIds;
-		for (auto s : oldOrder) {
+		for (const auto& s : oldOrder) {
 			int blockID = GetBlockID(FindBlockByName<NiShape>(s));
 			if (blockID != NIF_NPOS)
 				oldOrderIds.push_back(blockID);
@@ -694,7 +694,7 @@ void NifFile::TrimTexturePaths() {
 									 std::regex("/+|\\\\+"),
 									 "\\"); // Replace multiple slashes or forward slashes with one backslash
 			tex = std::regex_replace(tex,
-									 std::regex("^(.*?)\\\\textures\\\\", std::regex_constants::icase),
+									 std::regex(R"(^(.*?)\\textures\\)", std::regex_constants::icase),
 									 ""); // Remove everything before the first occurence of "\textures\"
 			tex = std::regex_replace(tex, std::regex("^\\\\+"), ""); // Remove all backslashes from the front
 			tex = std::regex_replace(
@@ -1131,7 +1131,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 				// Vertex Colors
 				if (bsOptShape->GetNumVertices() > 0) {
-					if (!removeVertexColors && colors.size() > 0) {
+					if (!removeVertexColors && !colors.empty()) {
 						bsOptShape->SetVertexColors(true);
 						for (int i = 0; i < bsOptShape->GetNumVertices(); i++) {
 							auto& vertex = bsOptShape->vertData[i];
@@ -1387,7 +1387,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 				// Vertex Colors
 				if (bsOptShape->GetNumVertices() > 0) {
-					if (!removeVertexColors && colors && colors->size() > 0) {
+					if (!removeVertexColors && colors && !colors->empty()) {
 						bsOptShape->SetVertexColors(true);
 						for (int i = 0; i < bsOptShape->GetNumVertices(); i++)
 							bsOptShapeData->vertexColors[i] = (*colors)[i];
@@ -1443,7 +1443,7 @@ void NifFile::PrepareData() {
 	for (auto& shape : GetShapes()) {
 		// Move triangle and vertex data from partition to shape
 		if (hdr.GetVersion().User() >= 12 && hdr.GetVersion().Stream() == 100) {
-			BSTriShape* bsTriShape = dynamic_cast<BSTriShape*>(shape);
+			auto* bsTriShape = dynamic_cast<BSTriShape*>(shape);
 			if (!bsTriShape)
 				continue;
 
@@ -1730,7 +1730,7 @@ bool NifFile::GetNodeTransformToParent(const std::string& nodeName, MatTransform
 
 bool NifFile::GetNodeTransformToGlobal(const std::string& nodeName, MatTransform& outTransform) {
 	for (auto& block : blocks) {
-		NiNode* node = dynamic_cast<NiNode*>(block.get());
+		auto* node = dynamic_cast<NiNode*>(block.get());
 		if (!node || node->GetName() != nodeName)
 			continue;
 
@@ -3694,7 +3694,7 @@ void NifFile::CreateSkinning(NiShape* shape) {
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		if (shape->GetSkinInstanceRef() == NIF_NPOS) {
-			int skinInstID;
+			int skinInstID = 0;
 			if (hdr.GetVersion().Stream() == 100) {
 				auto nifSkinData = new NiSkinData();
 				int skinDataID = hdr.AddBlock(nifSkinData);

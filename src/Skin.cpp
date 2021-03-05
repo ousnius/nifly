@@ -81,7 +81,7 @@ void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 
 	NiObject::notifyVerticesDelete(vertIndices);
 
-	uint16_t ival;
+	uint16_t ival = 0;
 	for (auto& b : bones) {
 		for (int i = b.numVertices - 1; i >= 0; i--) {
 			ival = b.vertexWeights[i].index;
