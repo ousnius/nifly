@@ -10,6 +10,8 @@ See the included LICENSE file
 #include "KDMatcher.hpp"
 #include "NifUtil.hpp"
 
+#include <array>
+
 using namespace nifly;
 
 void NiAdditionalGeometryData::Get(NiStream& stream) {
@@ -292,7 +294,7 @@ void NiGeometryData::UpdateBounds() {
 void NiGeometryData::Create(NiVersion&,
 							const std::vector<Vector3>* verts,
 							const std::vector<Triangle>*,
-							const std::vector<Vector2>* texcoords,
+							const std::vector<Vector2>* uvs,
 							const std::vector<Vector3>* norms) {
 	size_t vertCount = verts->size();
 	constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>::max();
@@ -308,13 +310,13 @@ void NiGeometryData::Create(NiVersion&,
 
 	bounds = BoundingSphere(vertices);
 
-	if (texcoords) {
-		size_t uvCount = texcoords->size();
+	if (uvs) {
+		size_t uvCount = uvs->size();
 		if (uvCount == numVertices) {
 			SetUVs(true);
 
 			for (size_t uv = 0; uv < uvSets[0].size(); uv++)
-				uvSets[0][uv] = (*texcoords)[uv];
+				uvSets[0][uv] = (*uvs)[uv];
 		}
 		else {
 			SetUVs(false);
@@ -1360,7 +1362,7 @@ int BSTriShape::CalcDataSizes(NiVersion& version) {
 	VertexFlags vf = vertexDesc.GetFlags();
 	vertexDesc.ClearAttributeOffsets();
 
-	uint32_t attributeSizes[VA_COUNT] = {};
+	std::array<uint32_t, VA_COUNT> attributeSizes{};
 	if (HasVertices()) {
 		if (IsFullPrecision() || version.Stream() == 100)
 			attributeSizes[VA_POSITION] = 4;
@@ -1787,7 +1789,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 
 	partTriInds.back() = triInds.size();
 
-	segmentation = std::move(BSSITSSegmentation());
+	segmentation = BSSITSSegmentation();
 	uint32_t parentArrayIndex = 0;
 	uint32_t segmentIndex = 0;
 	int partID = 0;
@@ -2090,9 +2092,9 @@ void NiTriBasedGeomData::Put(NiStream& stream) {
 void NiTriBasedGeomData::Create(NiVersion& version,
 								const std::vector<Vector3>* verts,
 								const std::vector<Triangle>* inTris,
-								const std::vector<Vector2>* texcoords,
+								const std::vector<Vector2>* uvs,
 								const std::vector<Vector3>* norms) {
-	NiGeometryData::Create(version, verts, inTris, texcoords, norms);
+	NiGeometryData::Create(version, verts, inTris, uvs, norms);
 
 	if (inTris) {
 		constexpr uint16_t maxIndex = std::numeric_limits<uint16_t>::max();
@@ -2159,9 +2161,9 @@ void NiTriShapeData::Put(NiStream& stream) {
 void NiTriShapeData::Create(NiVersion& version,
 							const std::vector<Vector3>* verts,
 							const std::vector<Triangle>* inTris,
-							const std::vector<Vector2>* texcoords,
+							const std::vector<Vector2>* uvs,
 							const std::vector<Vector3>* norms) {
-	NiTriBasedGeomData::Create(version, verts, inTris, texcoords, norms);
+	NiTriBasedGeomData::Create(version, verts, inTris, uvs, norms);
 
 	if (numTriangles > 0) {
 		numTrianglePoints = numTriangles * 3;

@@ -4,6 +4,7 @@ See the included LICENSE file
 */
 
 #include "BasicTypes.hpp"
+#include <array>
 #include <regex>
 
 using namespace nifly;
@@ -49,39 +50,38 @@ void NiVersion::SetFile(NiFileVersion fileVer) {
 
 
 void NiString::Get(NiStream& stream, const int szSize) {
-	const int bufSize = 2048 + 1;
-	char buf[bufSize];
+	std::array<char, 2048 + 1> buf{};
 
 	if (szSize == 1) {
 		uint8_t smSize = 0;
 		stream >> smSize;
-		stream.read(buf, smSize);
+		stream.read(buf.data(), smSize);
 		buf[smSize] = 0;
 	}
 	else if (szSize == 2) {
 		uint16_t medSize = 0;
 		stream >> medSize;
-		if (medSize < bufSize)
-			stream.read(buf, medSize);
+		if (medSize < buf.size())
+			stream.read(buf.data(), medSize);
 		else
-			medSize = bufSize - 1;
+			medSize = buf.size() - 1;
 
 		buf[medSize] = 0;
 	}
 	else if (szSize == 4) {
 		uint32_t bigSize = 0;
 		stream >> bigSize;
-		if (bigSize < bufSize)
-			stream.read(buf, bigSize);
+		if (bigSize < buf.size())
+			stream.read(buf.data(), bigSize);
 		else
-			bigSize = bufSize - 1;
+			bigSize = buf.size() - 1;
 
 		buf[bigSize] = 0;
 	}
 	else
 		return;
 
-	str = buf;
+	str.assign(buf.begin(), buf.end());
 }
 
 void NiString::Put(NiStream& stream, const int szSize, const bool wantNullOutput) {
@@ -539,12 +539,12 @@ void NiHeader::BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi) {
 }
 
 void NiHeader::Get(NiStream& stream) {
-	char ver[128] = {0};
-	stream.getline(ver, sizeof(ver));
+	std::array<char, 128> ver{};
+	stream.getline(ver.data(), ver.size());
 
-	bool isNetImmerse = std::strstr(ver, NIF_NETIMMERSE.c_str()) != nullptr;
-	bool isGamebryo = std::strstr(ver, NIF_GAMEBRYO.c_str()) != nullptr;
-	bool isNDS = std::strstr(ver, NIF_NDS.c_str()) != nullptr;
+	bool isNetImmerse = std::strstr(ver.data(), NIF_NETIMMERSE.c_str()) != nullptr;
+	bool isGamebryo = std::strstr(ver.data(), NIF_GAMEBRYO.c_str()) != nullptr;
+	bool isNDS = std::strstr(ver.data(), NIF_NDS.c_str()) != nullptr;
 
 	if (!isNetImmerse && !isGamebryo && !isNDS)
 		return;
@@ -553,13 +553,13 @@ void NiHeader::Get(NiStream& stream) {
 	uint32_t vuser = 0;
 	uint32_t vstream = 0;
 
-	auto verStrPtr = std::strstr(ver, NIF_VERSTRING.c_str());
+	auto verStrPtr = std::strstr(ver.data(), NIF_VERSTRING.c_str());
 	if (verStrPtr) {
 		std::string verStr = verStrPtr + 10;
 		std::regex reg("25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]");
 		std::smatch matches;
 
-		uint8_t v[4] = {0};
+		std::array<uint8_t, 4> v{};
 		size_t m = 0;
 		while (std::regex_search(verStr, matches, reg) && m < 4) {
 			v[m] = std::stoi(matches[0]);
@@ -579,17 +579,16 @@ void NiHeader::Get(NiStream& stream) {
 		version.SetNDS(versionNDS);
 	}
 	else {
-		char cr1[128] = {0};
-		stream.getline(cr1, sizeof(cr1));
-		copyright1 = cr1;
+		std::array<char, 128> buf{};
 
-		char cr2[128] = {0};
-		stream.getline(cr2, sizeof(cr2));
-		copyright2 = cr2;
+		stream.getline(buf.data(), buf.size());
+		copyright1.assign(buf.begin(), buf.end());
 
-		char cr3[128] = {0};
-		stream.getline(cr3, sizeof(cr3));
-		copyright3 = cr3;
+		stream.getline(buf.data(), buf.size());
+		copyright2.assign(buf.begin(), buf.end());
+
+		stream.getline(buf.data(), buf.size());
+		copyright3.assign(buf.begin(), buf.end());
 	}
 
 	version.SetFile(vfile);

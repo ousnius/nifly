@@ -51,7 +51,7 @@ Vector3 RotMatToVec(const Matrix3& m) {
 			return Vector3(0, 0, 0);
 		return v * (std::asin(sin2ang * 0.5) / sin2ang);
 	}
-	else if (cosang > -1) {
+	if (cosang > -1) {
 		Vector3 v(m[1][2] - m[2][1], m[2][0] - m[0][2], m[0][1] - m[1][0]);
 		v.Normalize();
 		return v * std::acos(cosang);

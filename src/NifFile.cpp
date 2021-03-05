@@ -663,17 +663,17 @@ int NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIn
 	return 1;
 }
 
-void NifFile::SetTextureSlot(NiShader* shader, std::string& outTexFile, int texIndex) {
+void NifFile::SetTextureSlot(NiShader* shader, std::string& inTexFile, int texIndex) {
 	int textureSetRef = shader->GetTextureSetRef();
 	if (textureSetRef == NIF_NPOS) {
 		auto effectShader = dynamic_cast<BSEffectShaderProperty*>(shader);
 		if (effectShader) {
 			switch (texIndex) {
-				case 0: effectShader->sourceTexture.SetString(outTexFile); break;
-				case 1: effectShader->normalTexture.SetString(outTexFile); break;
-				case 3: effectShader->greyscaleTexture.SetString(outTexFile); break;
-				case 4: effectShader->envMapTexture.SetString(outTexFile); break;
-				case 5: effectShader->envMaskTexture.SetString(outTexFile); break;
+				case 0: effectShader->sourceTexture.SetString(inTexFile); break;
+				case 1: effectShader->normalTexture.SetString(inTexFile); break;
+				case 3: effectShader->greyscaleTexture.SetString(inTexFile); break;
+				case 4: effectShader->envMapTexture.SetString(inTexFile); break;
+				case 5: effectShader->envMaskTexture.SetString(inTexFile); break;
 			}
 		}
 
@@ -684,7 +684,7 @@ void NifFile::SetTextureSlot(NiShader* shader, std::string& outTexFile, int texI
 	if (!textureSet || texIndex + 1 > textureSet->numTextures)
 		return;
 
-	textureSet->textures[texIndex].SetString(outTexFile);
+	textureSet->textures[texIndex].SetString(inTexFile);
 }
 
 void NifFile::TrimTexturePaths() {
@@ -1283,15 +1283,10 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 					}
 				}
 
-				bool headPartEyes = false;
 				NiShader* shader = GetShader(shape);
 				if (shader) {
 					auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
 					if (bslsp) {
-						// Remember eyes flag for later
-						if ((bslsp->shaderFlags1 & (1 << 17)) != 0)
-							headPartEyes = true;
-
 						// No normals and tangents with model space maps
 						if (bslsp->IsModelSpace()) {
 							if (normals && !normals->empty())
@@ -1330,10 +1325,6 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 					auto bsesp = dynamic_cast<BSEffectShaderProperty*>(shader);
 					if (bsesp) {
-						// Remember eyes flag for later
-						if ((bsesp->shaderFlags1 & (1 << 17)) != 0)
-							headPartEyes = true;
-
 						// Check tree anim flag
 						if ((bsesp->shaderFlags2 & (1 << 29)) != 0)
 							removeVertexColors = false;
@@ -2331,7 +2322,6 @@ void NifFile::SetShapePartitions(NiShape* shape,
 		bsdSkinInst = new BSDismemberSkinInstance();
 		*static_cast<NiSkinInstance*>(bsdSkinInst) = *static_cast<NiSkinInstance*>(skinInst);
 		hdr.ReplaceBlock(GetBlockID(skinInst), bsdSkinInst);
-		skinInst = bsdSkinInst;
 	}
 
 	if (bsdSkinInst) {
