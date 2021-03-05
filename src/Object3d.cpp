@@ -1,6 +1,6 @@
 #include "Object3d.hpp"
 #include "Miniball.hpp"
-#include "math.h"
+#include <cmath>
 
 namespace nifly {
 float CalcMedianOfFloats(std::vector<float>& data) {
@@ -12,11 +12,10 @@ float CalcMedianOfFloats(std::vector<float>& data) {
 		std::nth_element(data.begin(), data.begin() + n / 2, data.end());
 		return data[n / 2];
 	}
-	else { // n is even
-		std::nth_element(data.begin(), data.begin() + n / 2, data.end());
-		std::nth_element(data.begin(), data.begin() + n / 2 - 1, data.begin() + n / 2);
-		return (data[n / 2] + data[n / 2 - 1]) / 2;
-	}
+	// n is even
+	std::nth_element(data.begin(), data.begin() + n / 2, data.end());
+	std::nth_element(data.begin(), data.begin() + n / 2 - 1, data.begin() + n / 2);
+	return (data[n / 2] + data[n / 2 - 1]) / 2;
 }
 
 Matrix3 RotVecToMat(const Vector3& v) {
@@ -57,30 +56,29 @@ Vector3 RotMatToVec(const Matrix3& m) {
 		v.Normalize();
 		return v * std::acos(cosang);
 	}
-	else { // cosang <= -1, sinang == 0
-		double x = (m[0][0] - cosang) * 0.5;
-		double y = (m[1][1] - cosang) * 0.5;
-		double z = (m[2][2] - cosang) * 0.5;
+	// cosang <= -1, sinang == 0
+	double x = (m[0][0] - cosang) * 0.5;
+	double y = (m[1][1] - cosang) * 0.5;
+	double z = (m[2][2] - cosang) * 0.5;
 
-		// Solve precision issues that would cause NaN
-		if (x < 0.0)
-			x = 0.0;
-		if (y < 0.0)
-			y = 0.0;
-		if (z < 0.0)
-			z = 0.0;
+	// Solve precision issues that would cause NaN
+	if (x < 0.0)
+		x = 0.0;
+	if (y < 0.0)
+		y = 0.0;
+	if (z < 0.0)
+		z = 0.0;
 
-		Vector3 v(std::sqrt(x), std::sqrt(y), std::sqrt(z));
-		v.Normalize();
+	Vector3 v(std::sqrt(x), std::sqrt(y), std::sqrt(z));
+	v.Normalize();
 
-		if (m[1][2] < m[2][1])
-			v.x = -v.x;
-		if (m[2][0] < m[0][2])
-			v.y = -v.y;
-		if (m[0][1] < m[1][0])
-			v.z = -v.z;
-		return v * PI;
-	}
+	if (m[1][2] < m[2][1])
+		v.x = -v.x;
+	if (m[2][0] < m[0][2])
+		v.y = -v.y;
+	if (m[0][1] < m[1][0])
+		v.z = -v.z;
+	return v * PI;
 }
 
 Matrix3 CalcAverageRotation(const std::vector<Matrix3>& rots) {
@@ -208,15 +206,10 @@ BoundingSphere::BoundingSphere(const std::vector<Vector3>& vertices) {
 
 	// Convert vertices to list of coordinates
 	std::list<std::vector<float>> lp;
-	for (int i = 0; i < vertices.size(); ++i) {
-		std::vector<float> p(3);
-		p[0] = vertices[i].x;
-		p[1] = vertices[i].y;
-		p[2] = vertices[i].z;
-		lp.push_back(p);
+	for (auto vertice : vertices) {
+		lp.push_back({vertice.x, vertice.y, vertice.z});
 	}
 
-	// Create an instance of Miniball
 	Miniball::Miniball<Miniball::CoordAccessor<std::list<std::vector<float>>::const_iterator,
 											   std::vector<float>::const_iterator>>
 		mb(3, lp.begin(), lp.end());

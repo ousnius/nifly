@@ -146,31 +146,31 @@ void NiSkinPartition::Get(NiStream& stream) {
 				}
 
 				if (HasNormals()) {
-					for (int j = 0; j < 3; j++)
-						stream >> vertex.normal[j];
+					for (uint8_t& j : vertex.normal)
+						stream >> j;
 
 					stream >> vertex.bitangentY;
 
 					if (HasTangents()) {
-						for (int j = 0; j < 3; j++)
-							stream >> vertex.tangent[j];
+						for (uint8_t& j : vertex.tangent)
+							stream >> j;
 
 						stream >> vertex.bitangentZ;
 					}
 				}
 
 				if (HasVertexColors())
-					for (int j = 0; j < 4; j++)
-						stream >> vertex.colorData[j];
+					for (uint8_t& j : vertex.colorData)
+						stream >> j;
 
 				if (IsSkinned()) {
-					for (int j = 0; j < 4; j++) {
+					for (float& weight : vertex.weights) {
 						stream.read(reinterpret_cast<char*>(&halfData), 2);
-						vertex.weights[j] = halfData;
+						weight = halfData;
 					}
 
-					for (int j = 0; j < 4; j++)
-						stream >> vertex.weightBones[j];
+					for (uint8_t& weightBone : vertex.weightBones)
+						stream >> weightBone;
 				}
 
 				if (HasEyeData())
@@ -291,31 +291,32 @@ void NiSkinPartition::Put(NiStream& stream) {
 				}
 
 				if (HasNormals()) {
-					for (int j = 0; j < 3; j++)
-						stream << vertex.normal[j];
+					for (uint8_t& j : vertex.normal)
+						stream << j;
 
 					stream << vertex.bitangentY;
 
 					if (HasTangents()) {
-						for (int j = 0; j < 3; j++)
-							stream << vertex.tangent[j];
+						for (uint8_t& j : vertex.tangent)
+							stream << j;
 
 						stream << vertex.bitangentZ;
 					}
 				}
 
-				if (HasVertexColors())
-					for (int j = 0; j < 4; j++)
-						stream << vertex.colorData[j];
+				if (HasVertexColors()) {
+					for (uint8_t& j : vertex.colorData)
+						stream << j;
+				}
 
 				if (IsSkinned()) {
-					for (int j = 0; j < 4; j++) {
-						halfData = vertex.weights[j];
+					for (float weight : vertex.weights) {
+						halfData = weight;
 						stream.write(reinterpret_cast<char*>(&halfData), 2);
 					}
 
-					for (int j = 0; j < 4; j++)
-						stream << vertex.weightBones[j];
+					for (uint8_t& weightBone : vertex.weightBones)
+						stream << weightBone;
 				}
 
 				if (HasEyeData())
@@ -323,6 +324,7 @@ void NiSkinPartition::Put(NiStream& stream) {
 			}
 		}
 	}
+
 
 	// This call of PrepareVertexMapsAndTriangles should be completely
 	// unnecessary.  But it doesn't hurt to be safe.
@@ -421,8 +423,8 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 		p.numVertices = p.vertexMap.size();
 
 		// Compose vertexMap with indexCollapse to get new vertexMap
-		for (int i = 0; i < p.vertexMap.size(); i++)
-			p.vertexMap[i] = indexCollapse[p.vertexMap[i]];
+		for (uint16_t& i : p.vertexMap)
+			i = indexCollapse[i];
 
 		if (!bMappedIndices) {
 			// Apply shape vertex index collapse map to true triangles
@@ -541,10 +543,10 @@ void NiSkinPartition::PartitionBlock::GenerateMappedTrianglesFromTrueTrianglesAn
 
 void NiSkinPartition::PartitionBlock::GenerateVertexMapFromTrueTriangles() {
 	std::vector<bool> vertUsed(CalcMaxTriangleIndex(trueTriangles) + 1, false);
-	for (unsigned int i = 0; i < trueTriangles.size(); ++i) {
-		vertUsed[trueTriangles[i].p1] = true;
-		vertUsed[trueTriangles[i].p2] = true;
-		vertUsed[trueTriangles[i].p3] = true;
+	for (auto& trueTriangle : trueTriangles) {
+		vertUsed[trueTriangle.p1] = true;
+		vertUsed[trueTriangle.p2] = true;
+		vertUsed[trueTriangle.p3] = true;
 	}
 
 	vertexMap.clear();

@@ -651,8 +651,8 @@ int NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIn
 
 			return 2;
 		}
-		else
-			return 0;
+
+		return 0;
 	}
 
 	auto textureSet = hdr.GetBlock<BSShaderTextureSet>(textureSetRef);
@@ -2050,15 +2050,14 @@ void NifFile::SetShapeTransformSkinToBone(NiShape* shape,
 bool NifFile::GetShapeBoneTransform(NiShape* shape, const std::string& boneName, MatTransform& outTransform) {
 	if (boneName.empty())
 		return GetShapeTransformGlobalToSkin(shape, outTransform);
-	else
-		return GetShapeTransformSkinToBone(shape, boneName, outTransform);
+	return GetShapeTransformSkinToBone(shape, boneName, outTransform);
 }
 
 bool NifFile::GetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& outTransform) {
 	if (boneIndex == 0xFFFFFFFF)
 		return GetShapeTransformGlobalToSkin(shape, outTransform);
-	else
-		return GetShapeTransformSkinToBone(shape, boneIndex, outTransform);
+
+	return GetShapeTransformSkinToBone(shape, boneIndex, outTransform);
 }
 
 bool NifFile::SetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& inTransform) {
@@ -2195,8 +2194,8 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 
 	// Sum weights to normalize values
 	float sum = 0.0f;
-	for (int i = 0; i < weights.size(); i++)
-		sum += weights[i];
+	for (auto weight : weights)
+		sum += weight;
 
 	int num = (weights.size() < 4 ? weights.size() : 4);
 
@@ -2761,24 +2760,24 @@ void NifFile::InvertUVsForShape(NiShape* shape, bool invertX, bool invertY) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->GetDataRef());
 		if (geomData && !geomData->uvSets.empty()) {
 			if (invertX)
-				for (int i = 0; i < geomData->uvSets[0].size(); ++i)
-					geomData->uvSets[0][i].u = 1.0f - geomData->uvSets[0][i].u;
+				for (auto& i : geomData->uvSets[0])
+					i.u = 1.0f - i.u;
 
 			if (invertY)
-				for (int i = 0; i < geomData->uvSets[0].size(); ++i)
-					geomData->uvSets[0][i].v = 1.0f - geomData->uvSets[0][i].v;
+				for (auto& i : geomData->uvSets[0])
+					i.v = 1.0f - i.v;
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape) {
 			if (invertX)
-				for (int i = 0; i < bsTriShape->vertData.size(); ++i)
-					bsTriShape->vertData[i].uv.u = 1.0f - bsTriShape->vertData[i].uv.u;
+				for (auto& i : bsTriShape->vertData)
+					i.uv.u = 1.0f - i.uv.u;
 
 			if (invertY)
-				for (int i = 0; i < bsTriShape->vertData.size(); ++i)
-					bsTriShape->vertData[i].uv.v = 1.0f - bsTriShape->vertData[i].uv.v;
+				for (auto& i : bsTriShape->vertData)
+					i.uv.v = 1.0f - i.uv.v;
 		}
 	}
 }
@@ -2808,29 +2807,29 @@ void NifFile::MirrorShape(NiShape* shape, bool mirrorX, bool mirrorY, bool mirro
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->GetDataRef());
 		if (geomData && !geomData->vertices.empty()) {
-			for (int i = 0; i < geomData->vertices.size(); ++i)
-				geomData->vertices[i] = mirrorMat * geomData->vertices[i];
+			for (auto& vertice : geomData->vertices)
+				vertice = mirrorMat * vertice;
 
-			for (int i = 0; i < geomData->normals.size(); ++i)
-				geomData->normals[i] = mirrorMat * geomData->normals[i];
+			for (auto& normal : geomData->normals)
+				normal = mirrorMat * normal;
 
-			for (int i = 0; i < geomData->tangents.size(); ++i)
-				geomData->tangents[i] = mirrorMat * geomData->tangents[i];
+			for (auto& tangent : geomData->tangents)
+				tangent = mirrorMat * tangent;
 
-			for (int i = 0; i < geomData->bitangents.size(); ++i)
-				geomData->bitangents[i] = mirrorMat * geomData->bitangents[i];
+			for (auto& bitangent : geomData->bitangents)
+				bitangent = mirrorMat * bitangent;
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape) {
-			for (int i = 0; i < bsTriShape->vertData.size(); ++i)
-				bsTriShape->vertData[i].vert = mirrorMat * bsTriShape->vertData[i].vert;
+			for (auto& i : bsTriShape->vertData)
+				i.vert = mirrorMat * i.vert;
 
 			auto normals = bsTriShape->GetNormalData(false);
 			if (normals) {
-				for (int i = 0; i < normals->size(); ++i)
-					(*normals)[i] = mirrorMat * (*normals)[i];
+				for (auto& normal : *normals)
+					normal = mirrorMat * normal;
 
 				bsTriShape->SetNormals((*normals));
 
@@ -2844,8 +2843,8 @@ void NifFile::MirrorShape(NiShape* shape, bool mirrorX, bool mirrorY, bool mirro
 		std::vector<Triangle> tris;
 		shape->GetTriangles(tris);
 
-		for (int i = 0; i < tris.size(); i++)
-			std::swap(tris[i].p1, tris[i].p3);
+		for (auto& tri : tris)
+			std::swap(tri.p1, tri.p3);
 
 		shape->SetTriangles(tris);
 	}

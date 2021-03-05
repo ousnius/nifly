@@ -338,8 +338,8 @@ void BSPSysSimpleColorModifier::Get(NiStream& stream) {
 	stream >> color3;
 
 	if (stream.GetVersion().Stream() == 155) {
-		for (int i = 0; i < 26; i++)
-			stream >> unknownShorts[i];
+		for (uint16_t& unknownShort : unknownShorts)
+			stream >> unknownShort;
 	}
 }
 
@@ -357,8 +357,8 @@ void BSPSysSimpleColorModifier::Put(NiStream& stream) {
 	stream << color3;
 
 	if (stream.GetVersion().Stream() == 155) {
-		for (int i = 0; i < 26; i++)
-			stream << unknownShorts[i];
+		for (uint16_t& unknownShort : unknownShorts)
+			stream << unknownShort;
 	}
 }
 
@@ -916,8 +916,8 @@ void NiParticleSystem::Get(NiStream& stream) {
 		stream >> bounds;
 
 		if (stream.GetVersion().Stream() == 155)
-			for (int i = 0; i < 6; i++)
-				stream >> boundMinMax[i];
+			for (float& i : boundMinMax)
+				stream >> i;
 
 		skinInstanceRef.Get(stream);
 		shaderPropertyRef.Get(stream);
@@ -977,8 +977,8 @@ void NiParticleSystem::Put(NiStream& stream) {
 		stream << bounds;
 
 		if (stream.GetVersion().Stream() == 155)
-			for (int i = 0; i < 6; i++)
-				stream << boundMinMax[i];
+			for (float& i : boundMinMax)
+				stream << i;
 
 		skinInstanceRef.Put(stream);
 		shaderPropertyRef.Put(stream);

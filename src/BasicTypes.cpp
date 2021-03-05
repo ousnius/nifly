@@ -179,16 +179,16 @@ void NiHeader::DeleteBlock(int blockId) {
 
 	uint16_t blockTypeId = blockTypeIndices[blockId];
 	int blockTypeRefCount = 0;
-	for (int i = 0; i < blockTypeIndices.size(); i++)
-		if (blockTypeIndices[i] == blockTypeId)
+	for (uint16_t blockTypeIndice : blockTypeIndices)
+		if (blockTypeIndice == blockTypeId)
 			blockTypeRefCount++;
 
 	if (blockTypeRefCount < 2) {
 		blockTypes.erase(blockTypes.begin() + blockTypeId);
 		numBlockTypes--;
-		for (int i = 0; i < blockTypeIndices.size(); i++)
-			if (blockTypeIndices[i] > blockTypeId)
-				blockTypeIndices[i]--;
+		for (uint16_t& blockTypeIndice : blockTypeIndices)
+			if (blockTypeIndice > blockTypeId)
+				blockTypeIndice--;
 	}
 
 	blocks->erase(blocks->begin() + blockId);
@@ -235,16 +235,16 @@ int NiHeader::ReplaceBlock(int oldBlockId, NiObject* newBlock) {
 
 	uint16_t blockTypeId = blockTypeIndices[oldBlockId];
 	int blockTypeRefCount = 0;
-	for (int i = 0; i < blockTypeIndices.size(); i++)
-		if (blockTypeIndices[i] == blockTypeId)
+	for (uint16_t blockTypeIndice : blockTypeIndices)
+		if (blockTypeIndice == blockTypeId)
 			blockTypeRefCount++;
 
 	if (blockTypeRefCount < 2) {
 		blockTypes.erase(blockTypes.begin() + blockTypeId);
 		numBlockTypes--;
-		for (int i = 0; i < blockTypeIndices.size(); i++)
-			if (blockTypeIndices[i] > blockTypeId)
-				blockTypeIndices[i]--;
+		for (uint16_t& blockTypeIndice : blockTypeIndices)
+			if (blockTypeIndice > blockTypeId)
+				blockTypeIndice--;
 	}
 
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
