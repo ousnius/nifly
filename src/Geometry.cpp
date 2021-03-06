@@ -1208,10 +1208,10 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 		SortingMatcher matcher(verts.data(), verts.size());
 		for (const std::vector<int>& matchset : matcher.matches) {
 			seamNorms.resize(matchset.size());
-			for (uint32_t j = 0; j < matchset.size(); ++j) {
+			for (size_t j = 0; j < matchset.size(); ++j) {
 				const Vector3& n = norms[matchset[j]];
 				Vector3 sn = n;
-				for (uint32_t k = 0; k < matchset.size(); ++k) {
+				for (size_t k = 0; k < matchset.size(); ++k) {
 					if (j == k)
 						continue;
 					const Vector3& mn = norms[matchset[k]];
@@ -1222,7 +1222,7 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 				sn.Normalize();
 				seamNorms[j] = sn;
 			}
-			for (uint32_t j = 0; j < matchset.size(); ++j)
+			for (size_t j = 0; j < matchset.size(); ++j)
 				norms[matchset[j]] = seamNorms[j];
 		}
 	}
@@ -1698,7 +1698,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 	int partID = 0;
 	int arrayIndex = 0;
 
-	for (uint32_t i = 0; i < segmentation.segments.size(); ++i) {
+	for (size_t i = 0; i < segmentation.segments.size(); ++i) {
 		BSSITSSegment& seg = segmentation.segments[i];
 		uint32_t startIndex = seg.startIndex / 3;
 		uint32_t endIndex = std::min(numTris, startIndex + seg.numPrimitives);
@@ -1709,7 +1709,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 		inf.segs[i].partID = partID++;
 		inf.segs[i].subs.resize(seg.subSegments.size());
 
-		for (uint32_t j = 0; j < seg.subSegments.size(); ++j) {
+		for (size_t j = 0; j < seg.subSegments.size(); ++j) {
 			BSSITSSubSegment& sub = seg.subSegments[j];
 			startIndex = sub.startIndex / 3;
 
@@ -1768,7 +1768,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 
 	// Find first triangle of each partition
 	std::vector<int> partTriInds(newPartID + 1);
-	for (uint32_t i = 0, j = 0; i < triInds.size(); ++i)
+	for (size_t i = 0, j = 0; i < triInds.size(); ++i)
 		while (triParts[triInds[i]] >= j)
 			partTriInds[j++] = i;
 

@@ -265,7 +265,7 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 		delta.clear();
 		delta.resize(order.size());
 
-		for (uint32_t p = 0; p < oldOrder.size(); p++)
+		for (size_t p = 0; p < oldOrder.size(); p++)
 			delta[p] = (std::find(order.begin(), order.end(), oldOrder[p]) - order.begin()) - p;
 
 		hadoffset = false;
@@ -273,7 +273,7 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 		// thus, we only need to move the "rising" items, the other blocks will naturally end up in the right place.
 
 		// find first negative delta, and raise it in list.  The first item can't have a negative delta
-		for (uint32_t i = 1; i < delta.size(); i++) {
+		for (size_t i = 1; i < delta.size(); i++) {
 			// don't move positive or zero offset items.
 			if (delta[i] >= 0)
 				continue;
@@ -481,7 +481,7 @@ void NifFile::PrettySortBlocks() {
 		return;
 
 	std::vector<int> newOrder(hdr.GetNumBlocks());
-	for (uint32_t i = 0; i < newOrder.size(); i++)
+	for (size_t i = 0; i < newOrder.size(); i++)
 		newOrder[i] = i;
 
 	auto root = GetRootNode();
@@ -1445,7 +1445,7 @@ void NifFile::PrepareData() {
 			bsTriShape->SetVertexData(skinPart->vertData);
 
 			std::vector<Triangle> tris;
-			for (uint32_t pi = 0; pi < skinPart->partitions.size(); ++pi)
+			for (size_t pi = 0; pi < skinPart->partitions.size(); ++pi)
 				for (auto& tri : skinPart->partitions[pi].trueTriangles) {
 					tris.push_back(tri);
 					skinPart->triParts.push_back(pi);
@@ -2385,7 +2385,7 @@ void NifFile::SetDefaultPartition(NiShape* shape) {
 			part.numVertices = verts.size();
 
 			std::vector<uint16_t> vertIndices(part.numVertices);
-			for (uint32_t i = 0; i < vertIndices.size(); i++)
+			for (size_t i = 0; i < vertIndices.size(); i++)
 				vertIndices[i] = i;
 
 			part.vertexMap = vertIndices;
@@ -2994,7 +2994,7 @@ void NifFile::OffsetShape(NiShape* shape, const Vector3& offset, std::unordered_
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->GetDataRef());
 		if (geomData) {
-			for (uint32_t i = 0; i < geomData->vertices.size(); i++) {
+			for (size_t i = 0; i < geomData->vertices.size(); i++) {
 				if (mask) {
 					float maskFactor = 1.0f;
 					Vector3 diff = offset;
@@ -3042,7 +3042,7 @@ void NifFile::ScaleShape(NiShape* shape, const Vector3& scale, std::unordered_ma
 			return;
 
 		std::unordered_map<uint16_t, Vector3> diff;
-		for (uint32_t i = 0; i < geomData->vertices.size(); i++) {
+		for (size_t i = 0; i < geomData->vertices.size(); i++) {
 			Vector3 target = geomData->vertices[i] - root;
 			target.x *= scale.x;
 			target.y *= scale.y;
@@ -3099,7 +3099,7 @@ void NifFile::RotateShape(NiShape* shape, const Vector3& angle, std::unordered_m
 			return;
 
 		std::unordered_map<uint16_t, Vector3> diff;
-		for (uint32_t i = 0; i < geomData->vertices.size(); i++) {
+		for (size_t i = 0; i < geomData->vertices.size(); i++) {
 			Vector3 target = geomData->vertices[i] - root;
 			Matrix4 mat;
 			mat.Rotate(angle.x * DEG2RAD, Vector3(1.0f, 0.0f, 0.0f));
@@ -3486,7 +3486,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 	// Make a list of the bones used by each partition.  If any partition
 	// has too many bones, split it.
 	std::vector<std::set<int>> partBones(skinPart->partitions.size());
-	for (uint32_t triIndex = 0; triIndex < tris.size(); ++triIndex) {
+	for (size_t triIndex = 0; triIndex < tris.size(); ++triIndex) {
 		int partInd = triParts[triIndex];
 		if (partInd < 0)
 			continue;
@@ -3507,7 +3507,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 
 		if (partBones[partInd].size() + newBoneCount > maxBonesPerPartition) {
 			// Too many bones for this partition, make a new partition starting with this triangle
-			for (uint32_t j = 0; j < tris.size(); ++j)
+			for (size_t j = 0; j < tris.size(); ++j)
 				if (triParts[j] > partInd || (j >= triIndex && triParts[j] >= partInd))
 					++triParts[j];
 
@@ -3532,7 +3532,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 
 	// Re-create partitions
 	std::vector<NiSkinPartition::PartitionBlock> partitions(partBones.size());
-	for (uint32_t partInd = 0; partInd < partBones.size(); partInd++) {
+	for (size_t partInd = 0; partInd < partBones.size(); partInd++) {
 		NiSkinPartition::PartitionBlock& part = partitions[partInd];
 		part.hasBoneIndices = true;
 		part.hasFaces = true;
@@ -3572,7 +3572,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 			float* pw = &vw.w1;
 
 			float tot = 0.0f;
-			for (uint32_t bi = 0; bi < vertBoneWeights[v].size(); bi++) {
+			for (size_t bi = 0; bi < vertBoneWeights[v].size(); bi++) {
 				if (bi == 4)
 					break;
 
@@ -3611,7 +3611,7 @@ void NifFile::UpdatePartitionFlags(NiShape* shape) {
 		return;
 
 	auto partInfo = bsdSkinInst->GetPartitions();
-	for (uint32_t i = 0; i < partInfo.size(); i++) {
+	for (size_t i = 0; i < partInfo.size(); i++) {
 		PartitionFlags flags = PF_NONE;
 
 		if (hdr.GetVersion().IsFO3()) {

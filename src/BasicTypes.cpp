@@ -363,7 +363,7 @@ int NiHeader::GetBlockRefCount(const int blockId) {
 uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 	NiString niStr;
 	auto typeId = static_cast<uint16_t>(blockTypes.size());
-	for (uint32_t i = 0; i < blockTypes.size(); i++) {
+	for (size_t i = 0; i < blockTypes.size(); i++) {
 		if (blockTypes[i].GetString() == blockTypeName) {
 			typeId = i;
 			break;
@@ -416,7 +416,7 @@ int NiHeader::GetStringCount() {
 }
 
 int NiHeader::FindStringId(const std::string& str) {
-	for (uint32_t i = 0; i < strings.size(); i++)
+	for (size_t i = 0; i < strings.size(); i++)
 		if (strings[i].GetString() == str)
 			return i;
 
@@ -424,7 +424,7 @@ int NiHeader::FindStringId(const std::string& str) {
 }
 
 int NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty) {
-	for (uint32_t i = 0; i < strings.size(); i++)
+	for (size_t i = 0; i < strings.size(); i++)
 		if (strings[i].GetString() == str)
 			return i;
 

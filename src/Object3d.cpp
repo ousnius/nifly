@@ -106,7 +106,7 @@ Matrix3 CalcAverageRotation(const std::vector<Matrix3>& rots) {
 }
 
 MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts) {
-	uint32_t n = ts.size();
+	size_t n = ts.size();
 	if (n <= 0)
 		return MatTransform();
 
@@ -127,7 +127,7 @@ MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts) {
 }
 
 Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data) {
-	uint32_t n = data.size();
+	size_t n = data.size();
 	if (n <= 0)
 		return Vector3();
 
@@ -150,7 +150,7 @@ Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data) {
 }
 
 Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
-	uint32_t n = rots.size();
+	size_t n = rots.size();
 	if (n <= 0)
 		return Matrix3();
 
@@ -176,7 +176,7 @@ Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
 }
 
 MatTransform CalcMedianMatTransform(const std::vector<MatTransform>& ts) {
-	uint32_t n = ts.size();
+	size_t n = ts.size();
 	if (n <= 0)
 		return MatTransform();
 

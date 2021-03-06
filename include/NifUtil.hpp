@@ -18,7 +18,7 @@ void ApplyMapToTriangles(std::vector<Triangle>& tris,
 						 std::vector<IndexType2>* deletedTris = nullptr) {
 	const int mapsz = map.size();
 	int di = 0;
-	for (uint32_t si = 0; si < tris.size(); ++si) {
+	for (size_t si = 0; si < tris.size(); ++si) {
 		const Triangle& stri = tris[si];
 		// Triangle's indices are unsigned, but IndexType might be signed.
 		if (stri.p1 >= mapsz || stri.p2 >= mapsz || stri.p3 >= mapsz || map[stri.p1] < 0 || map[stri.p2] < 0

@@ -410,7 +410,7 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 
 		// Make list of deleted vertexMap indices
 		std::vector<int> vertexMapDelList;
-		for (uint32_t i = 0; i < p.vertexMap.size(); i++)
+		for (size_t i = 0; i < p.vertexMap.size(); i++)
 			if (indexCollapse[p.vertexMap[i]] == -1)
 				vertexMapDelList.push_back(i);
 
@@ -463,7 +463,7 @@ void NiSkinPartition::DeletePartitions(const std::vector<int>& partInds) {
 
 int NiSkinPartition::RemoveEmptyPartitions(std::vector<int>& outDeletedIndices) {
 	outDeletedIndices.clear();
-	for (uint32_t i = 0; i < partitions.size(); ++i)
+	for (size_t i = 0; i < partitions.size(); ++i)
 		if (partitions[i].numTriangles == 0)
 			outDeletedIndices.push_back(i);
 	if (!outDeletedIndices.empty())
@@ -594,14 +594,14 @@ void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triang
 
 	// Make a map from Triangles to their indices in shapeTris
 	std::unordered_map<Triangle, int> shapeTriInds;
-	for (uint32_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
+	for (size_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
 		Triangle t = shapeTris[triInd];
 		t.rot();
 		shapeTriInds[t] = triInd;
 	}
 
 	// Set triParts for each partition triangle
-	for (uint32_t partInd = 0; partInd < partitions.size(); ++partInd) {
+	for (size_t partInd = 0; partInd < partitions.size(); ++partInd) {
 		for (const Triangle& pt : partitions[partInd].trueTriangles) {
 			Triangle t = pt;
 			t.rot();
@@ -626,7 +626,7 @@ void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triang
 		p.vertexWeights.clear();
 		p.boneIndices.clear();
 	}
-	for (uint32_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
+	for (size_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
 		int partInd = triParts[triInd];
 		if (partInd >= 0 && partInd < partitions.size())
 			partitions[partInd].trueTriangles.push_back(shapeTris[triInd]);
