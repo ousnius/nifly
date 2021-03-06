@@ -81,7 +81,7 @@ void NiString::Get(NiStream& stream, const int szSize) {
 	else
 		return;
 
-	str.assign(buf.begin(), buf.end());
+	str = buf.data();
 }
 
 void NiString::Put(NiStream& stream, const int szSize, const bool wantNullOutput) {
@@ -579,16 +579,16 @@ void NiHeader::Get(NiStream& stream) {
 		version.SetNDS(versionNDS);
 	}
 	else {
-		std::array<char, 128> buf{};
+		const int len = 128;
 
-		stream.getline(buf.data(), buf.size());
-		copyright1.assign(buf.begin(), buf.end());
+		copyright1.resize(len);
+		stream.getline(copyright1.data(), copyright1.size());
 
-		stream.getline(buf.data(), buf.size());
-		copyright2.assign(buf.begin(), buf.end());
+		copyright2.resize(len);
+		stream.getline(copyright2.data(), copyright2.size());
 
-		stream.getline(buf.data(), buf.size());
-		copyright3.assign(buf.begin(), buf.end());
+		copyright3.resize(len);
+		stream.getline(copyright3.data(), copyright3.size());
 	}
 
 	version.SetFile(vfile);
