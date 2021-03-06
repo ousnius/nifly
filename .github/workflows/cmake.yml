@@ -2,11 +2,17 @@ name: CMake
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - '*.md'
       - '*.yml'
+  pull_request:
     branches:
       - main
+    paths-ignore:
+      - '*.md'
+      - '*.yml'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
