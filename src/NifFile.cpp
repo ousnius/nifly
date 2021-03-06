@@ -118,7 +118,7 @@ void NifFile::CopyFrom(const NifFile& other) {
 	blocks.resize(nBlocks);
 
 	for (uint32_t i = 0; i < nBlocks; i++)
-		blocks[i] = std::shared_ptr<NiObject>(other.blocks[i]->Clone());
+		blocks[i] = std::unique_ptr<NiObject>(other.blocks[i]->Clone());
 
 	hdr.SetBlockReference(&blocks);
 	LinkGeomData();
@@ -225,7 +225,7 @@ int NifFile::Load(std::iostream& file, const NifLoadOptions& options) {
 			}
 			else {
 				hasUnknown = true;
-				blocks[i] = std::make_shared<NiUnknown>(stream, hdr.GetBlockSize(i));
+				blocks[i] = std::make_unique<NiUnknown>(stream, hdr.GetBlockSize(i));
 			}
 		}
 

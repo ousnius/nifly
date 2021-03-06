@@ -483,7 +483,7 @@ private:
 	std::vector<uint8_t> embedData;
 
 	// Foreign reference to the blocks list in NifFile.
-	std::vector<std::shared_ptr<NiObject>>* blocks = nullptr;
+	std::vector<std::unique_ptr<NiObject>>* blocks = nullptr;
 
 	uint32_t numBlocks = 0;
 	uint16_t numBlockTypes = 0;
@@ -518,7 +518,7 @@ public:
 	std::string GetExportInfo();
 	void SetExportInfo(const std::string& exportInfo);
 
-	void SetBlockReference(std::vector<std::shared_ptr<NiObject>>* blockRef) { blocks = blockRef; };
+	void SetBlockReference(std::vector<std::unique_ptr<NiObject>>* blockRef) { blocks = blockRef; };
 
 	uint32_t GetNumBlocks() { return numBlocks; }
 

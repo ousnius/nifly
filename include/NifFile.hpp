@@ -49,7 +49,7 @@ struct NifSaveOptions {
 class NifFile {
 private:
 	NiHeader hdr;
-	std::vector<std::shared_ptr<NiObject>> blocks;
+	std::vector<std::unique_ptr<NiObject>> blocks;
 	bool isValid = false;
 	bool hasUnknown = false;
 	bool isTerrain = false;

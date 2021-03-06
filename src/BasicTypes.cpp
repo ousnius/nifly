@@ -224,7 +224,7 @@ int NiHeader::AddBlock(NiObject* newBlock) {
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices.push_back(btID);
 	blockSizes.push_back(0);
-	blocks->push_back(std::shared_ptr<NiObject>(newBlock));
+	blocks->push_back(std::unique_ptr<NiObject>(newBlock));
 	numBlocks = blocks->size();
 	return numBlocks - 1;
 }
@@ -250,7 +250,7 @@ int NiHeader::ReplaceBlock(int oldBlockId, NiObject* newBlock) {
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices[oldBlockId] = btID;
 	blockSizes[oldBlockId] = 0;
-	auto blockPtrSwap = std::shared_ptr<NiObject>(newBlock);
+	auto blockPtrSwap = std::unique_ptr<NiObject>(newBlock);
 	(*blocks)[oldBlockId].swap(blockPtrSwap);
 	return oldBlockId;
 }
@@ -273,7 +273,7 @@ void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
 
 	std::vector<uint16_t> newBlockTypeIndices(numBlocks);
 	std::vector<uint32_t> newBlockSizes(numBlocks);
-	std::vector<std::shared_ptr<NiObject>> newBlocks(numBlocks);
+	std::vector<std::unique_ptr<NiObject>> newBlocks(numBlocks);
 
 	std::set<Ref*> updatedRefs;
 
@@ -299,7 +299,7 @@ void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
 		int newIndex = i.second;
 		newBlockTypeIndices[i.first] = blockTypeIndices[newIndex];
 		newBlockSizes[i.first] = blockSizes[newIndex];
-		newBlocks[i.first] = blocks->at(newIndex);
+		std::swap(newBlocks[i.first], blocks->at(newIndex));
 	}
 
 	for (int i = numBlocks - 1; i >= 0; i--) {

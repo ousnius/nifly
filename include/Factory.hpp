@@ -21,19 +21,19 @@ See the included LICENSE file
 namespace nifly {
 class NiFactory {
 public:
-	virtual std::shared_ptr<NiObject> Create() = 0;
-	virtual std::shared_ptr<NiObject> Load(NiStream& stream) = 0;
+	virtual std::unique_ptr<NiObject> Create() = 0;
+	virtual std::unique_ptr<NiObject> Load(NiStream& stream) = 0;
 };
 
 template<typename T>
 class NiFactoryType : public NiFactory {
 public:
 	// Create new NiObject
-	std::shared_ptr<NiObject> Create() override { return std::make_shared<T>(); }
+	std::unique_ptr<NiObject> Create() override { return std::make_unique<T>(); }
 
 	// Load new NiObject from file
-	std::shared_ptr<NiObject> Load(NiStream& stream) override {
-		auto nio = std::make_shared<T>();
+	std::unique_ptr<NiObject> Load(NiStream& stream) override {
+		auto nio = std::make_unique<T>();
 		nio->Get(stream);
 		return nio;
 	}
@@ -47,14 +47,14 @@ public:
 	template<typename T>
 	void RegisterFactory() {
 		// Any NiObject can be registered together with its block name
-		m_registrations.emplace(T::BlockName, std::make_shared<NiFactoryType<T>>());
+		m_registrations.emplace(T::BlockName, std::make_unique<NiFactoryType<T>>());
 	}
 
 	// Get block factory via header std::string
-	std::shared_ptr<NiFactory> GetFactoryByName(const std::string& name) {
+	NiFactory* GetFactoryByName(const std::string& name) {
 		auto it = m_registrations.find(name);
 		if (it != m_registrations.end())
-			return it->second;
+			return it->second.get();
 
 		return nullptr;
 	}
@@ -63,6 +63,6 @@ public:
 	static NiFactoryRegister& Get();
 
 protected:
-	std::unordered_map<std::string, std::shared_ptr<NiFactory>> m_registrations;
+	std::unordered_map<std::string, std::unique_ptr<NiFactory>> m_registrations;
 };
 } // namespace nifly
