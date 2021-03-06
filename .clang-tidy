@@ -1,10 +1,9 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,cert-*,clang-*,cppcoreguidelines-*,fuchsia-statically-constructed-objects,google-build-explicit-make-pair,google-default-arguments,google-explicit-constructor,google-global-names-in-headers,google-readability-casting,google-readability-function-size,google-readability-namespace-comments,google-runtime-int,google-runtime-operator,hicpp-avoid-*,hicpp-deprecated-headers,hicpp-exception-baseclass,hicpp-explicit-conversions,hicpp-function-size,hicpp-invalid-access-moved,hicpp-member-init,hicpp-move-const-arg,hicpp-new-delete-operators,hicpp-no-*,hicpp-noexcept-move,hicpp-signed-bitwise,hicpp-special-member-functions,hicpp-static-assert,hicpp-undelegated-constructor,hicpp-use-*,hicpp-vararg,misc-definitions-in-headers,misc-misplaced-const,misc-new-delete-overloads,misc-non-copyable-objects,misc-redundant-expression,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-uniqueptr-reset-release,misc-unused-*,modernize-avoid-*,modernize-concat-nested-namespaces,modernize-deprecated-*,modernize-loop-convert,modernize-make-*,modernize-pass-by-value,modernize-raw-string-literal,modernize-redundant-void-arg,modernize-replace-*,modernize-return-braced-init-list,modernize-shrink-to-fit,modernize-unary-static-assert,modernize-use-auto,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-emplace,modernize-use-equals-*,modernize-use-nodiscard,modernize-use-noexcept,modernize-use-nullptr,modernize-use-override,modernize-use-transparent-functors,modernize-use-uncaught-exceptions,modernize-use-using,performance-*,readability-avoid-const-params-in-decls,readability-const-return-type,readability-container-size-empty,readability-delete-null-pointer,readability-deleted-default,readability-else-after-return,readability-function-size,readability-identifier-naming,readability-inconsistent-declaration-parameter-name,readability-isolate-declaration,readability-magic-numbers,readability-misleading-indentation,readability-misplaced-array-index,readability-named-parameter,readability-non-const-parameter,readability-redundant-*,readability-simplify-*,readability-static-*,readability-string-compare,readability-uniqueptr-delete-release,readability-uppercase-literal-suffix'
+Checks:          '-*,bugprone-*,cert-*,clang-*,cppcoreguidelines-*,google-build-explicit-make-pair,google-default-arguments,google-explicit-constructor,google-global-names-in-headers,google-readability-casting,google-readability-function-size,google-readability-namespace-comments,google-runtime-int,google-runtime-operator,hicpp-avoid-*,hicpp-deprecated-headers,hicpp-exception-baseclass,hicpp-explicit-conversions,hicpp-function-size,hicpp-invalid-access-moved,hicpp-member-init,hicpp-move-const-arg,hicpp-multiway-paths-covered,hicpp-new-delete-operators,hicpp-no-*,hicpp-noexcept-move,hicpp-signed-bitwise,hicpp-special-member-functions,hicpp-static-assert,hicpp-undelegated-constructor,hicpp-use-*,hicpp-vararg,misc-definitions-in-headers,misc-misplaced-const,misc-new-delete-overloads,misc-non-copyable-objects,misc-redundant-expression,misc-static-assert,misc-throw-by-value-catch-by-reference,misc-unconventional-assign-operator,misc-uniqueptr-reset-release,misc-unused-*,modernize-avoid-*,modernize-concat-nested-namespaces,modernize-deprecated-*,modernize-loop-convert,modernize-make-*,modernize-pass-by-value,modernize-raw-string-literal,modernize-redundant-void-arg,modernize-replace-*,modernize-return-braced-init-list,modernize-shrink-to-fit,modernize-unary-static-assert,modernize-use-auto,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-emplace,modernize-use-equals-*,modernize-use-nodiscard,modernize-use-noexcept,modernize-use-nullptr,modernize-use-override,modernize-use-transparent-functors,modernize-use-uncaught-exceptions,modernize-use-using,performance-*,readability-avoid-const-params-in-decls,readability-const-return-type,readability-container-size-empty,readability-convert-member-functions-to-static,readability-delete-null-pointer,readability-deleted-default,readability-else-after-return,readability-function-size,readability-identifier-naming,readability-inconsistent-declaration-parameter-name,readability-isolate-declaration,readability-magic-numbers,readability-make-member-function-const,readability-misleading-indentation,readability-misplaced-array-index,readability-non-const-parameter,readability-redundant-*,readability-simplify-*,readability-static-*,readability-string-compare,readability-uniqueptr-delete-release,readability-use-anyofallof'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
-FormatStyle:     none
-User:            Edgar
+FormatStyle:     file
 CheckOptions:
   - key:             bugprone-argument-comment.CommentBoolLiterals
     value:           '0'
@@ -192,10 +191,6 @@ CheckOptions:
     value:           '0'
   - key:             hicpp-special-member-functions.AllowSoleDefaultDtor
     value:           '0'
-  - key:             hicpp-uppercase-literal-suffix.IgnoreMacros
-    value:           '1'
-  - key:             hicpp-uppercase-literal-suffix.NewSuffixes
-    value:           ''
   - key:             hicpp-use-auto.MinTypeNameLength
     value:           '5'
   - key:             hicpp-use-auto.RemoveStars
@@ -370,9 +365,5 @@ CheckOptions:
     value:           '::std::basic_string;::std::basic_string_view;::std::vector;::std::array'
   - key:             readability-static-accessed-through-instance.NameSpecifierNestingThreshold
     value:           '3'
-  - key:             readability-uppercase-literal-suffix.IgnoreMacros
-    value:           '1'
-  - key:             readability-uppercase-literal-suffix.NewSuffixes
-    value:           ''
 ...
 
