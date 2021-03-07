@@ -1,5 +1,6 @@
 #include "Object3d.hpp"
 #include "Miniball.hpp"
+#include <cmath>
 
 namespace nifly {
 float CalcMedianOfFloats(std::vector<float>& data) {
@@ -11,18 +12,17 @@ float CalcMedianOfFloats(std::vector<float>& data) {
 		std::nth_element(data.begin(), data.begin() + n / 2, data.end());
 		return data[n / 2];
 	}
-	else { // n is even
-		std::nth_element(data.begin(), data.begin() + n / 2, data.end());
-		std::nth_element(data.begin(), data.begin() + n / 2 - 1, data.begin() + n / 2);
-		return (data[n / 2] + data[n / 2 - 1]) / 2;
-	}
+	// n is even
+	std::nth_element(data.begin(), data.begin() + n / 2, data.end());
+	std::nth_element(data.begin(), data.begin() + n / 2 - 1, data.begin() + n / 2);
+	return (data[n / 2] + data[n / 2 - 1]) / 2;
 }
 
 Matrix3 RotVecToMat(const Vector3& v) {
 	double angle = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 	double cosang = std::cos(angle);
 	double sinang = std::sin(angle);
-	double onemcosang; // One minus cosang
+	double onemcosang = NAN; // One minus cosang
 	// Avoid loss of precision from cancellation in calculating onemcosang
 	if (cosang > .5)
 		onemcosang = sinang * sinang / (1 + cosang);
@@ -51,35 +51,34 @@ Vector3 RotMatToVec(const Matrix3& m) {
 			return Vector3(0, 0, 0);
 		return v * (std::asin(sin2ang * 0.5) / sin2ang);
 	}
-	else if (cosang > -1) {
+	if (cosang > -1) {
 		Vector3 v(m[1][2] - m[2][1], m[2][0] - m[0][2], m[0][1] - m[1][0]);
 		v.Normalize();
 		return v * std::acos(cosang);
 	}
-	else { // cosang <= -1, sinang == 0
-		double x = (m[0][0] - cosang) * 0.5;
-		double y = (m[1][1] - cosang) * 0.5;
-		double z = (m[2][2] - cosang) * 0.5;
+	// cosang <= -1, sinang == 0
+	double x = (m[0][0] - cosang) * 0.5;
+	double y = (m[1][1] - cosang) * 0.5;
+	double z = (m[2][2] - cosang) * 0.5;
 
-		// Solve precision issues that would cause NaN
-		if (x < 0.0)
-			x = 0.0;
-		if (y < 0.0)
-			y = 0.0;
-		if (z < 0.0)
-			z = 0.0;
+	// Solve precision issues that would cause NaN
+	if (x < 0.0)
+		x = 0.0;
+	if (y < 0.0)
+		y = 0.0;
+	if (z < 0.0)
+		z = 0.0;
 
-		Vector3 v(std::sqrt(x), std::sqrt(y), std::sqrt(z));
-		v.Normalize();
+	Vector3 v(std::sqrt(x), std::sqrt(y), std::sqrt(z));
+	v.Normalize();
 
-		if (m[1][2] < m[2][1])
-			v.x = -v.x;
-		if (m[2][0] < m[0][2])
-			v.y = -v.y;
-		if (m[0][1] < m[1][0])
-			v.z = -v.z;
-		return v * PI;
-	}
+	if (m[1][2] < m[2][1])
+		v.x = -v.x;
+	if (m[2][0] < m[0][2])
+		v.y = -v.y;
+	if (m[0][1] < m[1][0])
+		v.z = -v.z;
+	return v * PI;
 }
 
 Matrix3 CalcAverageRotation(const std::vector<Matrix3>& rots) {
@@ -107,14 +106,14 @@ Matrix3 CalcAverageRotation(const std::vector<Matrix3>& rots) {
 }
 
 MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts) {
-	int n = ts.size();
+	size_t n = ts.size();
 	if (n <= 0)
 		return MatTransform();
 
 	std::vector<Matrix3> rots(n);
 	Vector3 sumtrans;
 	float sumscale = 0.0f;
-	for (int i = 0; i < n; ++i) {
+	for (uint32_t i = 0; i < n; ++i) {
 		rots[i] = ts[i].rotation;
 		sumtrans += ts[i].translation;
 		sumscale += ts[i].scale;
@@ -128,22 +127,22 @@ MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts) {
 }
 
 Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data) {
-	int n = data.size();
+	size_t n = data.size();
 	if (n <= 0)
 		return Vector3();
 
 	Vector3 res;
 	std::vector<float> nums(n);
 
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		nums[i] = data[i].x;
 	res.x = CalcMedianOfFloats(nums);
 
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		nums[i] = data[i].y;
 	res.y = CalcMedianOfFloats(nums);
 
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		nums[i] = data[i].z;
 	res.z = CalcMedianOfFloats(nums);
 
@@ -151,7 +150,7 @@ Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data) {
 }
 
 Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
-	int n = rots.size();
+	size_t n = rots.size();
 	if (n <= 0)
 		return Matrix3();
 
@@ -166,7 +165,7 @@ Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
 	std::vector<Vector3> vecs(n);
 	Matrix3 base = RotVecToMat(sum1);
 	Matrix3 baseinv = base.Transpose();
-	for (int i = 0; i < n; ++i)
+	for (uint32_t i = 0; i < n; ++i)
 		vecs[i] = RotMatToVec(baseinv * rots[i]);
 
 	// Calculate median of the rebased rotation vectors.
@@ -177,14 +176,14 @@ Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots) {
 }
 
 MatTransform CalcMedianMatTransform(const std::vector<MatTransform>& ts) {
-	int n = ts.size();
+	size_t n = ts.size();
 	if (n <= 0)
 		return MatTransform();
 
 	std::vector<Matrix3> rots(n);
 	std::vector<Vector3> trans(n);
 	std::vector<float> scales(n);
-	for (int i = 0; i < n; ++i) {
+	for (uint32_t i = 0; i < n; ++i) {
 		rots[i] = ts[i].rotation;
 		trans[i] = ts[i].translation;
 		scales[i] = ts[i].scale;
@@ -207,15 +206,10 @@ BoundingSphere::BoundingSphere(const std::vector<Vector3>& vertices) {
 
 	// Convert vertices to list of coordinates
 	std::list<std::vector<float>> lp;
-	for (int i = 0; i < vertices.size(); ++i) {
-		std::vector<float> p(3);
-		p[0] = vertices[i].x;
-		p[1] = vertices[i].y;
-		p[2] = vertices[i].z;
-		lp.push_back(p);
+	for (auto vertice : vertices) {
+		lp.push_back({vertice.x, vertice.y, vertice.z});
 	}
 
-	// Create an instance of Miniball
 	Miniball::Miniball<Miniball::CoordAccessor<std::list<std::vector<float>>::const_iterator,
 											   std::vector<float>::const_iterator>>
 		mb(3, lp.begin(), lp.end());

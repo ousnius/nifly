@@ -32,7 +32,7 @@ void NiParticlesData::Get(NiStream& stream) {
 	}
 
 	subtexOffsets.resize(numSubtexOffsets);
-	for (int i = 0; i < numSubtexOffsets; i++)
+	for (uint32_t i = 0; i < numSubtexOffsets; i++)
 		stream >> subtexOffsets[i];
 
 	if (stream.GetVersion().User() >= 12) {
@@ -63,7 +63,7 @@ void NiParticlesData::Put(NiStream& stream) {
 		stream << numOffsets;
 	}
 
-	for (int i = 0; i < numSubtexOffsets; i++)
+	for (uint32_t i = 0; i < numSubtexOffsets; i++)
 		stream << subtexOffsets[i];
 
 	if (stream.GetVersion().User() >= 12) {
@@ -128,7 +128,7 @@ void NiMeshPSysData::Get(NiStream& stream) {
 
 	stream >> numGenerations;
 	generationPoolSize.resize(numGenerations);
-	for (int i = 0; i < numGenerations; i++)
+	for (uint32_t i = 0; i < numGenerations; i++)
 		stream >> generationPoolSize[i];
 
 	nodeRef.Get(stream);
@@ -141,7 +141,7 @@ void NiMeshPSysData::Put(NiStream& stream) {
 	stream << fillPoolsOnLoad;
 
 	stream << numGenerations;
-	for (int i = 0; i < numGenerations; i++)
+	for (uint32_t i = 0; i < numGenerations; i++)
 		stream << generationPoolSize[i];
 
 	nodeRef.Put(stream);
@@ -186,7 +186,7 @@ void NiPSysEmitterCtlrData::Get(NiStream& stream) {
 
 	stream >> numVisibilityKeys;
 	visibilityKeys.resize(numVisibilityKeys);
-	for (int i = 0; i < numVisibilityKeys; i++) {
+	for (uint32_t i = 0; i < numVisibilityKeys; i++) {
 		stream >> visibilityKeys[i].time;
 		stream >> visibilityKeys[i].value;
 	}
@@ -198,7 +198,7 @@ void NiPSysEmitterCtlrData::Put(NiStream& stream) {
 	floatKeys.Put(stream);
 
 	stream << numVisibilityKeys;
-	for (int i = 0; i < numVisibilityKeys; i++) {
+	for (uint32_t i = 0; i < numVisibilityKeys; i++) {
 		stream << visibilityKeys[i].time;
 		stream << visibilityKeys[i].value;
 	}
@@ -338,8 +338,8 @@ void BSPSysSimpleColorModifier::Get(NiStream& stream) {
 	stream >> color3;
 
 	if (stream.GetVersion().Stream() == 155) {
-		for (int i = 0; i < 26; i++)
-			stream >> unknownShorts[i];
+		for (uint16_t& unknownShort : unknownShorts)
+			stream >> unknownShort;
 	}
 }
 
@@ -357,8 +357,8 @@ void BSPSysSimpleColorModifier::Put(NiStream& stream) {
 	stream << color3;
 
 	if (stream.GetVersion().Stream() == 155) {
-		for (int i = 0; i < 26; i++)
-			stream << unknownShorts[i];
+		for (uint16_t& unknownShort : unknownShorts)
+			stream << unknownShort;
 	}
 }
 
@@ -405,7 +405,7 @@ void BSPSysScaleModifier::Get(NiStream& stream) {
 
 	stream >> numFloats;
 	floats.resize(numFloats);
-	for (int i = 0; i < numFloats; i++)
+	for (uint32_t i = 0; i < numFloats; i++)
 		stream >> floats[i];
 }
 
@@ -413,7 +413,7 @@ void BSPSysScaleModifier::Put(NiStream& stream) {
 	NiPSysModifier::Put(stream);
 
 	stream << numFloats;
-	for (int i = 0; i < numFloats; i++)
+	for (uint32_t i = 0; i < numFloats; i++)
 		stream << floats[i];
 }
 
@@ -916,8 +916,8 @@ void NiParticleSystem::Get(NiStream& stream) {
 		stream >> bounds;
 
 		if (stream.GetVersion().Stream() == 155)
-			for (int i = 0; i < 6; i++)
-				stream >> boundMinMax[i];
+			for (float& i : boundMinMax)
+				stream >> i;
 
 		skinInstanceRef.Get(stream);
 		shaderPropertyRef.Get(stream);
@@ -938,11 +938,11 @@ void NiParticleSystem::Get(NiStream& stream) {
 
 		stream >> numMaterials;
 		materialNameRefs.resize(numMaterials);
-		for (int i = 0; i < numMaterials; i++)
+		for (uint32_t i = 0; i < numMaterials; i++)
 			materialNameRefs[i].Get(stream);
 
 		materials.resize(numMaterials);
-		for (int i = 0; i < numMaterials; i++)
+		for (uint32_t i = 0; i < numMaterials; i++)
 			stream >> materials[i];
 
 		stream >> activeMaterial;
@@ -977,8 +977,8 @@ void NiParticleSystem::Put(NiStream& stream) {
 		stream << bounds;
 
 		if (stream.GetVersion().Stream() == 155)
-			for (int i = 0; i < 6; i++)
-				stream << boundMinMax[i];
+			for (float& i : boundMinMax)
+				stream << i;
 
 		skinInstanceRef.Put(stream);
 		shaderPropertyRef.Put(stream);
@@ -997,10 +997,10 @@ void NiParticleSystem::Put(NiStream& stream) {
 		skinInstanceRef.Put(stream);
 
 		stream << numMaterials;
-		for (int i = 0; i < numMaterials; i++)
+		for (uint32_t i = 0; i < numMaterials; i++)
 			materialNameRefs[i].Put(stream);
 
-		for (int i = 0; i < numMaterials; i++)
+		for (uint32_t i = 0; i < numMaterials; i++)
 			stream << materials[i];
 
 		stream << activeMaterial;

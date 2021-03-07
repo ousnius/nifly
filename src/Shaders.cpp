@@ -119,7 +119,7 @@ void NiTexturingProperty::Get(NiStream& stream) {
 
 	stream >> numShaderTex;
 	shaderTex.resize(numShaderTex);
-	for (int i = 0; i < numShaderTex; i++)
+	for (uint32_t i = 0; i < numShaderTex; i++)
 		shaderTex[i].Get(stream);
 }
 
@@ -208,7 +208,7 @@ void NiTexturingProperty::Put(NiStream& stream) {
 	}
 
 	stream << numShaderTex;
-	for (int i = 0; i < numShaderTex; i++)
+	for (uint32_t i = 0; i < numShaderTex; i++)
 		shaderTex[i].Put(stream);
 }
 
@@ -344,10 +344,10 @@ void BSShaderProperty::Get(NiStream& stream) {
 			SF1.resize(numSF1);
 			SF2.resize(numSF2);
 
-			for (int i = 0; i < numSF1; i++)
+			for (uint32_t i = 0; i < numSF1; i++)
 				stream >> SF1[i];
 
-			for (int i = 0; i < numSF2; i++)
+			for (uint32_t i = 0; i < numSF2; i++)
 				stream >> SF2[i];
 		}
 
@@ -379,10 +379,10 @@ void BSShaderProperty::Put(NiStream& stream) {
 			stream << numSF1;
 			stream << numSF2;
 
-			for (int i = 0; i < numSF1; i++)
+			for (uint32_t i = 0; i < numSF1; i++)
 				stream << SF1[i];
 
-			for (int i = 0; i < numSF2; i++)
+			for (uint32_t i = 0; i < numSF2; i++)
 				stream << SF2[i];
 		}
 
@@ -400,7 +400,7 @@ uint32_t BSShaderProperty::GetShaderType() {
 }
 
 void BSShaderProperty::SetShaderType(uint32_t type) {
-	shaderType = (BSShaderType) type;
+	shaderType = static_cast<BSShaderType>(type);
 }
 
 bool BSShaderProperty::IsSkinTinted() {
@@ -663,7 +663,7 @@ void BSLightingShaderProperty::Get(NiStream& stream) {
 
 			textureArrays.resize(numTextureArrays);
 
-			for (int i = 0; i < numTextureArrays; i++)
+			for (uint32_t i = 0; i < numTextureArrays; i++)
 				textureArrays[i].Get(stream);
 		}
 	}
@@ -780,7 +780,7 @@ void BSLightingShaderProperty::Put(NiStream& stream) {
 		if (hasTextureArrays) {
 			stream << numTextureArrays;
 
-			for (int i = 0; i < numTextureArrays; i++)
+			for (uint32_t i = 0; i < numTextureArrays; i++)
 				textureArrays[i].Put(stream);
 		}
 	}

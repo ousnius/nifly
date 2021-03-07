@@ -692,13 +692,13 @@ struct Morph {
 	void Get(NiStream& stream, uint32_t numVerts) {
 		frameName.Get(stream);
 		vectors.resize(numVerts);
-		for (int i = 0; i < numVerts; i++)
+		for (uint32_t i = 0; i < numVerts; i++)
 			stream >> vectors[i];
 	}
 
 	void Put(NiStream& stream, uint32_t numVerts) {
 		frameName.Put(stream);
-		for (int i = 0; i < numVerts; i++)
+		for (uint32_t i = 0; i < numVerts; i++)
 			stream << vectors[i];
 	}
 

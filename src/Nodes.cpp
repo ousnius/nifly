@@ -287,7 +287,7 @@ void NiRangeLODData::Get(NiStream& stream) {
 	stream >> numLODLevels;
 
 	lodLevels.resize(numLODLevels);
-	for (int i = 0; i < numLODLevels; i++) {
+	for (uint32_t i = 0; i < numLODLevels; i++) {
 		stream >> lodLevels[i].nearExtent;
 		stream >> lodLevels[i].farExtent;
 	}
@@ -299,7 +299,7 @@ void NiRangeLODData::Put(NiStream& stream) {
 	stream << lodCenter;
 	stream << numLODLevels;
 
-	for (int i = 0; i < numLODLevels; i++) {
+	for (uint32_t i = 0; i < numLODLevels; i++) {
 		stream << lodLevels[i].nearExtent;
 		stream << lodLevels[i].farExtent;
 	}
@@ -316,7 +316,7 @@ void NiScreenLODData::Get(NiStream& stream) {
 	stream >> numProportions;
 
 	proportionLevels.resize(numProportions);
-	for (int i = 0; i < numProportions; i++)
+	for (uint32_t i = 0; i < numProportions; i++)
 		stream >> proportionLevels[i];
 }
 
@@ -329,7 +329,7 @@ void NiScreenLODData::Put(NiStream& stream) {
 	stream << worldRadius;
 	stream << numProportions;
 
-	for (int i = 0; i < numProportions; i++)
+	for (uint32_t i = 0; i < numProportions; i++)
 		stream << proportionLevels[i];
 }
 

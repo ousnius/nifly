@@ -81,7 +81,7 @@ void NiAVObject::Get(NiStream& stream) {
 
 	flags = 0;
 	if (stream.GetVersion().Stream() <= 26)
-		stream.read((char*) &flags, 2);
+		stream.read(reinterpret_cast<char*>(&flags), 2);
 	else
 		stream >> flags;
 
@@ -100,7 +100,7 @@ void NiAVObject::Put(NiStream& stream) {
 	NiObjectNET::Put(stream);
 
 	if (stream.GetVersion().Stream() <= 26)
-		stream.write((char*) &flags, 2);
+		stream.write(reinterpret_cast<char*>(&flags), 2);
 	else
 		stream << flags;
 
@@ -141,7 +141,7 @@ void NiDefaultAVObjectPalette::Get(NiStream& stream) {
 
 	stream >> numObjects;
 	objects.resize(numObjects);
-	for (int i = 0; i < numObjects; i++) {
+	for (uint32_t i = 0; i < numObjects; i++) {
 		objects[i].name.Get(stream, 4);
 		objects[i].objectRef.Get(stream);
 	}
@@ -153,7 +153,7 @@ void NiDefaultAVObjectPalette::Put(NiStream& stream) {
 	sceneRef.Put(stream);
 
 	stream << numObjects;
-	for (int i = 0; i < numObjects; i++) {
+	for (uint32_t i = 0; i < numObjects; i++) {
 		objects[i].name.Put(stream, 4, false);
 		objects[i].objectRef.Put(stream);
 	}
@@ -164,7 +164,7 @@ void NiDefaultAVObjectPalette::GetPtrs(std::set<Ref*>& ptrs) {
 
 	ptrs.insert(&sceneRef);
 
-	for (int i = 0; i < numObjects; i++)
+	for (uint32_t i = 0; i < numObjects; i++)
 		ptrs.insert(&objects[i].objectRef);
 }
 
@@ -240,7 +240,7 @@ void NiPalette::Get(NiStream& stream) {
 	stream >> hasAlpha;
 	stream >> numEntries;
 	palette.resize(numEntries);
-	for (int i = 0; i < numEntries; i++)
+	for (uint32_t i = 0; i < numEntries; i++)
 		stream >> palette[i];
 }
 
@@ -259,7 +259,7 @@ void NiPalette::Put(NiStream& stream) {
 
 	stream << hasAlpha;
 	stream << numEntries;
-	for (int i = 0; i < numEntries; i++)
+	for (uint32_t i = 0; i < numEntries; i++)
 		stream << palette[i];
 }
 
@@ -274,7 +274,7 @@ void TextureRenderData::Get(NiStream& stream) {
 	stream >> flags;
 	stream >> unkInt3;
 
-	for (int i = 0; i < 4; i++) {
+	for (uint32_t i = 0; i < 4; i++) {
 		stream >> channels[i].type;
 		stream >> channels[i].convention;
 		stream >> channels[i].bitsPerChannel;
@@ -286,7 +286,7 @@ void TextureRenderData::Get(NiStream& stream) {
 	stream >> numMipmaps;
 	stream >> bytesPerPixel;
 	mipmaps.resize(numMipmaps);
-	for (int i = 0; i < numMipmaps; i++)
+	for (uint32_t i = 0; i < numMipmaps; i++)
 		stream >> mipmaps[i];
 }
 
@@ -300,7 +300,7 @@ void TextureRenderData::Put(NiStream& stream) {
 	stream << flags;
 	stream << unkInt3;
 
-	for (int i = 0; i < 4; i++) {
+	for (uint32_t i = 0; i < 4; i++) {
 		stream << channels[i].type;
 		stream << channels[i].convention;
 		stream << channels[i].bitsPerChannel;
@@ -311,7 +311,7 @@ void TextureRenderData::Put(NiStream& stream) {
 
 	stream << numMipmaps;
 	stream << bytesPerPixel;
-	for (int i = 0; i < numMipmaps; i++)
+	for (uint32_t i = 0; i < numMipmaps; i++)
 		stream << mipmaps[i];
 }
 
@@ -345,9 +345,9 @@ void NiPersistentSrcTextureRendererData::Get(NiStream& stream) {
 	stream >> unkInt5;
 
 	pixelData.resize(numFaces);
-	for (int f = 0; f < numFaces; f++) {
+	for (uint32_t f = 0; f < numFaces; f++) {
 		pixelData[f].resize(numPixels);
-		for (int p = 0; p < numPixels; p++)
+		for (uint32_t p = 0; p < numPixels; p++)
 			stream >> pixelData[f][p];
 	}
 }
@@ -360,8 +360,8 @@ void NiPersistentSrcTextureRendererData::Put(NiStream& stream) {
 	stream >> numFaces;
 	stream >> unkInt5;
 
-	for (int f = 0; f < numFaces; f++)
-		for (int p = 0; p < numPixels; p++)
+	for (uint32_t f = 0; f < numFaces; f++)
+		for (uint32_t p = 0; p < numPixels; p++)
 			stream >> pixelData[f][p];
 }
 
@@ -373,9 +373,9 @@ void NiPixelData::Get(NiStream& stream) {
 	stream >> numFaces;
 
 	pixelData.resize(numFaces);
-	for (int f = 0; f < numFaces; f++) {
+	for (uint32_t f = 0; f < numFaces; f++) {
 		pixelData[f].resize(numPixels);
-		for (int p = 0; p < numPixels; p++)
+		for (uint32_t p = 0; p < numPixels; p++)
 			stream >> pixelData[f][p];
 	}
 }
@@ -386,8 +386,8 @@ void NiPixelData::Put(NiStream& stream) {
 	stream >> numPixels;
 	stream >> numFaces;
 
-	for (int f = 0; f < numFaces; f++)
-		for (int p = 0; p < numPixels; p++)
+	for (uint32_t f = 0; f < numFaces; f++)
+		for (uint32_t p = 0; p < numPixels; p++)
 			stream >> pixelData[f][p];
 }
 

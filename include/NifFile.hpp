@@ -7,6 +7,8 @@ See the included LICENSE file
 
 #include "Factory.hpp"
 
+#include <filesystem>
+
 namespace nifly {
 struct OptOptions {
 	NiVersion targetVersion;
@@ -47,7 +49,7 @@ struct NifSaveOptions {
 class NifFile {
 private:
 	NiHeader hdr;
-	std::vector<std::shared_ptr<NiObject>> blocks;
+	std::vector<std::unique_ptr<NiObject>> blocks;
 	bool isValid = false;
 	bool hasUnknown = false;
 	bool isTerrain = false;
@@ -55,7 +57,7 @@ private:
 public:
 	NifFile() {}
 
-	NifFile(const std::string& fileName, const NifLoadOptions& options = NifLoadOptions()) {
+	NifFile(const std::filesystem::path& fileName, const NifLoadOptions& options = NifLoadOptions()) {
 		Load(fileName, options);
 	}
 
@@ -71,9 +73,9 @@ public:
 	NiHeader& GetHeader() { return hdr; }
 	void CopyFrom(const NifFile& other);
 
-	int Load(const std::string& fileName, const NifLoadOptions& options = NifLoadOptions());
+	int Load(const std::filesystem::path& fileName, const NifLoadOptions& options = NifLoadOptions());
 	int Load(std::iostream& file, const NifLoadOptions& options = NifLoadOptions());
-	int Save(const std::string& fileName, const NifSaveOptions& options = NifSaveOptions());
+	int Save(const std::filesystem::path& fileName, const NifSaveOptions& options = NifSaveOptions());
 	int Save(std::iostream& file, const NifSaveOptions& options = NifSaveOptions());
 
 	void Optimize();

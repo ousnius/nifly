@@ -18,7 +18,7 @@ void NiKeyframeData::Get(NiStream& stream) {
 		if (rotationType != XYZ_ROTATION_KEY) {
 			quaternionKeys.resize(numRotationKeys);
 
-			for (int i = 0; i < numRotationKeys; i++) {
+			for (uint32_t i = 0; i < numRotationKeys; i++) {
 				stream >> quaternionKeys[i].time;
 				stream >> quaternionKeys[i].value;
 
@@ -46,7 +46,7 @@ void NiKeyframeData::Put(NiStream& stream) {
 		stream << rotationType;
 
 		if (rotationType != XYZ_ROTATION_KEY) {
-			for (int i = 0; i < numRotationKeys; i++) {
+			for (uint32_t i = 0; i < numRotationKeys; i++) {
 				stream << quaternionKeys[i].time;
 				stream << quaternionKeys[i].value;
 
@@ -110,12 +110,12 @@ void NiBSplineData::Get(NiStream& stream) {
 
 	stream >> numFloatControlPoints;
 	floatControlPoints.resize(numFloatControlPoints);
-	for (int i = 0; i < numFloatControlPoints; i++)
+	for (uint32_t i = 0; i < numFloatControlPoints; i++)
 		stream >> floatControlPoints[i];
 
 	stream >> numShortControlPoints;
 	shortControlPoints.resize(numShortControlPoints);
-	for (int i = 0; i < numShortControlPoints; i++)
+	for (uint32_t i = 0; i < numShortControlPoints; i++)
 		stream >> shortControlPoints[i];
 }
 
@@ -123,11 +123,11 @@ void NiBSplineData::Put(NiStream& stream) {
 	NiObject::Put(stream);
 
 	stream << numFloatControlPoints;
-	for (int i = 0; i < numFloatControlPoints; i++)
+	for (uint32_t i = 0; i < numFloatControlPoints; i++)
 		stream << floatControlPoints[i];
 
 	stream << numShortControlPoints;
-	for (int i = 0; i < numShortControlPoints; i++)
+	for (uint32_t i = 0; i < numShortControlPoints; i++)
 		stream << shortControlPoints[i];
 }
 
@@ -435,7 +435,7 @@ void NiBoneLODController::Get(NiStream& stream) {
 
 	stream >> boneArraysSize;
 	boneArrays.resize(boneArraysSize);
-	for (int i = 0; i < boneArraysSize; i++)
+	for (uint32_t i = 0; i < boneArraysSize; i++)
 		boneArrays[i].Get(stream);
 }
 
@@ -446,14 +446,14 @@ void NiBoneLODController::Put(NiStream& stream) {
 	stream << numLODs;
 
 	stream << boneArraysSize;
-	for (int i = 0; i < boneArraysSize; i++)
+	for (uint32_t i = 0; i < boneArraysSize; i++)
 		boneArrays[i].Put(stream);
 }
 
 void NiBoneLODController::GetPtrs(std::set<Ref*>& ptrs) {
 	NiTimeController::GetPtrs(ptrs);
 
-	for (int i = 0; i < boneArraysSize; i++)
+	for (uint32_t i = 0; i < boneArraysSize; i++)
 		boneArrays[i].GetIndexPtrs(ptrs);
 }
 
@@ -466,7 +466,7 @@ void NiMorphData::Get(NiStream& stream) {
 	stream >> relativeTargets;
 
 	morphs.resize(numMorphs);
-	for (int i = 0; i < numMorphs; i++)
+	for (uint32_t i = 0; i < numMorphs; i++)
 		morphs[i].Get(stream, numVertices);
 }
 
@@ -477,7 +477,7 @@ void NiMorphData::Put(NiStream& stream) {
 	stream << numVertices;
 	stream << relativeTargets;
 
-	for (int i = 0; i < numMorphs; i++)
+	for (uint32_t i = 0; i < numMorphs; i++)
 		morphs[i].Put(stream, numVertices);
 }
 
@@ -498,7 +498,7 @@ void NiGeomMorpherController::Get(NiStream& stream) {
 
 	stream >> numTargets;
 	interpWeights.resize(numTargets);
-	for (int i = 0; i < numTargets; i++)
+	for (uint32_t i = 0; i < numTargets; i++)
 		interpWeights[i].Get(stream);
 }
 
@@ -510,7 +510,7 @@ void NiGeomMorpherController::Put(NiStream& stream) {
 	stream << alwaysUpdate;
 
 	stream << numTargets;
-	for (int i = 0; i < numTargets; i++)
+	for (uint32_t i = 0; i < numTargets; i++)
 		interpWeights[i].Put(stream);
 }
 
@@ -622,7 +622,7 @@ void NiVisData::Get(NiStream& stream) {
 
 	stream >> numKeys;
 	keys.resize(numKeys);
-	for (int i = 0; i < numKeys; i++) {
+	for (uint32_t i = 0; i < numKeys; i++) {
 		stream >> keys[i].time;
 		stream >> keys[i].value;
 	}
@@ -632,7 +632,7 @@ void NiVisData::Put(NiStream& stream) {
 	NiObject::Put(stream);
 
 	stream << numKeys;
-	for (int i = 0; i < numKeys; i++) {
+	for (uint32_t i = 0; i < numKeys; i++) {
 		stream << keys[i].time;
 		stream << keys[i].value;
 	}
@@ -1227,7 +1227,7 @@ void BSTreadTransfInterpolator::Get(NiStream& stream) {
 
 	stream >> numTreadTransforms;
 	treadTransforms.resize(numTreadTransforms);
-	for (int i = 0; i < numTreadTransforms; i++)
+	for (uint32_t i = 0; i < numTreadTransforms; i++)
 		treadTransforms[i].Get(stream);
 
 	dataRef.Get(stream);
@@ -1237,7 +1237,7 @@ void BSTreadTransfInterpolator::Put(NiStream& stream) {
 	NiInterpolator::Put(stream);
 
 	stream << numTreadTransforms;
-	for (int i = 0; i < numTreadTransforms; i++)
+	for (uint32_t i = 0; i < numTreadTransforms; i++)
 		treadTransforms[i].Put(stream);
 
 	dataRef.Put(stream);
@@ -1246,7 +1246,7 @@ void BSTreadTransfInterpolator::Put(NiStream& stream) {
 void BSTreadTransfInterpolator::GetStringRefs(std::set<StringRef*>& refs) {
 	NiInterpolator::GetStringRefs(refs);
 
-	for (int i = 0; i < numTreadTransforms; i++)
+	for (uint32_t i = 0; i < numTreadTransforms; i++)
 		treadTransforms[i].GetStringRefs(refs);
 }
 
@@ -1289,7 +1289,7 @@ void NiSequence::Get(NiStream& stream) {
 	stream >> arrayGrowBy;
 
 	controlledBlocks.resize(numControlledBlocks);
-	for (int i = 0; i < numControlledBlocks; i++) {
+	for (uint32_t i = 0; i < numControlledBlocks; i++) {
 		controlledBlocks[i].interpolatorRef.Get(stream);
 		controlledBlocks[i].controllerRef.Get(stream);
 		stream >> controlledBlocks[i].priority;
@@ -1310,7 +1310,7 @@ void NiSequence::Put(NiStream& stream) {
 	stream << numControlledBlocks;
 	stream << arrayGrowBy;
 
-	for (int i = 0; i < numControlledBlocks; i++) {
+	for (uint32_t i = 0; i < numControlledBlocks; i++) {
 		controlledBlocks[i].interpolatorRef.Put(stream);
 		controlledBlocks[i].controllerRef.Put(stream);
 		stream << controlledBlocks[i].priority;
@@ -1327,7 +1327,7 @@ void NiSequence::GetStringRefs(std::set<StringRef*>& refs) {
 
 	refs.insert(&name);
 
-	for (int i = 0; i < numControlledBlocks; i++) {
+	for (uint32_t i = 0; i < numControlledBlocks; i++) {
 		refs.insert(&controlledBlocks[i].nodeName);
 		refs.insert(&controlledBlocks[i].propType);
 		refs.insert(&controlledBlocks[i].ctrlType);
@@ -1339,7 +1339,7 @@ void NiSequence::GetStringRefs(std::set<StringRef*>& refs) {
 void NiSequence::GetChildRefs(std::set<Ref*>& refs) {
 	NiObject::GetChildRefs(refs);
 
-	for (int i = 0; i < numControlledBlocks; i++) {
+	for (uint32_t i = 0; i < numControlledBlocks; i++) {
 		refs.insert(&controlledBlocks[i].interpolatorRef);
 		refs.insert(&controlledBlocks[i].controllerRef);
 	}
@@ -1348,7 +1348,7 @@ void NiSequence::GetChildRefs(std::set<Ref*>& refs) {
 void NiSequence::GetChildIndices(std::vector<int>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	for (int i = 0; i < numControlledBlocks; i++) {
+	for (uint32_t i = 0; i < numControlledBlocks; i++) {
 		indices.push_back(controlledBlocks[i].interpolatorRef.GetIndex());
 		indices.push_back(controlledBlocks[i].controllerRef.GetIndex());
 	}

@@ -452,7 +452,7 @@ public:
 		stream >> textureArrayWidth;
 		textureArray.resize(textureArrayWidth);
 
-		for (int i = 0; i < textureArrayWidth; i++) {
+		for (uint32_t i = 0; i < textureArrayWidth; i++) {
 			NiString tex;
 			tex.Get(stream, 4);
 			textureArray[i] = std::move(tex);
@@ -462,7 +462,7 @@ public:
 	void Put(NiStream& stream) {
 		stream << textureArrayWidth;
 
-		for (int i = 0; i < textureArrayWidth; i++)
+		for (uint32_t i = 0; i < textureArrayWidth; i++)
 			textureArray[i].Put(stream, 4, false);
 	}
 };
