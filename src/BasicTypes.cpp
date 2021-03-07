@@ -713,7 +713,7 @@ void NiHeader::Put(NiStream& stream) {
 
 	if (version.File() >= V5_0_0_1) {
 		stream << numBlockTypes;
-		for (uint32_t i = 0; i < numBlockTypes; i++)
+		for (uint16_t i = 0; i < numBlockTypes; i++)
 			blockTypes[i].Put(stream, 4, false);
 
 		for (uint32_t i = 0; i < numBlocks; i++)
