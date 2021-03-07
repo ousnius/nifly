@@ -14,9 +14,10 @@ static const std::string NIF_NDS = "NDSNIF....@....@....";
 static const std::string NIF_VERSTRING = ", Version ";
 
 NiVersion::NiVersion(NiFileVersion _file, uint32_t _user, uint32_t _stream)
-	: file(_file)
-	, user(_user)
-	, stream(_stream) {}
+	: user(_user)
+	, stream(_stream) {
+	SetFile(_file);
+}
 
 std::string NiVersion::GetVersionInfo() {
 	return vstr + "\nUser Version: " + std::to_string(user) + "\nStream Version: " + std::to_string(stream);

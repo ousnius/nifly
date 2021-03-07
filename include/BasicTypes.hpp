@@ -117,11 +117,11 @@ public:
 	bool IsFO76() { return file == V20_2_0_7 && stream == 155; }
 
 	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 0); }
-	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 0, 82); }
-	static NiVersion getSK() { return NiVersion(NiFileVersion::V20_2_0_7, 0, 83); }
-	static NiVersion getSSE() { return NiVersion(NiFileVersion::V20_2_0_7, 0, 100); }
-	static NiVersion getFO4() { return NiVersion(NiFileVersion::V20_2_0_7, 0, 130); }
-	static NiVersion getFO76() { return NiVersion(NiFileVersion::V20_2_0_7, 0, 155); }
+	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 82); }
+	static NiVersion getSK() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 83); }
+	static NiVersion getSSE() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 100); }
+	static NiVersion getFO4() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 130); }
+	static NiVersion getFO76() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 155); }
 };
 
 enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
