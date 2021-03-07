@@ -1671,6 +1671,10 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) {
 			return;
 	}
 
+	auto findResult = [&result = result](NiObject* obj) -> bool {
+		return (std::find(result.begin(), result.end(), obj) != result.end());
+	};
+
 	std::vector<int> indices;
 	parent->GetChildIndices(indices);
 
@@ -1678,19 +1682,17 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) {
 	if (constraint) {
 		for (auto& entityId : constraint->GetEntities()) {
 			auto entity = hdr.GetBlock<NiObject>(entityId.GetIndex());
-			if (entity)
+			if (entity && !findResult(entity))
 				GetTree(result, entity);
 		}
 	}
 
 	for (auto& id : indices) {
 		auto child = hdr.GetBlock<NiObject>(id);
-		if (child) {
-			if (std::find(result.begin(), result.end(), child) == result.end()) {
-				bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>();
-				if (childBeforeParent)
-					GetTree(result, child);
-			}
+		if (child && !findResult(child)) {
+			bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>();
+			if (childBeforeParent)
+				GetTree(result, child);
 		}
 	}
 
@@ -1698,12 +1700,10 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) {
 
 	for (auto& id : indices) {
 		auto child = hdr.GetBlock<NiObject>(id);
-		if (child) {
-			if (std::find(result.begin(), result.end(), child) == result.end()) {
-				bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>();
-				if (!childBeforeParent)
-					GetTree(result, child);
-			}
+		if (child && !findResult(child)) {
+			bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>();
+			if (!childBeforeParent)
+				GetTree(result, child);
 		}
 	}
 }
