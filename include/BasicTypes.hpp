@@ -245,13 +245,15 @@ public:
 
 template<typename T>
 class BlockRef : public CloneInherit<BlockRef<T>, Ref> {
+	using base = Ref;
+
 public:
 	BlockRef() {}
-	BlockRef(const int id) { index = id; }
+	BlockRef(const int id) { Ref::index = id; }
 
-	void Get(NiStream& stream) { stream >> index; }
+	void Get(NiStream& stream) { stream >> base::index; }
 
-	void Put(NiStream& stream) { stream << index; }
+	void Put(NiStream& stream) { stream << base::index; }
 };
 
 class RefArray : public CloneInherit<AbstractMethod<RefArray>> {
@@ -281,6 +283,9 @@ public:
 template<typename T>
 class BlockRefArray : public CloneInherit<BlockRefArray<T>, RefArray> {
 protected:
+	using RefArray::arraySize;
+	using RefArray::keepEmptyRefs;
+
 	std::vector<BlockRef<T>> refs;
 
 	void CleanInvalidRefs() {
@@ -391,7 +396,7 @@ public:
 template<typename T>
 class BlockRefShortArray : public CloneInherit<BlockRefShortArray<T>, BlockRefArray<T>> {
 public:
-	typedef BlockRefArray<T> base;
+	using base = BlockRefArray<T>;
 	using base::arraySize;
 	using base::refs;
 
