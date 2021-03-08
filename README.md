@@ -9,20 +9,18 @@ Created with a clean-room design.
 - Cross platform
 - Lots of helper functions
 - Includes basics often used with 3D meshes
-- Unknown NIF blocks are kept untouched where possible.
+- Unknown NIF blocks are kept untouched
 - No external dependencies except for the test framework
 
 ### Usage/Building
-- Simply include the headers/source in your project.
-- You may use the included CMake list.
-- Tested with MSVC++ 14.x (VS 2017) or higher
-- Should work with most compilers. If not, please feel free to add an issue or make a PR.
+- C++ 17 compiler required
+- CMake lists included, or simply include the headers/source in your project
 - To get Catch2, install the [CMake package](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository) (or vcpkg):
 ```bash
 git clone -b v2.x https://github.com/catchorg/Catch2.git
 cd Catch2
 cmake -Bbuild -H. -DBUILD_TESTING=OFF
-cmake --build build/ --target install  #with admin privileges (or sudo) depending on your cmake prefix path
+cmake --build build/ --target install  #with admin elevation (or sudo) depending on your cmake prefix path
 ```
 
 ### Libraries used
