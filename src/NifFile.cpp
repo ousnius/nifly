@@ -1232,8 +1232,9 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 					}
 				}
 
+				auto bsOptShapeObserver = bsOptShape.get();
 				hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
-				UpdateSkinPartitions(bsOptShape.get());
+				UpdateSkinPartitions(bsOptShapeObserver);
 			}
 		}
 
