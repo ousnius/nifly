@@ -10,39 +10,31 @@ See the included LICENSE file
 #include "Nodes.hpp"
 
 namespace nifly {
-class NiParticles : public NiGeometry {
+class NiParticles : public CloneInherit<NiParticles, NiGeometry> {
 public:
 	static constexpr const char* BlockName = "NiParticles";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiParticles* Clone() override { return new NiParticles(*this); }
 };
 
-class NiAutoNormalParticles : public NiParticles {
+class NiAutoNormalParticles : public CloneInherit<NiAutoNormalParticles, NiParticles> {
 public:
 	static constexpr const char* BlockName = "NiAutoNormalParticles";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiAutoNormalParticles* Clone() override { return new NiAutoNormalParticles(*this); }
 };
 
-class NiParticleMeshes : public NiParticles {
+class NiParticleMeshes : public CloneInherit<NiParticleMeshes, NiParticles> {
 public:
 	static constexpr const char* BlockName = "NiParticleMeshes";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiParticleMeshes* Clone() override { return new NiParticleMeshes(*this); }
 };
 
-class NiRotatingParticles : public NiParticles {
+class NiRotatingParticles : public CloneInherit<NiRotatingParticles, NiParticles> {
 public:
 	static constexpr const char* BlockName = "NiRotatingParticles";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiRotatingParticles* Clone() override { return new NiRotatingParticles(*this); }
 };
 
-class NiParticlesData : public NiGeometryData {
+class NiParticlesData : public CloneInherit<NiParticlesData, NiGeometryData> {
 private:
 	bool hasRadii = false;
 	uint16_t numActive = 0;
@@ -69,26 +61,21 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiParticlesData* Clone() override { return new NiParticlesData(*this); }
 };
 
-class NiAutoNormalParticlesData : public NiParticlesData {
+class NiAutoNormalParticlesData : public CloneInherit<NiAutoNormalParticlesData, NiParticlesData> {
 public:
 	static constexpr const char* BlockName = "NiAutoNormalParticlesData";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiAutoNormalParticlesData* Clone() override { return new NiAutoNormalParticlesData(*this); }
 };
 
-class NiRotatingParticlesData : public NiParticlesData {
+class NiRotatingParticlesData : public CloneInherit<NiRotatingParticlesData, NiParticlesData> {
 public:
 	static constexpr const char* BlockName = "NiRotatingParticlesData";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiRotatingParticlesData* Clone() override { return new NiRotatingParticlesData(*this); }
 };
 
-class NiParticleMeshesData : public NiRotatingParticlesData {
+class NiParticleMeshesData : public CloneInherit<NiParticleMeshesData, NiRotatingParticlesData> {
 private:
 	BlockRef<NiAVObject> dataRef;
 
@@ -100,11 +87,9 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-
-	NiParticleMeshesData* Clone() override { return new NiParticleMeshesData(*this); }
 };
 
-class NiPSysData : public NiRotatingParticlesData {
+class NiPSysData : public CloneInherit<NiPSysData, NiRotatingParticlesData> {
 private:
 	Vector3 unknownVector;
 	bool hasRotationSpeeds = false;
@@ -115,10 +100,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysData* Clone() override { return new NiPSysData(*this); }
 };
 
-class NiMeshPSysData : public NiPSysData {
+class NiMeshPSysData : public CloneInherit<NiMeshPSysData, NiPSysData> {
 private:
 	uint32_t defaultPoolSize = 0;
 	bool fillPoolsOnLoad = false;
@@ -136,10 +120,9 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	NiMeshPSysData* Clone() override { return new NiMeshPSysData(*this); }
 };
 
-class BSStripPSysData : public NiPSysData {
+class BSStripPSysData : public CloneInherit<BSStripPSysData, NiPSysData> {
 private:
 	uint16_t maxPointCount = 0;
 	uint32_t startCapSize = 0;
@@ -152,10 +135,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSStripPSysData* Clone() override { return new BSStripPSysData(*this); }
 };
 
-class NiPSysEmitterCtlrData : public NiObject {
+class NiPSysEmitterCtlrData : public CloneInherit<NiPSysEmitterCtlrData, NiObject> {
 private:
 	KeyGroup<float> floatKeys;
 	uint32_t numVisibilityKeys = 0;
@@ -167,12 +149,11 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysEmitterCtlrData* Clone() override { return new NiPSysEmitterCtlrData(*this); }
 };
 
 class NiParticleSystem;
 
-class NiPSysModifier : public NiObject {
+class NiPSysModifier : public CloneInherit<NiPSysModifier, NiObject> {
 private:
 	StringRef name;
 	uint32_t order = 0;
@@ -186,7 +167,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class BSPSysStripUpdateModifier : public NiPSysModifier {
+class BSPSysStripUpdateModifier : public CloneInherit<BSPSysStripUpdateModifier, NiPSysModifier> {
 private:
 	float updateDeltaTime = 0.0f;
 
@@ -196,10 +177,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSPSysStripUpdateModifier* Clone() override { return new BSPSysStripUpdateModifier(*this); }
 };
 
-class NiPSysSpawnModifier : public NiPSysModifier {
+class NiPSysSpawnModifier : public CloneInherit<NiPSysSpawnModifier, NiPSysModifier> {
 private:
 	uint16_t numSpawnGenerations = 0;
 	float percentSpawned = 0.0f;
@@ -216,10 +196,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysSpawnModifier* Clone() override { return new NiPSysSpawnModifier(*this); }
 };
 
-class NiPSysAgeDeathModifier : public NiPSysModifier {
+class NiPSysAgeDeathModifier : public CloneInherit<NiPSysAgeDeathModifier, NiPSysModifier> {
 private:
 	bool spawnOnDeath = false;
 	BlockRef<NiPSysSpawnModifier> spawnModifierRef;
@@ -232,10 +211,9 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	NiPSysAgeDeathModifier* Clone() override { return new NiPSysAgeDeathModifier(*this); }
 };
 
-class BSPSysLODModifier : public NiPSysModifier {
+class BSPSysLODModifier : public CloneInherit<BSPSysLODModifier, NiPSysModifier> {
 private:
 	float lodBeginDistance = 0.0f;
 	float lodEndDistance = 0.0f;
@@ -248,10 +226,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSPSysLODModifier* Clone() override { return new BSPSysLODModifier(*this); }
 };
 
-class BSPSysSimpleColorModifier : public NiPSysModifier {
+class BSPSysSimpleColorModifier : public CloneInherit<BSPSysSimpleColorModifier, NiPSysModifier> {
 private:
 	float fadeInPercent = 0.0f;
 	float fadeOutPercent = 0.0f;
@@ -270,10 +247,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSPSysSimpleColorModifier* Clone() override { return new BSPSysSimpleColorModifier(*this); }
 };
 
-class NiPSysRotationModifier : public NiPSysModifier {
+class NiPSysRotationModifier : public CloneInherit<NiPSysRotationModifier, NiPSysModifier> {
 private:
 	float initialSpeed = 0.0f;
 	float initialSpeedVariation = 0.0f;
@@ -291,10 +267,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysRotationModifier* Clone() override { return new NiPSysRotationModifier(*this); }
 };
 
-class BSPSysScaleModifier : public NiPSysModifier {
+class BSPSysScaleModifier : public CloneInherit<BSPSysScaleModifier, NiPSysModifier> {
 private:
 	uint32_t numFloats = 0;
 	std::vector<float> floats;
@@ -305,12 +280,11 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSPSysScaleModifier* Clone() override { return new BSPSysScaleModifier(*this); }
 };
 
 enum ForceType : uint32_t { FORCE_PLANAR, FORCE_SPHERICAL, FORCE_UNKNOWN };
 
-class NiPSysGravityModifier : public NiPSysModifier {
+class NiPSysGravityModifier : public CloneInherit<NiPSysGravityModifier, NiPSysModifier> {
 private:
 	BlockRef<NiNode> gravityObjRef;
 	Vector3 gravityAxis;
@@ -328,18 +302,15 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
-	NiPSysGravityModifier* Clone() override { return new NiPSysGravityModifier(*this); }
 };
 
-class NiPSysPositionModifier : public NiPSysModifier {
+class NiPSysPositionModifier : public CloneInherit<NiPSysPositionModifier, NiPSysModifier> {
 public:
 	static constexpr const char* BlockName = "NiPSysPositionModifier";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiPSysPositionModifier* Clone() override { return new NiPSysPositionModifier(*this); }
 };
 
-class NiPSysBoundUpdateModifier : public NiPSysModifier {
+class NiPSysBoundUpdateModifier : public CloneInherit<NiPSysBoundUpdateModifier, NiPSysModifier> {
 private:
 	uint16_t updateSkip = 0;
 
@@ -349,10 +320,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysBoundUpdateModifier* Clone() override { return new NiPSysBoundUpdateModifier(*this); }
 };
 
-class NiPSysDragModifier : public NiPSysModifier {
+class NiPSysDragModifier : public CloneInherit<NiPSysDragModifier, NiPSysModifier> {
 private:
 	BlockRef<NiObject> parentRef;
 	Vector3 dragAxis;
@@ -367,10 +337,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
-	NiPSysDragModifier* Clone() override { return new NiPSysDragModifier(*this); }
 };
 
-class BSPSysInheritVelocityModifier : public NiPSysModifier {
+class BSPSysInheritVelocityModifier : public CloneInherit<BSPSysInheritVelocityModifier, NiPSysModifier> {
 private:
 	BlockRef<NiNode> targetNodeRef;
 	float changeToInherit = 0.0f;
@@ -384,10 +353,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
-	BSPSysInheritVelocityModifier* Clone() override { return new BSPSysInheritVelocityModifier(*this); }
 };
 
-class BSPSysSubTexModifier : public NiPSysModifier {
+class BSPSysSubTexModifier : public CloneInherit<BSPSysSubTexModifier, NiPSysModifier> {
 private:
 	float startFrame = 0.0f;
 	float startFrameVariation = 0.0f;
@@ -403,14 +371,13 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSPSysSubTexModifier* Clone() override { return new BSPSysSubTexModifier(*this); }
 };
 
 enum DecayType : uint32_t { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
 
 enum SymmetryType : uint32_t { SYMMETRY_SPHERICAL, SYMMETRY_CYLINDRICAL, SYMMETRY_PLANAR };
 
-class NiPSysBombModifier : public NiPSysModifier {
+class NiPSysBombModifier : public CloneInherit<NiPSysBombModifier, NiPSysModifier> {
 private:
 	BlockRef<NiNode> bombNodeRef;
 	Vector3 bombAxis;
@@ -426,10 +393,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
-	NiPSysBombModifier* Clone() override { return new NiPSysBombModifier(*this); }
 };
 
-class NiColorData : public NiObject {
+class NiColorData : public CloneInherit<NiColorData, NiObject> {
 private:
 	KeyGroup<Color4> data;
 
@@ -439,10 +405,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiColorData* Clone() override { return new NiColorData(*this); }
 };
 
-class NiPSysColorModifier : public NiPSysModifier {
+class NiPSysColorModifier : public CloneInherit<NiPSysColorModifier, NiPSysModifier> {
 private:
 	BlockRef<NiColorData> dataRef;
 
@@ -454,10 +419,9 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	NiPSysColorModifier* Clone() override { return new NiPSysColorModifier(*this); }
 };
 
-class NiPSysGrowFadeModifier : public NiPSysModifier {
+class NiPSysGrowFadeModifier : public CloneInherit<NiPSysGrowFadeModifier, NiPSysModifier> {
 private:
 	float growTime = 0.0f;
 	uint16_t growGeneration = 0;
@@ -471,10 +435,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysGrowFadeModifier* Clone() override { return new NiPSysGrowFadeModifier(*this); }
 };
 
-class NiPSysMeshUpdateModifier : public NiPSysModifier {
+class NiPSysMeshUpdateModifier : public CloneInherit<NiPSysMeshUpdateModifier, NiPSysModifier> {
 private:
 	BlockRefArray<NiAVObject> meshRefs;
 
@@ -486,12 +449,11 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	NiPSysMeshUpdateModifier* Clone() override { return new NiPSysMeshUpdateModifier(*this); }
 
 	BlockRefArray<NiAVObject>& GetMeshes();
 };
 
-class NiPSysFieldModifier : public NiPSysModifier {
+class NiPSysFieldModifier : public CloneInherit<NiPSysFieldModifier, NiPSysModifier> {
 private:
 	BlockRef<NiAVObject> fieldObjectRef;
 	float magnitude = 0.0f;
@@ -506,7 +468,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiPSysVortexFieldModifier : public NiPSysFieldModifier {
+class NiPSysVortexFieldModifier : public CloneInherit<NiPSysVortexFieldModifier, NiPSysFieldModifier> {
 private:
 	Vector3 direction;
 
@@ -516,10 +478,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysVortexFieldModifier* Clone() override { return new NiPSysVortexFieldModifier(*this); }
 };
 
-class NiPSysGravityFieldModifier : public NiPSysFieldModifier {
+class NiPSysGravityFieldModifier : public CloneInherit<NiPSysGravityFieldModifier, NiPSysFieldModifier> {
 private:
 	Vector3 direction;
 
@@ -529,10 +490,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysGravityFieldModifier* Clone() override { return new NiPSysGravityFieldModifier(*this); }
 };
 
-class NiPSysDragFieldModifier : public NiPSysFieldModifier {
+class NiPSysDragFieldModifier : public CloneInherit<NiPSysDragFieldModifier, NiPSysFieldModifier> {
 private:
 	bool useDirection = false;
 	Vector3 direction;
@@ -543,10 +503,10 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysDragFieldModifier* Clone() override { return new NiPSysDragFieldModifier(*this); }
 };
 
-class NiPSysTurbulenceFieldModifier : public NiPSysFieldModifier {
+class NiPSysTurbulenceFieldModifier
+	: public CloneInherit<NiPSysTurbulenceFieldModifier, NiPSysFieldModifier> {
 private:
 	float frequency = 0.0f;
 
@@ -556,10 +516,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysTurbulenceFieldModifier* Clone() override { return new NiPSysTurbulenceFieldModifier(*this); }
 };
 
-class NiPSysAirFieldModifier : public NiPSysFieldModifier {
+class NiPSysAirFieldModifier : public CloneInherit<NiPSysAirFieldModifier, NiPSysFieldModifier> {
 private:
 	Vector3 direction;
 	float unkFloat1 = 0.0f;
@@ -575,10 +534,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysAirFieldModifier* Clone() override { return new NiPSysAirFieldModifier(*this); }
 };
 
-class NiPSysRadialFieldModifier : public NiPSysFieldModifier {
+class NiPSysRadialFieldModifier : public CloneInherit<NiPSysRadialFieldModifier, NiPSysFieldModifier> {
 private:
 	uint32_t radialType = 0;
 
@@ -588,10 +546,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysRadialFieldModifier* Clone() override { return new NiPSysRadialFieldModifier(*this); }
 };
 
-class BSWindModifier : public NiPSysModifier {
+class BSWindModifier : public CloneInherit<BSWindModifier, NiPSysModifier> {
 private:
 	float strength = 0.0f;
 
@@ -601,10 +558,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSWindModifier* Clone() override { return new BSWindModifier(*this); }
 };
 
-class BSPSysRecycleBoundModifier : public NiPSysModifier {
+class BSPSysRecycleBoundModifier : public CloneInherit<BSPSysRecycleBoundModifier, NiPSysModifier> {
 private:
 	Vector3 boundOffset;
 	Vector3 boundExtent;
@@ -617,10 +573,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
-	BSPSysRecycleBoundModifier* Clone() override { return new BSPSysRecycleBoundModifier(*this); }
 };
 
-class BSPSysHavokUpdateModifier : public NiPSysModifier {
+class BSPSysHavokUpdateModifier : public CloneInherit<BSPSysHavokUpdateModifier, NiPSysModifier> {
 private:
 	BlockRefArray<NiNode> nodeRefs;
 	BlockRef<NiPSysModifier> modifierRef;
@@ -633,7 +588,6 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	BSPSysHavokUpdateModifier* Clone() override { return new BSPSysHavokUpdateModifier(*this); }
 
 	BlockRefArray<NiNode>& GetNodes();
 
@@ -641,7 +595,7 @@ public:
 	void SetModifierRef(int modRef);
 };
 
-class BSParentVelocityModifier : public NiPSysModifier {
+class BSParentVelocityModifier : public CloneInherit<BSParentVelocityModifier, NiPSysModifier> {
 private:
 	float damping = 0.0f;
 
@@ -651,10 +605,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSParentVelocityModifier* Clone() override { return new BSParentVelocityModifier(*this); }
 };
 
-class BSMasterParticleSystem : public NiNode {
+class BSMasterParticleSystem : public CloneInherit<BSMasterParticleSystem, NiNode> {
 private:
 	uint16_t maxEmitterObjs = 0;
 	BlockRefArray<NiAVObject> particleSysRefs;
@@ -668,12 +621,11 @@ public:
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	BSMasterParticleSystem* Clone() override { return new BSMasterParticleSystem(*this); }
 
 	BlockRefArray<NiAVObject>& GetParticleSystems();
 };
 
-class NiParticleSystem : public NiAVObject {
+class NiParticleSystem : public CloneInherit<NiParticleSystem, NiAVObject> {
 private:
 	BlockRef<NiGeometryData> dataRef;
 	BlockRef<NiObject> skinInstanceRef;
@@ -717,7 +669,6 @@ public:
 	void GetStringRefs(std::set<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	NiParticleSystem* Clone() override { return new NiParticleSystem(*this); }
 
 	int GetDataRef();
 	void SetDataRef(int datRef);
@@ -737,25 +688,21 @@ public:
 	BlockRefArray<NiPSysModifier>& GetModifiers();
 };
 
-class NiMeshParticleSystem : public NiParticleSystem {
+class NiMeshParticleSystem : public CloneInherit<NiMeshParticleSystem, NiParticleSystem> {
 public:
 	static constexpr const char* BlockName = "NiMeshParticleSystem";
 	const char* GetBlockName() override { return BlockName; }
-
-	NiMeshParticleSystem* Clone() override { return new NiMeshParticleSystem(*this); }
 };
 
-class BSStripParticleSystem : public NiParticleSystem {
+class BSStripParticleSystem : public CloneInherit<BSStripParticleSystem, NiParticleSystem> {
 public:
 	static constexpr const char* BlockName = "BSStripParticleSystem";
 	const char* GetBlockName() override { return BlockName; }
-
-	BSStripParticleSystem* Clone() override { return new BSStripParticleSystem(*this); }
 };
 
 class NiPSysColliderManager;
 
-class NiPSysCollider : public NiObject {
+class NiPSysCollider : public CloneInherit<NiPSysCollider, NiObject> {
 private:
 	float bounce = 0.0f;
 	bool spawnOnCollide = false;
@@ -773,7 +720,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiPSysSphericalCollider : public NiPSysCollider {
+class NiPSysSphericalCollider : public CloneInherit<NiPSysSphericalCollider, NiPSysCollider> {
 private:
 	float radius = 0.0f;
 
@@ -783,10 +730,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysSphericalCollider* Clone() override { return new NiPSysSphericalCollider(*this); }
 };
 
-class NiPSysPlanarCollider : public NiPSysCollider {
+class NiPSysPlanarCollider : public CloneInherit<NiPSysPlanarCollider, NiPSysCollider> {
 private:
 	float width = 0.0f;
 	float height = 0.0f;
@@ -799,10 +745,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysPlanarCollider* Clone() override { return new NiPSysPlanarCollider(*this); }
 };
 
-class NiPSysColliderManager : public NiPSysModifier {
+class NiPSysColliderManager : public CloneInherit<NiPSysColliderManager, NiPSysModifier> {
 private:
 	BlockRef<NiPSysCollider> colliderRef;
 
@@ -814,10 +759,9 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	NiPSysColliderManager* Clone() override { return new NiPSysColliderManager(*this); }
 };
 
-class NiPSysEmitter : public NiPSysModifier {
+class NiPSysEmitter : public CloneInherit<NiPSysEmitter, NiPSysModifier> {
 private:
 	float speed = 0.0f;
 	float speedVariation = 0.0f;
@@ -836,7 +780,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class NiPSysVolumeEmitter : public NiPSysEmitter {
+class NiPSysVolumeEmitter : public CloneInherit<NiPSysVolumeEmitter, NiPSysEmitter> {
 private:
 	BlockRef<NiNode> emitterNodeRef;
 
@@ -846,7 +790,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiPSysSphereEmitter : public NiPSysVolumeEmitter {
+class NiPSysSphereEmitter : public CloneInherit<NiPSysSphereEmitter, NiPSysVolumeEmitter> {
 private:
 	float radius = 0.0f;
 
@@ -856,10 +800,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysSphereEmitter* Clone() override { return new NiPSysSphereEmitter(*this); }
 };
 
-class NiPSysCylinderEmitter : public NiPSysVolumeEmitter {
+class NiPSysCylinderEmitter : public CloneInherit<NiPSysCylinderEmitter, NiPSysVolumeEmitter> {
 private:
 	float radius = 0.0f;
 	float height = 0.0f;
@@ -870,10 +813,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysCylinderEmitter* Clone() override { return new NiPSysCylinderEmitter(*this); }
 };
 
-class NiPSysBoxEmitter : public NiPSysVolumeEmitter {
+class NiPSysBoxEmitter : public CloneInherit<NiPSysBoxEmitter, NiPSysVolumeEmitter> {
 private:
 	float width = 0.0f;
 	float height = 0.0f;
@@ -885,15 +827,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiPSysBoxEmitter* Clone() override { return new NiPSysBoxEmitter(*this); }
 };
 
-class BSPSysArrayEmitter : public NiPSysVolumeEmitter {
+class BSPSysArrayEmitter : public CloneInherit<BSPSysArrayEmitter, NiPSysVolumeEmitter> {
 public:
 	static constexpr const char* BlockName = "BSPSysArrayEmitter";
 	const char* GetBlockName() override { return BlockName; }
-
-	BSPSysArrayEmitter* Clone() override { return new BSPSysArrayEmitter(*this); }
 };
 
 enum VelocityType : uint32_t { VELOCITY_USE_NORMALS, VELOCITY_USE_RANDOM, VELOCITY_USE_DIRECTION };
@@ -906,7 +845,7 @@ enum EmitFrom : uint32_t {
 	EMIT_FROM_EDGE_SURFACE
 };
 
-class NiPSysMeshEmitter : public NiPSysEmitter {
+class NiPSysMeshEmitter : public CloneInherit<NiPSysMeshEmitter, NiPSysEmitter> {
 private:
 	BlockRefArray<NiAVObject> meshRefs;
 	VelocityType velocityType = VELOCITY_USE_NORMALS;
@@ -921,7 +860,6 @@ public:
 	void Put(NiStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	NiPSysMeshEmitter* Clone() override { return new NiPSysMeshEmitter(*this); }
 
 	BlockRefArray<NiAVObject>& GetMeshes();
 };

@@ -100,14 +100,14 @@ public:
 	size_t GetVertexLimit();
 	size_t GetTriangleLimit();
 
-	NiNode* AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
+	void AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
 	void DeleteNode(const std::string& nodeName);
 	bool CanDeleteNode(NiNode* node);
 	bool CanDeleteNode(const std::string& nodeName);
 	std::string GetNodeName(const int blockID);
 	void SetNodeName(const int blockID, const std::string& newName);
 
-	int AssignExtraData(NiAVObject* target, NiExtraData* extraData);
+	int AssignExtraData(NiAVObject* target, std::unique_ptr<NiExtraData> extraData);
 
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);
@@ -145,7 +145,7 @@ public:
 	void TrimTexturePaths();
 
 	void CloneChildren(NiObject* block, NifFile* srcNif = nullptr);
-	NiShape* CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
+	void CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
 	int CloneNamedNode(const std::string& nodeName, NifFile* srcNif = nullptr);
 
 	std::vector<std::string> GetShapeNames();
@@ -281,8 +281,9 @@ public:
 					 std::unordered_map<uint16_t, float>* mask = nullptr);
 
 	NiAlphaProperty* GetAlphaProperty(NiShape* shape);
-	int AssignAlphaProperty(NiShape* shape,
-							NiAlphaProperty* alphaProp); // uint16_t flags = 4844, uint16_t threshold = 128
+	int AssignAlphaProperty(
+		NiShape* shape,
+		std::unique_ptr<NiAlphaProperty> alphaProp); // uint16_t flags = 4844, uint16_t threshold = 128
 	void RemoveAlphaProperty(NiShape* shape);
 
 	void DeleteShape(NiShape* shape);

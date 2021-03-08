@@ -99,9 +99,9 @@ struct AdditionalDataBlock {
 	}
 };
 
-class AdditionalGeomData : public NiObject {};
+class AdditionalGeomData : public CloneInherit<AdditionalGeomData, NiObject> {};
 
-class NiAdditionalGeometryData : public AdditionalGeomData {
+class NiAdditionalGeometryData : public CloneInherit<NiAdditionalGeometryData, AdditionalGeomData> {
 private:
 	uint16_t numVertices = 0;
 
@@ -117,8 +117,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-
-	NiAdditionalGeometryData* Clone() override { return new NiAdditionalGeometryData(*this); }
 };
 
 struct BSPackedAdditionalDataBlock {
@@ -183,7 +181,7 @@ struct BSPackedAdditionalDataBlock {
 	}
 };
 
-class BSPackedAdditionalGeometryData : public AdditionalGeomData {
+class BSPackedAdditionalGeometryData : public CloneInherit<BSPackedAdditionalGeometryData, AdditionalGeomData> {
 private:
 	uint16_t numVertices = 0;
 
@@ -199,11 +197,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-
-	BSPackedAdditionalGeometryData* Clone() override { return new BSPackedAdditionalGeometryData(*this); }
 };
 
-class NiGeometryData : public NiObject {
+class NiGeometryData : public CloneInherit<NiGeometryData, NiObject> {
 protected:
 	bool isPSys = false;
 
@@ -273,7 +269,7 @@ public:
 	virtual void CalcTangentSpace();
 };
 
-class NiShape : public NiAVObject {
+class NiShape : public CloneInherit<NiShape, NiAVObject> {
 public:
 	virtual NiGeometryData* GetGeomData();
 	virtual void SetGeomData(NiGeometryData* geomDataPtr);
@@ -322,7 +318,7 @@ public:
 };
 
 
-class BSTriShape : public NiShape {
+class BSTriShape : public CloneInherit<BSTriShape, NiShape> {
 protected:
 	BlockRef<NiObject> skinInstanceRef;
 	BlockRef<NiProperty> shaderPropertyRef;
@@ -369,7 +365,6 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	BSTriShape* Clone() override { return new BSTriShape(*this); }
 
 	int GetSkinInstanceRef() override;
 	void SetSkinInstanceRef(int skinInstRef) override;
@@ -488,7 +483,7 @@ public:
 	void Put(NiStream& stream);
 };
 
-class BSSubIndexTriShape : public BSTriShape {
+class BSSubIndexTriShape : public CloneInherit<BSSubIndexTriShape, BSTriShape> {
 public:
 	class BSSITSSubSegment {
 	public:
@@ -548,7 +543,6 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
-	BSSubIndexTriShape* Clone() override { return new BSSubIndexTriShape(*this); }
 
 	void GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts);
 	void SetSegmentation(const NifSegmentationInfo& inf, const std::vector<int>& triParts);
@@ -561,7 +555,7 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
-class BSMeshLODTriShape : public BSTriShape {
+class BSMeshLODTriShape : public CloneInherit<BSMeshLODTriShape, BSTriShape> {
 public:
 	uint32_t lodSize0 = 0;
 	uint32_t lodSize1 = 0;
@@ -573,10 +567,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
-	BSMeshLODTriShape* Clone() override { return new BSMeshLODTriShape(*this); }
 };
 
-class BSDynamicTriShape : public BSTriShape {
+class BSDynamicTriShape : public CloneInherit<BSDynamicTriShape, BSTriShape> {
 public:
 	uint32_t dynamicDataSize;
 	std::vector<Vector4> dynamicData;
@@ -590,7 +583,6 @@ public:
 	void Put(NiStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void CalcDynamicData();
-	BSDynamicTriShape* Clone() override { return new BSDynamicTriShape(*this); }
 
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
@@ -601,7 +593,7 @@ public:
 
 class NiSkinInstance;
 
-class NiGeometry : public NiShape {
+class NiGeometry : public CloneInherit<NiGeometry, NiShape> {
 protected:
 	BlockRef<NiGeometryData> dataRef;
 	BlockRef<NiSkinInstance> skinInstanceRef;
@@ -640,9 +632,9 @@ public:
 	void SetAlphaPropertyRef(int alphaPropRef);
 };
 
-class NiTriBasedGeom : public NiGeometry {};
+class NiTriBasedGeom : public CloneInherit<NiTriBasedGeom, NiGeometry> {};
 
-class NiTriBasedGeomData : public NiGeometryData {
+class NiTriBasedGeomData : public CloneInherit<NiTriBasedGeomData, NiGeometryData> {
 protected:
 	uint16_t numTriangles = 0;
 
@@ -662,7 +654,7 @@ struct MatchGroup {
 	std::vector<uint16_t> matches;
 };
 
-class NiTriShapeData : public NiTriBasedGeomData {
+class NiTriShapeData : public CloneInherit<NiTriShapeData, NiTriBasedGeomData> {
 protected:
 	uint32_t numTrianglePoints = 0;
 	bool hasTriangles = false;
@@ -690,10 +682,9 @@ public:
 
 	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f) override;
 	void CalcTangentSpace() override;
-	NiTriShapeData* Clone() override { return new NiTriShapeData(*this); }
 };
 
-class NiTriShape : public NiTriBasedGeom {
+class NiTriShape : public CloneInherit<NiTriShape, NiTriBasedGeom> {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -703,11 +694,9 @@ public:
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
-
-	NiTriShape* Clone() override { return new NiTriShape(*this); }
 };
 
-class NiTriStripsData : public NiTriBasedGeomData {
+class NiTriStripsData : public CloneInherit<NiTriStripsData, NiTriBasedGeomData> {
 protected:
 	uint16_t numStrips = 0;
 	std::vector<uint16_t> stripLengths;
@@ -729,10 +718,9 @@ public:
 
 	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f) override;
 	void CalcTangentSpace() override;
-	NiTriStripsData* Clone() override { return new NiTriStripsData(*this); }
 };
 
-class NiTriStrips : public NiTriBasedGeom {
+class NiTriStrips : public CloneInherit<NiTriStrips, NiTriBasedGeom> {
 protected:
 	NiTriStripsData* stripsData = nullptr;
 
@@ -744,11 +732,9 @@ public:
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
 	bool ReorderTriangles(const std::vector<uint32_t>&) override { return false; }
-
-	NiTriStrips* Clone() override { return new NiTriStrips(*this); }
 };
 
-class NiLinesData : public NiGeometryData {
+class NiLinesData : public CloneInherit<NiLinesData, NiGeometryData> {
 protected:
 	std::deque<bool> lineFlags;
 
@@ -759,11 +745,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
-
-	NiLinesData* Clone() override { return new NiLinesData(*this); }
 };
 
-class NiLines : public NiTriBasedGeom {
+class NiLines : public CloneInherit<NiLines, NiTriBasedGeom> {
 protected:
 	NiLinesData* linesData = nullptr;
 
@@ -773,8 +757,6 @@ public:
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
-
-	NiLines* Clone() override { return new NiLines(*this); }
 };
 
 struct PolygonInfo {
@@ -784,7 +766,7 @@ struct PolygonInfo {
 	uint16_t triangleOffset = 0;
 };
 
-class NiScreenElementsData : public NiTriShapeData {
+class NiScreenElementsData : public CloneInherit<NiScreenElementsData, NiTriShapeData> {
 protected:
 	uint16_t maxPolygons = 0;
 	std::vector<PolygonInfo> polygons;
@@ -804,11 +786,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
-
-	NiScreenElementsData* Clone() override { return new NiScreenElementsData(*this); }
 };
 
-class NiScreenElements : public NiTriShape {
+class NiScreenElements : public CloneInherit<NiScreenElements, NiTriShape> {
 protected:
 	NiScreenElementsData* elemData = nullptr;
 
@@ -818,11 +798,9 @@ public:
 
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
-
-	NiScreenElements* Clone() override { return new NiScreenElements(*this); }
 };
 
-class BSLODTriShape : public NiTriBasedGeom {
+class BSLODTriShape : public CloneInherit<BSLODTriShape, NiTriBasedGeom> {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -839,10 +817,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSLODTriShape* Clone() override { return new BSLODTriShape(*this); }
 };
 
-class BSSegmentedTriShape : public NiTriShape {
+class BSSegmentedTriShape : public CloneInherit<BSSegmentedTriShape, NiTriShape> {
 public:
 	uint32_t numSegments = 0;
 	std::vector<BSGeometrySegmentData> segments;
@@ -852,6 +829,5 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSSegmentedTriShape* Clone() override { return new BSSegmentedTriShape(*this); }
 };
 } // namespace nifly

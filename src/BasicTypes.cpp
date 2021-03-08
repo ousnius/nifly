@@ -221,16 +221,16 @@ void NiHeader::DeleteBlockByType(const std::string& blockTypeStr, const bool orp
 			DeleteBlock(indices[j]);
 }
 
-int NiHeader::AddBlock(NiObject* newBlock) {
+int NiHeader::AddBlock(std::unique_ptr<NiObject> newBlock) {
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices.push_back(btID);
 	blockSizes.push_back(0);
-	blocks->push_back(std::unique_ptr<NiObject>(newBlock));
+	blocks->emplace_back(std::move(newBlock));
 	numBlocks = blocks->size();
 	return numBlocks - 1;
 }
 
-int NiHeader::ReplaceBlock(int oldBlockId, NiObject* newBlock) {
+int NiHeader::ReplaceBlock(int oldBlockId, std::unique_ptr<NiObject> newBlock) {
 	if (oldBlockId == NIF_NPOS)
 		return NIF_NPOS;
 
@@ -251,8 +251,7 @@ int NiHeader::ReplaceBlock(int oldBlockId, NiObject* newBlock) {
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices[oldBlockId] = btID;
 	blockSizes[oldBlockId] = 0;
-	auto blockPtrSwap = std::unique_ptr<NiObject>(newBlock);
-	(*blocks)[oldBlockId].swap(blockPtrSwap);
+	(*blocks)[oldBlockId].swap(newBlock);
 	return oldBlockId;
 }
 
