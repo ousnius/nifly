@@ -1118,7 +1118,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 				// Move segments to new shape
 				if (bsSegmentShape) {
-					auto bsSITS = dynamic_cast<BSSubIndexTriShape*>(bsOptShape);
+					auto bsSITS = static_cast<BSSubIndexTriShape*>(bsOptShape.get());
 					bsSITS->numSegments = bsSegmentShape->numSegments;
 					bsSITS->segments = bsSegmentShape->segments;
 				}
@@ -1365,7 +1365,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 				// Move segments to new shape
 				if (bsSITS) {
-					auto bsSegmentShape = dynamic_cast<BSSegmentedTriShape*>(bsOptShape);
+					auto bsSegmentShape = static_cast<BSSegmentedTriShape*>(bsOptShape.get());
 					bsSegmentShape->numSegments = bsSITS->numSegments;
 					bsSegmentShape->segments = bsSITS->segments;
 				}
