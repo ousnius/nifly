@@ -5,8 +5,8 @@ See the included LICENSE file
 
 #pragma once
 
+#include "CloneInherit.hpp"
 #include "Object3d.hpp"
-#include "Utils.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -535,14 +535,7 @@ public:
 		return nullptr;
 	}
 
-	int GetBlockID(NiObject* block) {
-		auto it = find_if(*blocks, [&block](const auto& ptr) { return ptr.get() == block; });
-
-		if (it != blocks->end())
-			return std::distance(blocks->begin(), it);
-
-		return NIF_NPOS;
-	}
+	int GetBlockID(NiObject* block);
 
 	void DeleteBlock(int blockId);
 	void DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly = false);

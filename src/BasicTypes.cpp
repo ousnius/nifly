@@ -4,6 +4,8 @@ See the included LICENSE file
 */
 
 #include "BasicTypes.hpp"
+#include "NifUtil.hpp"
+
 #include <array>
 #include <regex>
 
@@ -172,6 +174,15 @@ void NiHeader::SetExportInfo(const std::string& exportInfo) {
 		else
 			(*it)->SetString(exportInfo.substr(i, exportInfo.length() - i));
 	}
+}
+
+int NiHeader::GetBlockID(NiObject* block) {
+	auto it = find_if(*blocks, [&block](const auto& ptr) { return ptr.get() == block; });
+
+	if (it != blocks->end())
+		return std::distance(blocks->begin(), it);
+
+	return NIF_NPOS;
 }
 
 void NiHeader::DeleteBlock(int blockId) {
