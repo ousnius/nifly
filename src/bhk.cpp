@@ -26,14 +26,6 @@ void NiCollisionObject::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-BoundingVolume::BoundingVolume() {
-	bvUnion = new UnionBV();
-}
-
-BoundingVolume::~BoundingVolume() {
-	delete bvUnion;
-}
-
 void BoundingVolume::Get(NiStream& stream) {
 	stream >> collisionType;
 

@@ -306,11 +306,18 @@ struct BoundingVolume {
 	BoundingSphere bvSphere;
 	BoxBV bvBox;
 	CapsuleBV bvCapsule;
-	UnionBV* bvUnion = nullptr;
+	std::unique_ptr<UnionBV> bvUnion = std::make_unique<UnionBV>();
 	HalfSpaceBV bvHalfSpace;
 
-	BoundingVolume();
-	~BoundingVolume();
+	BoundingVolume() = default;
+
+	BoundingVolume(const BoundingVolume& other)
+		: collisionType(other.collisionType)
+		, bvSphere(other.bvSphere)
+		, bvBox(other.bvBox)
+		, bvCapsule(other.bvCapsule)
+		, bvUnion(std::make_unique<UnionBV>(*other.bvUnion))
+		, bvHalfSpace(other.bvHalfSpace) {}
 
 	void Get(NiStream& stream);
 	void Put(NiStream& stream);
