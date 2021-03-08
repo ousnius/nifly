@@ -6,6 +6,7 @@ See the included LICENSE file
 #pragma once
 
 #include "Object3d.hpp"
+#include "Utils.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -531,9 +532,7 @@ public:
 	}
 
 	int GetBlockID(NiObject* block) {
-		auto it = std::find_if(blocks->begin(), blocks->end(), [&block](const auto& ptr) {
-			return ptr.get() == block;
-		});
+		auto it = find_if(*blocks, [&block](const auto& ptr) { return ptr.get() == block; });
 
 		if (it != blocks->end())
 			return std::distance(blocks->begin(), it);

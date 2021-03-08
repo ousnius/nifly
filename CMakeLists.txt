@@ -22,6 +22,7 @@ add_library(nifly STATIC
     include/VertexData.hpp
     include/KDMatcher.hpp
     include/Object3d.hpp
+    include/Utils.hpp
     src/Animation.cpp
     src/BasicTypes.cpp
     src/bhk.cpp

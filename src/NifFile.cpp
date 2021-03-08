@@ -26,9 +26,7 @@ T* NifFile::FindBlockByName(const std::string& name) {
 }
 
 int NifFile::GetBlockID(NiObject* block) {
-	auto it = std::find_if(blocks.begin(), blocks.end(), [&block](const auto& ptr) {
-		return ptr.get() == block;
-	});
+	auto it = find_if(blocks, [&block](const auto& ptr) { return ptr.get() == block; });
 
 	if (it != blocks.end())
 		return std::distance(blocks.begin(), it);
@@ -266,7 +264,7 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 		delta.resize(order.size());
 
 		for (size_t p = 0; p < oldOrder.size(); p++)
-			delta[p] = (std::find(order.begin(), order.end(), oldOrder[p]) - order.begin()) - p;
+			delta[p] = (find(order, oldOrder[p]) - order.begin()) - p;
 
 		hadoffset = false;
 		//Positive offsets mean that the item has moved down the list.  By necessity, that means another item has moved up the list.
@@ -380,7 +378,7 @@ void NifFile::SortGraph(NiNode* root, std::vector<int>& newIndices, int& newInde
 	children.Clear();
 
 	for (uint32_t i = 0; i < hdr.GetNumBlocks(); i++)
-		if (std::find(indices.begin(), indices.end(), i) != indices.end())
+		if (contains(indices, i))
 			children.AddBlockRef(i);
 
 	if (children.GetSize() > 0) {
@@ -1671,9 +1669,7 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) {
 			return;
 	}
 
-	auto findResult = [&result = result](NiObject* obj) -> bool {
-		return (std::find(result.begin(), result.end(), obj) != result.end());
-	};
+	auto findResult = [&result](NiObject* obj) -> bool { return contains(result, obj); };
 
 	std::vector<int> indices;
 	parent->GetChildIndices(indices);
