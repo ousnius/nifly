@@ -1,35 +1,16 @@
+/* Copyright (C) 2021 G'k
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-template<typename Container, typename Value = typename Container::value>
-auto find(Container& cont, Value&& val) {
-	return std::find(std::begin(cont), std::end(cont), std::forward<Value>(val));
-}
 
-template<typename Container, typename Value = typename Container::value>
-auto find(const Container& cont, Value&& val) {
-	return std::find(std::cbegin(cont), std::cend(cont), std::forward<Value>(val));
-}
-
-template<typename Container, typename Pred>
-auto find_if(Container& cont, Pred&& pred) {
-	return std::find_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred));
-}
-
-
-template<typename Container, typename Pred>
-auto find_if(const Container& cont, Pred&& pred) {
-	return std::find_if(std::cbegin(cont), std::cend(cont), std::forward<Pred>(pred));
-}
-
-template<typename Container, typename Value = typename Container::value>
-bool contains(const Container& cont, Value&& val) {
-	return find(cont, std::forward<Value>(val)) != std::end(cont);
-}
-
+namespace nifly {
 // From https://www.fluentcpp.com/2017/09/12/how-to-return-a-smart-pointer-and-use-covariance/
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,10 +94,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
-template<typename T>
-std::pair<std::unique_ptr<T>, T*> make_unique() {
-	auto ptr = std::make_unique<T>();
-	auto raw = ptr.get();
-	return std::make_pair(std::move(ptr), raw);
-}
+} // namespace nifly
