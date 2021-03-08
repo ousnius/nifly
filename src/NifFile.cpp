@@ -1630,9 +1630,9 @@ void NifFile::TriangulateShape(NiShape* shape) {
 			std::vector<Triangle> tris = stripsData->StripsToTris();
 
 			if (!tris.empty()) {
-				auto triShape = std::make_unique<NiTriShape>();
-				*static_cast<NiTriBasedGeom*>(triShape.get()) = *static_cast<NiTriBasedGeom*>(shape);
-				hdr.ReplaceBlock(GetBlockID(shape), std::move(triShape));
+				auto [triShapeS, triShape] = make_unique<NiTriShape>();
+				*static_cast<NiTriBasedGeom*>(triShape) = *static_cast<NiTriBasedGeom*>(shape);
+				hdr.ReplaceBlock(GetBlockID(shape), std::move(triShapeS));
 
 				auto [triShapeDataS, triShapeData] = make_unique<NiTriShapeData>();
 				*static_cast<NiTriBasedGeomData*>(triShapeData) = *static_cast<NiTriBasedGeomData*>(
