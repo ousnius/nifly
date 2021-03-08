@@ -530,11 +530,11 @@ bool NifFile::DeleteUnreferencedNodes(int* deletionCount) {
 	return true;
 }
 
-void NifFile::AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent) {
+NiNode* NifFile::AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent) {
 	if (!parent)
 		parent = GetRootNode();
 	if (!parent)
-		return;
+		return nullptr;
 
 	auto newNode = std::make_unique<NiNode>();
 	newNode->SetName(nodeName);
@@ -543,6 +543,8 @@ void NifFile::AddNode(const std::string& nodeName, const MatTransform& xformToPa
 	int newNodeId = hdr.AddBlock(std::move(newNode));
 	if (newNodeId != NIF_NPOS)
 		parent->GetChildren().AddBlockRef(newNodeId);
+
+	return hdr.GetBlockUnsafe<NiNode>(newNodeId);
 }
 
 void NifFile::DeleteNode(const std::string& nodeName) {
@@ -784,12 +786,12 @@ void NifFile::CloneChildren(NiObject* block, NifFile* srcNif) {
 	cloneBlock(block, NIF_NPOS, NIF_NPOS);
 }
 
-void NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif) {
+NiShape* NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif) {
 	if (!srcNif)
 		srcNif = this;
 
 	if (!srcShape)
-		return;
+		return nullptr;
 
 	auto rootNode = GetRootNode();
 	auto srcRootNode = srcNif->GetRootNode();
@@ -901,6 +903,7 @@ void NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName, Ni
 				destBoneCont->GetBones().AddBlockRef(boneID);
 		}
 	}
+	return destShape;
 }
 
 int NifFile::CloneNamedNode(const std::string& nodeName, NifFile* srcNif) {

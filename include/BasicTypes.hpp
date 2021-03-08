@@ -535,6 +535,14 @@ public:
 		return nullptr;
 	}
 
+	template<class T>
+	T* GetBlockUnsafe(const int blockId) {
+		if (blockId >= 0 && blockId < numBlocks)
+			return static_cast<T*>((*blocks)[blockId].get());
+
+		return nullptr;
+	}
+
 	int GetBlockID(NiObject* block);
 
 	void DeleteBlock(int blockId);

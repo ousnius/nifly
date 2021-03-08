@@ -100,7 +100,7 @@ public:
 	size_t GetVertexLimit();
 	size_t GetTriangleLimit();
 
-	void AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
+	NiNode *AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
 	void DeleteNode(const std::string& nodeName);
 	bool CanDeleteNode(NiNode* node);
 	bool CanDeleteNode(const std::string& nodeName);
@@ -145,7 +145,7 @@ public:
 	void TrimTexturePaths();
 
 	void CloneChildren(NiObject* block, NifFile* srcNif = nullptr);
-	void CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
+	NiShape* CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
 	int CloneNamedNode(const std::string& nodeName, NifFile* srcNif = nullptr);
 
 	std::vector<std::string> GetShapeNames();
