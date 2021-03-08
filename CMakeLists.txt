@@ -8,6 +8,7 @@ add_library(nifly STATIC
     include/Animation.hpp
     include/BasicTypes.hpp
     include/bhk.hpp
+    include/CloneInherit.hpp
     include/ExtraData.hpp
     include/Factory.hpp
     include/Geometry.hpp

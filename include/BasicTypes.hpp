@@ -5,6 +5,7 @@ See the included LICENSE file
 
 #pragma once
 
+#include "CloneInherit.hpp"
 #include "Object3d.hpp"
 
 #include <algorithm>
@@ -230,7 +231,7 @@ public:
 	}
 };
 
-class Ref {
+class Ref : public CloneInherit<AbstractMethod<Ref>> {
 protected:
 	int index = NIF_NPOS;
 
@@ -243,17 +244,19 @@ public:
 };
 
 template<typename T>
-class BlockRef : public Ref {
+class BlockRef : public CloneInherit<BlockRef<T>, Ref> {
+	using base = Ref;
+
 public:
 	BlockRef() {}
-	BlockRef(const int id) { index = id; }
+	BlockRef(const int id) { Ref::index = id; }
 
-	void Get(NiStream& stream) { stream >> index; }
+	void Get(NiStream& stream) { stream >> base::index; }
 
-	void Put(NiStream& stream) { stream << index; }
+	void Put(NiStream& stream) { stream << base::index; }
 };
 
-class RefArray {
+class RefArray : public CloneInherit<AbstractMethod<RefArray>> {
 protected:
 	int arraySize = 0;
 	bool keepEmptyRefs = false;
@@ -278,8 +281,11 @@ public:
 };
 
 template<typename T>
-class BlockRefArray : public RefArray {
+class BlockRefArray : public CloneInherit<BlockRefArray<T>, RefArray> {
 protected:
+	using RefArray::arraySize;
+	using RefArray::keepEmptyRefs;
+
 	std::vector<BlockRef<T>> refs;
 
 	void CleanInvalidRefs() {
@@ -388,9 +394,9 @@ public:
 };
 
 template<typename T>
-class BlockRefShortArray : public BlockRefArray<T> {
+class BlockRefShortArray : public CloneInherit<BlockRefShortArray<T>, BlockRefArray<T>> {
 public:
-	typedef BlockRefArray<T> base;
+	using base = BlockRefArray<T>;
 	using base::arraySize;
 	using base::refs;
 
@@ -422,7 +428,7 @@ public:
 	}
 };
 
-class NiObject {
+class NiObject : public CloneInherit<AbstractMethod<NiObject>> {
 protected:
 	uint32_t blockSize = 0;
 
@@ -442,7 +448,6 @@ public:
 	virtual void GetChildIndices(std::vector<int>&) {}
 	virtual void GetPtrs(std::set<Ref*>&) {}
 
-	virtual NiObject* Clone() { return new NiObject(*this); }
 
 	template<typename T>
 	bool HasType() {
@@ -450,7 +455,7 @@ public:
 	}
 };
 
-class NiHeader : public NiObject {
+class NiHeader : public CloneInherit<NiHeader, NiObject> {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -530,21 +535,20 @@ public:
 		return nullptr;
 	}
 
-	int GetBlockID(NiObject* block) {
-		auto it = std::find_if(blocks->begin(), blocks->end(), [&block](const auto& ptr) {
-			return ptr.get() == block;
-		});
+	template<class T>
+	T* GetBlockUnsafe(const int blockId) {
+		if (blockId >= 0 && blockId < numBlocks)
+			return static_cast<T*>((*blocks)[blockId].get());
 
-		if (it != blocks->end())
-			return std::distance(blocks->begin(), it);
-
-		return NIF_NPOS;
+		return nullptr;
 	}
+
+	int GetBlockID(NiObject* block);
 
 	void DeleteBlock(int blockId);
 	void DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly = false);
-	int AddBlock(NiObject* newBlock);
-	int ReplaceBlock(int oldBlockId, NiObject* newBlock);
+	int AddBlock(std::unique_ptr<NiObject> newBlock);
+	int ReplaceBlock(int oldBlockId, std::unique_ptr<NiObject> newBlock);
 	void SetBlockOrder(std::vector<int>& newOrder);
 	void FixBlockAlignment(const std::vector<NiObject*>& currentTree);
 
@@ -603,7 +607,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class NiUnknown : public NiObject {
+class NiUnknown : public CloneInherit<NiUnknown, NiObject> {
 private:
 	std::vector<char> data;
 
@@ -614,7 +618,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiUnknown* Clone() override { return new NiUnknown(*this); }
 
 	std::vector<char> GetData() { return data; }
 };

@@ -7,6 +7,8 @@ See the included LICENSE file
 
 #include "Object3d.hpp"
 
+#include <memory>
+
 namespace nifly {
 // ApplyMapToTriangles applies a vertex index renumbering map to p1, p2,
 // and p3 of a vector of Triangles "tris".  If a triangle has an index out
@@ -149,4 +151,38 @@ std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<
 	}
 	return tris;
 }
+
+template<typename Container, typename Value = typename Container::value>
+auto find(Container& cont, Value&& val) {
+	return std::find(std::begin(cont), std::end(cont), std::forward<Value>(val));
+}
+
+template<typename Container, typename Value = typename Container::value>
+auto find(const Container& cont, Value&& val) {
+	return std::find(std::cbegin(cont), std::cend(cont), std::forward<Value>(val));
+}
+
+template<typename Container, typename Pred>
+auto find_if(Container& cont, Pred&& pred) {
+	return std::find_if(std::begin(cont), std::end(cont), std::forward<Pred>(pred));
+}
+
+
+template<typename Container, typename Pred>
+auto find_if(const Container& cont, Pred&& pred) {
+	return std::find_if(std::cbegin(cont), std::cend(cont), std::forward<Pred>(pred));
+}
+
+template<typename Container, typename Value = typename Container::value>
+bool contains(const Container& cont, Value&& val) {
+	return find(cont, std::forward<Value>(val)) != std::end(cont);
+}
+
+template<typename T>
+std::pair<std::unique_ptr<T>, T*> make_unique() {
+	auto ptr = std::make_unique<T>();
+	auto raw = ptr.get();
+	return std::make_pair(std::move(ptr), raw);
+}
+
 } // namespace nifly

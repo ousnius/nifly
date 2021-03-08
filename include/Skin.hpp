@@ -33,7 +33,7 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
-class NiSkinData : public NiObject {
+class NiSkinData : public CloneInherit<NiSkinData, NiObject> {
 public:
 	struct BoneData {
 		// boneTransform transforms from skin CS to bone CS.
@@ -57,10 +57,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
-	NiSkinData* Clone() override { return new NiSkinData(*this); }
 };
 
-class NiSkinPartition : public NiObject {
+class NiSkinPartition : public CloneInherit<NiSkinPartition, NiObject> {
 public:
 	struct PartitionBlock {
 		uint16_t numVertices = 0;
@@ -133,7 +132,6 @@ public:
 	// DeletePartitions: partInds must be in sorted ascending order
 	void DeletePartitions(const std::vector<int>& partInds);
 	int RemoveEmptyPartitions(std::vector<int>& outDeletedIndices);
-	NiSkinPartition* Clone() override { return new NiSkinPartition(*this); }
 	// ConvertStripsToTriangles returns true if any conversions were
 	// actually performed.  After calling this function, all of the
 	// strips will be empty.
@@ -164,7 +162,7 @@ public:
 
 class NiNode;
 
-class NiBoneContainer : public NiObject {
+class NiBoneContainer : public CloneInherit<NiBoneContainer, NiObject> {
 protected:
 	BlockRefArray<NiNode> boneRefs;
 
@@ -172,7 +170,7 @@ public:
 	BlockRefArray<NiNode>& GetBones();
 };
 
-class NiSkinInstance : public NiBoneContainer {
+class NiSkinInstance : public CloneInherit<NiSkinInstance, NiBoneContainer> {
 private:
 	BlockRef<NiSkinData> dataRef;
 	BlockRef<NiSkinPartition> skinPartitionRef;
@@ -187,7 +185,6 @@ public:
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
-	NiSkinInstance* Clone() override { return new NiSkinInstance(*this); }
 
 	int GetDataRef() { return dataRef.GetIndex(); }
 	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
@@ -202,7 +199,7 @@ public:
 
 enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
-class BSDismemberSkinInstance : public NiSkinInstance {
+class BSDismemberSkinInstance : public CloneInherit<BSDismemberSkinInstance, NiSkinInstance> {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
@@ -219,7 +216,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSDismemberSkinInstance* Clone() override { return new BSDismemberSkinInstance(*this); }
 
 	int GetNumPartitions() { return numPartitions; }
 	std::vector<PartitionInfo> GetPartitions() { return partitions; }
@@ -236,7 +232,7 @@ public:
 	}
 };
 
-class BSSkinBoneData : public NiObject {
+class BSSkinBoneData : public CloneInherit<BSSkinBoneData, NiObject> {
 public:
 	uint32_t nBones = 0;
 
@@ -258,12 +254,11 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSSkinBoneData* Clone() override { return new BSSkinBoneData(*this); }
 };
 
 class NiAVObject;
 
-class BSSkinInstance : public NiBoneContainer {
+class BSSkinInstance : public CloneInherit<BSSkinInstance, NiBoneContainer> {
 private:
 	BlockRef<NiAVObject> targetRef;
 	BlockRef<BSSkinBoneData> dataRef;
@@ -280,7 +275,6 @@ public:
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
-	BSSkinInstance* Clone() override { return new BSSkinInstance(*this); }
 
 	int GetTargetRef() { return targetRef.GetIndex(); }
 	void SetTargetRef(const int targRef) { targetRef.SetIndex(targRef); }

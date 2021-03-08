@@ -11,7 +11,7 @@ See the included LICENSE file
 #include "half.hpp"
 
 namespace nifly {
-class NiExtraData : public NiObject {
+class NiExtraData : public CloneInherit<NiExtraData, NiObject> {
 private:
 	StringRef name;
 
@@ -24,7 +24,7 @@ public:
 	void SetName(const std::string& extraDataName);
 };
 
-class NiBinaryExtraData : public NiExtraData {
+class NiBinaryExtraData : public CloneInherit<NiBinaryExtraData, NiExtraData> {
 private:
 	uint32_t size = 0;
 	std::vector<uint8_t> data;
@@ -35,13 +35,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiBinaryExtraData* Clone() override { return new NiBinaryExtraData(*this); }
 
 	std::vector<uint8_t> GetData();
 	void SetData(const std::vector<uint8_t>& dat);
 };
 
-class NiFloatExtraData : public NiExtraData {
+class NiFloatExtraData : public CloneInherit<NiFloatExtraData, NiExtraData> {
 private:
 	float floatData = 0.0f;
 
@@ -51,13 +50,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiFloatExtraData* Clone() override { return new NiFloatExtraData(*this); }
 
 	float GetFloatData();
 	void SetFloatData(const float fltData);
 };
 
-class NiFloatsExtraData : public NiExtraData {
+class NiFloatsExtraData : public CloneInherit<NiFloatsExtraData, NiExtraData> {
 private:
 	uint32_t numFloats = 0;
 	std::vector<float> floatsData;
@@ -68,13 +66,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiFloatsExtraData* Clone() override { return new NiFloatsExtraData(*this); }
 
 	std::vector<float> GetFloatsData();
 	void SetFloatsData(const std::vector<float>& fltsData);
 };
 
-class NiStringExtraData : public NiExtraData {
+class NiStringExtraData : public CloneInherit<NiStringExtraData, NiExtraData> {
 private:
 	StringRef stringData;
 
@@ -85,13 +82,12 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetStringRefs(std::set<StringRef*>& refs) override;
-	NiStringExtraData* Clone() override { return new NiStringExtraData(*this); }
 
 	std::string GetStringData();
 	void SetStringData(const std::string& str);
 };
 
-class NiStringsExtraData : public NiExtraData {
+class NiStringsExtraData : public CloneInherit<NiStringsExtraData, NiExtraData> {
 private:
 	uint32_t numStrings = 0;
 	std::vector<NiString> stringsData;
@@ -102,13 +98,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiStringsExtraData* Clone() override { return new NiStringsExtraData(*this); }
 
 	std::vector<NiString> GetStringsData();
 	void SetStringsData(const std::vector<NiString>& strsData);
 };
 
-class NiBooleanExtraData : public NiExtraData {
+class NiBooleanExtraData : public CloneInherit<NiBooleanExtraData, NiExtraData> {
 private:
 	bool booleanData = false;
 
@@ -118,13 +113,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiBooleanExtraData* Clone() override { return new NiBooleanExtraData(*this); }
 
 	bool GetBooleanData();
 	void SetBooleanData(const bool boolData);
 };
 
-class NiIntegerExtraData : public NiExtraData {
+class NiIntegerExtraData : public CloneInherit<NiIntegerExtraData, NiExtraData> {
 private:
 	uint32_t integerData = 0;
 
@@ -134,13 +128,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiIntegerExtraData* Clone() override { return new NiIntegerExtraData(*this); }
 
 	uint32_t GetIntegerData();
 	void SetIntegerData(const uint32_t intData);
 };
 
-class NiIntegersExtraData : public NiExtraData {
+class NiIntegersExtraData : public CloneInherit<NiIntegersExtraData, NiExtraData> {
 private:
 	uint32_t numIntegers = 0;
 	std::vector<uint32_t> integersData;
@@ -151,13 +144,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiIntegersExtraData* Clone() override { return new NiIntegersExtraData(*this); }
 
 	std::vector<uint32_t> GetIntegersData();
 	void SetIntegersData(const std::vector<uint32_t>& intData);
 };
 
-class NiVectorExtraData : public NiExtraData {
+class NiVectorExtraData : public CloneInherit<NiVectorExtraData, NiExtraData> {
 private:
 	Vector4 vectorData;
 
@@ -167,13 +159,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiVectorExtraData* Clone() override { return new NiVectorExtraData(*this); }
 
 	Vector4 GetVectorData();
 	void SetVectorData(const Vector4& vecData);
 };
 
-class NiColorExtraData : public NiExtraData {
+class NiColorExtraData : public CloneInherit<NiColorExtraData, NiExtraData> {
 private:
 	Color4 colorData;
 
@@ -183,21 +174,18 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	NiColorExtraData* Clone() override { return new NiColorExtraData(*this); }
 
 	Color4 GetColorData();
 	void SetColorData(const Color4& colData);
 };
 
-class BSXFlags : public NiIntegerExtraData {
+class BSXFlags : public CloneInherit<BSXFlags, NiIntegerExtraData> {
 public:
 	static constexpr const char* BlockName = "BSXFlags";
 	const char* GetBlockName() override { return BlockName; }
-
-	BSXFlags* Clone() override { return new BSXFlags(*this); }
 };
 
-class BSWArray : public NiExtraData {
+class BSWArray : public CloneInherit<BSWArray, NiExtraData> {
 private:
 	uint32_t numData = 0;
 	std::vector<uint32_t> data;
@@ -208,13 +196,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSWArray* Clone() override { return new BSWArray(*this); }
 
 	std::vector<uint32_t> GetData();
 	void SetData(const std::vector<uint32_t>& dat);
 };
 
-class BSPositionData : public NiExtraData {
+class BSPositionData : public CloneInherit<BSPositionData, NiExtraData> {
 private:
 	uint32_t numData = 0;
 	std::vector<half_float::half> data;
@@ -225,13 +212,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSPositionData* Clone() override { return new BSPositionData(*this); }
 
 	std::vector<half_float::half> GetData();
 	void SetData(const std::vector<half_float::half>& dat);
 };
 
-class BSEyeCenterExtraData : public NiExtraData {
+class BSEyeCenterExtraData : public CloneInherit<BSEyeCenterExtraData, NiExtraData> {
 private:
 	uint32_t numData = 0;
 	std::vector<float> data;
@@ -242,7 +228,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSEyeCenterExtraData* Clone() override { return new BSEyeCenterExtraData(*this); }
 
 	std::vector<float> GetData();
 	void SetData(const std::vector<float>& dat);
@@ -279,7 +264,7 @@ struct BSPackedGeomData {
 	void Put(NiStream& stream);
 };
 
-class BSPackedCombinedSharedGeomDataExtra : public NiExtraData {
+class BSPackedCombinedSharedGeomDataExtra : public CloneInherit<BSPackedCombinedSharedGeomDataExtra, NiExtraData> {
 private:
 	VertexDesc vertDesc;
 	uint32_t numVertices = 0;
@@ -296,12 +281,9 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSPackedCombinedSharedGeomDataExtra* Clone() override {
-		return new BSPackedCombinedSharedGeomDataExtra(*this);
-	}
 };
 
-class BSInvMarker : public NiExtraData {
+class BSInvMarker : public CloneInherit<BSInvMarker, NiExtraData> {
 private:
 	uint16_t rotationX = 4712;
 	uint16_t rotationY = 6283;
@@ -314,7 +296,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSInvMarker* Clone() override { return new BSInvMarker(*this); }
 
 	uint16_t GetRotationX() { return rotationX; }
 	void SetRotationX(const uint16_t x) { rotationX = x; }
@@ -341,7 +322,7 @@ struct FurniturePosition {
 	uint16_t entryPoints = 0;	// User Version >= 12
 };
 
-class BSFurnitureMarker : public NiExtraData {
+class BSFurnitureMarker : public CloneInherit<BSFurnitureMarker, NiExtraData> {
 private:
 	uint32_t numPositions = 0;
 	std::vector<FurniturePosition> positions;
@@ -352,18 +333,15 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSFurnitureMarker* Clone() override { return new BSFurnitureMarker(*this); }
 
 	std::vector<FurniturePosition> GetPositions();
 	void SetPositions(const std::vector<FurniturePosition>& pos);
 };
 
-class BSFurnitureMarkerNode : public BSFurnitureMarker {
+class BSFurnitureMarkerNode : public CloneInherit<BSFurnitureMarkerNode, BSFurnitureMarker> {
 public:
 	static constexpr const char* BlockName = "BSFurnitureMarkerNode";
 	const char* GetBlockName() override { return BlockName; }
-
-	BSFurnitureMarkerNode* Clone() override { return new BSFurnitureMarkerNode(*this); }
 };
 
 struct DecalVectorBlock {
@@ -372,7 +350,7 @@ struct DecalVectorBlock {
 	std::vector<Vector3> normals;
 };
 
-class BSDecalPlacementVectorExtraData : public NiFloatExtraData {
+class BSDecalPlacementVectorExtraData : public CloneInherit<BSDecalPlacementVectorExtraData, NiFloatExtraData> {
 private:
 	uint16_t numVectorBlocks = 0;
 	std::vector<DecalVectorBlock> decalVectorBlocks;
@@ -383,13 +361,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSDecalPlacementVectorExtraData* Clone() override { return new BSDecalPlacementVectorExtraData(*this); }
 
 	std::vector<DecalVectorBlock> GetDecalVectorBlocks();
 	void SetDecalVectorBlocks(const std::vector<DecalVectorBlock>& vectorBlocks);
 };
 
-class BSBehaviorGraphExtraData : public NiExtraData {
+class BSBehaviorGraphExtraData : public CloneInherit<BSBehaviorGraphExtraData, NiExtraData> {
 private:
 	StringRef behaviorGraphFile;
 	bool controlsBaseSkel = false;
@@ -401,10 +378,9 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetStringRefs(std::set<StringRef*>& refs) override;
-	BSBehaviorGraphExtraData* Clone() override { return new BSBehaviorGraphExtraData(*this); }
 };
 
-class BSBound : public NiExtraData {
+class BSBound : public CloneInherit<BSBound, NiExtraData> {
 private:
 	Vector3 center;
 	Vector3 halfExtents;
@@ -415,7 +391,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSBound* Clone() override { return new BSBound(*this); }
 
 	Vector3 GetCenter() { return center; }
 	void SetCenter(const Vector3& ctr) { center = ctr; }
@@ -429,7 +404,7 @@ struct BoneLOD {
 	StringRef boneName;
 };
 
-class BSBoneLODExtraData : public NiExtraData {
+class BSBoneLODExtraData : public CloneInherit<BSBoneLODExtraData, NiExtraData> {
 private:
 	uint32_t numBoneLODs = 0;
 	std::vector<BoneLOD> boneLODs;
@@ -441,13 +416,12 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetStringRefs(std::set<StringRef*>& refs) override;
-	BSBoneLODExtraData* Clone() override { return new BSBoneLODExtraData(*this); }
 
 	std::vector<BoneLOD> GetBoneLODs();
 	void SetBoneLODs(const std::vector<BoneLOD>& lods);
 };
 
-class NiTextKeyExtraData : public NiExtraData {
+class NiTextKeyExtraData : public CloneInherit<NiTextKeyExtraData, NiExtraData> {
 private:
 	uint32_t numTextKeys = 0;
 	std::vector<Key<StringRef>> textKeys;
@@ -459,13 +433,12 @@ public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
 	void GetStringRefs(std::set<StringRef*>& refs) override;
-	NiTextKeyExtraData* Clone() override { return new NiTextKeyExtraData(*this); }
 
 	std::vector<Key<StringRef>> GetTextKeys();
 	void SetTextKeys(const std::vector<Key<StringRef>>& keys);
 };
 
-class BSDistantObjectLargeRefExtraData : public NiExtraData {
+class BSDistantObjectLargeRefExtraData : public CloneInherit<BSDistantObjectLargeRefExtraData, NiExtraData> {
 private:
 	bool largeRef = true;
 
@@ -475,7 +448,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSDistantObjectLargeRefExtraData* Clone() override { return new BSDistantObjectLargeRefExtraData(*this); }
 
 	bool IsLargeRef() { return largeRef; }
 	void SetLargeRef(const bool isLargeRef) { largeRef = isLargeRef; }
@@ -492,7 +464,7 @@ struct BSConnectPoint {
 	void Put(NiStream& stream);
 };
 
-class BSConnectPointParents : public NiExtraData {
+class BSConnectPointParents : public CloneInherit<BSConnectPointParents, NiExtraData> {
 private:
 	uint32_t numConnectPoints = 0;
 	std::vector<BSConnectPoint> connectPoints;
@@ -503,13 +475,12 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSConnectPointParents* Clone() override { return new BSConnectPointParents(*this); }
 
 	std::vector<BSConnectPoint> GetConnectPoints();
 	void SetConnectPoints(const std::vector<BSConnectPoint>& cps);
 };
 
-class BSConnectPointChildren : public NiExtraData {
+class BSConnectPointChildren : public CloneInherit<BSConnectPointChildren, NiExtraData> {
 private:
 	uint8_t unkByte = 1;
 	uint32_t numTargets = 0;
@@ -521,15 +492,14 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSConnectPointChildren* Clone() override { return new BSConnectPointChildren(*this); }
 
 	std::vector<NiString> GetTargets();
 	void SetTargets(const std::vector<NiString>& targ);
 };
 
-class BSExtraData : public NiObject {};
+class BSExtraData : public CloneInherit<BSExtraData, NiObject> {};
 
-class BSClothExtraData : public BSExtraData {
+class BSClothExtraData : public CloneInherit<BSClothExtraData, BSExtraData> {
 private:
 	uint32_t numBytes = 0;
 	std::vector<char> data;
@@ -543,7 +513,6 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	BSClothExtraData* Clone() override { return new BSClothExtraData(*this); }
 
 	std::vector<char> GetData();
 	void SetData(const std::vector<char>& dat);
