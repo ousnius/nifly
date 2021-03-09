@@ -105,7 +105,7 @@ std::vector<NiNode*> NifFile::GetNodes() {
 
 void NifFile::CopyFrom(const NifFile& other) {
 	if (isValid)
-		Clear();
+		*this = {};
 
 	isValid = other.isValid;
 	hasUnknown = other.hasUnknown;
@@ -165,7 +165,7 @@ size_t NifFile::GetTriangleLimit() {
 }
 
 void NifFile::Create(const NiVersion& version) {
-	Clear();
+	*this = {};
 	hdr.SetVersion(version);
 	hdr.SetBlockReference(&blocks);
 
@@ -176,22 +176,13 @@ void NifFile::Create(const NiVersion& version) {
 	isValid = true;
 }
 
-void NifFile::Clear() {
-	isValid = false;
-	hasUnknown = false;
-	isTerrain = false;
-
-	blocks.clear();
-	hdr.Clear();
-}
-
 int NifFile::Load(const std::filesystem::path& fileName, const NifLoadOptions& options) {
 	std::fstream file(fileName, std::ios::in | std::ios::binary);
 	return Load(file, options);
 }
 
 int NifFile::Load(std::iostream& file, const NifLoadOptions& options) {
-	Clear();
+	*this = {};
 
 	isTerrain = options.isTerrain;
 
@@ -200,14 +191,14 @@ int NifFile::Load(std::iostream& file, const NifLoadOptions& options) {
 		hdr.Get(stream);
 
 		if (!hdr.IsValid()) {
-			Clear();
+			*this = {};
 			return 1;
 		}
 
 		NiVersion& version = stream.GetVersion();
 		if (!(version.File() >= NiVersion::ToFile(20, 2, 0, 7)
 			  && (version.User() == 11 || version.User() == 12))) {
-			Clear();
+			*this = {};
 			return 2;
 		}
 
@@ -231,7 +222,7 @@ int NifFile::Load(std::iostream& file, const NifLoadOptions& options) {
 		hdr.SetBlockReference(&blocks);
 	}
 	else {
-		Clear();
+		*this = {};
 		return 1;
 	}
 
@@ -376,7 +367,7 @@ void NifFile::SortGraph(NiNode* root, std::vector<int>& newIndices, int& newInde
 	auto& children = root->GetChildren();
 	std::vector<int> indices;
 	children.GetIndices(indices);
-	children.Clear();
+	children = {};
 
 	for (uint32_t i = 0; i < hdr.GetNumBlocks(); i++)
 		if (contains(indices, i))
@@ -838,7 +829,7 @@ NiShape* NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName
 
 	auto destBoneCont = hdr.GetBlock<NiBoneContainer>(destShape->GetSkinInstanceRef());
 	if (destBoneCont)
-		destBoneCont->GetBones().Clear();
+		destBoneCont->GetBones() = {};
 
 	if (rootNode && srcRootNode) {
 		std::function<void(NiNode*)> cloneNodes = [&](NiNode* srcNode) -> void {
@@ -873,7 +864,7 @@ NiShape* NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName
 					oldParent->GetChildRefs(childRefs);
 					for (auto& ref : childRefs)
 						if (ref->GetIndex() == boneID)
-							ref->Clear();
+							*ref = {};
 
 					nodeParent->GetChildren().AddBlockRef(boneID);
 					SetNodeTransformToParent(boneName, xformToParent);
@@ -919,8 +910,8 @@ int NifFile::CloneNamedNode(const std::string& nodeName, NifFile* srcNif) {
 	destNode->SetName(nodeName);
 	destNode->SetCollisionRef(NIF_NPOS);
 	destNode->SetControllerRef(NIF_NPOS);
-	destNode->GetChildren().Clear();
-	destNode->GetEffects().Clear();
+	destNode->GetChildren() = {};
+	destNode->GetEffects() = {};
 
 	return hdr.AddBlock(std::move(destNode));
 }
@@ -1063,7 +1054,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 								// Remove parallax texture from set
 								auto textureSet = hdr.GetBlock<BSShaderTextureSet>(shader->GetTextureSetRef());
 								if (textureSet && textureSet->numTextures >= 4)
-									textureSet->textures[3].Clear();
+									textureSet->textures[3] = {};
 
 								result.shapesParallaxRemoved.push_back(shapeName);
 							}
@@ -1317,7 +1308,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 								// Remove parallax texture from set
 								auto textureSet = hdr.GetBlock<BSShaderTextureSet>(shader->GetTextureSetRef());
 								if (textureSet && textureSet->numTextures >= 4)
-									textureSet->textures[3].Clear();
+									textureSet->textures[3] = {};
 
 								result.shapesParallaxRemoved.push_back(shapeName);
 							}
@@ -1822,7 +1813,7 @@ void NifFile::SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList) {
 	if (!boneCont)
 		return;
 
-	boneCont->GetBones().Clear();
+	boneCont->GetBones() = {};
 
 	bool feedBoneData = false;
 	if (boneData && boneData->nBones != inList.size()) {

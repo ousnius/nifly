@@ -122,18 +122,6 @@ void NiString::Put(NiStream& stream, const int szSize, const bool wantNullOutput
 		stream << uint8_t(0);
 }
 
-
-void NiHeader::Clear() {
-	numBlockTypes = 0;
-	numStrings = 0;
-	numBlocks = 0;
-	blocks = nullptr;
-	blockTypes.clear();
-	blockTypeIndices.clear();
-	blockSizes.clear();
-	strings.clear();
-}
-
 std::string NiHeader::GetCreatorInfo() {
 	return creator.GetString();
 }
@@ -159,9 +147,9 @@ std::string NiHeader::GetExportInfo() {
 }
 
 void NiHeader::SetExportInfo(const std::string& exportInfo) {
-	exportInfo1.Clear();
-	exportInfo2.Clear();
-	exportInfo3.Clear();
+	exportInfo1 = {};
+	exportInfo2 = {};
+	exportInfo3 = {};
 
 	std::vector<NiString*> exportStrings(3);
 	exportStrings[0] = &exportInfo1;
@@ -530,7 +518,7 @@ void NiHeader::BlockDeleted(NiObject* o, int blockId) {
 	for (auto& r : refs) {
 		int index = r->GetIndex();
 		if (index == blockId)
-			r->Clear();
+			*r = {};
 		else if (index > blockId)
 			r->SetIndex(index - 1);
 	}

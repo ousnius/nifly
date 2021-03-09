@@ -1656,7 +1656,7 @@ void BSSubIndexTriShape::SetDefaultSegments() {
 
 	segmentation.subSegmentData.arrayIndices.clear();
 	segmentation.subSegmentData.dataRecords.clear();
-	segmentation.subSegmentData.ssfFile.Clear();
+	segmentation.subSegmentData.ssfFile= {};
 
 	segmentation.segments.resize(4);
 	for (uint32_t i = 0; i < 3; i++) {

@@ -92,7 +92,6 @@ public:
 	bool IsSSECompatible(NiShape* shape);
 
 	void Create(const NiVersion& version);
-	void Clear();
 
 	// Link NiGeometryData to NiGeometry
 	void LinkGeomData();

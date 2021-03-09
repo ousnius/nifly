@@ -962,12 +962,6 @@ struct MatTransform {
 	Matrix3 rotation;	// must be invertible
 	float scale = 1.0f; // must be nonzero
 
-	void Clear() {
-		translation.Zero();
-		rotation.Identity();
-		scale = 1.0f;
-	}
-
 	// Rotation in euler degrees (Yaw, Pitch, Roll)
 	bool ToEulerDegrees(float& y, float& p, float& r) const { return rotation.ToEulerDegrees(y, p, r); }
 

@@ -61,7 +61,7 @@ void NiObjectNET::SetName(const std::string& str) {
 }
 
 void NiObjectNET::ClearName() {
-	name.Clear();
+	name= {};
 }
 
 int NiObjectNET::GetControllerRef() {

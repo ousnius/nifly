@@ -191,8 +191,6 @@ public:
 
 	size_t GetLength() { return str.length(); }
 
-	void Clear() { str.clear(); }
-
 	void Get(NiStream& stream, const int szSize);
 	void Put(NiStream& stream, const int szSize, const bool wantNullOutput = true);
 };
@@ -211,11 +209,6 @@ public:
 	int GetIndex() { return index; }
 
 	void SetIndex(const int id) { index = id; }
-
-	void Clear() {
-		index = NIF_NPOS;
-		str.Clear();
-	}
 
 	void Get(NiStream& stream) {
 		if (stream.GetVersion().File() < V20_1_0_1)
@@ -240,8 +233,6 @@ public:
 	int GetIndex() { return index; }
 
 	void SetIndex(const int id) { index = id; }
-
-	void Clear() { index = NIF_NPOS; }
 };
 
 template<typename T>
@@ -317,12 +308,6 @@ public:
 	typename std::vector<BlockRef<T>>::const_iterator begin() const { return refs.begin(); }
 
 	typename std::vector<BlockRef<T>>::const_iterator end() const { return refs.end(); }
-
-	void Clear() {
-		refs.clear();
-		arraySize = 0;
-		keepEmptyRefs = false;
-	}
 
 	void Get(NiStream& stream) override {
 		stream >> arraySize;
@@ -509,8 +494,6 @@ public:
 
 	static constexpr const char* BlockName = "NiHeader";
 	const char* GetBlockName() override { return BlockName; }
-
-	void Clear();
 
 	bool IsValid() { return valid; }
 
