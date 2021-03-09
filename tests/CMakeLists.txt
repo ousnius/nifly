@@ -46,3 +46,9 @@ foreach( name ${TARGETS_ALL} )
 
     catch_discover_tests( ${name} )
 endforeach()
+message(${CMAKE_CURRENT_SOURCE_DIR}/INPUT ${CMAKE_CURRENT_BINARY_DIR}/INPUT)
+
+message("Copy tests files")
+add_custom_target(copy-runtime-files ALL
+   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Meshes/INPUT ${CMAKE_CURRENT_BINARY_DIR}/INPUT
+   DEPENDS nifly)
