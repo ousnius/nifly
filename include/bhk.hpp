@@ -1277,7 +1277,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
 class bhkRagdollTemplate : public CloneInherit<bhkRagdollTemplate, NiExtraData> {
@@ -1314,7 +1314,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 
 	HavokMaterial GetMaterial() { return material; }
 	void SetMaterial(HavokMaterial mat) { material = mat; }

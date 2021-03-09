@@ -834,10 +834,10 @@ void BSLightingShaderProperty::Put(NiStream& stream) {
 	}
 }
 
-void BSLightingShaderProperty::GetStringRefs(std::set<StringRef*>& refs) {
+void BSLightingShaderProperty::GetStringRefs(std::vector<StringRef*>& refs) {
 	BSShaderProperty::GetStringRefs(refs);
 
-	refs.insert(&rootMaterialName);
+	refs.emplace_back(&rootMaterialName);
 }
 
 void BSLightingShaderProperty::GetChildRefs(std::set<Ref*>& refs) {

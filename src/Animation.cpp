@@ -482,7 +482,7 @@ void NiMorphData::Put(NiStream& stream) {
 		morphs[i].Put(stream, numVertices);
 }
 
-void NiMorphData::GetStringRefs(std::set<StringRef*>& refs) {
+void NiMorphData::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
 	for (auto& m : morphs)
@@ -611,10 +611,10 @@ void NiFloatExtraDataController::Put(NiStream& stream) {
 	extraData.Put(stream);
 }
 
-void NiFloatExtraDataController::GetStringRefs(std::set<StringRef*>& refs) {
+void NiFloatExtraDataController::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiExtraDataController::GetStringRefs(refs);
 
-	refs.insert(&extraData);
+	refs.emplace_back(&extraData);
 }
 
 
@@ -789,10 +789,10 @@ void NiPSysModifierCtlr::Put(NiStream& stream) {
 	modifierName.Put(stream);
 }
 
-void NiPSysModifierCtlr::GetStringRefs(std::set<StringRef*>& refs) {
+void NiPSysModifierCtlr::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiSingleInterpController::GetStringRefs(refs);
 
-	refs.insert(&modifierName);
+	refs.emplace_back(&modifierName);
 }
 
 
@@ -1194,10 +1194,10 @@ void NiLookAtInterpolator::Put(NiStream& stream) {
 	scaleInterpRef.Put(stream);
 }
 
-void NiLookAtInterpolator::GetStringRefs(std::set<StringRef*>& refs) {
+void NiLookAtInterpolator::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiInterpolator::GetStringRefs(refs);
 
-	refs.insert(&lookAtName);
+	refs.emplace_back(&lookAtName);
 }
 
 void NiLookAtInterpolator::GetChildRefs(std::set<Ref*>& refs) {
@@ -1244,7 +1244,7 @@ void BSTreadTransfInterpolator::Put(NiStream& stream) {
 	dataRef.Put(stream);
 }
 
-void BSTreadTransfInterpolator::GetStringRefs(std::set<StringRef*>& refs) {
+void BSTreadTransfInterpolator::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiInterpolator::GetStringRefs(refs);
 
 	for (uint32_t i = 0; i < numTreadTransforms; i++)
@@ -1323,17 +1323,17 @@ void NiSequence::Put(NiStream& stream) {
 	}
 }
 
-void NiSequence::GetStringRefs(std::set<StringRef*>& refs) {
+void NiSequence::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
-	refs.insert(&name);
+	refs.emplace_back(&name);
 
 	for (uint32_t i = 0; i < numControlledBlocks; i++) {
-		refs.insert(&controlledBlocks[i].nodeName);
-		refs.insert(&controlledBlocks[i].propType);
-		refs.insert(&controlledBlocks[i].ctrlType);
-		refs.insert(&controlledBlocks[i].ctrlID);
-		refs.insert(&controlledBlocks[i].interpID);
+		refs.emplace_back(&controlledBlocks[i].nodeName);
+		refs.emplace_back(&controlledBlocks[i].propType);
+		refs.emplace_back(&controlledBlocks[i].ctrlType);
+		refs.emplace_back(&controlledBlocks[i].ctrlID);
+		refs.emplace_back(&controlledBlocks[i].interpID);
 	}
 }
 
@@ -1452,10 +1452,10 @@ void NiControllerSequence::Put(NiStream& stream) {
 		animNotesRefs.Put(stream);
 }
 
-void NiControllerSequence::GetStringRefs(std::set<StringRef*>& refs) {
+void NiControllerSequence::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiSequence::GetStringRefs(refs);
 
-	refs.insert(&accumRootName);
+	refs.emplace_back(&accumRootName);
 }
 
 void NiControllerSequence::GetChildRefs(std::set<Ref*>& refs) {
