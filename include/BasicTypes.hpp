@@ -429,7 +429,7 @@ public:
 	virtual void Get(NiStream&) {}
 	virtual void Put(NiStream&) {}
 
-	virtual void GetStringRefs(std::set<StringRef*>&) {}
+	virtual void GetStringRefs(std::vector<StringRef*>&) {}
 	virtual void GetChildRefs(std::set<Ref*>&) {}
 	virtual void GetChildIndices(std::vector<int>&) {}
 	virtual void GetPtrs(std::set<Ref*>&) {}

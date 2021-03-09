@@ -23,10 +23,10 @@ void NiExtraData::Put(NiStream& stream) {
 	name.Put(stream);
 }
 
-void NiExtraData::GetStringRefs(std::set<StringRef*>& refs) {
+void NiExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
-	refs.insert(&name);
+	refs.emplace_back(&name);
 }
 
 std::string NiExtraData::GetName() {
@@ -152,10 +152,10 @@ void NiStringExtraData::Put(NiStream& stream) {
 	stringData.Put(stream);
 }
 
-void NiStringExtraData::GetStringRefs(std::set<StringRef*>& refs) {
+void NiStringExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
-	refs.insert(&stringData);
+	refs.emplace_back(&stringData);
 }
 
 std::string NiStringExtraData::GetStringData() {
@@ -563,10 +563,10 @@ void BSBehaviorGraphExtraData::Put(NiStream& stream) {
 	stream << controlsBaseSkel;
 }
 
-void BSBehaviorGraphExtraData::GetStringRefs(std::set<StringRef*>& refs) {
+void BSBehaviorGraphExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
-	refs.insert(&behaviorGraphFile);
+	refs.emplace_back(&behaviorGraphFile);
 }
 
 
@@ -606,11 +606,11 @@ void BSBoneLODExtraData::Put(NiStream& stream) {
 	}
 }
 
-void BSBoneLODExtraData::GetStringRefs(std::set<StringRef*>& refs) {
+void BSBoneLODExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
 	for (uint32_t i = 0; i < numBoneLODs; i++)
-		refs.insert(&boneLODs[i].boneName);
+		refs.emplace_back(&boneLODs[i].boneName);
 }
 
 std::vector<BoneLOD> BSBoneLODExtraData::GetBoneLODs() {
@@ -644,11 +644,11 @@ void NiTextKeyExtraData::Put(NiStream& stream) {
 	}
 }
 
-void NiTextKeyExtraData::GetStringRefs(std::set<StringRef*>& refs) {
+void NiTextKeyExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
 	for (uint32_t i = 0; i < numTextKeys; i++)
-		refs.insert(&textKeys[i].value);
+		refs.emplace_back(&textKeys[i].value);
 }
 
 std::vector<Key<StringRef>> NiTextKeyExtraData::GetTextKeys() {

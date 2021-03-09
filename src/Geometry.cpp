@@ -2016,11 +2016,11 @@ void NiGeometry::Put(NiStream& stream) {
 	}
 }
 
-void NiGeometry::GetStringRefs(std::set<StringRef*>& refs) {
+void NiGeometry::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiAVObject::GetStringRefs(refs);
 
 	for (auto& m : materialNameRefs)
-		refs.insert(&m);
+		refs.emplace_back(&m);
 }
 
 void NiGeometry::GetChildRefs(std::set<Ref*>& refs) {

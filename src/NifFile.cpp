@@ -751,7 +751,7 @@ void NifFile::CloneChildren(NiObject* block, NifFile* srcNif) {
 				int destId = hdr.AddBlock(std::move(destChildS));
 				r->SetIndex(destId);
 
-				std::set<StringRef*> strRefs;
+				std::vector<StringRef*> strRefs;
 				destChild->GetStringRefs(strRefs);
 
 				for (auto& str : strRefs) {

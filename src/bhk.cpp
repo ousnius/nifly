@@ -1546,11 +1546,11 @@ void bhkPoseArray::Put(NiStream& stream) {
 		poses[i].Put(stream);
 }
 
-void bhkPoseArray::GetStringRefs(std::set<StringRef*>& refs) {
+void bhkPoseArray::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
 	for (auto& b : bones)
-		refs.insert(&b);
+		refs.emplace_back(&b);
 }
 
 
@@ -1616,8 +1616,8 @@ void bhkRagdollTemplateData::Put(NiStream& stream) {
 		constraints[i].Put(stream);
 }
 
-void bhkRagdollTemplateData::GetStringRefs(std::set<StringRef*>& refs) {
+void bhkRagdollTemplateData::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
-	refs.insert(&name);
+	refs.emplace_back(&name);
 }

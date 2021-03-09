@@ -32,10 +32,10 @@ void NiObjectNET::Put(NiStream& stream) {
 	controllerRef.Put(stream);
 }
 
-void NiObjectNET::GetStringRefs(std::set<StringRef*>& refs) {
+void NiObjectNET::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
-	refs.insert(&name);
+	refs.emplace_back(&name);
 }
 
 void NiObjectNET::GetChildRefs(std::set<Ref*>& refs) {
@@ -427,10 +427,10 @@ void NiSourceTexture::Put(NiStream& stream) {
 		stream << persistentRenderData;
 }
 
-void NiSourceTexture::GetStringRefs(std::set<StringRef*>& refs) {
+void NiSourceTexture::GetStringRefs(std::vector<StringRef*>& refs) {
 	NiTexture::GetStringRefs(refs);
 
-	refs.insert(&fileName);
+	refs.emplace_back(&fileName);
 }
 
 void NiSourceTexture::GetChildRefs(std::set<Ref*>& refs) {
