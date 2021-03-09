@@ -383,7 +383,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
@@ -412,7 +412,7 @@ struct BSTreadTransform {
 		stream << transform2;
 	}
 
-	void GetStringRefs(std::set<StringRef*>& refs) { refs.insert(&name); }
+	void GetStringRefs(std::vector<StringRef*>& refs) { refs.emplace_back(&name); }
 };
 
 class BSTreadTransfInterpolator : public CloneInherit<BSTreadTransfInterpolator, NiInterpolator> {
@@ -427,7 +427,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -670,7 +670,7 @@ struct Morph {
 			stream << vectors[i];
 	}
 
-	void GetStringRefs(std::set<StringRef*>& refs) { refs.insert(&frameName); }
+	void GetStringRefs(std::vector<StringRef*>& refs) { refs.emplace_back(&frameName); }
 };
 
 class NiMorphData : public CloneInherit<NiMorphData, NiObject> {
@@ -686,7 +686,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
 class NiInterpController : public CloneInherit<NiInterpController, NiTimeController> {};
@@ -792,7 +792,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
 class NiVisData : public CloneInherit<NiVisData, NiObject> {
@@ -1024,7 +1024,7 @@ private:
 public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
 class NiPSysModifierBoolCtlr : public CloneInherit<NiPSysModifierBoolCtlr, NiPSysModifierCtlr> {};
@@ -1222,7 +1222,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -1287,7 +1287,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;

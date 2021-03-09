@@ -164,7 +164,7 @@ private:
 public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -667,7 +667,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 

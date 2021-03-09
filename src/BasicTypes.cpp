@@ -483,7 +483,7 @@ void NiHeader::FillStringRefs() {
 		return;
 
 	for (auto& b : (*blocks)) {
-		std::set<StringRef*> stringRefs;
+		std::vector<StringRef*> stringRefs;
 		b->GetStringRefs(stringRefs);
 
 		for (auto& r : stringRefs) {
@@ -509,7 +509,7 @@ void NiHeader::UpdateHeaderStrings(const bool hasUnknown) {
 		return;
 
 	for (auto& b : (*blocks)) {
-		std::set<StringRef*> stringRefs;
+		std::vector<StringRef*> stringRefs;
 		b->GetStringRefs(stringRefs);
 
 		for (auto& r : stringRefs) {

@@ -19,7 +19,7 @@ private:
 public:
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 
 	std::string GetName();
 	void SetName(const std::string& extraDataName);
@@ -82,7 +82,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 
 	std::string GetStringData();
 	void SetStringData(const std::string& str);
@@ -378,7 +378,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
 class BSBound : public CloneInherit<BSBound, NiExtraData> {
@@ -416,7 +416,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 
 	std::vector<BoneLOD> GetBoneLODs();
 	void SetBoneLODs(const std::vector<BoneLOD>& lods);
@@ -433,7 +433,7 @@ public:
 
 	void Get(NiStream& stream) override;
 	void Put(NiStream& stream) override;
-	void GetStringRefs(std::set<StringRef*>& refs) override;
+	void GetStringRefs(std::vector<StringRef*>& refs) override;
 
 	std::vector<Key<StringRef>> GetTextKeys();
 	void SetTextKeys(const std::vector<Key<StringRef>>& keys);
