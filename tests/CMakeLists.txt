@@ -5,7 +5,7 @@ project(nifly-tests)
 find_package( Catch2 REQUIRED )
 
 set( SOURCES_SINGLE_FILE
-    TestCase.cpp
+    TestNifFile.cpp
 )
 
 string( REPLACE ".cpp" "" BASENAMES_SINGLE_FILE "${SOURCES_SINGLE_FILE}" )
@@ -28,7 +28,7 @@ foreach( name ${TARGETS_ALL} )
     target_include_directories( ${name} PRIVATE ${NIFLY_DIR}/include ${NIFLY_DIR}/external )
     target_link_libraries( ${name} PRIVATE nifly Catch2::Catch2 )
 
-    set_property(TARGET ${name} PROPERTY CXX_STANDARD 11)
+    set_property(TARGET ${name} PROPERTY CXX_STANDARD 17)
     set_property(TARGET ${name} PROPERTY CXX_EXTENSIONS OFF)
 
     # Add desired warnings
@@ -44,9 +44,8 @@ foreach( name ${TARGETS_ALL} )
         target_compile_options( ${name}  PRIVATE /W4 /w44265 /WX )
     endif()
 
-    catch_discover_tests( ${name} )
+    catch_discover_tests( ${name} WORKING_DIRECTORY "${TESTS_DIR}" )
 endforeach()
-message(${CMAKE_CURRENT_SOURCE_DIR}/INPUT ${CMAKE_CURRENT_BINARY_DIR}/INPUT)
 
 message("Copy tests files")
 add_custom_target(copy-runtime-files ALL

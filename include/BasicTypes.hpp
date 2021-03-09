@@ -1,6 +1,7 @@
 /*
-BodySlide and Outfit Studio
-See the included LICENSE file
+nifly
+C++ NIF library for the Gamebryo/NetImmerse File Format
+See the included GPLv3 LICENSE file
 */
 
 #pragma once
@@ -231,7 +232,7 @@ public:
 	}
 };
 
-class Ref : public CloneInherit<AbstractMethod<Ref>> {
+class Ref {
 protected:
 	int index = NIF_NPOS;
 
@@ -244,7 +245,7 @@ public:
 };
 
 template<typename T>
-class BlockRef : public CloneInherit<BlockRef<T>, Ref> {
+class BlockRef : public Ref {
 	using base = Ref;
 
 public:
@@ -256,7 +257,7 @@ public:
 	void Put(NiStream& stream) { stream << base::index; }
 };
 
-class RefArray : public CloneInherit<AbstractMethod<RefArray>> {
+class RefArray {
 protected:
 	int arraySize = 0;
 	bool keepEmptyRefs = false;
@@ -281,7 +282,7 @@ public:
 };
 
 template<typename T>
-class BlockRefArray : public CloneInherit<BlockRefArray<T>, RefArray> {
+class BlockRefArray : public RefArray {
 protected:
 	using RefArray::arraySize;
 	using RefArray::keepEmptyRefs;
@@ -394,7 +395,7 @@ public:
 };
 
 template<typename T>
-class BlockRefShortArray : public CloneInherit<BlockRefShortArray<T>, BlockRefArray<T>> {
+class BlockRefShortArray : public BlockRefArray<T> {
 public:
 	using base = BlockRefArray<T>;
 	using base::arraySize;

@@ -17,15 +17,30 @@ std::string ApprovalTests::StringMaker::toString(const NifFile& contents) {
 	return stream.str();
 }
 
-const auto directoryDisposer = Approvals::useApprovalsSubdirectory("approval_tests");
-
 // WIP: Implement some proper testing
 
-TEST_CASE("NifFile.Load (not existing)", "[NifFile]") {
-	NifFile test;
-	test.Load("not_existing.nif");
-	REQUIRE(!test.IsValid());
+TEST_CASE("Load not existing file", "[NifFile]") {
+	NifFile nif;
+	REQUIRE(nif.Load("not_existing.nif") != 0);
 }
+
+TEST_CASE("Load and save file", "[NifFile]") {
+	NifFile nif;
+	REQUIRE(nif.Load("TestNifFile_LoadSave.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_LoadSave_output.nif") == 0);
+}
+
+TEST_CASE("Load, optimize and save file", "[NifFile]") {
+	OptOptions options;
+	options.targetVersion = NiVersion::getSSE();
+
+	NifFile nif;
+	REQUIRE(nif.Load("TestNifFile_Optimize.nif") == 0);
+	nif.OptimizeFor(options);
+	REQUIRE(nif.Save("TestNifFile_Optimize_output.nif") == 0);
+}
+
+const auto directoryDisposer = Approvals::useApprovalsSubdirectory("approval_tests");
 
 TEST_CASE("Optimize lots of meshes") {
 	OptOptions opts;
@@ -45,7 +60,6 @@ TEST_CASE("Optimize lots of meshes") {
 				SECTION("load") { Approvals::verify(file, Options(AutoApproveIfMissingReporter())); }
 				file.OptimizeFor(opts);
 				SECTION("optimize") { Approvals::verify(file, Options(AutoApproveIfMissingReporter())); }
-				file.Save("temp.nif");
 			}
 		}
 	};

@@ -6,6 +6,9 @@
 # Build folder
 build/
 
+# Test output
+tests/*output.*
+
 # User-specific files
 *.rsuser
 *.suo
