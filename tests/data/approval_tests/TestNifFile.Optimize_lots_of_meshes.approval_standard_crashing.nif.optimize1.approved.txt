@@ -1,0 +1,8 @@
+versionMismatch: 0
+dupesRenamed: 0
+shapesVColorsRemoved: []
+shapesNormalsRemoved: []
+shapesPartTriangulated: [malebody_0|Trousers 2|]
+shapesTangentsAdded: []
+shapesParallaxRemoved: []
+

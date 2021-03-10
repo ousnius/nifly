@@ -1,0 +1,8 @@
+versionMismatch: 0
+dupesRenamed: 1
+shapesVColorsRemoved: []
+shapesNormalsRemoved: []
+shapesPartTriangulated: []
+shapesTangentsAdded: []
+shapesParallaxRemoved: []
+

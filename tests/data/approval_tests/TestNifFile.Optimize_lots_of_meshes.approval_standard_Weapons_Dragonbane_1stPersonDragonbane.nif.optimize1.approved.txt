@@ -1,0 +1,8 @@
+versionMismatch: 0
+dupesRenamed: 1
+shapesVColorsRemoved: []
+shapesNormalsRemoved: []
+shapesPartTriangulated: []
+shapesTangentsAdded: [EdgeBlood|EdgeBlood01|1stPersonAkaviriKatana:0_1|1stPersonAkaviriKatana:0_2|1stPersonAkaviriKatana:0|Scb|]
+shapesParallaxRemoved: []
+
