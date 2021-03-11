@@ -178,6 +178,46 @@ public:
 	NiVersion& GetVersion() { return *version; }
 };
 
+class NiStreamReversible {
+public:
+	enum class Mode { Reading, Writing };
+
+	explicit NiStreamReversible(NiStream& s, Mode mode)
+		: stream(s)
+		, mode(mode) {}
+
+	void SetMode(Mode m) { mode = m; }
+	Mode GetMode() { return mode; }
+
+	template<typename T>
+	void sync(const T& t) {
+		if (mode == Mode::Reading)
+			stream >> t;
+		else
+			stream << t;
+	}
+
+private:
+	NiStream& stream;
+	Mode mode;
+};
+
+template<typename Derived>
+class ReverseStreamable : public Derived {
+private:
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+
+public:
+	void Get(NiStream& stream) override {
+		NiStreamReversible s(stream, NiStreamReversible::Mode::Reading);
+		asDer().GetPut(s);
+	}
+	void Put(NiStream& stream) override {
+		NiStreamReversible s(stream, NiStreamReversible::Mode::Writing);
+		asDer().GetPut(s);
+	}
+};
+
 class NiString {
 private:
 	std::string str;
