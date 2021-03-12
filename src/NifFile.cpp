@@ -1412,8 +1412,9 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				if (!hasTangents && bsOptShape->HasTangents())
 					result.shapesTangentsAdded.push_back(shapeName);
 
-				hdr.ReplaceBlock(GetBlockID(shape), std::unique_ptr<NiObject>(std::move(bsOptShape)));
-				UpdateSkinPartitions(bsOptShape.get());
+				auto bsOptShapeObserver = bsOptShape.get();
+				hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
+				UpdateSkinPartitions(bsOptShapeObserver);
 			}
 		}
 
