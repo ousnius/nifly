@@ -2316,23 +2316,22 @@ void NifFile::SetShapePartitions(NiShape* shape,
 	skinPart->GenerateTrueTrianglesFromTriParts(shapeTris);
 
 	// Set BSDismemberSkinInstance partition list
-	auto bsdSkinInst = std::unique_ptr<BSDismemberSkinInstance>(
-		hdr.GetBlock<BSDismemberSkinInstance>(shape->GetSkinInstanceRef()));
-
-	BSDismemberSkinInstance* bsdSkinInstObs = nullptr;
+	auto bsdSkinInst = hdr.GetBlock<BSDismemberSkinInstance>(shape->GetSkinInstanceRef());
 	if (!bsdSkinInst && convertSkinInstance) {
-		std::tie(bsdSkinInst, bsdSkinInstObs) = make_unique<BSDismemberSkinInstance>();
-		*static_cast<NiSkinInstance*>(bsdSkinInst.get()) = *static_cast<NiSkinInstance*>(skinInst);
-		hdr.ReplaceBlock(GetBlockID(skinInst), std::move(bsdSkinInst));
+		auto newBsdSkinInst = std::make_unique<BSDismemberSkinInstance>();
+		bsdSkinInst = newBsdSkinInst.get();
+
+		*static_cast<NiSkinInstance*>(bsdSkinInst) = *static_cast<NiSkinInstance*>(skinInst);
+		hdr.ReplaceBlock(GetBlockID(skinInst), std::move(newBsdSkinInst));
 	}
 
-	if (bsdSkinInstObs) {
-		bsdSkinInstObs->SetPartitions(partitionInfo);
-		while (bsdSkinInstObs->GetNumPartitions() < numParts) {
+	if (bsdSkinInst) {
+		bsdSkinInst->SetPartitions(partitionInfo);
+		while (bsdSkinInst->GetNumPartitions() < numParts) {
 			BSDismemberSkinInstance::PartitionInfo pi;
 			pi.flags = PF_EDITOR_VISIBLE;
 			pi.partID = hdr.GetVersion().User() >= 12 ? 32 : 0;
-			bsdSkinInstObs->AddPartition(pi);
+			bsdSkinInst->AddPartition(pi);
 		}
 	}
 }
