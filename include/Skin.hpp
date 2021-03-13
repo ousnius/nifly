@@ -34,7 +34,7 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
-class NiSkinData : public CloneInherit<NiSkinData, NiObject> {
+class NiSkinData : public NiObjectCRTP<NiSkinData, NiObject> {
 public:
 	struct BoneData {
 		// boneTransform transforms from skin CS to bone CS.
@@ -60,7 +60,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiSkinPartition : public CloneInherit<NiSkinPartition, NiObject> {
+class NiSkinPartition : public NiObjectCRTP<NiSkinPartition, NiObject> {
 public:
 	struct PartitionBlock {
 		uint16_t numVertices = 0;
@@ -163,7 +163,7 @@ public:
 
 class NiNode;
 
-class NiBoneContainer : public CloneInherit<NiBoneContainer, NiObject> {
+class NiBoneContainer : public NiObjectCRTP<NiBoneContainer, NiObject> {
 protected:
 	BlockRefArray<NiNode> boneRefs;
 
@@ -171,7 +171,7 @@ public:
 	BlockRefArray<NiNode>& GetBones();
 };
 
-class NiSkinInstance : public CloneInherit<NiSkinInstance, NiBoneContainer> {
+class NiSkinInstance : public NiObjectCRTP<NiSkinInstance, NiBoneContainer> {
 private:
 	BlockRef<NiSkinData> dataRef;
 	BlockRef<NiSkinPartition> skinPartitionRef;
@@ -200,7 +200,7 @@ public:
 
 enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
-class BSDismemberSkinInstance : public CloneInherit<BSDismemberSkinInstance, NiSkinInstance> {
+class BSDismemberSkinInstance : public NiObjectCRTP<BSDismemberSkinInstance, NiSkinInstance> {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
@@ -233,7 +233,7 @@ public:
 	}
 };
 
-class BSSkinBoneData : public CloneInherit<BSSkinBoneData, NiObject> {
+class BSSkinBoneData : public NiObjectCRTP<BSSkinBoneData, NiObject> {
 public:
 	uint32_t nBones = 0;
 
@@ -259,7 +259,7 @@ public:
 
 class NiAVObject;
 
-class BSSkinInstance : public CloneInherit<BSSkinInstance, NiBoneContainer> {
+class BSSkinInstance : public NiObjectCRTP<BSSkinInstance, NiBoneContainer> {
 private:
 	BlockRef<NiAVObject> targetRef;
 	BlockRef<BSSkinBoneData> dataRef;

@@ -6,7 +6,6 @@ See the included GPLv3 LICENSE file
 
 #pragma once
 
-#include "CloneInherit.hpp"
 #include "Object3d.hpp"
 
 #include <algorithm>
@@ -202,19 +201,18 @@ private:
 	Mode mode;
 };
 
-template<typename Derived>
-class ReverseStreamable : public Derived {
-private:
-	Derived& asDer() { return static_cast<Derived&>(*this); }
-
+template<typename Derived, typename Base>
+class NiObjectCRTP : public Base {
 public:
-	void Get(NiStream& stream) override {
-		NiStreamReversible s(stream, NiStreamReversible::Mode::Reading);
-		asDer().GetPut(s);
+	virtual ~NiObjectCRTP() = default;
+
+	std::unique_ptr<Derived> Clone() const {
+		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
 	}
-	void Put(NiStream& stream) override {
-		NiStreamReversible s(stream, NiStreamReversible::Mode::Writing);
-		asDer().GetPut(s);
+
+private:
+	virtual NiObjectCRTP* Clone_impl() const override {
+		return new Derived(static_cast<const Derived&>(*this));
 	}
 };
 
@@ -469,12 +467,12 @@ public:
 	}
 };
 
-class NiObject : public CloneInherit<AbstractMethod<NiObject>> {
+class NiObject {
 protected:
 	uint32_t blockSize = 0;
 
 public:
-	virtual ~NiObject() {}
+	virtual ~NiObject() = default;
 
 	static constexpr const char* BlockName = "NiUnknown";
 	virtual const char* GetBlockName() { return BlockName; }
@@ -489,14 +487,20 @@ public:
 	virtual void GetChildIndices(std::vector<int>&) {}
 	virtual void GetPtrs(std::set<Ref*>&) {}
 
+	std::unique_ptr<NiObject> Clone() const {
+		return std::unique_ptr<NiObject>(static_cast<NiObject*>(this->Clone_impl()));
+	}
 
 	template<typename T>
 	bool HasType() {
 		return dynamic_cast<const T*>(this) != nullptr;
 	}
+
+private:
+	virtual NiObject* Clone_impl() const = 0;
 };
 
-class NiHeader : public CloneInherit<NiHeader, NiObject> {
+class NiHeader : public NiObjectCRTP<NiHeader, NiObject> {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -648,7 +652,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class NiUnknown : public CloneInherit<NiUnknown, NiObject> {
+class NiUnknown : public NiObjectCRTP<NiUnknown, NiObject> {
 private:
 	std::vector<char> data;
 

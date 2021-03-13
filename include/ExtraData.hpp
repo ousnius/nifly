@@ -12,7 +12,7 @@ See the included GPLv3 LICENSE file
 #include "half.hpp"
 
 namespace nifly {
-class NiExtraData : public CloneInherit<NiExtraData, NiObject> {
+class NiExtraData : public NiObjectCRTP<NiExtraData, NiObject> {
 private:
 	StringRef name;
 
@@ -25,7 +25,7 @@ public:
 	void SetName(const std::string& extraDataName);
 };
 
-class NiBinaryExtraData : public CloneInherit<NiBinaryExtraData, NiExtraData> {
+class NiBinaryExtraData : public NiObjectCRTP<NiBinaryExtraData, NiExtraData> {
 private:
 	uint32_t size = 0;
 	std::vector<uint8_t> data;
@@ -41,7 +41,7 @@ public:
 	void SetData(const std::vector<uint8_t>& dat);
 };
 
-class NiFloatExtraData : public CloneInherit<NiFloatExtraData, NiExtraData> {
+class NiFloatExtraData : public NiObjectCRTP<NiFloatExtraData, NiExtraData> {
 private:
 	float floatData = 0.0f;
 
@@ -56,7 +56,7 @@ public:
 	void SetFloatData(const float fltData);
 };
 
-class NiFloatsExtraData : public CloneInherit<NiFloatsExtraData, NiExtraData> {
+class NiFloatsExtraData : public NiObjectCRTP<NiFloatsExtraData, NiExtraData> {
 private:
 	uint32_t numFloats = 0;
 	std::vector<float> floatsData;
@@ -72,7 +72,7 @@ public:
 	void SetFloatsData(const std::vector<float>& fltsData);
 };
 
-class NiStringExtraData : public CloneInherit<NiStringExtraData, NiExtraData> {
+class NiStringExtraData : public NiObjectCRTP<NiStringExtraData, NiExtraData> {
 private:
 	StringRef stringData;
 
@@ -88,7 +88,7 @@ public:
 	void SetStringData(const std::string& str);
 };
 
-class NiStringsExtraData : public CloneInherit<NiStringsExtraData, NiExtraData> {
+class NiStringsExtraData : public NiObjectCRTP<NiStringsExtraData, NiExtraData> {
 private:
 	uint32_t numStrings = 0;
 	std::vector<NiString> stringsData;
@@ -104,7 +104,7 @@ public:
 	void SetStringsData(const std::vector<NiString>& strsData);
 };
 
-class NiBooleanExtraData : public CloneInherit<NiBooleanExtraData, NiExtraData> {
+class NiBooleanExtraData : public NiObjectCRTP<NiBooleanExtraData, NiExtraData> {
 private:
 	bool booleanData = false;
 
@@ -119,7 +119,7 @@ public:
 	void SetBooleanData(const bool boolData);
 };
 
-class NiIntegerExtraData : public CloneInherit<NiIntegerExtraData, NiExtraData> {
+class NiIntegerExtraData : public NiObjectCRTP<NiIntegerExtraData, NiExtraData> {
 private:
 	uint32_t integerData = 0;
 
@@ -134,7 +134,7 @@ public:
 	void SetIntegerData(const uint32_t intData);
 };
 
-class NiIntegersExtraData : public CloneInherit<NiIntegersExtraData, NiExtraData> {
+class NiIntegersExtraData : public NiObjectCRTP<NiIntegersExtraData, NiExtraData> {
 private:
 	uint32_t numIntegers = 0;
 	std::vector<uint32_t> integersData;
@@ -150,7 +150,7 @@ public:
 	void SetIntegersData(const std::vector<uint32_t>& intData);
 };
 
-class NiVectorExtraData : public CloneInherit<NiVectorExtraData, NiExtraData> {
+class NiVectorExtraData : public NiObjectCRTP<NiVectorExtraData, NiExtraData> {
 private:
 	Vector4 vectorData;
 
@@ -165,7 +165,7 @@ public:
 	void SetVectorData(const Vector4& vecData);
 };
 
-class NiColorExtraData : public CloneInherit<NiColorExtraData, NiExtraData> {
+class NiColorExtraData : public NiObjectCRTP<NiColorExtraData, NiExtraData> {
 private:
 	Color4 colorData;
 
@@ -180,13 +180,13 @@ public:
 	void SetColorData(const Color4& colData);
 };
 
-class BSXFlags : public CloneInherit<BSXFlags, NiIntegerExtraData> {
+class BSXFlags : public NiObjectCRTP<BSXFlags, NiIntegerExtraData> {
 public:
 	static constexpr const char* BlockName = "BSXFlags";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSWArray : public CloneInherit<BSWArray, NiExtraData> {
+class BSWArray : public NiObjectCRTP<BSWArray, NiExtraData> {
 private:
 	uint32_t numData = 0;
 	std::vector<uint32_t> data;
@@ -202,7 +202,7 @@ public:
 	void SetData(const std::vector<uint32_t>& dat);
 };
 
-class BSPositionData : public CloneInherit<BSPositionData, NiExtraData> {
+class BSPositionData : public NiObjectCRTP<BSPositionData, NiExtraData> {
 private:
 	uint32_t numData = 0;
 	std::vector<half_float::half> data;
@@ -218,7 +218,7 @@ public:
 	void SetData(const std::vector<half_float::half>& dat);
 };
 
-class BSEyeCenterExtraData : public CloneInherit<BSEyeCenterExtraData, NiExtraData> {
+class BSEyeCenterExtraData : public NiObjectCRTP<BSEyeCenterExtraData, NiExtraData> {
 private:
 	uint32_t numData = 0;
 	std::vector<float> data;
@@ -265,7 +265,7 @@ struct BSPackedGeomData {
 	void Put(NiStream& stream);
 };
 
-class BSPackedCombinedSharedGeomDataExtra : public CloneInherit<BSPackedCombinedSharedGeomDataExtra, NiExtraData> {
+class BSPackedCombinedSharedGeomDataExtra : public NiObjectCRTP<BSPackedCombinedSharedGeomDataExtra, NiExtraData> {
 private:
 	VertexDesc vertDesc;
 	uint32_t numVertices = 0;
@@ -284,7 +284,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class BSInvMarker : public CloneInherit<BSInvMarker, NiExtraData> {
+class BSInvMarker : public NiObjectCRTP<BSInvMarker, NiExtraData> {
 private:
 	uint16_t rotationX = 4712;
 	uint16_t rotationY = 6283;
@@ -323,7 +323,7 @@ struct FurniturePosition {
 	uint16_t entryPoints = 0;	// User Version >= 12
 };
 
-class BSFurnitureMarker : public CloneInherit<BSFurnitureMarker, NiExtraData> {
+class BSFurnitureMarker : public NiObjectCRTP<BSFurnitureMarker, NiExtraData> {
 private:
 	uint32_t numPositions = 0;
 	std::vector<FurniturePosition> positions;
@@ -339,7 +339,7 @@ public:
 	void SetPositions(const std::vector<FurniturePosition>& pos);
 };
 
-class BSFurnitureMarkerNode : public CloneInherit<BSFurnitureMarkerNode, BSFurnitureMarker> {
+class BSFurnitureMarkerNode : public NiObjectCRTP<BSFurnitureMarkerNode, BSFurnitureMarker> {
 public:
 	static constexpr const char* BlockName = "BSFurnitureMarkerNode";
 	const char* GetBlockName() override { return BlockName; }
@@ -351,7 +351,7 @@ struct DecalVectorBlock {
 	std::vector<Vector3> normals;
 };
 
-class BSDecalPlacementVectorExtraData : public CloneInherit<BSDecalPlacementVectorExtraData, NiFloatExtraData> {
+class BSDecalPlacementVectorExtraData : public NiObjectCRTP<BSDecalPlacementVectorExtraData, NiFloatExtraData> {
 private:
 	uint16_t numVectorBlocks = 0;
 	std::vector<DecalVectorBlock> decalVectorBlocks;
@@ -367,7 +367,7 @@ public:
 	void SetDecalVectorBlocks(const std::vector<DecalVectorBlock>& vectorBlocks);
 };
 
-class BSBehaviorGraphExtraData : public CloneInherit<BSBehaviorGraphExtraData, NiExtraData> {
+class BSBehaviorGraphExtraData : public NiObjectCRTP<BSBehaviorGraphExtraData, NiExtraData> {
 private:
 	StringRef behaviorGraphFile;
 	bool controlsBaseSkel = false;
@@ -381,7 +381,7 @@ public:
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
-class BSBound : public CloneInherit<BSBound, NiExtraData> {
+class BSBound : public NiObjectCRTP<BSBound, NiExtraData> {
 private:
 	Vector3 center;
 	Vector3 halfExtents;
@@ -405,7 +405,7 @@ struct BoneLOD {
 	StringRef boneName;
 };
 
-class BSBoneLODExtraData : public CloneInherit<BSBoneLODExtraData, NiExtraData> {
+class BSBoneLODExtraData : public NiObjectCRTP<BSBoneLODExtraData, NiExtraData> {
 private:
 	uint32_t numBoneLODs = 0;
 	std::vector<BoneLOD> boneLODs;
@@ -422,7 +422,7 @@ public:
 	void SetBoneLODs(const std::vector<BoneLOD>& lods);
 };
 
-class NiTextKeyExtraData : public CloneInherit<NiTextKeyExtraData, NiExtraData> {
+class NiTextKeyExtraData : public NiObjectCRTP<NiTextKeyExtraData, NiExtraData> {
 private:
 	uint32_t numTextKeys = 0;
 	std::vector<Key<StringRef>> textKeys;
@@ -439,7 +439,7 @@ public:
 	void SetTextKeys(const std::vector<Key<StringRef>>& keys);
 };
 
-class BSDistantObjectLargeRefExtraData : public CloneInherit<BSDistantObjectLargeRefExtraData, NiExtraData> {
+class BSDistantObjectLargeRefExtraData : public NiObjectCRTP<BSDistantObjectLargeRefExtraData, NiExtraData> {
 private:
 	bool largeRef = true;
 
@@ -465,7 +465,7 @@ struct BSConnectPoint {
 	void Put(NiStream& stream);
 };
 
-class BSConnectPointParents : public CloneInherit<BSConnectPointParents, NiExtraData> {
+class BSConnectPointParents : public NiObjectCRTP<BSConnectPointParents, NiExtraData> {
 private:
 	uint32_t numConnectPoints = 0;
 	std::vector<BSConnectPoint> connectPoints;
@@ -481,7 +481,7 @@ public:
 	void SetConnectPoints(const std::vector<BSConnectPoint>& cps);
 };
 
-class BSConnectPointChildren : public CloneInherit<BSConnectPointChildren, NiExtraData> {
+class BSConnectPointChildren : public NiObjectCRTP<BSConnectPointChildren, NiExtraData> {
 private:
 	uint8_t unkByte = 1;
 	uint32_t numTargets = 0;
@@ -498,9 +498,9 @@ public:
 	void SetTargets(const std::vector<NiString>& targ);
 };
 
-class BSExtraData : public CloneInherit<BSExtraData, NiObject> {};
+class BSExtraData : public NiObjectCRTP<BSExtraData, NiObject> {};
 
-class BSClothExtraData : public CloneInherit<BSClothExtraData, BSExtraData> {
+class BSClothExtraData : public NiObjectCRTP<BSClothExtraData, BSExtraData> {
 private:
 	uint32_t numBytes = 0;
 	std::vector<char> data;

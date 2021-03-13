@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 #include "ExtraData.hpp"
 
 namespace nifly {
-class NiObjectNET : public CloneInherit<NiObjectNET, NiObject> {
+class NiObjectNET : public NiObjectCRTP<NiObjectNET, NiObject> {
 protected:
 	StringRef name;
 
@@ -42,7 +42,7 @@ public:
 class NiProperty;
 class NiCollisionObject;
 
-class NiAVObject : public CloneInherit<NiAVObject, NiObjectNET> {
+class NiAVObject : public NiObjectCRTP<NiAVObject, NiObjectNET> {
 protected:
 	BlockRefArray<NiProperty> propertyRefs;
 	BlockRef<NiCollisionObject> collisionRef;
@@ -73,9 +73,9 @@ struct AVObject {
 	BlockRef<NiAVObject> objectRef;
 };
 
-class NiAVObjectPalette : public CloneInherit<NiAVObjectPalette, NiObject> {};
+class NiAVObjectPalette : public NiObjectCRTP<NiAVObjectPalette, NiObject> {};
 
-class NiDefaultAVObjectPalette : public CloneInherit<NiDefaultAVObjectPalette, NiAVObjectPalette> {
+class NiDefaultAVObjectPalette : public NiObjectCRTP<NiDefaultAVObjectPalette, NiAVObjectPalette> {
 private:
 	BlockRef<NiAVObject> sceneRef;
 	uint32_t numObjects = 0;
@@ -90,7 +90,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiCamera : public CloneInherit<NiCamera, NiAVObject> {
+class NiCamera : public NiObjectCRTP<NiCamera, NiAVObject> {
 private:
 	uint16_t obsoleteFlags = 0;
 	float frustumLeft = 0.0f;
@@ -123,13 +123,13 @@ public:
 	void SetSceneRef(int scRef);
 };
 
-class NiSequenceStreamHelper : public CloneInherit<NiSequenceStreamHelper, NiObjectNET> {
+class NiSequenceStreamHelper : public NiObjectCRTP<NiSequenceStreamHelper, NiObjectNET> {
 public:
 	static constexpr const char* BlockName = "NiSequenceStreamHelper";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPalette : public CloneInherit<NiPalette, NiObject> {
+class NiPalette : public NiObjectCRTP<NiPalette, NiObject> {
 private:
 	bool hasAlpha = false;
 	uint32_t numEntries = 256;
@@ -177,7 +177,7 @@ struct MipMapInfo {
 	uint32_t offset = 0;
 };
 
-class TextureRenderData : public CloneInherit<TextureRenderData, NiObject> {
+class TextureRenderData : public NiObjectCRTP<TextureRenderData, NiObject> {
 private:
 	PixelFormat pixelFormat = PX_FMT_RGB8;
 	uint8_t bitsPerPixel = 0;
@@ -203,7 +203,7 @@ public:
 	void SetPaletteRef(int palRef);
 };
 
-class NiPersistentSrcTextureRendererData : public CloneInherit<NiPersistentSrcTextureRendererData, TextureRenderData> {
+class NiPersistentSrcTextureRendererData : public NiObjectCRTP<NiPersistentSrcTextureRendererData, TextureRenderData> {
 private:
 	uint32_t numPixels = 0;
 	uint32_t unkInt4 = 0;
@@ -220,7 +220,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class NiPixelData : public CloneInherit<NiPixelData, TextureRenderData> {
+class NiPixelData : public NiObjectCRTP<NiPixelData, TextureRenderData> {
 private:
 	uint32_t numPixels = 0;
 	uint32_t numFaces = 0;
@@ -249,9 +249,9 @@ enum MipMapFormat : uint32_t { MIP_FMT_NO, MIP_FMT_YES, MIP_FMT_DEFAULT };
 
 enum AlphaFormat : uint32_t { ALPHA_NONE, ALPHA_BINARY, ALPHA_SMOOTH, ALPHA_DEFAULT };
 
-class NiTexture : public CloneInherit<NiTexture, NiObjectNET> {};
+class NiTexture : public NiObjectCRTP<NiTexture, NiObjectNET> {};
 
-class NiSourceTexture : public CloneInherit<NiSourceTexture, NiTexture> {
+class NiSourceTexture : public NiObjectCRTP<NiSourceTexture, NiTexture> {
 private:
 	bool useExternal = true;
 	StringRef fileName;
@@ -281,7 +281,7 @@ public:
 	void SetDataRef(int datRef);
 };
 
-class NiSourceCubeMap : public CloneInherit<NiSourceCubeMap, NiSourceTexture> {
+class NiSourceCubeMap : public NiObjectCRTP<NiSourceCubeMap, NiSourceTexture> {
 public:
 	static constexpr const char* BlockName = "NiSourceCubeMap";
 	const char* GetBlockName() override { return BlockName; }
@@ -313,7 +313,7 @@ enum CoordGenType : uint32_t {
 	CG_DIFFUSE_CUBE_MAP
 };
 
-class NiDynamicEffect : public CloneInherit<NiDynamicEffect, NiAVObject> {
+class NiDynamicEffect : public NiObjectCRTP<NiDynamicEffect, NiAVObject> {
 private:
 	bool switchState = false;
 	BlockRefArray<NiNode> affectedNodes;
@@ -327,7 +327,7 @@ public:
 	BlockRefArray<NiNode>& GetAffectedNodes();
 };
 
-class NiTextureEffect : public CloneInherit<NiTextureEffect, NiDynamicEffect> {
+class NiTextureEffect : public NiObjectCRTP<NiTextureEffect, NiDynamicEffect> {
 private:
 	Matrix3 modelProjectionMatrix;
 	Vector3 modelProjectionTranslation;
@@ -353,7 +353,7 @@ public:
 	void SetSourceTextureRef(int srcTexRef);
 };
 
-class NiLight : public CloneInherit<NiLight, NiDynamicEffect> {
+class NiLight : public NiObjectCRTP<NiLight, NiDynamicEffect> {
 private:
 	float dimmer = 0.0f;
 	Color3 ambientColor;
@@ -365,19 +365,19 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class NiAmbientLight : public CloneInherit<NiAmbientLight, NiLight> {
+class NiAmbientLight : public NiObjectCRTP<NiAmbientLight, NiLight> {
 public:
 	static constexpr const char* BlockName = "NiAmbientLight";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiDirectionalLight : public CloneInherit<NiDirectionalLight, NiLight> {
+class NiDirectionalLight : public NiObjectCRTP<NiDirectionalLight, NiLight> {
 public:
 	static constexpr const char* BlockName = "NiDirectionalLight";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPointLight : public CloneInherit<NiPointLight, NiLight> {
+class NiPointLight : public NiObjectCRTP<NiPointLight, NiLight> {
 private:
 	float constantAttenuation = 0.0f;
 	float linearAttenuation = 0.0f;
@@ -391,7 +391,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class NiSpotLight : public CloneInherit<NiSpotLight, NiPointLight> {
+class NiSpotLight : public NiObjectCRTP<NiSpotLight, NiPointLight> {
 private:
 	float cutoffAngle = 0.0f;
 	float unkFloat = 0.0f;

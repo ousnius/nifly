@@ -242,7 +242,7 @@ struct bhkCMSDChunk {
 
 class NiAVObject;
 
-class NiCollisionObject : public CloneInherit<NiCollisionObject, NiObject> {
+class NiCollisionObject : public NiObjectCRTP<NiCollisionObject, NiObject> {
 private:
 	BlockRef<NiAVObject> targetRef;
 
@@ -341,7 +341,7 @@ struct UnionBV {
 	}
 };
 
-class NiCollisionData : public CloneInherit<NiCollisionData, NiCollisionObject> {
+class NiCollisionData : public NiObjectCRTP<NiCollisionData, NiCollisionObject> {
 private:
 	PropagationMode propagationMode = PROPAGATE_ON_SUCCESS;
 	CollisionMode collisionMode = CM_USE_OBB;
@@ -356,7 +356,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkNiCollisionObject : public CloneInherit<bhkNiCollisionObject, NiCollisionObject> {
+class bhkNiCollisionObject : public NiObjectCRTP<bhkNiCollisionObject, NiCollisionObject> {
 private:
 	uint16_t flags = 1;
 	BlockRef<NiObject> bodyRef;
@@ -374,13 +374,13 @@ public:
 	void SetBodyRef(const int ref) { bodyRef.SetIndex(ref); }
 };
 
-class bhkCollisionObject : public CloneInherit<bhkCollisionObject, bhkNiCollisionObject> {
+class bhkCollisionObject : public NiObjectCRTP<bhkCollisionObject, bhkNiCollisionObject> {
 public:
 	static constexpr const char* BlockName = "bhkCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkNPCollisionObject : public CloneInherit<bhkNPCollisionObject, bhkCollisionObject> {
+class bhkNPCollisionObject : public NiObjectCRTP<bhkNPCollisionObject, bhkCollisionObject> {
 private:
 	uint32_t bodyID = 0;
 
@@ -392,19 +392,19 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkPCollisionObject : public CloneInherit<bhkPCollisionObject, bhkNiCollisionObject> {
+class bhkPCollisionObject : public NiObjectCRTP<bhkPCollisionObject, bhkNiCollisionObject> {
 public:
 	static constexpr const char* BlockName = "bhkPCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkSPCollisionObject : public CloneInherit<bhkSPCollisionObject, bhkPCollisionObject> {
+class bhkSPCollisionObject : public NiObjectCRTP<bhkSPCollisionObject, bhkPCollisionObject> {
 public:
 	static constexpr const char* BlockName = "bhkSPCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkBlendCollisionObject : public CloneInherit<bhkBlendCollisionObject, bhkCollisionObject> {
+class bhkBlendCollisionObject : public NiObjectCRTP<bhkBlendCollisionObject, bhkCollisionObject> {
 private:
 	float heirGain = 0.0f;
 	float velGain = 0.0f;
@@ -417,7 +417,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkPhysicsSystem : public CloneInherit<bhkPhysicsSystem, BSExtraData> {
+class bhkPhysicsSystem : public NiObjectCRTP<bhkPhysicsSystem, BSExtraData> {
 private:
 	uint32_t numBytes = 0;
 	std::vector<char> data;
@@ -432,7 +432,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkRagdollSystem : public CloneInherit<bhkRagdollSystem, BSExtraData> {
+class bhkRagdollSystem : public NiObjectCRTP<bhkRagdollSystem, BSExtraData> {
 private:
 	uint32_t numBytes = 0;
 	std::vector<char> data;
@@ -447,7 +447,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkBlendController : public CloneInherit<bhkBlendController, NiTimeController> {
+class bhkBlendController : public NiObjectCRTP<bhkBlendController, NiTimeController> {
 private:
 	uint32_t keys = 0;
 
@@ -459,19 +459,19 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkRefObject : public CloneInherit<bhkRefObject, NiObject> {};
+class bhkRefObject : public NiObjectCRTP<bhkRefObject, NiObject> {};
 
-class bhkSerializable : public CloneInherit<bhkSerializable, bhkRefObject> {};
+class bhkSerializable : public NiObjectCRTP<bhkSerializable, bhkRefObject> {};
 
-class bhkShape : public CloneInherit<bhkShape, bhkSerializable> {
+class bhkShape : public NiObjectCRTP<bhkShape, bhkSerializable> {
 public:
 	virtual HavokMaterial GetMaterial() { return 0; }
 	virtual void SetMaterial(HavokMaterial) {}
 };
 
-class bhkHeightFieldShape : public CloneInherit<bhkHeightFieldShape, bhkShape> {};
+class bhkHeightFieldShape : public NiObjectCRTP<bhkHeightFieldShape, bhkShape> {};
 
-class bhkPlaneShape : public CloneInherit<bhkPlaneShape, bhkHeightFieldShape> {
+class bhkPlaneShape : public NiObjectCRTP<bhkPlaneShape, bhkHeightFieldShape> {
 private:
 	HavokMaterial material = 0;
 	Vector3 unkVec;
@@ -491,7 +491,7 @@ public:
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
-class bhkSphereRepShape : public CloneInherit<bhkSphereRepShape, bhkShape> {
+class bhkSphereRepShape : public NiObjectCRTP<bhkSphereRepShape, bhkShape> {
 private:
 	HavokMaterial material = 0;
 	float radius = 0.0f;
@@ -507,7 +507,7 @@ public:
 	void SetRadius(const float r) { radius = r; }
 };
 
-class bhkMultiSphereShape : public CloneInherit<bhkMultiSphereShape, bhkSphereRepShape> {
+class bhkMultiSphereShape : public NiObjectCRTP<bhkMultiSphereShape, bhkSphereRepShape> {
 private:
 	float unkFloat1 = 0.0f;
 	float unkFloat2 = 0.0f;
@@ -522,9 +522,9 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkConvexShape : public CloneInherit<bhkConvexShape, bhkSphereRepShape> {};
+class bhkConvexShape : public NiObjectCRTP<bhkConvexShape, bhkSphereRepShape> {};
 
-class bhkConvexListShape : public CloneInherit<bhkConvexListShape, bhkShape> {
+class bhkConvexListShape : public NiObjectCRTP<bhkConvexListShape, bhkShape> {
 private:
 	BlockRefArray<bhkConvexShape> shapeRefs;
 	HavokMaterial material = 0;
@@ -553,7 +553,7 @@ public:
 	void SetRadius(const float r) { radius = r; }
 };
 
-class bhkConvexVerticesShape : public CloneInherit<bhkConvexVerticesShape, bhkConvexShape> {
+class bhkConvexVerticesShape : public NiObjectCRTP<bhkConvexVerticesShape, bhkConvexShape> {
 private:
 	hkWorldObjCInfoProperty vertsProp;
 	hkWorldObjCInfoProperty normalsProp;
@@ -572,7 +572,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkBoxShape : public CloneInherit<bhkBoxShape, bhkConvexShape> {
+class bhkBoxShape : public NiObjectCRTP<bhkBoxShape, bhkConvexShape> {
 private:
 	uint64_t padding = 0;
 	Vector3 dimensions;
@@ -592,13 +592,13 @@ public:
 	void SetRadius2(const float r) { radius2 = r; }
 };
 
-class bhkSphereShape : public CloneInherit<bhkSphereShape, bhkConvexShape> {
+class bhkSphereShape : public NiObjectCRTP<bhkSphereShape, bhkConvexShape> {
 public:
 	static constexpr const char* BlockName = "bhkSphereShape";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkTransformShape : public CloneInherit<bhkTransformShape, bhkShape> {
+class bhkTransformShape : public NiObjectCRTP<bhkTransformShape, bhkShape> {
 private:
 	BlockRef<bhkShape> shapeRef;
 	HavokMaterial material = 0;
@@ -625,13 +625,13 @@ public:
 	void SetRadius(const float r) { radius = r; }
 };
 
-class bhkConvexTransformShape : public CloneInherit<bhkConvexTransformShape, bhkTransformShape> {
+class bhkConvexTransformShape : public NiObjectCRTP<bhkConvexTransformShape, bhkTransformShape> {
 public:
 	static constexpr const char* BlockName = "bhkConvexTransformShape";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkCapsuleShape : public CloneInherit<bhkCapsuleShape, bhkConvexShape> {
+class bhkCapsuleShape : public NiObjectCRTP<bhkCapsuleShape, bhkConvexShape> {
 private:
 	uint64_t padding = 0;
 	Vector3 point1;
@@ -659,9 +659,9 @@ public:
 	void SetRadius2(const float r) { radius2 = r; }
 };
 
-class bhkBvTreeShape : public CloneInherit<bhkBvTreeShape, bhkShape> {};
+class bhkBvTreeShape : public NiObjectCRTP<bhkBvTreeShape, bhkShape> {};
 
-class bhkMoppBvTreeShape : public CloneInherit<bhkMoppBvTreeShape, bhkBvTreeShape> {
+class bhkMoppBvTreeShape : public NiObjectCRTP<bhkMoppBvTreeShape, bhkBvTreeShape> {
 private:
 	BlockRef<bhkShape> shapeRef;
 	uint32_t userData = 0;
@@ -688,7 +688,7 @@ public:
 
 class NiTriStripsData;
 
-class bhkNiTriStripsShape : public CloneInherit<bhkNiTriStripsShape, bhkShape> {
+class bhkNiTriStripsShape : public NiObjectCRTP<bhkNiTriStripsShape, bhkShape> {
 private:
 	HavokMaterial material = 0;
 	float radius = 0.1f;
@@ -723,9 +723,9 @@ public:
 	void SetRadius(const float r) { radius = r; }
 };
 
-class bhkShapeCollection : public CloneInherit<bhkShapeCollection, bhkShape> {};
+class bhkShapeCollection : public NiObjectCRTP<bhkShapeCollection, bhkShape> {};
 
-class bhkListShape : public CloneInherit<bhkListShape, bhkShapeCollection> {
+class bhkListShape : public NiObjectCRTP<bhkListShape, bhkShapeCollection> {
 private:
 	BlockRefArray<bhkShape> subShapeRefs;
 	HavokMaterial material = 0;
@@ -766,7 +766,7 @@ struct hkSubPartData {
 	HavokMaterial material = 0;
 };
 
-class hkPackedNiTriStripsData : public CloneInherit<hkPackedNiTriStripsData, bhkShapeCollection> {
+class hkPackedNiTriStripsData : public NiObjectCRTP<hkPackedNiTriStripsData, bhkShapeCollection> {
 private:
 	uint32_t keyCount = 0;
 	std::vector<hkTriangleData> triData;
@@ -787,7 +787,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkPackedNiTriStripsShape : public CloneInherit<bhkPackedNiTriStripsShape, bhkShapeCollection> {
+class bhkPackedNiTriStripsShape : public NiObjectCRTP<bhkPackedNiTriStripsShape, bhkShapeCollection> {
 private:
 	uint16_t partCount = 0;
 	std::vector<hkSubPartData> data;
@@ -820,7 +820,7 @@ public:
 	void SetDataRef(const int ref) { dataRef.SetIndex(ref); }
 };
 
-class bhkLiquidAction : public CloneInherit<bhkLiquidAction, bhkSerializable> {
+class bhkLiquidAction : public NiObjectCRTP<bhkLiquidAction, bhkSerializable> {
 private:
 	uint32_t userData = 0;
 	uint32_t unkInt1 = 0;
@@ -838,7 +838,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkOrientHingedBodyAction : public CloneInherit<bhkOrientHingedBodyAction, bhkSerializable> {
+class bhkOrientHingedBodyAction : public NiObjectCRTP<bhkOrientHingedBodyAction, bhkSerializable> {
 private:
 	BlockRef<NiObject> bodyRef;
 	uint32_t unkInt1 = 0;
@@ -862,7 +862,7 @@ public:
 	void SetBodyRef(const int ref) { bodyRef.SetIndex(ref); }
 };
 
-class bhkWorldObject : public CloneInherit<bhkWorldObject, bhkSerializable> {
+class bhkWorldObject : public NiObjectCRTP<bhkWorldObject, bhkSerializable> {
 private:
 	BlockRef<bhkShape> shapeRef;
 	HavokFilter collisionFilter;
@@ -888,11 +888,11 @@ public:
 	void SetBroadPhaseType(const uint8_t bpt) { broadPhaseType = bpt; }
 };
 
-class bhkPhantom : public CloneInherit<bhkPhantom, bhkWorldObject> {};
+class bhkPhantom : public NiObjectCRTP<bhkPhantom, bhkWorldObject> {};
 
-class bhkShapePhantom : public CloneInherit<bhkShapePhantom, bhkPhantom> {};
+class bhkShapePhantom : public NiObjectCRTP<bhkShapePhantom, bhkPhantom> {};
 
-class bhkSimpleShapePhantom : public CloneInherit<bhkSimpleShapePhantom, bhkShapePhantom> {
+class bhkSimpleShapePhantom : public NiObjectCRTP<bhkSimpleShapePhantom, bhkShapePhantom> {
 private:
 	uint64_t padding = 0;
 	Matrix4 transform;
@@ -905,7 +905,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkAabbPhantom : public CloneInherit<bhkAabbPhantom, bhkShapePhantom> {
+class bhkAabbPhantom : public NiObjectCRTP<bhkAabbPhantom, bhkShapePhantom> {
 private:
 	uint64_t padding = 0;
 	Vector4 aabbMin;
@@ -919,9 +919,9 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkEntity : public CloneInherit<bhkEntity, bhkWorldObject> {};
+class bhkEntity : public NiObjectCRTP<bhkEntity, bhkWorldObject> {};
 
-class bhkConstraint : public CloneInherit<bhkConstraint, bhkSerializable> {
+class bhkConstraint : public NiObjectCRTP<bhkConstraint, bhkSerializable> {
 private:
 	BlockRefArray<bhkEntity> entityRefs;
 	uint32_t priority = 0;
@@ -934,7 +934,7 @@ public:
 	BlockRefArray<bhkEntity>& GetEntities();
 };
 
-class bhkHingeConstraint : public CloneInherit<bhkHingeConstraint, bhkConstraint> {
+class bhkHingeConstraint : public NiObjectCRTP<bhkHingeConstraint, bhkConstraint> {
 private:
 	HingeDesc hinge;
 
@@ -946,7 +946,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkLimitedHingeConstraint : public CloneInherit<bhkLimitedHingeConstraint, bhkConstraint> {
+class bhkLimitedHingeConstraint : public NiObjectCRTP<bhkLimitedHingeConstraint, bhkConstraint> {
 private:
 	LimitedHingeDesc limitedHinge;
 
@@ -981,7 +981,7 @@ public:
 	BlockRefArray<bhkEntity>& GetEntities();
 };
 
-class bhkBreakableConstraint : public CloneInherit<bhkBreakableConstraint, bhkConstraint> {
+class bhkBreakableConstraint : public NiObjectCRTP<bhkBreakableConstraint, bhkConstraint> {
 private:
 	ConstraintData subConstraint;
 	bool removeWhenBroken = false;
@@ -995,7 +995,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class bhkRagdollConstraint : public CloneInherit<bhkRagdollConstraint, bhkConstraint> {
+class bhkRagdollConstraint : public NiObjectCRTP<bhkRagdollConstraint, bhkConstraint> {
 private:
 	RagdollDesc ragdoll;
 
@@ -1007,7 +1007,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkStiffSpringConstraint : public CloneInherit<bhkStiffSpringConstraint, bhkConstraint> {
+class bhkStiffSpringConstraint : public NiObjectCRTP<bhkStiffSpringConstraint, bhkConstraint> {
 private:
 	StiffSpringDesc stiffSpring;
 
@@ -1019,7 +1019,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkPrismaticConstraint : public CloneInherit<bhkPrismaticConstraint, bhkConstraint> {
+class bhkPrismaticConstraint : public NiObjectCRTP<bhkPrismaticConstraint, bhkConstraint> {
 private:
 	PrismaticDesc prismatic;
 
@@ -1031,7 +1031,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkMalleableConstraint : public CloneInherit<bhkMalleableConstraint, bhkConstraint> {
+class bhkMalleableConstraint : public NiObjectCRTP<bhkMalleableConstraint, bhkConstraint> {
 private:
 	ConstraintData subConstraint;
 
@@ -1043,7 +1043,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkBallAndSocketConstraint : public CloneInherit<bhkBallAndSocketConstraint, bhkConstraint> {
+class bhkBallAndSocketConstraint : public NiObjectCRTP<bhkBallAndSocketConstraint, bhkConstraint> {
 private:
 	BallAndSocketDesc ballAndSocket;
 
@@ -1055,7 +1055,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkBallSocketConstraintChain : public CloneInherit<bhkBallSocketConstraintChain, bhkSerializable> {
+class bhkBallSocketConstraintChain : public NiObjectCRTP<bhkBallSocketConstraintChain, bhkSerializable> {
 private:
 	uint32_t numPivots = 0;
 	std::vector<Vector4> pivots;
@@ -1097,7 +1097,7 @@ enum hkResponseType : uint8_t {
 	RESPONSE_NONE
 };
 
-class bhkRigidBody : public CloneInherit<bhkRigidBody, bhkEntity> {
+class bhkRigidBody : public NiObjectCRTP<bhkRigidBody, bhkEntity> {
 private:
 	hkResponseType collisionResponse = RESPONSE_SIMPLE_CONTACT;
 	uint8_t unusedByte1 = 0;
@@ -1153,13 +1153,13 @@ public:
 	BlockRefArray<bhkSerializable>& GetConstraints();
 };
 
-class bhkRigidBodyT : public CloneInherit<bhkRigidBodyT, bhkRigidBody> {
+class bhkRigidBodyT : public NiObjectCRTP<bhkRigidBodyT, bhkRigidBody> {
 public:
 	static constexpr const char* BlockName = "bhkRigidBodyT";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkCompressedMeshShapeData : public CloneInherit<bhkCompressedMeshShapeData, bhkRefObject> {
+class bhkCompressedMeshShapeData : public NiObjectCRTP<bhkCompressedMeshShapeData, bhkRefObject> {
 private:
 	uint32_t bitsPerIndex = 0;
 	uint32_t bitsPerWIndex = 0;
@@ -1205,7 +1205,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class bhkCompressedMeshShape : public CloneInherit<bhkCompressedMeshShape, bhkShape> {
+class bhkCompressedMeshShape : public NiObjectCRTP<bhkCompressedMeshShape, bhkShape> {
 private:
 	BlockRef<NiAVObject> targetRef;
 	uint32_t userData = 0;
@@ -1263,7 +1263,7 @@ struct BonePose {
 	}
 };
 
-class bhkPoseArray : public CloneInherit<bhkPoseArray, NiObject> {
+class bhkPoseArray : public NiObjectCRTP<bhkPoseArray, NiObject> {
 private:
 	uint32_t numBones = 0;
 	std::vector<StringRef> bones;
@@ -1280,7 +1280,7 @@ public:
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
-class bhkRagdollTemplate : public CloneInherit<bhkRagdollTemplate, NiExtraData> {
+class bhkRagdollTemplate : public NiObjectCRTP<bhkRagdollTemplate, NiExtraData> {
 private:
 	uint32_t numBones = 0;
 	BlockRefArray<NiObject> boneRefs;
@@ -1297,7 +1297,7 @@ public:
 	BlockRefArray<NiObject>& GetBones();
 };
 
-class bhkRagdollTemplateData : public CloneInherit<bhkRagdollTemplateData, NiObject> {
+class bhkRagdollTemplateData : public NiObjectCRTP<bhkRagdollTemplateData, NiObject> {
 private:
 	StringRef name;
 	float mass = 9.0f;
