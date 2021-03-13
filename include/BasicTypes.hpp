@@ -201,8 +201,11 @@ private:
 	Mode mode;
 };
 
+template<typename Derived, typename Base, bool GetPut = false>
+class NiObjectCRTP;
+
 template<typename Derived, typename Base>
-class NiObjectCRTP : public Base {
+class NiObjectCRTP<Derived, Base, false> : public Base {
 public:
 	virtual ~NiObjectCRTP() = default;
 
@@ -211,9 +214,29 @@ public:
 	}
 
 private:
-	virtual NiObjectCRTP* Clone_impl() const override {
-		return new Derived(static_cast<const Derived&>(*this));
+	virtual NiObjectCRTP* Clone_impl() const override { return new Derived(asDer()); }
+
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
+};
+
+template<typename Derived, typename Base>
+class NiObjectCRTP<Derived, Base, true> : public NiObjectCRTP<Derived, Base, false> {
+public:
+	void Get(NiStream& stream) override {
+		Base::Get(stream);
+		NiStreamReversible s(stream, NiStreamReversible::Mode::Reading);
+		asDer().GetPut(s);
 	}
+	void Put(NiStream& stream) override {
+		Base::Put(stream);
+		NiStreamReversible s(stream, NiStreamReversible::Mode::Writing);
+		asDer().GetPut(s);
+	}
+
+private:
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
 };
 
 class NiString {
