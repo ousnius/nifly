@@ -686,7 +686,7 @@ public:
 	void Put(NiStream& stream) override;
 };
 
-class NiUnknown : public NiObjectCRTP<NiUnknown, NiObject> {
+class NiUnknown : public NiObjectCRTP<NiUnknown, NiObject, true> {
 private:
 	std::vector<char> data;
 
@@ -695,8 +695,7 @@ public:
 	NiUnknown(NiStream& stream, const uint32_t size);
 	NiUnknown(const uint32_t size);
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void GetPut(NiStreamReversible& stream);
 
 	std::vector<char> GetData() { return data; }
 };

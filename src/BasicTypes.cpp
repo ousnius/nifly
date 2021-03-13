@@ -766,16 +766,9 @@ NiUnknown::NiUnknown(const uint32_t size) {
 	blockSize = size;
 }
 
-void NiUnknown::Get(NiStream& stream) {
+void NiUnknown::GetPut(NiStreamReversible& stream) {
 	if (data.empty())
 		return;
 
-	stream.read(&data[0], blockSize);
-}
-
-void NiUnknown::Put(NiStream& stream) {
-	if (data.empty())
-		return;
-
-	stream.write(&data[0], blockSize);
+	stream.Sync(&data[0], blockSize);
 }
