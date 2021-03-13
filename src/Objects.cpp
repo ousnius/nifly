@@ -353,17 +353,17 @@ void NiPersistentSrcTextureRendererData::Get(NiStream& stream) {
 	}
 }
 
-void NiPersistentSrcTextureRendererData::Put(NiStream& stream) {
+void NiPersistentSrcTextureRendererData::Put(NiOStream& stream) {
 	TextureRenderData::Put(stream);
 
-	stream >> numPixels;
-	stream >> unkInt4;
-	stream >> numFaces;
-	stream >> unkInt5;
+	stream << numPixels;
+	stream << unkInt4;
+	stream << numFaces;
+	stream << unkInt5;
 
 	for (uint32_t f = 0; f < numFaces; f++)
 		for (uint32_t p = 0; p < numPixels; p++)
-			stream >> pixelData[f][p];
+			stream << pixelData[f][p];
 }
 
 
@@ -381,15 +381,15 @@ void NiPixelData::Get(NiStream& stream) {
 	}
 }
 
-void NiPixelData::Put(NiStream& stream) {
+void NiPixelData::Put(NiOStream& stream) {
 	TextureRenderData::Put(stream);
 
-	stream >> numPixels;
-	stream >> numFaces;
+	stream << numPixels;
+	stream << numFaces;
 
 	for (uint32_t f = 0; f < numFaces; f++)
 		for (uint32_t p = 0; p < numPixels; p++)
-			stream >> pixelData[f][p];
+			stream << pixelData[f][p];
 }
 
 
