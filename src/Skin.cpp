@@ -12,7 +12,7 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiSkinData::Get(NiStream& stream) {
+void NiSkinData::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	stream >> skinTransform.rotation;
@@ -48,7 +48,7 @@ void NiSkinData::Get(NiStream& stream) {
 	}
 }
 
-void NiSkinData::Put(NiStream& stream) {
+void NiSkinData::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	stream << skinTransform.rotation;
@@ -100,7 +100,7 @@ void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 }
 
 
-void NiSkinPartition::Get(NiStream& stream) {
+void NiSkinPartition::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	stream >> numPartitions;
@@ -248,7 +248,7 @@ void NiSkinPartition::Get(NiStream& stream) {
 	}
 }
 
-void NiSkinPartition::Put(NiStream& stream) {
+void NiSkinPartition::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	stream << numPartitions;
@@ -649,7 +649,7 @@ BlockRefArray<NiNode>& NiBoneContainer::GetBones() {
 }
 
 
-void NiSkinInstance::Get(NiStream& stream) {
+void NiSkinInstance::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	dataRef.Get(stream);
@@ -658,7 +658,7 @@ void NiSkinInstance::Get(NiStream& stream) {
 	boneRefs.Get(stream);
 }
 
-void NiSkinInstance::Put(NiStream& stream) {
+void NiSkinInstance::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	dataRef.Put(stream);
@@ -689,7 +689,7 @@ void NiSkinInstance::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void BSDismemberSkinInstance::Get(NiStream& stream) {
+void BSDismemberSkinInstance::Get(NiIStream& stream) {
 	NiSkinInstance::Get(stream);
 
 	stream >> numPartitions;
@@ -699,7 +699,7 @@ void BSDismemberSkinInstance::Get(NiStream& stream) {
 		stream >> partitions[i];
 }
 
-void BSDismemberSkinInstance::Put(NiStream& stream) {
+void BSDismemberSkinInstance::Put(NiOStream& stream) {
 	NiSkinInstance::Put(stream);
 
 	stream << numPartitions;
@@ -732,7 +732,7 @@ void BSDismemberSkinInstance::ClearPartitions() {
 }
 
 
-void BSSkinBoneData::Get(NiStream& stream) {
+void BSSkinBoneData::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	stream >> nBones;
@@ -745,7 +745,7 @@ void BSSkinBoneData::Get(NiStream& stream) {
 	}
 }
 
-void BSSkinBoneData::Put(NiStream& stream) {
+void BSSkinBoneData::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	stream << nBones;
@@ -758,7 +758,7 @@ void BSSkinBoneData::Put(NiStream& stream) {
 }
 
 
-void BSSkinInstance::Get(NiStream& stream) {
+void BSSkinInstance::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	targetRef.Get(stream);
@@ -771,7 +771,7 @@ void BSSkinInstance::Get(NiStream& stream) {
 		stream >> scales[i];
 }
 
-void BSSkinInstance::Put(NiStream& stream) {
+void BSSkinInstance::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	targetRef.Put(stream);

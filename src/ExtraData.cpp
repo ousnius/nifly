@@ -11,13 +11,13 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiExtraData::Get(NiStream& stream) {
+void NiExtraData::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	name.Get(stream);
 }
 
-void NiExtraData::Put(NiStream& stream) {
+void NiExtraData::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	name.Put(stream);
@@ -38,7 +38,7 @@ void NiExtraData::SetName(const std::string& extraDataName) {
 }
 
 
-void NiBinaryExtraData::Get(NiStream& stream) {
+void NiBinaryExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> size;
@@ -47,7 +47,7 @@ void NiBinaryExtraData::Get(NiStream& stream) {
 		stream >> data[i];
 }
 
-void NiBinaryExtraData::Put(NiStream& stream) {
+void NiBinaryExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << size;
@@ -65,13 +65,13 @@ void NiBinaryExtraData::SetData(const std::vector<uint8_t>& dat) {
 }
 
 
-void NiFloatExtraData::Get(NiStream& stream) {
+void NiFloatExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> floatData;
 }
 
-void NiFloatExtraData::Put(NiStream& stream) {
+void NiFloatExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << floatData;
@@ -86,7 +86,7 @@ void NiFloatExtraData::SetFloatData(const float fltData) {
 }
 
 
-void NiFloatsExtraData::Get(NiStream& stream) {
+void NiFloatsExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numFloats;
@@ -95,7 +95,7 @@ void NiFloatsExtraData::Get(NiStream& stream) {
 		stream >> floatsData[i];
 }
 
-void NiFloatsExtraData::Put(NiStream& stream) {
+void NiFloatsExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numFloats;
@@ -113,7 +113,7 @@ void NiFloatsExtraData::SetFloatsData(const std::vector<float>& fltsData) {
 }
 
 
-void NiStringsExtraData::Get(NiStream& stream) {
+void NiStringsExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numStrings;
@@ -122,7 +122,7 @@ void NiStringsExtraData::Get(NiStream& stream) {
 		stringsData[i].Get(stream, 4);
 }
 
-void NiStringsExtraData::Put(NiStream& stream) {
+void NiStringsExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numStrings;
@@ -140,13 +140,13 @@ void NiStringsExtraData::SetStringsData(const std::vector<NiString>& strsData) {
 }
 
 
-void NiStringExtraData::Get(NiStream& stream) {
+void NiStringExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stringData.Get(stream);
 }
 
-void NiStringExtraData::Put(NiStream& stream) {
+void NiStringExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stringData.Put(stream);
@@ -167,13 +167,13 @@ void NiStringExtraData::SetStringData(const std::string& str) {
 }
 
 
-void NiBooleanExtraData::Get(NiStream& stream) {
+void NiBooleanExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> booleanData;
 }
 
-void NiBooleanExtraData::Put(NiStream& stream) {
+void NiBooleanExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << booleanData;
@@ -188,13 +188,13 @@ void NiBooleanExtraData::SetBooleanData(const bool boolData) {
 }
 
 
-void NiIntegerExtraData::Get(NiStream& stream) {
+void NiIntegerExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> integerData;
 }
 
-void NiIntegerExtraData::Put(NiStream& stream) {
+void NiIntegerExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << integerData;
@@ -209,7 +209,7 @@ void NiIntegerExtraData::SetIntegerData(const uint32_t intData) {
 }
 
 
-void NiIntegersExtraData::Get(NiStream& stream) {
+void NiIntegersExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numIntegers;
@@ -218,7 +218,7 @@ void NiIntegersExtraData::Get(NiStream& stream) {
 		stream >> integersData[i];
 }
 
-void NiIntegersExtraData::Put(NiStream& stream) {
+void NiIntegersExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numIntegers;
@@ -236,13 +236,13 @@ void NiIntegersExtraData::SetIntegersData(const std::vector<uint32_t>& intData) 
 }
 
 
-void NiVectorExtraData::Get(NiStream& stream) {
+void NiVectorExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> vectorData;
 }
 
-void NiVectorExtraData::Put(NiStream& stream) {
+void NiVectorExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << vectorData;
@@ -257,13 +257,13 @@ void NiVectorExtraData::SetVectorData(const Vector4& vecData) {
 }
 
 
-void NiColorExtraData::Get(NiStream& stream) {
+void NiColorExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> colorData;
 }
 
-void NiColorExtraData::Put(NiStream& stream) {
+void NiColorExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << colorData;
@@ -278,7 +278,7 @@ void NiColorExtraData::SetColorData(const Color4& colData) {
 }
 
 
-void BSWArray::Get(NiStream& stream) {
+void BSWArray::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numData;
@@ -287,7 +287,7 @@ void BSWArray::Get(NiStream& stream) {
 		stream >> data[i];
 }
 
-void BSWArray::Put(NiStream& stream) {
+void BSWArray::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numData;
@@ -305,7 +305,7 @@ void BSWArray::SetData(const std::vector<uint32_t>& dat) {
 }
 
 
-void BSPositionData::Get(NiStream& stream) {
+void BSPositionData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numData;
@@ -314,7 +314,7 @@ void BSPositionData::Get(NiStream& stream) {
 		stream >> data[i];
 }
 
-void BSPositionData::Put(NiStream& stream) {
+void BSPositionData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numData;
@@ -332,7 +332,7 @@ void BSPositionData::SetData(const std::vector<half_float::half>& dat) {
 }
 
 
-void BSEyeCenterExtraData::Get(NiStream& stream) {
+void BSEyeCenterExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numData;
@@ -341,7 +341,7 @@ void BSEyeCenterExtraData::Get(NiStream& stream) {
 		stream >> data[i];
 }
 
-void BSEyeCenterExtraData::Put(NiStream& stream) {
+void BSEyeCenterExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numData;
@@ -359,7 +359,7 @@ void BSEyeCenterExtraData::SetData(const std::vector<float>& dat) {
 }
 
 
-void BSPackedGeomData::Get(NiStream& stream) {
+void BSPackedGeomData::Get(NiIStream& stream) {
 	stream >> numVerts;
 
 	stream >> lodLevels;
@@ -376,7 +376,7 @@ void BSPackedGeomData::Get(NiStream& stream) {
 	stream >> unkInt2;
 }
 
-void BSPackedGeomData::Put(NiStream& stream) {
+void BSPackedGeomData::Put(NiOStream& stream) {
 	stream << numVerts;
 
 	stream << lodLevels;
@@ -392,7 +392,7 @@ void BSPackedGeomData::Put(NiStream& stream) {
 }
 
 
-void BSPackedCombinedSharedGeomDataExtra::Get(NiStream& stream) {
+void BSPackedCombinedSharedGeomDataExtra::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	vertDesc.Get(stream);
@@ -412,7 +412,7 @@ void BSPackedCombinedSharedGeomDataExtra::Get(NiStream& stream) {
 		data[i].Get(stream);
 }
 
-void BSPackedCombinedSharedGeomDataExtra::Put(NiStream& stream) {
+void BSPackedCombinedSharedGeomDataExtra::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	vertDesc.Put(stream);
@@ -430,7 +430,7 @@ void BSPackedCombinedSharedGeomDataExtra::Put(NiStream& stream) {
 }
 
 
-void BSInvMarker::Get(NiStream& stream) {
+void BSInvMarker::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> rotationX;
@@ -439,7 +439,7 @@ void BSInvMarker::Get(NiStream& stream) {
 	stream >> zoom;
 }
 
-void BSInvMarker::Put(NiStream& stream) {
+void BSInvMarker::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << rotationX;
@@ -449,7 +449,7 @@ void BSInvMarker::Put(NiStream& stream) {
 }
 
 
-void BSFurnitureMarker::Get(NiStream& stream) {
+void BSFurnitureMarker::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numPositions;
@@ -472,7 +472,7 @@ void BSFurnitureMarker::Get(NiStream& stream) {
 	}
 }
 
-void BSFurnitureMarker::Put(NiStream& stream) {
+void BSFurnitureMarker::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numPositions;
@@ -504,7 +504,7 @@ void BSFurnitureMarker::SetPositions(const std::vector<FurniturePosition>& pos) 
 }
 
 
-void BSDecalPlacementVectorExtraData::Get(NiStream& stream) {
+void BSDecalPlacementVectorExtraData::Get(NiIStream& stream) {
 	NiFloatExtraData::Get(stream);
 
 	stream >> numVectorBlocks;
@@ -523,7 +523,7 @@ void BSDecalPlacementVectorExtraData::Get(NiStream& stream) {
 	}
 }
 
-void BSDecalPlacementVectorExtraData::Put(NiStream& stream) {
+void BSDecalPlacementVectorExtraData::Put(NiOStream& stream) {
 	NiFloatExtraData::Put(stream);
 
 	stream << numVectorBlocks;
@@ -549,14 +549,14 @@ void BSDecalPlacementVectorExtraData::SetDecalVectorBlocks(const std::vector<Dec
 }
 
 
-void BSBehaviorGraphExtraData::Get(NiStream& stream) {
+void BSBehaviorGraphExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	behaviorGraphFile.Get(stream);
 	stream >> controlsBaseSkel;
 }
 
-void BSBehaviorGraphExtraData::Put(NiStream& stream) {
+void BSBehaviorGraphExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	behaviorGraphFile.Put(stream);
@@ -570,14 +570,14 @@ void BSBehaviorGraphExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
 }
 
 
-void BSBound::Get(NiStream& stream) {
+void BSBound::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> center;
 	stream >> halfExtents;
 }
 
-void BSBound::Put(NiStream& stream) {
+void BSBound::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << center;
@@ -585,7 +585,7 @@ void BSBound::Put(NiStream& stream) {
 }
 
 
-void BSBoneLODExtraData::Get(NiStream& stream) {
+void BSBoneLODExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numBoneLODs;
@@ -596,7 +596,7 @@ void BSBoneLODExtraData::Get(NiStream& stream) {
 	}
 }
 
-void BSBoneLODExtraData::Put(NiStream& stream) {
+void BSBoneLODExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numBoneLODs;
@@ -623,7 +623,7 @@ void BSBoneLODExtraData::SetBoneLODs(const std::vector<BoneLOD>& lods) {
 }
 
 
-void NiTextKeyExtraData::Get(NiStream& stream) {
+void NiTextKeyExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numTextKeys;
@@ -634,7 +634,7 @@ void NiTextKeyExtraData::Get(NiStream& stream) {
 	}
 }
 
-void NiTextKeyExtraData::Put(NiStream& stream) {
+void NiTextKeyExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numTextKeys;
@@ -661,18 +661,18 @@ void NiTextKeyExtraData::SetTextKeys(const std::vector<Key<StringRef>>& keys) {
 }
 
 
-void BSDistantObjectLargeRefExtraData::Get(NiStream& stream) {
+void BSDistantObjectLargeRefExtraData::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 	stream >> largeRef;
 }
 
-void BSDistantObjectLargeRefExtraData::Put(NiStream& stream) {
+void BSDistantObjectLargeRefExtraData::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 	stream << largeRef;
 }
 
 
-void BSConnectPoint::Get(NiStream& stream) {
+void BSConnectPoint::Get(NiIStream& stream) {
 	root.Get(stream, 4);
 	variableName.Get(stream, 4);
 
@@ -681,7 +681,7 @@ void BSConnectPoint::Get(NiStream& stream) {
 	stream >> scale;
 }
 
-void BSConnectPoint::Put(NiStream& stream) {
+void BSConnectPoint::Put(NiOStream& stream) {
 	root.Put(stream, 4, false);
 	variableName.Put(stream, 4, false);
 
@@ -691,7 +691,7 @@ void BSConnectPoint::Put(NiStream& stream) {
 }
 
 
-void BSConnectPointParents::Get(NiStream& stream) {
+void BSConnectPointParents::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> numConnectPoints;
@@ -701,7 +701,7 @@ void BSConnectPointParents::Get(NiStream& stream) {
 		connectPoints[i].Get(stream);
 }
 
-void BSConnectPointParents::Put(NiStream& stream) {
+void BSConnectPointParents::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << numConnectPoints;
@@ -720,7 +720,7 @@ void BSConnectPointParents::SetConnectPoints(const std::vector<BSConnectPoint>& 
 }
 
 
-void BSConnectPointChildren::Get(NiStream& stream) {
+void BSConnectPointChildren::Get(NiIStream& stream) {
 	NiExtraData::Get(stream);
 
 	stream >> unkByte;
@@ -731,7 +731,7 @@ void BSConnectPointChildren::Get(NiStream& stream) {
 		targets[i].Get(stream, 4);
 }
 
-void BSConnectPointChildren::Put(NiStream& stream) {
+void BSConnectPointChildren::Put(NiOStream& stream) {
 	NiExtraData::Put(stream);
 
 	stream << unkByte;
@@ -756,7 +756,7 @@ BSClothExtraData::BSClothExtraData(const uint32_t size) {
 	data.resize(size);
 }
 
-void BSClothExtraData::Get(NiStream& stream) {
+void BSClothExtraData::Get(NiIStream& stream) {
 	BSExtraData::Get(stream);
 
 	stream >> numBytes;
@@ -767,7 +767,7 @@ void BSClothExtraData::Get(NiStream& stream) {
 	stream.read(&data[0], numBytes);
 }
 
-void BSClothExtraData::Put(NiStream& stream) {
+void BSClothExtraData::Put(NiOStream& stream) {
 	BSExtraData::Put(stream);
 
 	stream << numBytes;

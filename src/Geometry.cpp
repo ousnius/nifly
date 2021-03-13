@@ -15,7 +15,7 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiAdditionalGeometryData::Get(NiStream& stream) {
+void NiAdditionalGeometryData::Get(NiIStream& stream) {
 	AdditionalGeomData::Get(stream);
 
 	stream >> numVertices;
@@ -31,7 +31,7 @@ void NiAdditionalGeometryData::Get(NiStream& stream) {
 		blocks[i].Get(stream);
 }
 
-void NiAdditionalGeometryData::Put(NiStream& stream) {
+void NiAdditionalGeometryData::Put(NiOStream& stream) {
 	AdditionalGeomData::Put(stream);
 
 	stream << numVertices;
@@ -46,7 +46,7 @@ void NiAdditionalGeometryData::Put(NiStream& stream) {
 }
 
 
-void BSPackedAdditionalGeometryData::Get(NiStream& stream) {
+void BSPackedAdditionalGeometryData::Get(NiIStream& stream) {
 	AdditionalGeomData::Get(stream);
 
 	stream >> numVertices;
@@ -62,7 +62,7 @@ void BSPackedAdditionalGeometryData::Get(NiStream& stream) {
 		blocks[i].Get(stream);
 }
 
-void BSPackedAdditionalGeometryData::Put(NiStream& stream) {
+void BSPackedAdditionalGeometryData::Put(NiOStream& stream) {
 	AdditionalGeomData::Put(stream);
 
 	stream << numVertices;
@@ -77,7 +77,7 @@ void BSPackedAdditionalGeometryData::Put(NiStream& stream) {
 }
 
 
-void NiGeometryData::Get(NiStream& stream) {
+void NiGeometryData::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	stream >> groupID;
@@ -143,7 +143,7 @@ void NiGeometryData::Get(NiStream& stream) {
 	additionalDataRef.Get(stream);
 }
 
-void NiGeometryData::Put(NiStream& stream) {
+void NiGeometryData::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	stream << groupID;
@@ -556,7 +556,7 @@ BSTriShape::BSTriShape() {
 	vertexDesc.SetFlag(VF_SKINNED);
 }
 
-void BSTriShape::Get(NiStream& stream) {
+void BSTriShape::Get(NiIStream& stream) {
 	// The order of definition deviates slightly from previous versions, so can't directly use the super Get... instead
 	// that code is duplicated here and the super super get is called.
 	NiObjectNET::Get(stream);
@@ -698,7 +698,7 @@ void BSTriShape::Get(NiStream& stream) {
 	}
 }
 
-void BSTriShape::Put(NiStream& stream) {
+void BSTriShape::Put(NiOStream& stream) {
 	// The order of definition deviates slightly from previous versions, so can't directly use the super Get... instead
 	// that code is duplicated here and the super super get is called.
 	NiObjectNET::Put(stream);
@@ -1476,7 +1476,7 @@ void BSTriShape::Create(NiVersion& version,
 }
 
 
-void BSSubIndexTriShape::Get(NiStream& stream) {
+void BSSubIndexTriShape::Get(NiIStream& stream) {
 	BSTriShape::Get(stream);
 
 	if (stream.GetVersion().Stream() >= 130 && dataSize > 0) {
@@ -1531,7 +1531,7 @@ void BSSubIndexTriShape::Get(NiStream& stream) {
 	}
 }
 
-void BSSubIndexTriShape::Put(NiStream& stream) {
+void BSSubIndexTriShape::Put(NiOStream& stream) {
 	BSTriShape::Put(stream);
 
 	if (stream.GetVersion().Stream() >= 130 && dataSize > 0) {
@@ -1847,7 +1847,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 }
 
 
-void BSMeshLODTriShape::Get(NiStream& stream) {
+void BSMeshLODTriShape::Get(NiIStream& stream) {
 	BSTriShape::Get(stream);
 
 	stream >> lodSize0;
@@ -1855,7 +1855,7 @@ void BSMeshLODTriShape::Get(NiStream& stream) {
 	stream >> lodSize2;
 }
 
-void BSMeshLODTriShape::Put(NiStream& stream) {
+void BSMeshLODTriShape::Put(NiOStream& stream) {
 	BSTriShape::Put(stream);
 
 	stream << lodSize0;
@@ -1880,7 +1880,7 @@ BSDynamicTriShape::BSDynamicTriShape() {
 	dynamicDataSize = 0;
 }
 
-void BSDynamicTriShape::Get(NiStream& stream) {
+void BSDynamicTriShape::Get(NiIStream& stream) {
 	BSTriShape::Get(stream);
 
 	stream >> dynamicDataSize;
@@ -1890,7 +1890,7 @@ void BSDynamicTriShape::Get(NiStream& stream) {
 		stream >> dynamicData[i];
 }
 
-void BSDynamicTriShape::Put(NiStream& stream) {
+void BSDynamicTriShape::Put(NiOStream& stream) {
 	BSTriShape::Put(stream);
 
 	stream << dynamicDataSize;
@@ -1948,7 +1948,7 @@ void BSDynamicTriShape::Create(NiVersion& version,
 }
 
 
-void NiGeometry::Get(NiStream& stream) {
+void NiGeometry::Get(NiIStream& stream) {
 	NiAVObject::Get(stream);
 
 	dataRef.Get(stream);
@@ -1984,7 +1984,7 @@ void NiGeometry::Get(NiStream& stream) {
 	}
 }
 
-void NiGeometry::Put(NiStream& stream) {
+void NiGeometry::Put(NiOStream& stream) {
 	NiAVObject::Put(stream);
 
 	dataRef.Put(stream);
@@ -2078,13 +2078,13 @@ void NiGeometry::SetAlphaPropertyRef(int alphaPropRef) {
 }
 
 
-void NiTriBasedGeomData::Get(NiStream& stream) {
+void NiTriBasedGeomData::Get(NiIStream& stream) {
 	NiGeometryData::Get(stream);
 
 	stream >> numTriangles;
 }
 
-void NiTriBasedGeomData::Put(NiStream& stream) {
+void NiTriBasedGeomData::Put(NiOStream& stream) {
 	NiGeometryData::Put(stream);
 
 	stream << numTriangles;
@@ -2111,7 +2111,7 @@ void NiTriBasedGeomData::Create(NiVersion& version,
 }
 
 
-void NiTriShapeData::Get(NiStream& stream) {
+void NiTriShapeData::Get(NiIStream& stream) {
 	NiTriBasedGeomData::Get(stream);
 
 	stream >> numTrianglePoints;
@@ -2140,7 +2140,7 @@ void NiTriShapeData::Get(NiStream& stream) {
 	numMatchGroups = 0;
 }
 
-void NiTriShapeData::Put(NiStream& stream) {
+void NiTriShapeData::Put(NiOStream& stream) {
 	NiTriBasedGeomData::Put(stream);
 
 	stream << numTrianglePoints;
@@ -2315,7 +2315,7 @@ void NiTriShape::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void NiTriStripsData::Get(NiStream& stream) {
+void NiTriStripsData::Get(NiIStream& stream) {
 	NiTriBasedGeomData::Get(stream);
 
 	stream >> numStrips;
@@ -2334,7 +2334,7 @@ void NiTriStripsData::Get(NiStream& stream) {
 	}
 }
 
-void NiTriStripsData::Put(NiStream& stream) {
+void NiTriStripsData::Put(NiOStream& stream) {
 	NiTriBasedGeomData::Put(stream);
 
 	stream << numStrips;
@@ -2497,7 +2497,7 @@ void NiTriStrips::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void NiLinesData::Get(NiStream& stream) {
+void NiLinesData::Get(NiIStream& stream) {
 	NiGeometryData::Get(stream);
 
 	lineFlags.resize(numVertices);
@@ -2505,7 +2505,7 @@ void NiLinesData::Get(NiStream& stream) {
 		stream >> lineFlags[i];
 }
 
-void NiLinesData::Put(NiStream& stream) {
+void NiLinesData::Put(NiOStream& stream) {
 	NiGeometryData::Put(stream);
 
 	for (uint32_t i = 0; i < numVertices; i++)
@@ -2530,7 +2530,7 @@ void NiLines::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void NiScreenElementsData::Get(NiStream& stream) {
+void NiScreenElementsData::Get(NiIStream& stream) {
 	NiTriShapeData::Get(stream);
 
 	stream >> maxPolygons;
@@ -2550,7 +2550,7 @@ void NiScreenElementsData::Get(NiStream& stream) {
 	stream >> unkShort3;
 }
 
-void NiScreenElementsData::Put(NiStream& stream) {
+void NiScreenElementsData::Put(NiOStream& stream) {
 	NiTriShapeData::Put(stream);
 
 	stream << maxPolygons;
@@ -2592,7 +2592,7 @@ void NiScreenElements::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void BSLODTriShape::Get(NiStream& stream) {
+void BSLODTriShape::Get(NiIStream& stream) {
 	NiTriBasedGeom::Get(stream);
 
 	stream >> level0;
@@ -2600,7 +2600,7 @@ void BSLODTriShape::Get(NiStream& stream) {
 	stream >> level2;
 }
 
-void BSLODTriShape::Put(NiStream& stream) {
+void BSLODTriShape::Put(NiOStream& stream) {
 	NiTriBasedGeom::Put(stream);
 
 	stream << level0;
@@ -2619,20 +2619,20 @@ void BSLODTriShape::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void BSGeometrySegmentData::Get(NiStream& stream) {
+void BSGeometrySegmentData::Get(NiIStream& stream) {
 	stream >> flags;
 	stream >> index;
 	stream >> numTris;
 }
 
-void BSGeometrySegmentData::Put(NiStream& stream) {
+void BSGeometrySegmentData::Put(NiOStream& stream) {
 	stream << flags;
 	stream << index;
 	stream << numTris;
 }
 
 
-void BSSegmentedTriShape::Get(NiStream& stream) {
+void BSSegmentedTriShape::Get(NiIStream& stream) {
 	NiTriShape::Get(stream);
 
 	stream >> numSegments;
@@ -2642,7 +2642,7 @@ void BSSegmentedTriShape::Get(NiStream& stream) {
 		segment.Get(stream);
 }
 
-void BSSegmentedTriShape::Put(NiStream& stream) {
+void BSSegmentedTriShape::Put(NiOStream& stream) {
 	NiTriShape::Put(stream);
 
 	stream << numSegments;

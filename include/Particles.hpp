@@ -60,8 +60,8 @@ public:
 	static constexpr const char* BlockName = "NiParticlesData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiAutoNormalParticlesData : public NiObjectCRTP<NiAutoNormalParticlesData, NiParticlesData> {
@@ -84,8 +84,8 @@ public:
 	static constexpr const char* BlockName = "NiParticleMeshesData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -99,8 +99,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiMeshPSysData : public NiObjectCRTP<NiMeshPSysData, NiPSysData> {
@@ -117,8 +117,8 @@ public:
 	static constexpr const char* BlockName = "NiMeshPSysData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -134,8 +134,8 @@ public:
 	static constexpr const char* BlockName = "BSStripPSysData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysEmitterCtlrData : public NiObjectCRTP<NiPSysEmitterCtlrData, NiObject> {
@@ -148,8 +148,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysEmitterCtlrData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiParticleSystem;
@@ -162,8 +162,8 @@ private:
 	bool isActive = false;
 
 public:
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
@@ -176,8 +176,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysStripUpdateModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysSpawnModifier : public NiObjectCRTP<NiPSysSpawnModifier, NiPSysModifier> {
@@ -195,8 +195,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysSpawnModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysAgeDeathModifier : public NiObjectCRTP<NiPSysAgeDeathModifier, NiPSysModifier> {
@@ -208,8 +208,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysAgeDeathModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -225,8 +225,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysLODModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSPSysSimpleColorModifier : public NiObjectCRTP<BSPSysSimpleColorModifier, NiPSysModifier> {
@@ -246,8 +246,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysSimpleColorModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysRotationModifier : public NiObjectCRTP<NiPSysRotationModifier, NiPSysModifier> {
@@ -266,8 +266,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysRotationModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSPSysScaleModifier : public NiObjectCRTP<BSPSysScaleModifier, NiPSysModifier> {
@@ -279,8 +279,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysScaleModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 enum ForceType : uint32_t { FORCE_PLANAR, FORCE_SPHERICAL, FORCE_UNKNOWN };
@@ -300,8 +300,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysGravityModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -319,8 +319,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysBoundUpdateModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysDragModifier : public NiObjectCRTP<NiPSysDragModifier, NiPSysModifier> {
@@ -335,8 +335,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysDragModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -351,8 +351,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysInheritVelocityModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -370,8 +370,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysSubTexModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 enum DecayType : uint32_t { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
@@ -391,8 +391,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysBombModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -404,8 +404,8 @@ public:
 	static constexpr const char* BlockName = "NiColorData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysColorModifier : public NiObjectCRTP<NiPSysColorModifier, NiPSysModifier> {
@@ -416,8 +416,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysColorModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -434,8 +434,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysGrowFadeModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysMeshUpdateModifier : public NiObjectCRTP<NiPSysMeshUpdateModifier, NiPSysModifier> {
@@ -446,8 +446,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysMeshUpdateModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -463,8 +463,8 @@ private:
 	float maxDistance = 0.0f;
 
 public:
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -477,8 +477,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysVortexFieldModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysGravityFieldModifier : public NiObjectCRTP<NiPSysGravityFieldModifier, NiPSysFieldModifier> {
@@ -489,8 +489,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysGravityFieldModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysDragFieldModifier : public NiObjectCRTP<NiPSysDragFieldModifier, NiPSysFieldModifier> {
@@ -502,8 +502,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysDragFieldModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysTurbulenceFieldModifier
@@ -515,8 +515,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysTurbulenceFieldModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysAirFieldModifier : public NiObjectCRTP<NiPSysAirFieldModifier, NiPSysFieldModifier> {
@@ -533,8 +533,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysAirFieldModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysRadialFieldModifier : public NiObjectCRTP<NiPSysRadialFieldModifier, NiPSysFieldModifier> {
@@ -545,8 +545,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysRadialFieldModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSWindModifier : public NiObjectCRTP<BSWindModifier, NiPSysModifier> {
@@ -557,8 +557,8 @@ public:
 	static constexpr const char* BlockName = "BSWindModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSPSysRecycleBoundModifier : public NiObjectCRTP<BSPSysRecycleBoundModifier, NiPSysModifier> {
@@ -571,8 +571,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysRecycleBoundModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -585,8 +585,8 @@ public:
 	static constexpr const char* BlockName = "BSPSysHavokUpdateModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -604,8 +604,8 @@ public:
 	static constexpr const char* BlockName = "BSParentVelocityModifier";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSMasterParticleSystem : public NiObjectCRTP<BSMasterParticleSystem, NiNode> {
@@ -617,8 +617,8 @@ public:
 	static constexpr const char* BlockName = "BSMasterParticleSystem";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -665,8 +665,8 @@ public:
 	static constexpr const char* BlockName = "NiParticleSystem";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -714,8 +714,8 @@ private:
 	BlockRef<NiNode> colliderNodeRef;
 
 public:
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
@@ -729,8 +729,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysSphericalCollider";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysPlanarCollider : public NiObjectCRTP<NiPSysPlanarCollider, NiPSysCollider> {
@@ -744,8 +744,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysPlanarCollider";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysColliderManager : public NiObjectCRTP<NiPSysColliderManager, NiPSysModifier> {
@@ -756,8 +756,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysColliderManager";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -777,8 +777,8 @@ private:
 	float lifeSpanVariation = 0.0f;
 
 public:
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysVolumeEmitter : public NiObjectCRTP<NiPSysVolumeEmitter, NiPSysEmitter> {
@@ -786,8 +786,8 @@ private:
 	BlockRef<NiNode> emitterNodeRef;
 
 public:
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -799,8 +799,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysSphereEmitter";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysCylinderEmitter : public NiObjectCRTP<NiPSysCylinderEmitter, NiPSysVolumeEmitter> {
@@ -812,8 +812,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysCylinderEmitter";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiPSysBoxEmitter : public NiObjectCRTP<NiPSysBoxEmitter, NiPSysVolumeEmitter> {
@@ -826,8 +826,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysBoxEmitter";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSPSysArrayEmitter : public NiObjectCRTP<BSPSysArrayEmitter, NiPSysVolumeEmitter> {
@@ -857,8 +857,8 @@ public:
 	static constexpr const char* BlockName = "NiPSysMeshEmitter";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 

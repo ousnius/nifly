@@ -8,7 +8,7 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiObjectNET::Get(NiStream& stream) {
+void NiObjectNET::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	if (bBSLightingShaderProperty && stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() <= 130)
@@ -20,7 +20,7 @@ void NiObjectNET::Get(NiStream& stream) {
 	controllerRef.Get(stream);
 }
 
-void NiObjectNET::Put(NiStream& stream) {
+void NiObjectNET::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	if (bBSLightingShaderProperty && stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() <= 130)
@@ -77,7 +77,7 @@ BlockRefArray<NiExtraData>& NiObjectNET::GetExtraData() {
 }
 
 
-void NiAVObject::Get(NiStream& stream) {
+void NiAVObject::Get(NiIStream& stream) {
 	NiObjectNET::Get(stream);
 
 	flags = 0;
@@ -97,7 +97,7 @@ void NiAVObject::Get(NiStream& stream) {
 		collisionRef.Get(stream);
 }
 
-void NiAVObject::Put(NiStream& stream) {
+void NiAVObject::Put(NiOStream& stream) {
 	NiObjectNET::Put(stream);
 
 	if (stream.GetVersion().Stream() <= 26)
@@ -135,7 +135,7 @@ BlockRefArray<NiProperty>& NiAVObject::GetProperties() {
 }
 
 
-void NiDefaultAVObjectPalette::Get(NiStream& stream) {
+void NiDefaultAVObjectPalette::Get(NiIStream& stream) {
 	NiAVObjectPalette::Get(stream);
 
 	sceneRef.Get(stream);
@@ -148,7 +148,7 @@ void NiDefaultAVObjectPalette::Get(NiStream& stream) {
 	}
 }
 
-void NiDefaultAVObjectPalette::Put(NiStream& stream) {
+void NiDefaultAVObjectPalette::Put(NiOStream& stream) {
 	NiAVObjectPalette::Put(stream);
 
 	sceneRef.Put(stream);
@@ -170,7 +170,7 @@ void NiDefaultAVObjectPalette::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void NiCamera::Get(NiStream& stream) {
+void NiCamera::Get(NiIStream& stream) {
 	NiAVObject::Get(stream);
 
 	stream >> obsoleteFlags;
@@ -192,7 +192,7 @@ void NiCamera::Get(NiStream& stream) {
 	stream >> numScreenTextures;
 }
 
-void NiCamera::Put(NiStream& stream) {
+void NiCamera::Put(NiOStream& stream) {
 	NiAVObject::Put(stream);
 
 	stream << obsoleteFlags;
@@ -235,7 +235,7 @@ void NiCamera::SetSceneRef(int scRef) {
 }
 
 
-void NiPalette::Get(NiStream& stream) {
+void NiPalette::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	stream >> hasAlpha;
@@ -245,7 +245,7 @@ void NiPalette::Get(NiStream& stream) {
 		stream >> palette[i];
 }
 
-void NiPalette::Put(NiStream& stream) {
+void NiPalette::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	// Size can only be 16 or 256
@@ -265,7 +265,7 @@ void NiPalette::Put(NiStream& stream) {
 }
 
 
-void TextureRenderData::Get(NiStream& stream) {
+void TextureRenderData::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	stream >> pixelFormat;
@@ -291,7 +291,7 @@ void TextureRenderData::Get(NiStream& stream) {
 		stream >> mipmaps[i];
 }
 
-void TextureRenderData::Put(NiStream& stream) {
+void TextureRenderData::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	stream << pixelFormat;
@@ -337,7 +337,7 @@ void TextureRenderData::SetPaletteRef(int palRef) {
 }
 
 
-void NiPersistentSrcTextureRendererData::Get(NiStream& stream) {
+void NiPersistentSrcTextureRendererData::Get(NiIStream& stream) {
 	TextureRenderData::Get(stream);
 
 	stream >> numPixels;
@@ -367,7 +367,7 @@ void NiPersistentSrcTextureRendererData::Put(NiOStream& stream) {
 }
 
 
-void NiPixelData::Get(NiStream& stream) {
+void NiPixelData::Get(NiIStream& stream) {
 	TextureRenderData::Get(stream);
 
 	stream >> numPixels;
@@ -393,7 +393,7 @@ void NiPixelData::Put(NiOStream& stream) {
 }
 
 
-void NiSourceTexture::Get(NiStream& stream) {
+void NiSourceTexture::Get(NiIStream& stream) {
 	NiTexture::Get(stream);
 
 	stream >> useExternal;
@@ -410,7 +410,7 @@ void NiSourceTexture::Get(NiStream& stream) {
 		stream >> persistentRenderData;
 }
 
-void NiSourceTexture::Put(NiStream& stream) {
+void NiSourceTexture::Put(NiOStream& stream) {
 	NiTexture::Put(stream);
 
 	stream << useExternal;
@@ -454,7 +454,7 @@ void NiSourceTexture::SetDataRef(int datRef) {
 }
 
 
-void NiDynamicEffect::Get(NiStream& stream) {
+void NiDynamicEffect::Get(NiIStream& stream) {
 	NiAVObject::Get(stream);
 
 	if (stream.GetVersion().Stream() < 130) {
@@ -463,7 +463,7 @@ void NiDynamicEffect::Get(NiStream& stream) {
 	}
 }
 
-void NiDynamicEffect::Put(NiStream& stream) {
+void NiDynamicEffect::Put(NiOStream& stream) {
 	NiAVObject::Put(stream);
 
 	if (stream.GetVersion().Stream() < 130) {
@@ -489,7 +489,7 @@ BlockRefArray<NiNode>& NiDynamicEffect::GetAffectedNodes() {
 }
 
 
-void NiTextureEffect::Get(NiStream& stream) {
+void NiTextureEffect::Get(NiIStream& stream) {
 	NiDynamicEffect::Get(stream);
 
 	stream >> modelProjectionMatrix;
@@ -504,7 +504,7 @@ void NiTextureEffect::Get(NiStream& stream) {
 	stream >> unkFloat;
 }
 
-void NiTextureEffect::Put(NiStream& stream) {
+void NiTextureEffect::Put(NiOStream& stream) {
 	NiDynamicEffect::Put(stream);
 
 	stream << modelProjectionMatrix;
@@ -540,7 +540,7 @@ void NiTextureEffect::SetSourceTextureRef(int srcTexRef) {
 }
 
 
-void NiLight::Get(NiStream& stream) {
+void NiLight::Get(NiIStream& stream) {
 	NiDynamicEffect::Get(stream);
 
 	stream >> dimmer;
@@ -549,7 +549,7 @@ void NiLight::Get(NiStream& stream) {
 	stream >> specularColor;
 }
 
-void NiLight::Put(NiStream& stream) {
+void NiLight::Put(NiOStream& stream) {
 	NiDynamicEffect::Put(stream);
 
 	stream << dimmer;
@@ -559,7 +559,7 @@ void NiLight::Put(NiStream& stream) {
 }
 
 
-void NiPointLight::Get(NiStream& stream) {
+void NiPointLight::Get(NiIStream& stream) {
 	NiLight::Get(stream);
 
 	stream >> constantAttenuation;
@@ -567,7 +567,7 @@ void NiPointLight::Get(NiStream& stream) {
 	stream >> quadraticAttenuation;
 }
 
-void NiPointLight::Put(NiStream& stream) {
+void NiPointLight::Put(NiOStream& stream) {
 	NiLight::Put(stream);
 
 	stream << constantAttenuation;
@@ -576,7 +576,7 @@ void NiPointLight::Put(NiStream& stream) {
 }
 
 
-void NiSpotLight::Get(NiStream& stream) {
+void NiSpotLight::Get(NiIStream& stream) {
 	NiPointLight::Get(stream);
 
 	stream >> cutoffAngle;
@@ -584,7 +584,7 @@ void NiSpotLight::Get(NiStream& stream) {
 	stream >> exponent;
 }
 
-void NiSpotLight::Put(NiStream& stream) {
+void NiSpotLight::Put(NiOStream& stream) {
 	NiPointLight::Put(stream);
 
 	stream << cutoffAngle;

@@ -22,7 +22,7 @@ struct AdditionalDataInfo {
 	uint32_t channelOffset = 0;
 	uint8_t unkByte1 = 2;
 
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		stream >> dataType;
 		stream >> numChannelBytesPerElement;
 		stream >> numChannelBytes;
@@ -32,7 +32,7 @@ struct AdditionalDataInfo {
 		stream >> unkByte1;
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		stream << dataType;
 		stream << numChannelBytesPerElement;
 		stream << numChannelBytes;
@@ -54,7 +54,7 @@ struct AdditionalDataBlock {
 	std::vector<uint32_t> dataSizes;
 	std::vector<std::vector<uint8_t>> data;
 
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		stream >> hasData;
 
 		if (hasData) {
@@ -79,7 +79,7 @@ struct AdditionalDataBlock {
 		}
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		stream << hasData;
 
 		if (hasData) {
@@ -116,8 +116,8 @@ public:
 	static constexpr const char* BlockName = "NiAdditionalGeometryData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 struct BSPackedAdditionalDataBlock {
@@ -134,7 +134,7 @@ struct BSPackedAdditionalDataBlock {
 	uint32_t unkInt1 = 0;
 	uint32_t numTotalBytesPerElement = 0;
 
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		stream >> hasData;
 
 		if (hasData) {
@@ -159,7 +159,7 @@ struct BSPackedAdditionalDataBlock {
 		stream >> numTotalBytesPerElement;
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		stream << hasData;
 
 		if (hasData) {
@@ -196,8 +196,8 @@ public:
 	static constexpr const char* BlockName = "BSPackedAdditionalGeometryData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiGeometryData : public NiObjectCRTP<NiGeometryData, NiObject> {
@@ -227,8 +227,8 @@ public:
 
 	uint16_t consistencyFlags = 0;
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -361,8 +361,8 @@ public:
 	static constexpr const char* BlockName = "BSTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -480,8 +480,8 @@ public:
 	uint32_t index = 0;
 	uint32_t numTris = 0;
 
-	void Get(NiStream& stream);
-	void Put(NiStream& stream);
+	void Get(NiIStream& stream);
+	void Put(NiOStream& stream);
 };
 
 class BSSubIndexTriShape : public NiObjectCRTP<BSSubIndexTriShape, BSTriShape> {
@@ -541,8 +541,8 @@ public:
 	static constexpr const char* BlockName = "BSSubIndexTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	void GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts);
@@ -565,8 +565,8 @@ public:
 	static constexpr const char* BlockName = "BSMeshLODTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
@@ -580,8 +580,8 @@ public:
 	static constexpr const char* BlockName = "BSDynamicTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void CalcDynamicData();
 
@@ -612,8 +612,8 @@ protected:
 	uint32_t implementation = 0;
 
 public:
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -640,8 +640,8 @@ protected:
 	uint16_t numTriangles = 0;
 
 public:
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
@@ -668,8 +668,8 @@ public:
 	static constexpr const char* BlockName = "NiTriShapeData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
 				const std::vector<Triangle>* tris,
@@ -708,8 +708,8 @@ public:
 	static constexpr const char* BlockName = "NiTriStripsData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	uint32_t GetNumTriangles() override;
@@ -743,8 +743,8 @@ public:
 	static constexpr const char* BlockName = "NiLinesData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
@@ -784,8 +784,8 @@ public:
 	static constexpr const char* BlockName = "NiScreenElementsData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
@@ -816,8 +816,8 @@ public:
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSSegmentedTriShape : public NiObjectCRTP<BSSegmentedTriShape, NiTriShape> {
@@ -828,7 +828,7 @@ public:
 	static constexpr const char* BlockName = "BSSegmentedTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 } // namespace nifly

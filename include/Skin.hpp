@@ -55,8 +55,8 @@ public:
 	static constexpr const char* BlockName = "NiSkinData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
@@ -127,8 +127,8 @@ public:
 	static constexpr const char* BlockName = "NiSkinPartition";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
 	void DeletePartitions(const std::vector<int>& partInds);
@@ -181,8 +181,8 @@ public:
 	static constexpr const char* BlockName = "NiSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
@@ -215,8 +215,8 @@ public:
 	static constexpr const char* BlockName = "BSDismemberSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	int GetNumPartitions() { return numPartitions; }
 	std::vector<PartitionInfo> GetPartitions() { return partitions; }
@@ -253,8 +253,8 @@ public:
 	static constexpr const char* BlockName = "BSSkin::BoneData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiAVObject;
@@ -271,8 +271,8 @@ public:
 	static constexpr const char* BlockName = "BSSkin::Instance";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;

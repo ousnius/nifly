@@ -19,8 +19,8 @@ public:
 	static constexpr const char* BlockName = "NiNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -50,8 +50,8 @@ public:
 	static constexpr const char* BlockName = "BSValueNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSLeafAnimNode : public NiObjectCRTP<BSLeafAnimNode, NiNode> {
@@ -69,8 +69,8 @@ public:
 	static constexpr const char* BlockName = "BSTreeNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -88,8 +88,8 @@ public:
 	static constexpr const char* BlockName = "BSOrderedNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSMultiBoundData : public NiObjectCRTP<BSMultiBoundData, NiObject> {};
@@ -104,8 +104,8 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundOBB";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSMultiBoundAABB : public NiObjectCRTP<BSMultiBoundAABB, BSMultiBoundData> {
@@ -117,8 +117,8 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundAABB";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSMultiBoundSphere : public NiObjectCRTP<BSMultiBoundSphere, BSMultiBoundData> {
@@ -130,8 +130,8 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundSphere";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSMultiBound : public NiObjectCRTP<BSMultiBound, NiObject> {
@@ -142,8 +142,8 @@ public:
 	static constexpr const char* BlockName = "BSMultiBound";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -168,8 +168,8 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -188,8 +188,8 @@ public:
 	static constexpr const char* BlockName = "BSRangeNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSDebrisNode : public NiObjectCRTP<BSDebrisNode, BSRangeNode> {
@@ -228,8 +228,8 @@ public:
 	static constexpr const char* BlockName = "NiBillboardNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 enum NiSwitchFlags : uint16_t { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
@@ -243,8 +243,8 @@ public:
 	static constexpr const char* BlockName = "NiSwitchNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 struct LODRange {
@@ -264,8 +264,8 @@ public:
 	static constexpr const char* BlockName = "NiRangeLODData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiScreenLODData : public NiObjectCRTP<NiScreenLODData, NiLODData> {
@@ -281,8 +281,8 @@ public:
 	static constexpr const char* BlockName = "NiScreenLODData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiLODNode : public NiObjectCRTP<NiLODNode, NiSwitchNode> {
@@ -293,8 +293,8 @@ public:
 	static constexpr const char* BlockName = "NiLODNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -319,7 +319,7 @@ public:
 	static constexpr const char* BlockName = "NiSortAdjustNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 } // namespace nifly

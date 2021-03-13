@@ -8,7 +8,7 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiNode::Get(NiStream& stream) {
+void NiNode::Get(NiIStream& stream) {
 	NiAVObject::Get(stream);
 
 	childRefs.Get(stream);
@@ -17,7 +17,7 @@ void NiNode::Get(NiStream& stream) {
 		effectRefs.Get(stream);
 }
 
-void NiNode::Put(NiStream& stream) {
+void NiNode::Put(NiOStream& stream) {
 	NiAVObject::Put(stream);
 
 	childRefs.Put(stream);
@@ -49,14 +49,14 @@ BlockRefArray<NiDynamicEffect>& NiNode::GetEffects() {
 }
 
 
-void BSValueNode::Get(NiStream& stream) {
+void BSValueNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	stream >> value;
 	stream >> valueFlags;
 }
 
-void BSValueNode::Put(NiStream& stream) {
+void BSValueNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	stream << value;
@@ -64,14 +64,14 @@ void BSValueNode::Put(NiStream& stream) {
 }
 
 
-void BSTreeNode::Get(NiStream& stream) {
+void BSTreeNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	bones1.Get(stream);
 	bones2.Get(stream);
 }
 
-void BSTreeNode::Put(NiStream& stream) {
+void BSTreeNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	bones1.Put(stream);
@@ -101,14 +101,14 @@ BlockRefArray<NiNode>& BSTreeNode::GetBones2() {
 }
 
 
-void BSOrderedNode::Get(NiStream& stream) {
+void BSOrderedNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	stream >> alphaSortBound;
 	stream >> isStaticBound;
 }
 
-void BSOrderedNode::Put(NiStream& stream) {
+void BSOrderedNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	stream << alphaSortBound;
@@ -116,7 +116,7 @@ void BSOrderedNode::Put(NiStream& stream) {
 }
 
 
-void BSMultiBoundOBB::Get(NiStream& stream) {
+void BSMultiBoundOBB::Get(NiIStream& stream) {
 	BSMultiBoundData::Get(stream);
 
 	stream >> center;
@@ -124,7 +124,7 @@ void BSMultiBoundOBB::Get(NiStream& stream) {
 	stream >> rotation;
 }
 
-void BSMultiBoundOBB::Put(NiStream& stream) {
+void BSMultiBoundOBB::Put(NiOStream& stream) {
 	BSMultiBoundData::Put(stream);
 
 	stream << center;
@@ -133,14 +133,14 @@ void BSMultiBoundOBB::Put(NiStream& stream) {
 }
 
 
-void BSMultiBoundAABB::Get(NiStream& stream) {
+void BSMultiBoundAABB::Get(NiIStream& stream) {
 	BSMultiBoundData::Get(stream);
 
 	stream >> center;
 	stream >> halfExtent;
 }
 
-void BSMultiBoundAABB::Put(NiStream& stream) {
+void BSMultiBoundAABB::Put(NiOStream& stream) {
 	BSMultiBoundData::Put(stream);
 
 	stream << center;
@@ -148,14 +148,14 @@ void BSMultiBoundAABB::Put(NiStream& stream) {
 }
 
 
-void BSMultiBoundSphere::Get(NiStream& stream) {
+void BSMultiBoundSphere::Get(NiIStream& stream) {
 	BSMultiBoundData::Get(stream);
 
 	stream >> center;
 	stream >> radius;
 }
 
-void BSMultiBoundSphere::Put(NiStream& stream) {
+void BSMultiBoundSphere::Put(NiOStream& stream) {
 	BSMultiBoundData::Put(stream);
 
 	stream << center;
@@ -163,13 +163,13 @@ void BSMultiBoundSphere::Put(NiStream& stream) {
 }
 
 
-void BSMultiBound::Get(NiStream& stream) {
+void BSMultiBound::Get(NiIStream& stream) {
 	NiObject::Get(stream);
 
 	dataRef.Get(stream);
 }
 
-void BSMultiBound::Put(NiStream& stream) {
+void BSMultiBound::Put(NiOStream& stream) {
 	NiObject::Put(stream);
 
 	dataRef.Put(stream);
@@ -196,7 +196,7 @@ void BSMultiBound::SetDataRef(int datRef) {
 }
 
 
-void BSMultiBoundNode::Get(NiStream& stream) {
+void BSMultiBoundNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	multiBoundRef.Get(stream);
@@ -205,7 +205,7 @@ void BSMultiBoundNode::Get(NiStream& stream) {
 		stream >> cullingMode;
 }
 
-void BSMultiBoundNode::Put(NiStream& stream) {
+void BSMultiBoundNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	multiBoundRef.Put(stream);
@@ -236,7 +236,7 @@ void BSMultiBoundNode::SetMultiBoundRef(int multBoundRef) {
 }
 
 
-void BSRangeNode::Get(NiStream& stream) {
+void BSRangeNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	stream >> min;
@@ -244,7 +244,7 @@ void BSRangeNode::Get(NiStream& stream) {
 	stream >> current;
 }
 
-void BSRangeNode::Put(NiStream& stream) {
+void BSRangeNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	stream << min;
@@ -253,27 +253,27 @@ void BSRangeNode::Put(NiStream& stream) {
 }
 
 
-void NiBillboardNode::Get(NiStream& stream) {
+void NiBillboardNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	stream >> billboardMode;
 }
 
-void NiBillboardNode::Put(NiStream& stream) {
+void NiBillboardNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	stream << billboardMode;
 }
 
 
-void NiSwitchNode::Get(NiStream& stream) {
+void NiSwitchNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	stream >> flags;
 	stream >> index;
 }
 
-void NiSwitchNode::Put(NiStream& stream) {
+void NiSwitchNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	stream << flags;
@@ -281,7 +281,7 @@ void NiSwitchNode::Put(NiStream& stream) {
 }
 
 
-void NiRangeLODData::Get(NiStream& stream) {
+void NiRangeLODData::Get(NiIStream& stream) {
 	NiLODData::Get(stream);
 
 	stream >> lodCenter;
@@ -294,7 +294,7 @@ void NiRangeLODData::Get(NiStream& stream) {
 	}
 }
 
-void NiRangeLODData::Put(NiStream& stream) {
+void NiRangeLODData::Put(NiOStream& stream) {
 	NiLODData::Put(stream);
 
 	stream << lodCenter;
@@ -307,7 +307,7 @@ void NiRangeLODData::Put(NiStream& stream) {
 }
 
 
-void NiScreenLODData::Get(NiStream& stream) {
+void NiScreenLODData::Get(NiIStream& stream) {
 	NiLODData::Get(stream);
 
 	stream >> boundCenter;
@@ -321,7 +321,7 @@ void NiScreenLODData::Get(NiStream& stream) {
 		stream >> proportionLevels[i];
 }
 
-void NiScreenLODData::Put(NiStream& stream) {
+void NiScreenLODData::Put(NiOStream& stream) {
 	NiLODData::Put(stream);
 
 	stream << boundCenter;
@@ -335,13 +335,13 @@ void NiScreenLODData::Put(NiStream& stream) {
 }
 
 
-void NiLODNode::Get(NiStream& stream) {
+void NiLODNode::Get(NiIStream& stream) {
 	NiSwitchNode::Get(stream);
 
 	lodLevelData.Get(stream);
 }
 
-void NiLODNode::Put(NiStream& stream) {
+void NiLODNode::Put(NiOStream& stream) {
 	NiSwitchNode::Put(stream);
 
 	lodLevelData.Put(stream);
@@ -368,13 +368,13 @@ void NiLODNode::SetLodLevelDataRef(int dataRef) {
 }
 
 
-void NiSortAdjustNode::Get(NiStream& stream) {
+void NiSortAdjustNode::Get(NiIStream& stream) {
 	NiNode::Get(stream);
 
 	stream >> sortingMode;
 }
 
-void NiSortAdjustNode::Put(NiStream& stream) {
+void NiSortAdjustNode::Put(NiOStream& stream) {
 	NiNode::Put(stream);
 
 	stream << sortingMode;

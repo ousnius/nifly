@@ -53,7 +53,7 @@ void NiVersion::SetFile(NiFileVersion fileVer) {
 }
 
 
-void NiString::Get(NiStream& stream, const int szSize) {
+void NiString::Get(NiIStream& stream, const int szSize) {
 	std::array<char, 2048 + 1> buf{};
 
 	if (szSize == 1) {
@@ -88,7 +88,7 @@ void NiString::Get(NiStream& stream, const int szSize) {
 	str = buf.data();
 }
 
-void NiString::Put(NiStream& stream, const int szSize, const bool wantNullOutput) {
+void NiString::Put(NiOStream& stream, const int szSize, const bool wantNullOutput) {
 	if (szSize == 1) {
 		auto sz = uint8_t(str.length());
 		str.resize(sz);
@@ -550,7 +550,7 @@ void NiHeader::BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi) {
 	}
 }
 
-void NiHeader::Get(NiStream& stream) {
+void NiHeader::Get(NiIStream& stream) {
 	std::array<char, 128> ver{};
 	stream.getline(ver.data(), ver.size());
 
@@ -675,7 +675,7 @@ void NiHeader::Get(NiStream& stream) {
 	valid = true;
 }
 
-void NiHeader::Put(NiStream& stream) {
+void NiHeader::Put(NiOStream& stream) {
 	std::string ver = version.String();
 	stream.write(ver.data(), ver.size());
 
@@ -753,7 +753,7 @@ void NiHeader::Put(NiStream& stream) {
 }
 
 
-NiUnknown::NiUnknown(NiStream& stream, const uint32_t size) {
+NiUnknown::NiUnknown(NiIStream& stream, const uint32_t size) {
 	data.resize(size);
 
 	blockSize = size;

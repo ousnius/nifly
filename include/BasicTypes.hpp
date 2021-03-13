@@ -12,6 +12,7 @@ See the included GPLv3 LICENSE file
 #include <iostream>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <streambuf>
 #include <string>
@@ -127,17 +128,46 @@ public:
 
 enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
 
-class NiStream {
+class NiStreamBase {
 private:
-	std::iostream* stream = nullptr;
-	NiVersion* version = nullptr;
+	NiVersion version;
+
+public:
+	explicit NiStreamBase(NiVersion v)
+		: version(std::move(v)) {}
+
+	NiVersion& GetVersion() { return version; }
+};
+
+class NiIStream : public NiStreamBase {
+private:
+	std::istream* stream = nullptr;
+
+public:
+	NiIStream(std::istream* s, NiVersion v)
+		: NiStreamBase(std::move(v))
+		, stream(s) {}
+
+	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
+	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
+
+	// Be careful with sizes of structs and classes
+	template<typename T>
+	NiIStream& operator>>(T& t) {
+		read((char*) &t, sizeof(T));
+		return *this;
+	}
+};
+
+class NiOStream : public NiStreamBase {
+private:
+	std::ostream* stream = nullptr;
 	int blockSize = 0;
 
 public:
-	NiStream(std::iostream* stream, NiVersion* version) {
-		this->stream = stream;
-		this->version = version;
-	}
+	NiOStream(std::ostream* s, NiVersion v)
+		: NiStreamBase(std::move(v))
+		, stream(s) {}
 
 	void write(const char* ptr, std::streamsize count) {
 		stream->write(ptr, count);
@@ -149,40 +179,26 @@ public:
 		stream->write("\n", 1);
 		blockSize += count + 1;
 	}
-
-	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
-
-	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
-
 	std::streampos tellp() { return stream->tellp(); }
 
 	// Be careful with sizes of structs and classes
 	template<typename T>
-	NiStream& operator<<(const T& t) {
+	NiOStream& operator<<(const T& t) {
 		write((const char*) &t, sizeof(T));
 		return *this;
 	}
 
-	// Be careful with sizes of structs and classes
-	template<typename T>
-	NiStream& operator>>(T& t) {
-		read((char*) &t, sizeof(T));
-		return *this;
-	}
-
 	void InitBlockSize() { blockSize = 0; }
-
 	int GetBlockSize() { return blockSize; }
-
-	NiVersion& GetVersion() { return *version; }
 };
 
 class NiStreamReversible {
 public:
 	enum class Mode { Reading, Writing };
 
-	explicit NiStreamReversible(NiStream& s, Mode mode)
-		: stream(s)
+	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode)
+		: istream(is)
+		, ostream(os)
 		, mode(mode) {}
 
 	void SetMode(Mode m) { mode = m; }
@@ -195,20 +211,25 @@ public:
 
 	void Sync(char* ptr, std::streamsize count) {
 		if (mode == Mode::Reading)
-			stream.read(ptr, count);
+			istream->read(ptr, count);
 		else
-			stream.write(ptr, count);
+			ostream->write(ptr, count);
 	}
 
 	void SyncLine(char* ptr, std::streamsize count) {
 		if (mode == Mode::Reading)
-			stream.getline(ptr, count);
+			istream->getline(ptr, count);
 		else
-			stream.writeline(ptr, count);
+			ostream->writeline(ptr, count);
 	}
 
+	NiOStream* asWrite() { return ostream; }
+	NiIStream* asRead() { return istream; }
+
+
 private:
-	NiStream& stream;
+	NiIStream* istream;
+	NiOStream* ostream;
 	Mode mode;
 };
 
@@ -234,14 +255,14 @@ private:
 template<typename Derived, typename Base>
 class NiObjectCRTP<Derived, Base, true> : public NiObjectCRTP<Derived, Base, false> {
 public:
-	void Get(NiStream& stream) override {
+	void Get(NiIStream& stream) override {
 		Base::Get(stream);
-		NiStreamReversible s(stream, NiStreamReversible::Mode::Reading);
+		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
 		asDer().GetPut(s);
 	}
-	void Put(NiStream& stream) override {
+	void Put(NiOStream& stream) override {
 		Base::Put(stream);
-		NiStreamReversible s(stream, NiStreamReversible::Mode::Writing);
+		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
 		asDer().GetPut(s);
 	}
 
@@ -265,8 +286,8 @@ public:
 
 	void Clear() { str.clear(); }
 
-	void Get(NiStream& stream, const int szSize);
-	void Put(NiStream& stream, const int szSize, const bool wantNullOutput = true);
+	void Get(NiIStream& stream, const int szSize);
+	void Put(NiOStream& stream, const int szSize, const bool wantNullOutput = true);
 };
 
 class StringRef {
@@ -289,14 +310,14 @@ public:
 		str.Clear();
 	}
 
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		if (stream.GetVersion().File() < V20_1_0_1)
 			str.Get(stream, 4);
 		else
 			stream >> index;
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		if (stream.GetVersion().File() < V20_1_0_1)
 			str.Put(stream, 4, false);
 		else
@@ -324,9 +345,9 @@ public:
 	BlockRef() {}
 	BlockRef(const int id) { Ref::index = id; }
 
-	void Get(NiStream& stream) { stream >> base::index; }
+	void Get(NiIStream& stream) { stream >> base::index; }
 
-	void Put(NiStream& stream) { stream << base::index; }
+	void Put(NiOStream& stream) { stream << base::index; }
 };
 
 class RefArray {
@@ -341,9 +362,9 @@ public:
 
 	void SetKeepEmptyRefs(const bool keep = true) { keepEmptyRefs = keep; }
 
-	virtual void Get(NiStream& stream) = 0;
-	virtual void Put(NiStream& stream) = 0;
-	virtual void Put(NiStream& stream, const int forcedSize) = 0;
+	virtual void Get(NiIStream& stream) = 0;
+	virtual void Put(NiOStream& stream) = 0;
+	virtual void Put(NiOStream& stream, const int forcedSize) = 0;
 	virtual void AddBlockRef(const int id) = 0;
 	virtual int GetBlockRef(const int id) = 0;
 	virtual void SetBlockRef(const int id, const int index) = 0;
@@ -396,7 +417,7 @@ public:
 		keepEmptyRefs = false;
 	}
 
-	void Get(NiStream& stream) override {
+	void Get(NiIStream& stream) override {
 		stream >> arraySize;
 		refs.resize(arraySize);
 
@@ -404,7 +425,7 @@ public:
 			r.Get(stream);
 	}
 
-	void Put(NiStream& stream) override {
+	void Put(NiOStream& stream) override {
 		CleanInvalidRefs();
 		stream << arraySize;
 
@@ -412,7 +433,7 @@ public:
 			r.Put(stream);
 	}
 
-	void Put(NiStream& stream, const int forcedSize) override {
+	void Put(NiOStream& stream, const int forcedSize) override {
 		CleanInvalidRefs();
 		arraySize = forcedSize;
 		refs.resize(forcedSize);
@@ -473,7 +494,7 @@ public:
 	using base::arraySize;
 	using base::refs;
 
-	void Get(NiStream& stream) override {
+	void Get(NiIStream& stream) override {
 		stream.read((char*) &arraySize, 2);
 		refs.resize(arraySize);
 
@@ -481,7 +502,7 @@ public:
 			r.Get(stream);
 	}
 
-	void Put(NiStream& stream) override {
+	void Put(NiOStream& stream) override {
 		base::CleanInvalidRefs();
 		stream.write((char*) &arraySize, 2);
 
@@ -489,7 +510,7 @@ public:
 			r.Put(stream);
 	}
 
-	void Put(NiStream& stream, const int forcedSize) override {
+	void Put(NiOStream& stream, const int forcedSize) override {
 		base::CleanInvalidRefs();
 		arraySize = forcedSize;
 		refs.resize(forcedSize);
@@ -513,8 +534,8 @@ public:
 
 	virtual void notifyVerticesDelete(const std::vector<uint16_t>&) {}
 
-	virtual void Get(NiStream&) {}
-	virtual void Put(NiStream&) {}
+	virtual void Get(NiIStream&) {}
+	virtual void Put(NiOStream&) {}
 
 	virtual void GetStringRefs(std::vector<StringRef*>&) {}
 	virtual void GetChildRefs(std::set<Ref*>&) {}
@@ -682,8 +703,8 @@ public:
 	static void BlockDeleted(NiObject* o, int blockId);
 	static void BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi);
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class NiUnknown : public NiObjectCRTP<NiUnknown, NiObject, true> {
@@ -692,7 +713,7 @@ private:
 
 public:
 	NiUnknown() {}
-	NiUnknown(NiStream& stream, const uint32_t size);
+	NiUnknown(NiIStream& stream, const uint32_t size);
 	NiUnknown(const uint32_t size);
 
 	void GetPut(NiStreamReversible& stream);

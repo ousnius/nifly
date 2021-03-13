@@ -23,7 +23,7 @@ namespace nifly {
 class NiFactory {
 public:
 	virtual std::unique_ptr<NiObject> Create() = 0;
-	virtual std::unique_ptr<NiObject> Load(NiStream& stream) = 0;
+	virtual std::unique_ptr<NiObject> Load(NiIStream& stream) = 0;
 };
 
 template<typename T>
@@ -33,7 +33,7 @@ public:
 	std::unique_ptr<NiObject> Create() override { return std::make_unique<T>(); }
 
 	// Load new NiObject from file
-	std::unique_ptr<NiObject> Load(NiStream& stream) override {
+	std::unique_ptr<NiObject> Load(NiIStream& stream) override {
 		auto nio = std::make_unique<T>();
 		nio->Get(stream);
 		return nio;
