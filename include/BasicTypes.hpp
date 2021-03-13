@@ -189,11 +189,22 @@ public:
 	Mode GetMode() { return mode; }
 
 	template<typename T>
-	void sync(const T& t) {
+	void Sync(const T& t) {
+		Sync(reinterpret_cast<char*>(&t), sizeof(T));
+	}
+
+	void Sync(char* ptr, std::streamsize count) {
 		if (mode == Mode::Reading)
-			stream >> t;
+			stream.read(ptr, count);
 		else
-			stream << t;
+			stream.write(ptr, count);
+	}
+
+	void SyncLine(char* ptr, std::streamsize count) {
+		if (mode == Mode::Reading)
+			stream.getline(ptr, count);
+		else
+			stream.writeline(ptr, count);
 	}
 
 private:
