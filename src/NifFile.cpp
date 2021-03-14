@@ -196,7 +196,7 @@ int NifFile::Load(std::iostream& file, const NifLoadOptions& options) {
 	isTerrain = options.isTerrain;
 
 	if (file) {
-		NiIStream stream(&file, hdr.GetVersion());
+		NiIStream stream(&file);
 		hdr.Get(stream);
 
 		if (!hdr.IsValid()) {

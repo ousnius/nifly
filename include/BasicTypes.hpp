@@ -133,6 +133,7 @@ private:
 	NiVersion version;
 
 public:
+	explicit NiStreamBase() {}
 	explicit NiStreamBase(NiVersion v)
 		: version(std::move(v)) {}
 
@@ -144,6 +145,9 @@ private:
 	std::istream* stream = nullptr;
 
 public:
+	NiIStream(std::istream* s)
+		: stream(s) {}
+
 	NiIStream(std::istream* s, NiVersion v)
 		: NiStreamBase(std::move(v))
 		, stream(s) {}
