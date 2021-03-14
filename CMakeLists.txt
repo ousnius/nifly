@@ -8,7 +8,6 @@ add_library(nifly STATIC
     include/Animation.hpp
     include/BasicTypes.hpp
     include/bhk.hpp
-    include/CloneInherit.hpp
     include/ExtraData.hpp
     include/Factory.hpp
     include/Geometry.hpp
@@ -18,8 +17,7 @@ add_library(nifly STATIC
     include/Nodes.hpp
     include/Objects.hpp
     include/Particles.hpp
-    include/Shaders.hpp
-    include/Skin.hpp
+    include/Shaders.hpp include/Skin.hpp
     include/VertexData.hpp
     include/KDMatcher.hpp
     include/Object3d.hpp

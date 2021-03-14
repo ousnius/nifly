@@ -34,7 +34,7 @@ private:
 	std::vector<Key<T>> keys;
 
 public:
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		stream >> numKeys;
 		keys.resize(numKeys);
 
@@ -60,7 +60,7 @@ public:
 		}
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		stream << numKeys;
 
 		if (numKeys > 0) {

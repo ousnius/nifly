@@ -196,7 +196,7 @@ int NifFile::Load(std::iostream& file, const NifLoadOptions& options) {
 	isTerrain = options.isTerrain;
 
 	if (file) {
-		NiStream stream(&file, &hdr.GetVersion());
+		NiIStream stream(&file);
 		hdr.Get(stream);
 
 		if (!hdr.IsValid()) {
@@ -935,7 +935,7 @@ int NifFile::Save(std::iostream& file, const NifSaveOptions& options) {
 		if (hdr.GetVersion().IsFO76())
 			return 76;
 
-		NiStream stream(&file, &hdr.GetVersion());
+		NiOStream stream(&file, hdr.GetVersion());
 		FinalizeData();
 
 		if (options.optimize)

@@ -46,9 +46,9 @@ enum BSLightingShaderPropertyShaderType : uint32_t {
 	BSLSP_LAST = BSLSP_DISMEMBERMENT
 };
 
-class NiProperty : public CloneInherit<NiProperty, NiObjectNET> {};
+class NiProperty : public NiObjectCRTP<NiProperty, NiObjectNET> {};
 
-class NiShadeProperty : public CloneInherit<NiShadeProperty, NiProperty> {
+class NiShadeProperty : public NiObjectCRTP<NiShadeProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -56,11 +56,11 @@ public:
 	static constexpr const char* BlockName = "NiShadeProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiSpecularProperty : public CloneInherit<NiSpecularProperty, NiProperty> {
+class NiSpecularProperty : public NiObjectCRTP<NiSpecularProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -68,8 +68,8 @@ public:
 	static constexpr const char* BlockName = "NiSpecularProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 struct TexTransform {
@@ -88,7 +88,7 @@ private:
 	TexTransform transform;
 
 public:
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		sourceRef.Get(stream);
 		stream >> flags;
 		stream >> hasTexTransform;
@@ -97,7 +97,7 @@ public:
 			stream >> transform;
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		sourceRef.Put(stream);
 		stream << flags;
 		stream << hasTexTransform;
@@ -122,7 +122,7 @@ private:
 	uint32_t mapIndex = 0;
 
 public:
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		stream >> isUsed;
 
 		if (isUsed) {
@@ -131,7 +131,7 @@ public:
 		}
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		stream << isUsed;
 
 		if (isUsed) {
@@ -145,7 +145,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) { data.GetChildIndices(indices); }
 };
 
-class NiTexturingProperty : public CloneInherit<NiTexturingProperty, NiProperty> {
+class NiTexturingProperty : public NiObjectCRTP<NiTexturingProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 	uint32_t textureCount = 0;
@@ -197,13 +197,13 @@ public:
 	static constexpr const char* BlockName = "NiTexturingProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiVertexColorProperty : public CloneInherit<NiVertexColorProperty, NiProperty> {
+class NiVertexColorProperty : public NiObjectCRTP<NiVertexColorProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -211,11 +211,11 @@ public:
 	static constexpr const char* BlockName = "NiVertexColorProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiDitherProperty : public CloneInherit<NiDitherProperty, NiProperty> {
+class NiDitherProperty : public NiObjectCRTP<NiDitherProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -223,11 +223,11 @@ public:
 	static constexpr const char* BlockName = "NiDitherProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiFogProperty : public CloneInherit<NiFogProperty, NiProperty> {
+class NiFogProperty : public NiObjectCRTP<NiFogProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 	float fogDepth = 1.0f;
@@ -237,11 +237,11 @@ public:
 	static constexpr const char* BlockName = "NiFogProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiWireframeProperty : public CloneInherit<NiWireframeProperty, NiProperty> {
+class NiWireframeProperty : public NiObjectCRTP<NiWireframeProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -249,11 +249,11 @@ public:
 	static constexpr const char* BlockName = "NiWireframeProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiZBufferProperty : public CloneInherit<NiZBufferProperty, NiProperty> {
+class NiZBufferProperty : public NiObjectCRTP<NiZBufferProperty, NiProperty> {
 private:
 	uint16_t flags = 3;
 
@@ -261,11 +261,11 @@ public:
 	static constexpr const char* BlockName = "NiZBufferProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiShader : public CloneInherit<NiShader, NiProperty> {
+class NiShader : public NiObjectCRTP<NiShader, NiProperty> {
 public:
 	virtual bool IsSkinTinted() { return false; }
 	virtual bool IsFaceTinted() { return false; }
@@ -313,7 +313,7 @@ public:
 	virtual void SetWetMaterialName(const std::string&) {}
 };
 
-class BSShaderProperty : public CloneInherit<BSShaderProperty, NiShader> {
+class BSShaderProperty : public NiObjectCRTP<BSShaderProperty, NiShader> {
 public:
 	uint16_t shaderFlags = 1;
 	BSShaderType shaderType = SHADER_DEFAULT;
@@ -329,8 +329,8 @@ public:
 	Vector2 uvOffset;
 	Vector2 uvScale = Vector2(1.0f, 1.0f);
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	uint32_t GetShaderType() override;
 	void SetShaderType(const uint32_t type) override;
@@ -357,31 +357,31 @@ public:
 	Vector2 GetUVScale() override;
 };
 
-class WaterShaderProperty : public CloneInherit<WaterShaderProperty, BSShaderProperty> {
+class WaterShaderProperty : public NiObjectCRTP<WaterShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "WaterShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class HairShaderProperty : public CloneInherit<HairShaderProperty, BSShaderProperty> {
+class HairShaderProperty : public NiObjectCRTP<HairShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "HairShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class DistantLODShaderProperty : public CloneInherit<DistantLODShaderProperty, BSShaderProperty> {
+class DistantLODShaderProperty : public NiObjectCRTP<DistantLODShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "DistantLODShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSDistantTreeShaderProperty : public CloneInherit<BSDistantTreeShaderProperty, BSShaderProperty> {
+class BSDistantTreeShaderProperty : public NiObjectCRTP<BSDistantTreeShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "BSDistantTreeShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class TallGrassShaderProperty : public CloneInherit<TallGrassShaderProperty, BSShaderProperty> {
+class TallGrassShaderProperty : public NiObjectCRTP<TallGrassShaderProperty, BSShaderProperty> {
 private:
 	NiString fileName;
 
@@ -389,17 +389,17 @@ public:
 	static constexpr const char* BlockName = "TallGrassShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class VolumetricFogShaderProperty : public CloneInherit<VolumetricFogShaderProperty, BSShaderProperty> {
+class VolumetricFogShaderProperty : public NiObjectCRTP<VolumetricFogShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "VolumetricFogShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSShaderTextureSet : public CloneInherit<BSShaderTextureSet, NiObject> {
+class BSShaderTextureSet : public NiObjectCRTP<BSShaderTextureSet, NiObject> {
 public:
 	int numTextures = 13;
 	std::vector<NiString> textures = std::vector<NiString>(13);
@@ -410,8 +410,8 @@ public:
 	static constexpr const char* BlockName = "BSShaderTextureSet";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 class BSTextureArray {
@@ -420,7 +420,7 @@ private:
 	std::vector<NiString> textureArray;
 
 public:
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		stream >> textureArrayWidth;
 		textureArray.resize(textureArrayWidth);
 
@@ -431,7 +431,7 @@ public:
 		}
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		stream << textureArrayWidth;
 
 		for (uint32_t i = 0; i < textureArrayWidth; i++)
@@ -439,7 +439,7 @@ public:
 	}
 };
 
-class BSLightingShaderProperty : public CloneInherit<BSLightingShaderProperty, BSShaderProperty> {
+class BSLightingShaderProperty : public NiObjectCRTP<BSLightingShaderProperty, BSShaderProperty> {
 private:
 	StringRef rootMaterialName;
 	BlockRef<BSShaderTextureSet> textureSetRef;
@@ -512,8 +512,8 @@ public:
 	static constexpr const char* BlockName = "BSLightingShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -548,7 +548,7 @@ public:
 	void SetWetMaterialName(const std::string& matName) override;
 };
 
-class BSEffectShaderProperty : public CloneInherit<BSEffectShaderProperty, BSShaderProperty> {
+class BSEffectShaderProperty : public NiObjectCRTP<BSEffectShaderProperty, BSShaderProperty> {
 public:
 	NiString sourceTexture;
 	uint32_t textureClampMode = 0;
@@ -580,8 +580,8 @@ public:
 	static constexpr const char* BlockName = "BSEffectShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 
 	float GetEnvironmentMapScale() override;
@@ -591,7 +591,7 @@ public:
 	void SetEmissiveMultiple(const float emissive) override;
 };
 
-class BSWaterShaderProperty : public CloneInherit<BSWaterShaderProperty, BSShaderProperty> {
+class BSWaterShaderProperty : public NiObjectCRTP<BSWaterShaderProperty, BSShaderProperty> {
 private:
 	uint32_t waterFlags = 0;
 
@@ -599,11 +599,11 @@ public:
 	static constexpr const char* BlockName = "BSWaterShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSSkyShaderProperty : public CloneInherit<BSSkyShaderProperty, BSShaderProperty> {
+class BSSkyShaderProperty : public NiObjectCRTP<BSSkyShaderProperty, BSShaderProperty> {
 private:
 	NiString baseTexture;
 	uint32_t skyFlags = 0;
@@ -612,16 +612,16 @@ public:
 	static constexpr const char* BlockName = "BSSkyShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSShaderLightingProperty : public CloneInherit<BSShaderLightingProperty, BSShaderProperty> {
+class BSShaderLightingProperty : public NiObjectCRTP<BSShaderLightingProperty, BSShaderProperty> {
 public:
 	uint32_t textureClampMode = 3; // User Version <= 11
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 enum SkyObjectType : uint32_t {
@@ -633,7 +633,7 @@ enum SkyObjectType : uint32_t {
 	BSSM_SKY_MOON_STARS_MASK = 7
 };
 
-class SkyShaderProperty : public CloneInherit<SkyShaderProperty, BSShaderLightingProperty> {
+class SkyShaderProperty : public NiObjectCRTP<SkyShaderProperty, BSShaderLightingProperty> {
 private:
 	NiString fileName;
 	SkyObjectType skyObjectType = BSSM_SKY_TEXTURE;
@@ -642,11 +642,11 @@ public:
 	static constexpr const char* BlockName = "SkyShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class TileShaderProperty : public CloneInherit<TileShaderProperty, BSShaderLightingProperty> {
+class TileShaderProperty : public NiObjectCRTP<TileShaderProperty, BSShaderLightingProperty> {
 private:
 	NiString fileName;
 
@@ -654,11 +654,11 @@ public:
 	static constexpr const char* BlockName = "TileShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSShaderNoLightingProperty : public CloneInherit<BSShaderNoLightingProperty, BSShaderLightingProperty> {
+class BSShaderNoLightingProperty : public NiObjectCRTP<BSShaderNoLightingProperty, BSShaderLightingProperty> {
 public:
 	NiString baseTexture;
 	float falloffStartAngle = 1.0f;	  // User Version 2 > 26
@@ -669,15 +669,15 @@ public:
 	static constexpr const char* BlockName = "BSShaderNoLightingProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 
 	bool IsSkinned();
 	void SetSkinned(const bool enable);
 };
 
-class BSShaderPPLightingProperty : public CloneInherit<BSShaderPPLightingProperty, BSShaderLightingProperty> {
+class BSShaderPPLightingProperty : public NiObjectCRTP<BSShaderPPLightingProperty, BSShaderLightingProperty> {
 private:
 	BlockRef<BSShaderTextureSet> textureSetRef;
 
@@ -691,8 +691,8 @@ public:
 	static constexpr const char* BlockName = "BSShaderPPLightingProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -703,13 +703,13 @@ public:
 	void SetTextureSetRef(const int texSetRef);
 };
 
-class Lighting30ShaderProperty : public CloneInherit<Lighting30ShaderProperty, BSShaderPPLightingProperty> {
+class Lighting30ShaderProperty : public NiObjectCRTP<Lighting30ShaderProperty, BSShaderPPLightingProperty> {
 public:
 	static constexpr const char* BlockName = "Lighting30ShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiAlphaProperty : public CloneInherit<NiAlphaProperty, NiProperty> {
+class NiAlphaProperty : public NiObjectCRTP<NiAlphaProperty, NiProperty> {
 public:
 	uint16_t flags = 4844;
 	uint8_t threshold = 128;
@@ -717,12 +717,12 @@ public:
 	static constexpr const char* BlockName = "NiAlphaProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 
-class NiMaterialProperty : public CloneInherit<NiMaterialProperty, NiProperty> {
+class NiMaterialProperty : public NiObjectCRTP<NiMaterialProperty, NiProperty> {
 private:
 	Vector3 colorSpecular;
 	Vector3 colorEmissive;
@@ -737,8 +737,8 @@ public:
 	static constexpr const char* BlockName = "NiMaterialProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 
 	bool IsEmissive();
@@ -769,7 +769,7 @@ enum StencilMasks {
 
 enum DrawMode { DRAW_CCW_OR_BOTH, DRAW_CCW, DRAW_CW, DRAW_BOTH, DRAW_MAX };
 
-class NiStencilProperty : public CloneInherit<NiStencilProperty, NiProperty> {
+class NiStencilProperty : public NiObjectCRTP<NiStencilProperty, NiProperty> {
 public:
 	uint16_t flags = 19840;
 	uint32_t stencilRef = 0;
@@ -778,7 +778,7 @@ public:
 	static constexpr const char* BlockName = "NiStencilProperty";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 } // namespace nifly

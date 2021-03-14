@@ -6,13 +6,13 @@ See the included GPLv3 LICENSE file
 
 #pragma once
 
-#include "CloneInherit.hpp"
 #include "Object3d.hpp"
 
 #include <algorithm>
 #include <iostream>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <streambuf>
 #include <string>
@@ -128,17 +128,50 @@ public:
 
 enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
 
-class NiStream {
+class NiStreamBase {
 private:
-	std::iostream* stream = nullptr;
-	NiVersion* version = nullptr;
+	NiVersion version;
+
+public:
+	explicit NiStreamBase() {}
+	explicit NiStreamBase(NiVersion v)
+		: version(std::move(v)) {}
+
+	NiVersion& GetVersion() { return version; }
+};
+
+class NiIStream : public NiStreamBase {
+private:
+	std::istream* stream = nullptr;
+
+public:
+	NiIStream(std::istream* s)
+		: stream(s) {}
+
+	NiIStream(std::istream* s, NiVersion v)
+		: NiStreamBase(std::move(v))
+		, stream(s) {}
+
+	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
+	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
+
+	// Be careful with sizes of structs and classes
+	template<typename T>
+	NiIStream& operator>>(T& t) {
+		read((char*) &t, sizeof(T));
+		return *this;
+	}
+};
+
+class NiOStream : public NiStreamBase {
+private:
+	std::ostream* stream = nullptr;
 	int blockSize = 0;
 
 public:
-	NiStream(std::iostream* stream, NiVersion* version) {
-		this->stream = stream;
-		this->version = version;
-	}
+	NiOStream(std::ostream* s, NiVersion v)
+		: NiStreamBase(std::move(v))
+		, stream(s) {}
 
 	void write(const char* ptr, std::streamsize count) {
 		stream->write(ptr, count);
@@ -150,32 +183,96 @@ public:
 		stream->write("\n", 1);
 		blockSize += count + 1;
 	}
-
-	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
-
-	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
-
 	std::streampos tellp() { return stream->tellp(); }
 
 	// Be careful with sizes of structs and classes
 	template<typename T>
-	NiStream& operator<<(const T& t) {
+	NiOStream& operator<<(const T& t) {
 		write((const char*) &t, sizeof(T));
 		return *this;
 	}
 
-	// Be careful with sizes of structs and classes
+	void InitBlockSize() { blockSize = 0; }
+	int GetBlockSize() { return blockSize; }
+};
+
+class NiStreamReversible {
+public:
+	enum class Mode { Reading, Writing };
+
+	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode)
+		: istream(is)
+		, ostream(os)
+		, mode(mode) {}
+
+	void SetMode(Mode m) { mode = m; }
+	Mode GetMode() { return mode; }
+
 	template<typename T>
-	NiStream& operator>>(T& t) {
-		read((char*) &t, sizeof(T));
-		return *this;
+	void Sync(const T& t) {
+		Sync(reinterpret_cast<char*>(&t), sizeof(T));
 	}
 
-	void InitBlockSize() { blockSize = 0; }
+	void Sync(char* ptr, std::streamsize count) {
+		if (mode == Mode::Reading)
+			istream->read(ptr, count);
+		else
+			ostream->write(ptr, count);
+	}
 
-	int GetBlockSize() { return blockSize; }
+	void SyncLine(char* ptr, std::streamsize count) {
+		if (mode == Mode::Reading)
+			istream->getline(ptr, count);
+		else
+			ostream->writeline(ptr, count);
+	}
 
-	NiVersion& GetVersion() { return *version; }
+	NiOStream* asWrite() { return ostream; }
+	NiIStream* asRead() { return istream; }
+
+
+private:
+	NiIStream* istream;
+	NiOStream* ostream;
+	Mode mode;
+};
+
+template<typename Derived, typename Base, bool GetPut = false>
+class NiObjectCRTP;
+
+template<typename Derived, typename Base>
+class NiObjectCRTP<Derived, Base, false> : public Base {
+public:
+	virtual ~NiObjectCRTP() = default;
+
+	std::unique_ptr<Derived> Clone() const {
+		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
+	}
+
+private:
+	virtual NiObjectCRTP* Clone_impl() const override { return new Derived(asDer()); }
+
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
+};
+
+template<typename Derived, typename Base>
+class NiObjectCRTP<Derived, Base, true> : public NiObjectCRTP<Derived, Base, false> {
+public:
+	void Get(NiIStream& stream) override {
+		Base::Get(stream);
+		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
+		asDer().GetPut(s);
+	}
+	void Put(NiOStream& stream) override {
+		Base::Put(stream);
+		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
+		asDer().GetPut(s);
+	}
+
+private:
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
 };
 
 class NiString {
@@ -193,8 +290,8 @@ public:
 
 	void Clear() { str.clear(); }
 
-	void Get(NiStream& stream, const int szSize);
-	void Put(NiStream& stream, const int szSize, const bool wantNullOutput = true);
+	void Get(NiIStream& stream, const int szSize);
+	void Put(NiOStream& stream, const int szSize, const bool wantNullOutput = true);
 };
 
 class StringRef {
@@ -217,14 +314,14 @@ public:
 		str.Clear();
 	}
 
-	void Get(NiStream& stream) {
+	void Get(NiIStream& stream) {
 		if (stream.GetVersion().File() < V20_1_0_1)
 			str.Get(stream, 4);
 		else
 			stream >> index;
 	}
 
-	void Put(NiStream& stream) {
+	void Put(NiOStream& stream) {
 		if (stream.GetVersion().File() < V20_1_0_1)
 			str.Put(stream, 4, false);
 		else
@@ -252,9 +349,9 @@ public:
 	BlockRef() {}
 	BlockRef(const int id) { Ref::index = id; }
 
-	void Get(NiStream& stream) { stream >> base::index; }
+	void Get(NiIStream& stream) { stream >> base::index; }
 
-	void Put(NiStream& stream) { stream << base::index; }
+	void Put(NiOStream& stream) { stream << base::index; }
 };
 
 class RefArray {
@@ -269,9 +366,9 @@ public:
 
 	void SetKeepEmptyRefs(const bool keep = true) { keepEmptyRefs = keep; }
 
-	virtual void Get(NiStream& stream) = 0;
-	virtual void Put(NiStream& stream) = 0;
-	virtual void Put(NiStream& stream, const int forcedSize) = 0;
+	virtual void Get(NiIStream& stream) = 0;
+	virtual void Put(NiOStream& stream) = 0;
+	virtual void Put(NiOStream& stream, const int forcedSize) = 0;
 	virtual void AddBlockRef(const int id) = 0;
 	virtual int GetBlockRef(const int id) = 0;
 	virtual void SetBlockRef(const int id, const int index) = 0;
@@ -324,7 +421,7 @@ public:
 		keepEmptyRefs = false;
 	}
 
-	void Get(NiStream& stream) override {
+	void Get(NiIStream& stream) override {
 		stream >> arraySize;
 		refs.resize(arraySize);
 
@@ -332,7 +429,7 @@ public:
 			r.Get(stream);
 	}
 
-	void Put(NiStream& stream) override {
+	void Put(NiOStream& stream) override {
 		CleanInvalidRefs();
 		stream << arraySize;
 
@@ -340,7 +437,7 @@ public:
 			r.Put(stream);
 	}
 
-	void Put(NiStream& stream, const int forcedSize) override {
+	void Put(NiOStream& stream, const int forcedSize) override {
 		CleanInvalidRefs();
 		arraySize = forcedSize;
 		refs.resize(forcedSize);
@@ -401,7 +498,7 @@ public:
 	using base::arraySize;
 	using base::refs;
 
-	void Get(NiStream& stream) override {
+	void Get(NiIStream& stream) override {
 		stream.read((char*) &arraySize, 2);
 		refs.resize(arraySize);
 
@@ -409,7 +506,7 @@ public:
 			r.Get(stream);
 	}
 
-	void Put(NiStream& stream) override {
+	void Put(NiOStream& stream) override {
 		base::CleanInvalidRefs();
 		stream.write((char*) &arraySize, 2);
 
@@ -417,7 +514,7 @@ public:
 			r.Put(stream);
 	}
 
-	void Put(NiStream& stream, const int forcedSize) override {
+	void Put(NiOStream& stream, const int forcedSize) override {
 		base::CleanInvalidRefs();
 		arraySize = forcedSize;
 		refs.resize(forcedSize);
@@ -429,34 +526,40 @@ public:
 	}
 };
 
-class NiObject : public CloneInherit<AbstractMethod<NiObject>> {
+class NiObject {
 protected:
 	uint32_t blockSize = 0;
 
 public:
-	virtual ~NiObject() {}
+	virtual ~NiObject() = default;
 
 	static constexpr const char* BlockName = "NiUnknown";
 	virtual const char* GetBlockName() { return BlockName; }
 
 	virtual void notifyVerticesDelete(const std::vector<uint16_t>&) {}
 
-	virtual void Get(NiStream&) {}
-	virtual void Put(NiStream&) {}
+	virtual void Get(NiIStream&) {}
+	virtual void Put(NiOStream&) {}
 
 	virtual void GetStringRefs(std::vector<StringRef*>&) {}
 	virtual void GetChildRefs(std::set<Ref*>&) {}
 	virtual void GetChildIndices(std::vector<int>&) {}
 	virtual void GetPtrs(std::set<Ref*>&) {}
 
+	std::unique_ptr<NiObject> Clone() const {
+		return std::unique_ptr<NiObject>(static_cast<NiObject*>(this->Clone_impl()));
+	}
 
 	template<typename T>
 	bool HasType() {
 		return dynamic_cast<const T*>(this) != nullptr;
 	}
+
+private:
+	virtual NiObject* Clone_impl() const = 0;
 };
 
-class NiHeader : public CloneInherit<NiHeader, NiObject> {
+class NiHeader : public NiObjectCRTP<NiHeader, NiObject> {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -604,21 +707,20 @@ public:
 	static void BlockDeleted(NiObject* o, int blockId);
 	static void BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi);
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiUnknown : public CloneInherit<NiUnknown, NiObject> {
+class NiUnknown : public NiObjectCRTP<NiUnknown, NiObject, true> {
 private:
 	std::vector<char> data;
 
 public:
 	NiUnknown() {}
-	NiUnknown(NiStream& stream, const uint32_t size);
+	NiUnknown(NiIStream& stream, const uint32_t size);
 	NiUnknown(const uint32_t size);
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void GetPut(NiStreamReversible& stream);
 
 	std::vector<char> GetData() { return data; }
 };

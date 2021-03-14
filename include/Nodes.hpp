@@ -10,7 +10,7 @@ See the included GPLv3 LICENSE file
 #include "Objects.hpp"
 
 namespace nifly {
-class NiNode : public CloneInherit<NiNode, NiAVObject> {
+class NiNode : public NiObjectCRTP<NiNode, NiAVObject> {
 private:
 	BlockRefArray<NiAVObject> childRefs;
 	BlockRefArray<NiDynamicEffect> effectRefs;
@@ -19,8 +19,8 @@ public:
 	static constexpr const char* BlockName = "NiNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -29,7 +29,7 @@ public:
 	BlockRefArray<NiDynamicEffect>& GetEffects();
 };
 
-class BSFadeNode : public CloneInherit<BSFadeNode, NiNode> {
+class BSFadeNode : public NiObjectCRTP<BSFadeNode, NiNode> {
 public:
 	static constexpr const char* BlockName = "BSFadeNode";
 	const char* GetBlockName() override { return BlockName; }
@@ -41,7 +41,7 @@ enum BSValueNodeFlags : uint8_t {
 	BSVN_USE_PLAYER_ADJUST = 0x2
 };
 
-class BSValueNode : public CloneInherit<BSValueNode, NiNode> {
+class BSValueNode : public NiObjectCRTP<BSValueNode, NiNode> {
 private:
 	int value = 0;
 	BSValueNodeFlags valueFlags = BSVN_NONE;
@@ -50,17 +50,17 @@ public:
 	static constexpr const char* BlockName = "BSValueNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSLeafAnimNode : public CloneInherit<BSLeafAnimNode, NiNode> {
+class BSLeafAnimNode : public NiObjectCRTP<BSLeafAnimNode, NiNode> {
 public:
 	static constexpr const char* BlockName = "BSLeafAnimNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSTreeNode : public CloneInherit<BSTreeNode, NiNode> {
+class BSTreeNode : public NiObjectCRTP<BSTreeNode, NiNode> {
 private:
 	BlockRefArray<NiNode> bones1;
 	BlockRefArray<NiNode> bones2;
@@ -69,8 +69,8 @@ public:
 	static constexpr const char* BlockName = "BSTreeNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -79,7 +79,7 @@ public:
 	BlockRefArray<NiNode>& GetBones2();
 };
 
-class BSOrderedNode : public CloneInherit<BSOrderedNode, NiNode> {
+class BSOrderedNode : public NiObjectCRTP<BSOrderedNode, NiNode> {
 private:
 	Vector4 alphaSortBound;
 	bool isStaticBound = false;
@@ -88,13 +88,13 @@ public:
 	static constexpr const char* BlockName = "BSOrderedNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSMultiBoundData : public CloneInherit<BSMultiBoundData, NiObject> {};
+class BSMultiBoundData : public NiObjectCRTP<BSMultiBoundData, NiObject> {};
 
-class BSMultiBoundOBB : public CloneInherit<BSMultiBoundOBB, BSMultiBoundData> {
+class BSMultiBoundOBB : public NiObjectCRTP<BSMultiBoundOBB, BSMultiBoundData> {
 private:
 	Vector3 center;
 	Vector3 size;
@@ -104,11 +104,11 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundOBB";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSMultiBoundAABB : public CloneInherit<BSMultiBoundAABB, BSMultiBoundData> {
+class BSMultiBoundAABB : public NiObjectCRTP<BSMultiBoundAABB, BSMultiBoundData> {
 private:
 	Vector3 center;
 	Vector3 halfExtent;
@@ -117,11 +117,11 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundAABB";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSMultiBoundSphere : public CloneInherit<BSMultiBoundSphere, BSMultiBoundData> {
+class BSMultiBoundSphere : public NiObjectCRTP<BSMultiBoundSphere, BSMultiBoundData> {
 private:
 	Vector3 center;
 	float radius = 0.0f;
@@ -130,11 +130,11 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundSphere";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSMultiBound : public CloneInherit<BSMultiBound, NiObject> {
+class BSMultiBound : public NiObjectCRTP<BSMultiBound, NiObject> {
 private:
 	BlockRef<BSMultiBoundData> dataRef;
 
@@ -142,8 +142,8 @@ public:
 	static constexpr const char* BlockName = "BSMultiBound";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -159,7 +159,7 @@ enum BSCPCullingType : uint32_t {
 	BSCP_CULL_FORCEMULTIBOUNDSNOUPDATE
 };
 
-class BSMultiBoundNode : public CloneInherit<BSMultiBoundNode, NiNode> {
+class BSMultiBoundNode : public NiObjectCRTP<BSMultiBoundNode, NiNode> {
 private:
 	BlockRef<BSMultiBound> multiBoundRef;
 	BSCPCullingType cullingMode = BSCP_CULL_NORMAL;
@@ -168,8 +168,8 @@ public:
 	static constexpr const char* BlockName = "BSMultiBoundNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -178,7 +178,7 @@ public:
 	void SetMultiBoundRef(int multBoundRef);
 };
 
-class BSRangeNode : public CloneInherit<BSRangeNode, NiNode> {
+class BSRangeNode : public NiObjectCRTP<BSRangeNode, NiNode> {
 private:
 	uint8_t min = 0;
 	uint8_t max = 0;
@@ -188,23 +188,23 @@ public:
 	static constexpr const char* BlockName = "BSRangeNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class BSDebrisNode : public CloneInherit<BSDebrisNode, BSRangeNode> {
+class BSDebrisNode : public NiObjectCRTP<BSDebrisNode, BSRangeNode> {
 public:
 	static constexpr const char* BlockName = "BSDebrisNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSBlastNode : public CloneInherit<BSBlastNode, BSRangeNode> {
+class BSBlastNode : public NiObjectCRTP<BSBlastNode, BSRangeNode> {
 public:
 	static constexpr const char* BlockName = "BSBlastNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSDamageStage : public CloneInherit<BSDamageStage, BSBlastNode> {
+class BSDamageStage : public NiObjectCRTP<BSDamageStage, BSBlastNode> {
 public:
 	static constexpr const char* BlockName = "BSDamageStage";
 	const char* GetBlockName() override { return BlockName; }
@@ -220,7 +220,7 @@ enum BillboardMode : uint16_t {
 	ROTATE_ABOUT_UP2 = 9
 };
 
-class NiBillboardNode : public CloneInherit<NiBillboardNode, NiNode> {
+class NiBillboardNode : public NiObjectCRTP<NiBillboardNode, NiNode> {
 private:
 	BillboardMode billboardMode = ALWAYS_FACE_CAMERA;
 
@@ -228,13 +228,13 @@ public:
 	static constexpr const char* BlockName = "NiBillboardNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 enum NiSwitchFlags : uint16_t { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
 
-class NiSwitchNode : public CloneInherit<NiSwitchNode, NiNode> {
+class NiSwitchNode : public NiObjectCRTP<NiSwitchNode, NiNode> {
 private:
 	NiSwitchFlags flags = UPDATE_ONLY_ACTIVE_CHILD;
 	uint32_t index = 0;
@@ -243,8 +243,8 @@ public:
 	static constexpr const char* BlockName = "NiSwitchNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
 struct LODRange {
@@ -252,9 +252,9 @@ struct LODRange {
 	float farExtent = 0.0f;
 };
 
-class NiLODData : public CloneInherit<NiLODData, NiObject> {};
+class NiLODData : public NiObjectCRTP<NiLODData, NiObject> {};
 
-class NiRangeLODData : public CloneInherit<NiRangeLODData, NiLODData> {
+class NiRangeLODData : public NiObjectCRTP<NiRangeLODData, NiLODData> {
 private:
 	Vector3 lodCenter;
 	uint32_t numLODLevels = 0;
@@ -264,11 +264,11 @@ public:
 	static constexpr const char* BlockName = "NiRangeLODData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiScreenLODData : public CloneInherit<NiScreenLODData, NiLODData> {
+class NiScreenLODData : public NiObjectCRTP<NiScreenLODData, NiLODData> {
 private:
 	Vector3 boundCenter;
 	float boundRadius = 0.0f;
@@ -281,11 +281,11 @@ public:
 	static constexpr const char* BlockName = "NiScreenLODData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 
-class NiLODNode : public CloneInherit<NiLODNode, NiSwitchNode> {
+class NiLODNode : public NiObjectCRTP<NiLODNode, NiSwitchNode> {
 private:
 	BlockRef<NiLODData> lodLevelData;
 
@@ -293,8 +293,8 @@ public:
 	static constexpr const char* BlockName = "NiLODNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -303,7 +303,7 @@ public:
 	void SetLodLevelDataRef(int dataRef);
 };
 
-class NiBone : public CloneInherit<NiBone, NiNode> {
+class NiBone : public NiObjectCRTP<NiBone, NiNode> {
 public:
 	static constexpr const char* BlockName = "NiBone";
 	const char* GetBlockName() override { return BlockName; }
@@ -311,7 +311,7 @@ public:
 
 enum SortingMode { SORTING_INHERIT, SORTING_OFF };
 
-class NiSortAdjustNode : public CloneInherit<NiSortAdjustNode, NiNode> {
+class NiSortAdjustNode : public NiObjectCRTP<NiSortAdjustNode, NiNode> {
 private:
 	SortingMode sortingMode = SORTING_INHERIT;
 
@@ -319,7 +319,7 @@ public:
 	static constexpr const char* BlockName = "NiSortAdjustNode";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiStream& stream) override;
-	void Put(NiStream& stream) override;
+	void Get(NiIStream& stream) override;
+	void Put(NiOStream& stream) override;
 };
 } // namespace nifly
