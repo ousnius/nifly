@@ -28,3 +28,9 @@ TEST_CASE("Load, optimize and save file", "[NifFile]") {
 	nif.OptimizeFor(options);
 	REQUIRE(nif.Save("TestNifFile_Optimize_output.nif") == 0);
 }
+
+TEST_CASE("Load and save animated file", "[NifFile]") {
+	NifFile nif;
+	REQUIRE(nif.Load("TestNifFile_Animated.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Animated_output.nif") == 0);
+}
