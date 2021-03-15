@@ -186,11 +186,11 @@ void NifFile::Clear() {
 }
 
 int NifFile::Load(const std::filesystem::path& fileName, const NifLoadOptions& options) {
-	std::fstream file(fileName, std::ios::in | std::ios::binary);
+	std::ifstream file(fileName, std::ios::in | std::ios::binary);
 	return Load(file, options);
 }
 
-int NifFile::Load(std::iostream& file, const NifLoadOptions& options) {
+int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 	Clear();
 
 	isTerrain = options.isTerrain;
@@ -926,11 +926,11 @@ int NifFile::CloneNamedNode(const std::string& nodeName, NifFile* srcNif) {
 }
 
 int NifFile::Save(const std::filesystem::path& fileName, const NifSaveOptions& options) {
-	std::fstream file(fileName, std::ios::out | std::ios::binary);
+	std::ofstream file(fileName, std::ios::out | std::ios::binary);
 	return Save(file, options);
 }
 
-int NifFile::Save(std::iostream& file, const NifSaveOptions& options) {
+int NifFile::Save(std::ostream& file, const NifSaveOptions& options) {
 	if (file) {
 		if (hdr.GetVersion().IsFO76())
 			return 76;
@@ -963,7 +963,7 @@ int NifFile::Save(std::iostream& file, const NifSaveOptions& options) {
 		// Get previous stream pos of block size array and overwrite
 		std::streampos blockSizePos = hdr.GetBlockSizeStreamPos();
 		if (blockSizePos != std::streampos()) {
-			file.seekg(blockSizePos);
+			file.seekp(blockSizePos);
 
 			for (uint32_t i = 0; i < hdr.GetNumBlocks(); i++)
 				stream << blockSizes[i];

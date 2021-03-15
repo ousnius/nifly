@@ -62,7 +62,7 @@ public:
 		Load(fileName, options);
 	}
 
-	NifFile(std::iostream& file, const NifLoadOptions& options = NifLoadOptions()) { Load(file, options); }
+	NifFile(std::istream& file, const NifLoadOptions& options = NifLoadOptions()) { Load(file, options); }
 
 	NifFile(const NifFile& other) { CopyFrom(other); }
 
@@ -75,9 +75,9 @@ public:
 	void CopyFrom(const NifFile& other);
 
 	int Load(const std::filesystem::path& fileName, const NifLoadOptions& options = NifLoadOptions());
-	int Load(std::iostream& file, const NifLoadOptions& options = NifLoadOptions());
+	int Load(std::istream& file, const NifLoadOptions& options = NifLoadOptions());
 	int Save(const std::filesystem::path& fileName, const NifSaveOptions& options = NifSaveOptions());
-	int Save(std::iostream& file, const NifSaveOptions& options = NifSaveOptions());
+	int Save(std::ostream& file, const NifSaveOptions& options = NifSaveOptions());
 
 	void Optimize();
 	OptResult OptimizeFor(OptOptions& options);
