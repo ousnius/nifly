@@ -235,7 +235,7 @@ public:
 
 class NiKeyBasedInterpolator : public NiObjectCRTP<NiKeyBasedInterpolator, NiInterpolator> {};
 
-class NiBoolInterpolator : public NiObjectCRTP<NiBoolInterpolator, NiKeyBasedInterpolator> {
+class NiBoolInterpolator : public NiObjectCRTP<NiBoolInterpolator, NiKeyBasedInterpolator, true> {
 private:
 	uint8_t boolValue = 0;
 	BlockRef<NiBoolData> dataRef;
