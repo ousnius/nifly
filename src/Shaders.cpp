@@ -8,209 +8,102 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiShadeProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-}
-
-void NiShadeProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
+void NiShadeProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
 }
 
 
-void NiSpecularProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-}
-
-void NiSpecularProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
+void NiSpecularProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
 }
 
 
-void NiTexturingProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-	stream >> textureCount;
+void NiTexturingProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(textureCount);
 
 	if (textureCount > 0) {
-		stream >> hasBaseTex;
+		stream.Sync(hasBaseTex);
 		if (hasBaseTex)
-			baseTex.Get(stream);
+			baseTex.Sync(stream);
 	}
 
 	if (textureCount > 1) {
-		stream >> hasDarkTex;
+		stream.Sync(hasDarkTex);
 		if (hasDarkTex)
-			darkTex.Get(stream);
+			darkTex.Sync(stream);
 	}
 
 	if (textureCount > 2) {
-		stream >> hasDetailTex;
+		stream.Sync(hasDetailTex);
 		if (hasDetailTex)
-			detailTex.Get(stream);
+			detailTex.Sync(stream);
 	}
 
 	if (textureCount > 3) {
-		stream >> hasGlossTex;
+		stream.Sync(hasGlossTex);
 		if (hasGlossTex)
-			glossTex.Get(stream);
+			glossTex.Sync(stream);
 	}
 
 	if (textureCount > 4) {
-		stream >> hasGlowTex;
+		stream.Sync(hasGlowTex);
 		if (hasGlowTex)
-			glowTex.Get(stream);
+			glowTex.Sync(stream);
 	}
 
 	if (textureCount > 5) {
-		stream >> hasBumpTex;
+		stream.Sync(hasBumpTex);
 		if (hasBumpTex) {
-			bumpTex.Get(stream);
-			stream >> lumaScale;
-			stream >> lumaOffset;
-			stream >> bumpMatrix;
+			bumpTex.Sync(stream);
+			stream.Sync(lumaScale);
+			stream.Sync(lumaOffset);
+			stream.Sync(bumpMatrix);
 		}
 	}
 
 	if (textureCount > 6) {
-		stream >> hasNormalTex;
+		stream.Sync(hasNormalTex);
 		if (hasNormalTex)
-			normalTex.Get(stream);
+			normalTex.Sync(stream);
 	}
 
 	if (textureCount > 7) {
-		stream >> hasParallaxTex;
+		stream.Sync(hasParallaxTex);
 		if (hasParallaxTex) {
-			parallaxTex.Get(stream);
-			stream >> parallaxFloat;
+			parallaxTex.Sync(stream);
+			stream.Sync(parallaxFloat);
 		}
 	}
 
 	if (textureCount > 8) {
-		stream >> hasDecalTex0;
+		stream.Sync(hasDecalTex0);
 		if (hasDecalTex0)
-			decalTex0.Get(stream);
+			decalTex0.Sync(stream);
 	}
 
 	if (textureCount > 9) {
-		stream >> hasDecalTex1;
+		stream.Sync(hasDecalTex1);
 		if (hasDecalTex1)
-			decalTex1.Get(stream);
+			decalTex1.Sync(stream);
 	}
 
 	if (textureCount > 10) {
-		stream >> hasDecalTex2;
+		stream.Sync(hasDecalTex2);
 		if (hasDecalTex2)
-			decalTex2.Get(stream);
+			decalTex2.Sync(stream);
 	}
 
 	if (textureCount > 11) {
-		stream >> hasDecalTex3;
+		stream.Sync(hasDecalTex3);
 		if (hasDecalTex3)
-			decalTex3.Get(stream);
+			decalTex3.Sync(stream);
 	}
 
-	stream >> numShaderTex;
+	stream.Sync(numShaderTex);
 	shaderTex.resize(numShaderTex);
 	for (uint32_t i = 0; i < numShaderTex; i++)
-		shaderTex[i].Get(stream);
-}
-
-void NiTexturingProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
-	stream << textureCount;
-
-	if (textureCount > 0) {
-		stream << hasBaseTex;
-		if (hasBaseTex)
-			baseTex.Put(stream);
-	}
-
-	if (textureCount > 1) {
-		stream << hasDarkTex;
-		if (hasDarkTex)
-			darkTex.Put(stream);
-	}
-
-	if (textureCount > 2) {
-		stream << hasDetailTex;
-		if (hasDetailTex)
-			detailTex.Put(stream);
-	}
-
-	if (textureCount > 3) {
-		stream << hasGlossTex;
-		if (hasGlossTex)
-			glossTex.Put(stream);
-	}
-
-	if (textureCount > 4) {
-		stream << hasGlowTex;
-		if (hasGlowTex)
-			glowTex.Put(stream);
-	}
-
-	if (textureCount > 5) {
-		stream << hasBumpTex;
-		if (hasBumpTex) {
-			bumpTex.Put(stream);
-			stream << lumaScale;
-			stream << lumaOffset;
-			stream << bumpMatrix;
-		}
-	}
-
-	if (textureCount > 6) {
-		stream << hasNormalTex;
-		if (hasNormalTex)
-			normalTex.Put(stream);
-	}
-
-	if (textureCount > 7) {
-		stream << hasParallaxTex;
-		if (hasParallaxTex) {
-			parallaxTex.Put(stream);
-			stream << parallaxFloat;
-		}
-	}
-
-	if (textureCount > 8) {
-		stream << hasDecalTex0;
-		if (hasDecalTex0)
-			decalTex0.Put(stream);
-	}
-
-	if (textureCount > 9) {
-		stream << hasDecalTex1;
-		if (hasDecalTex1)
-			decalTex1.Put(stream);
-	}
-
-	if (textureCount > 10) {
-		stream << hasDecalTex2;
-		if (hasDecalTex2)
-			decalTex2.Put(stream);
-	}
-
-	if (textureCount > 11) {
-		stream << hasDecalTex3;
-		if (hasDecalTex3)
-			decalTex3.Put(stream);
-	}
-
-	stream << numShaderTex;
-	for (uint32_t i = 0; i < numShaderTex; i++)
-		shaderTex[i].Put(stream);
+		shaderTex[i].Sync(stream);
 }
 
 void NiTexturingProperty::GetChildRefs(std::set<Ref*>& refs) {
@@ -254,144 +147,65 @@ void NiTexturingProperty::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiVertexColorProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-}
-
-void NiVertexColorProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
+void NiVertexColorProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
 }
 
 
-void NiDitherProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-}
-
-void NiDitherProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
+void NiDitherProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
 }
 
 
-void NiFogProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-	stream >> fogDepth;
-	stream >> fogColor;
-}
-
-void NiFogProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
-	stream << fogDepth;
-	stream << fogColor;
+void NiFogProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(fogDepth);
+	stream.Sync(fogColor);
 }
 
 
-void NiWireframeProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-}
-
-void NiWireframeProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
+void NiWireframeProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
 }
 
 
-void NiZBufferProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-}
-
-void NiZBufferProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
+void NiZBufferProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
 }
 
 
-void BSShaderProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
+void BSShaderProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
 		return;
 
 	if (stream.GetVersion().User() <= 11) {
-		stream >> shaderFlags;
-		stream >> shaderType;
-		stream >> shaderFlags1;
-		stream >> shaderFlags2;
-		stream >> environmentMapScale;
+		stream.Sync(shaderFlags);
+		stream.Sync(shaderType);
+		stream.Sync(shaderFlags1);
+		stream.Sync(shaderFlags2);
+		stream.Sync(environmentMapScale);
 	}
 	else {
 		if (stream.GetVersion().Stream() == 155) {
-			stream >> bslspShaderType;
-			stream >> numSF1;
-			stream >> numSF2;
+			stream.Sync(bslspShaderType);
+			stream.Sync(numSF1);
+			stream.Sync(numSF2);
 
 			SF1.resize(numSF1);
 			SF2.resize(numSF2);
 
 			for (uint32_t i = 0; i < numSF1; i++)
-				stream >> SF1[i];
+				stream.Sync(SF1[i]);
 
 			for (uint32_t i = 0; i < numSF2; i++)
-				stream >> SF2[i];
+				stream.Sync(SF2[i]);
 		}
 
 		if (stream.GetVersion().Stream() < 155) {
-			stream >> shaderFlags1;
-			stream >> shaderFlags2;
-			stream >> uvOffset;
-			stream >> uvScale;
-		}
-	}
-}
-
-void BSShaderProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
-		return;
-
-	if (stream.GetVersion().User() <= 11) {
-		stream << shaderFlags;
-		stream << shaderType;
-		stream << shaderFlags1;
-		stream << shaderFlags2;
-		stream << environmentMapScale;
-	}
-	else {
-		if (stream.GetVersion().Stream() == 155) {
-			stream << bslspShaderType;
-			stream << numSF1;
-			stream << numSF2;
-
-			for (uint32_t i = 0; i < numSF1; i++)
-				stream << SF1[i];
-
-			for (uint32_t i = 0; i < numSF2; i++)
-				stream << SF2[i];
-		}
-
-		if (stream.GetVersion().Stream() < 155) {
-			stream << shaderFlags1;
-			stream << shaderFlags2;
-			stream << uvOffset;
-			stream << uvScale;
+			stream.Sync(shaderFlags1);
+			stream.Sync(shaderFlags2);
+			stream.Sync(uvOffset);
+			stream.Sync(uvScale);
 		}
 	}
 }
@@ -501,44 +315,19 @@ Vector2 BSShaderProperty::GetUVScale() {
 }
 
 
-void TallGrassShaderProperty::Get(NiIStream& stream) {
-	BSShaderProperty::Get(stream);
-
-	fileName.Get(stream, 4);
-}
-
-void TallGrassShaderProperty::Put(NiOStream& stream) {
-	BSShaderProperty::Put(stream);
-
-	fileName.Put(stream, 4, false);
+void TallGrassShaderProperty::Sync(NiStreamReversible& stream) {
+	fileName.Sync(stream, 4);
 }
 
 
-void SkyShaderProperty::Get(NiIStream& stream) {
-	BSShaderLightingProperty::Get(stream);
-
-	fileName.Get(stream, 4);
-	stream >> skyObjectType;
-}
-
-void SkyShaderProperty::Put(NiOStream& stream) {
-	BSShaderLightingProperty::Put(stream);
-
-	fileName.Put(stream, 4, false);
-	stream << skyObjectType;
+void SkyShaderProperty::Sync(NiStreamReversible& stream) {
+	fileName.Sync(stream, 4);
+	stream.Sync(skyObjectType);
 }
 
 
-void TileShaderProperty::Get(NiIStream& stream) {
-	BSShaderLightingProperty::Get(stream);
-
-	fileName.Get(stream, 4);
-}
-
-void TileShaderProperty::Put(NiOStream& stream) {
-	BSShaderLightingProperty::Put(stream);
-
-	fileName.Put(stream, 4, false);
+void TileShaderProperty::Sync(NiStreamReversible& stream) {
+	fileName.Sync(stream, 4);
 }
 
 
@@ -555,21 +344,11 @@ BSShaderTextureSet::BSShaderTextureSet(NiVersion& version) {
 	textures.resize(numTextures);
 }
 
-void BSShaderTextureSet::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> numTextures;
+void BSShaderTextureSet::Sync(NiStreamReversible& stream) {
+	stream.Sync(numTextures);
 	textures.resize(numTextures);
 	for (int i = 0; i < numTextures; i++)
-		textures[i].Get(stream, 4);
-}
-
-void BSShaderTextureSet::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << numTextures;
-	for (int i = 0; i < numTextures; i++)
-		textures[i].Put(stream, 4, false);
+		textures[i].Sync(stream, 4);
 }
 
 BSLightingShaderProperty::BSLightingShaderProperty() {
@@ -598,238 +377,119 @@ BSLightingShaderProperty::BSLightingShaderProperty(NiVersion& version)
 		glossiness = 20.0f;
 }
 
-void BSLightingShaderProperty::Get(NiIStream& stream) {
-	BSShaderProperty::Get(stream);
-
+void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
 		return;
 
-	textureSetRef.Get(stream);
+	textureSetRef.Sync(stream);
 
-	stream >> emissiveColor;
-	stream >> emissiveMultiple;
+	stream.Sync(emissiveColor);
+	stream.Sync(emissiveMultiple);
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130)
-		rootMaterialName.Get(stream);
+		rootMaterialName.Sync(stream);
 
-	stream >> textureClampMode;
-	stream >> alpha;
-	stream >> refractionStrength;
-	stream >> glossiness;
-	stream >> specularColor;
-	stream >> specularStrength;
+	stream.Sync(textureClampMode);
+	stream.Sync(alpha);
+	stream.Sync(refractionStrength);
+	stream.Sync(glossiness);
+	stream.Sync(specularColor);
+	stream.Sync(specularStrength);
 
 	if (stream.GetVersion().User() <= 12 && stream.GetVersion().Stream() < 130) {
-		stream >> softlighting;
-		stream >> rimlightPower;
+		stream.Sync(softlighting);
+		stream.Sync(rimlightPower);
 	}
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130) {
-		stream >> subsurfaceRolloff;
-		stream >> unkFloat1;
-		stream >> backlightPower;
-		stream >> grayscaleToPaletteScale;
-		stream >> fresnelPower;
-		stream >> wetnessSpecScale;
-		stream >> wetnessSpecPower;
-		stream >> wetnessMinVar;
+		stream.Sync(subsurfaceRolloff);
+		stream.Sync(unkFloat1);
+		stream.Sync(backlightPower);
+		stream.Sync(grayscaleToPaletteScale);
+		stream.Sync(fresnelPower);
+		stream.Sync(wetnessSpecScale);
+		stream.Sync(wetnessSpecPower);
+		stream.Sync(wetnessMinVar);
 
 		if (stream.GetVersion().Stream() == 130)
-			stream >> wetnessEnvmapScale;
+			stream.Sync(wetnessEnvmapScale);
 
-		stream >> wetnessFresnelPower;
-		stream >> wetnessMetalness;
+		stream.Sync(wetnessFresnelPower);
+		stream.Sync(wetnessMetalness);
 
 		if (stream.GetVersion().Stream() == 155) {
-			stream >> wetnessUnknown1;
-			stream >> wetnessUnknown2;
+			stream.Sync(wetnessUnknown1);
+			stream.Sync(wetnessUnknown2);
 		}
 	}
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155) {
-		stream >> lumEmittance;
-		stream >> exposureOffset;
-		stream >> finalExposureMin;
-		stream >> finalExposureMax;
-		stream >> doTranslucency;
-		stream >> subsurfaceColor;
-		stream >> transmissiveScale;
-		stream >> turbulence;
-		stream >> thickObject;
-		stream >> mixAlbedo;
-		stream >> hasTextureArrays;
+		stream.Sync(lumEmittance);
+		stream.Sync(exposureOffset);
+		stream.Sync(finalExposureMin);
+		stream.Sync(finalExposureMax);
+		stream.Sync(doTranslucency);
+		stream.Sync(subsurfaceColor);
+		stream.Sync(transmissiveScale);
+		stream.Sync(turbulence);
+		stream.Sync(thickObject);
+		stream.Sync(mixAlbedo);
+		stream.Sync(hasTextureArrays);
 
 		if (hasTextureArrays) {
-			stream >> numTextureArrays;
+			stream.Sync(numTextureArrays);
 
 			textureArrays.resize(numTextureArrays);
 
 			for (uint32_t i = 0; i < numTextureArrays; i++)
-				textureArrays[i].Get(stream);
+				textureArrays[i].Sync(stream);
 		}
 	}
 
 	switch (bslspShaderType) {
 		case 1:
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 130)
-				stream >> environmentMapScale;
+				stream.Sync(environmentMapScale);
 
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 130) {
-				stream >> useSSR;
-				stream >> wetnessUseSSR;
+				stream.Sync(useSSR);
+				stream.Sync(wetnessUseSSR);
 			}
 
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155) {
-				stream >> skinTintColor;
-				stream >> skinTintAlpha;
+				stream.Sync(skinTintColor);
+				stream.Sync(skinTintAlpha);
 			}
 			break;
 		case 5:
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 130)
-				stream >> skinTintColor;
+				stream.Sync(skinTintColor);
 
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 130)
-				stream >> skinTintAlpha;
+				stream.Sync(skinTintAlpha);
 
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155)
-				stream >> hairTintColor;
+				stream.Sync(hairTintColor);
 			break;
 		case 6:
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 130)
-				stream >> hairTintColor;
+				stream.Sync(hairTintColor);
 			break;
 		case 7:
-			stream >> maxPasses;
-			stream >> scale;
+			stream.Sync(maxPasses);
+			stream.Sync(scale);
 			break;
 		case 11:
-			stream >> parallaxInnerLayerThickness;
-			stream >> parallaxRefractionScale;
-			stream >> parallaxInnerLayerTextureScale;
-			stream >> parallaxEnvmapStrength;
+			stream.Sync(parallaxInnerLayerThickness);
+			stream.Sync(parallaxRefractionScale);
+			stream.Sync(parallaxInnerLayerTextureScale);
+			stream.Sync(parallaxEnvmapStrength);
 			break;
-		case 14: stream >> sparkleParameters; break;
+		case 14: stream.Sync(sparkleParameters); break;
 		case 16:
-			stream >> eyeCubemapScale;
-			stream >> eyeLeftReflectionCenter;
-			stream >> eyeRightReflectionCenter;
-			break;
-	}
-}
-
-void BSLightingShaderProperty::Put(NiOStream& stream) {
-	BSShaderProperty::Put(stream);
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
-		return;
-
-	textureSetRef.Put(stream);
-
-	stream << emissiveColor;
-	stream << emissiveMultiple;
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130)
-		rootMaterialName.Put(stream);
-
-	stream << textureClampMode;
-	stream << alpha;
-	stream << refractionStrength;
-	stream << glossiness;
-	stream << specularColor;
-	stream << specularStrength;
-
-	if (stream.GetVersion().User() <= 12 && stream.GetVersion().Stream() < 130) {
-		stream << softlighting;
-		stream << rimlightPower;
-	}
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130) {
-		stream << subsurfaceRolloff;
-		stream << unkFloat1;
-		stream << backlightPower;
-		stream << grayscaleToPaletteScale;
-		stream << fresnelPower;
-		stream << wetnessSpecScale;
-		stream << wetnessSpecPower;
-		stream << wetnessMinVar;
-
-		if (stream.GetVersion().Stream() == 130)
-			stream << wetnessEnvmapScale;
-
-		stream << wetnessFresnelPower;
-		stream << wetnessMetalness;
-
-		if (stream.GetVersion().Stream() == 155) {
-			stream << wetnessUnknown1;
-			stream << wetnessUnknown2;
-		}
-	}
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155) {
-		stream << lumEmittance;
-		stream << exposureOffset;
-		stream << finalExposureMin;
-		stream << finalExposureMax;
-		stream << doTranslucency;
-		stream << subsurfaceColor;
-		stream << transmissiveScale;
-		stream << turbulence;
-		stream << thickObject;
-		stream << mixAlbedo;
-		stream << hasTextureArrays;
-
-		if (hasTextureArrays) {
-			stream << numTextureArrays;
-
-			for (uint32_t i = 0; i < numTextureArrays; i++)
-				textureArrays[i].Put(stream);
-		}
-	}
-
-	switch (bslspShaderType) {
-		case 1:
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 130)
-				stream << environmentMapScale;
-
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 130) {
-				stream << useSSR;
-				stream << wetnessUseSSR;
-			}
-
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155) {
-				stream << skinTintColor;
-				stream << skinTintAlpha;
-			}
-			break;
-		case 5:
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 130)
-				stream << skinTintColor;
-
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 130)
-				stream << skinTintAlpha;
-
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155)
-				stream << hairTintColor;
-			break;
-		case 6:
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 130)
-				stream << hairTintColor;
-			break;
-		case 7:
-			stream << maxPasses;
-			stream << scale;
-			break;
-		case 11:
-			stream << parallaxInnerLayerThickness;
-			stream << parallaxRefractionScale;
-			stream << parallaxInnerLayerTextureScale;
-			stream << parallaxEnvmapStrength;
-			break;
-		case 14: stream << sparkleParameters; break;
-		case 16:
-			stream << eyeCubemapScale;
-			stream << eyeLeftReflectionCenter;
-			stream << eyeRightReflectionCenter;
+			stream.Sync(eyeCubemapScale);
+			stream.Sync(eyeLeftReflectionCenter);
+			stream.Sync(eyeRightReflectionCenter);
 			break;
 	}
 }
@@ -967,87 +627,43 @@ void BSLightingShaderProperty::SetWetMaterialName(const std::string& matName) {
 }
 
 
-void BSEffectShaderProperty::Get(NiIStream& stream) {
-	BSShaderProperty::Get(stream);
-
+void BSEffectShaderProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
 		return;
 
-	sourceTexture.Get(stream, 4);
-	stream >> textureClampMode;
+	sourceTexture.Sync(stream, 4);
+	stream.Sync(textureClampMode);
 
-	stream >> falloffStartAngle;
-	stream >> falloffStopAngle;
-	stream >> falloffStartOpacity;
-	stream >> falloffStopOpacity;
+	stream.Sync(falloffStartAngle);
+	stream.Sync(falloffStopAngle);
+	stream.Sync(falloffStartOpacity);
+	stream.Sync(falloffStopOpacity);
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155)
-		stream >> refractionPower;
+		stream.Sync(refractionPower);
 
-	stream >> baseColor;
-	stream >> baseColorScale;
-	stream >> softFalloffDepth;
-	greyscaleTexture.Get(stream, 4);
+	stream.Sync(baseColor);
+	stream.Sync(baseColorScale);
+	stream.Sync(softFalloffDepth);
+	greyscaleTexture.Sync(stream, 4);
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130) {
-		envMapTexture.Get(stream, 4);
-		normalTexture.Get(stream, 4);
-		envMaskTexture.Get(stream, 4);
-		stream >> envMapScale;
+		envMapTexture.Sync(stream, 4);
+		normalTexture.Sync(stream, 4);
+		envMaskTexture.Sync(stream, 4);
+		stream.Sync(envMapScale);
 	}
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155) {
-		reflectanceTexture.Get(stream, 4);
-		lightingTexture.Get(stream, 4);
-		stream >> emittanceColor;
-		emitGradientTexture.Get(stream, 4);
+		reflectanceTexture.Sync(stream, 4);
+		lightingTexture.Sync(stream, 4);
+		stream.Sync(emittanceColor);
+		emitGradientTexture.Sync(stream, 4);
 
-		stream >> lumEmittance;
-		stream >> exposureOffset;
-		stream >> finalExposureMin;
-		stream >> finalExposureMax;
-	}
-}
-
-void BSEffectShaderProperty::Put(NiOStream& stream) {
-	BSShaderProperty::Put(stream);
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
-		return;
-
-	sourceTexture.Put(stream, 4, false);
-	stream << textureClampMode;
-
-	stream << falloffStartAngle;
-	stream << falloffStopAngle;
-	stream << falloffStartOpacity;
-	stream << falloffStopOpacity;
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155)
-		stream << refractionPower;
-
-	stream << baseColor;
-	stream << baseColorScale;
-	stream << softFalloffDepth;
-	greyscaleTexture.Put(stream, 4, false);
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130) {
-		envMapTexture.Put(stream, 4, false);
-		normalTexture.Put(stream, 4, false);
-		envMaskTexture.Put(stream, 4, false);
-		stream << envMapScale;
-	}
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155) {
-		reflectanceTexture.Put(stream, 4, false);
-		lightingTexture.Put(stream, 4, false);
-		stream << emittanceColor;
-		emitGradientTexture.Put(stream, 4, false);
-
-		stream << lumEmittance;
-		stream << exposureOffset;
-		stream << finalExposureMin;
-		stream << finalExposureMax;
+		stream.Sync(lumEmittance);
+		stream.Sync(exposureOffset);
+		stream.Sync(finalExposureMin);
+		stream.Sync(finalExposureMax);
 	}
 }
 
@@ -1072,97 +688,44 @@ void BSEffectShaderProperty::SetEmissiveMultiple(const float emissive) {
 }
 
 
-void BSWaterShaderProperty::Get(NiIStream& stream) {
-	BSShaderProperty::Get(stream);
-
+void BSWaterShaderProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
 		return;
 
-	stream >> waterFlags;
+	stream.Sync(waterFlags);
 }
 
-void BSWaterShaderProperty::Put(NiOStream& stream) {
-	BSShaderProperty::Put(stream);
 
+void BSSkyShaderProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
 		return;
 
-	stream << waterFlags;
+	baseTexture.Sync(stream, 4);
+	stream.Sync(skyFlags);
 }
 
 
-void BSSkyShaderProperty::Get(NiIStream& stream) {
-	BSShaderProperty::Get(stream);
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
-		return;
-
-	baseTexture.Get(stream, 4);
-	stream >> skyFlags;
-}
-
-void BSSkyShaderProperty::Put(NiOStream& stream) {
-	BSShaderProperty::Put(stream);
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155 && name.GetIndex() != NIF_NPOS)
-		return;
-
-	baseTexture.Put(stream, 4, false);
-	stream << skyFlags;
-}
-
-
-void BSShaderLightingProperty::Get(NiIStream& stream) {
-	BSShaderProperty::Get(stream);
-
+void BSShaderLightingProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().User() <= 11)
-		stream >> textureClampMode;
-}
-
-void BSShaderLightingProperty::Put(NiOStream& stream) {
-	BSShaderProperty::Put(stream);
-
-	if (stream.GetVersion().User() <= 11)
-		stream << textureClampMode;
+		stream.Sync(textureClampMode);
 }
 
 
-void BSShaderPPLightingProperty::Get(NiIStream& stream) {
-	BSShaderLightingProperty::Get(stream);
-
-	textureSetRef.Get(stream);
+void BSShaderPPLightingProperty::Sync(NiStreamReversible& stream) {
+	textureSetRef.Sync(stream);
 
 	if (stream.GetVersion().User() == 11 && stream.GetVersion().Stream() > 14) {
-		stream >> refractionStrength;
-		stream >> refractionFirePeriod;
+		stream.Sync(refractionStrength);
+		stream.Sync(refractionFirePeriod);
 	}
 
 	if (stream.GetVersion().User() == 11 && stream.GetVersion().Stream() > 24) {
-		stream >> parallaxMaxPasses;
-		stream >> parallaxScale;
+		stream.Sync(parallaxMaxPasses);
+		stream.Sync(parallaxScale);
 	}
 
 	if (stream.GetVersion().User() >= 12)
-		stream >> emissiveColor;
-}
-
-void BSShaderPPLightingProperty::Put(NiOStream& stream) {
-	BSShaderLightingProperty::Put(stream);
-
-	textureSetRef.Put(stream);
-
-	if (stream.GetVersion().User() == 11 && stream.GetVersion().Stream() > 14) {
-		stream << refractionStrength;
-		stream << refractionFirePeriod;
-	}
-
-	if (stream.GetVersion().User() == 11 && stream.GetVersion().Stream() > 24) {
-		stream << parallaxMaxPasses;
-		stream << parallaxScale;
-	}
-
-	if (stream.GetVersion().User() >= 12)
-		stream << emissiveColor;
+		stream.Sync(emissiveColor);
 }
 
 void BSShaderPPLightingProperty::GetChildRefs(std::set<Ref*>& refs) {
@@ -1197,29 +760,14 @@ void BSShaderPPLightingProperty::SetTextureSetRef(const int texSetRef) {
 }
 
 
-void BSShaderNoLightingProperty::Get(NiIStream& stream) {
-	BSShaderLightingProperty::Get(stream);
-
-	baseTexture.Get(stream, 4);
+void BSShaderNoLightingProperty::Sync(NiStreamReversible& stream) {
+	baseTexture.Sync(stream, 4);
 
 	if (stream.GetVersion().Stream() > 26) {
-		stream >> falloffStartAngle;
-		stream >> falloffStopAngle;
-		stream >> falloffStartOpacity;
-		stream >> falloffStopOpacity;
-	}
-}
-
-void BSShaderNoLightingProperty::Put(NiOStream& stream) {
-	BSShaderLightingProperty::Put(stream);
-
-	baseTexture.Put(stream, 4, false);
-
-	if (stream.GetVersion().Stream() > 26) {
-		stream << falloffStartAngle;
-		stream << falloffStopAngle;
-		stream << falloffStartOpacity;
-		stream << falloffStopOpacity;
+		stream.Sync(falloffStartAngle);
+		stream.Sync(falloffStopAngle);
+		stream.Sync(falloffStartOpacity);
+		stream.Sync(falloffStopOpacity);
 	}
 }
 
@@ -1235,53 +783,25 @@ void BSShaderNoLightingProperty::SetSkinned(const bool enable) {
 }
 
 
-void NiAlphaProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-	stream >> threshold;
-}
-
-void NiAlphaProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
-	stream << threshold;
+void NiAlphaProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(threshold);
 }
 
 
-void NiMaterialProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
+void NiMaterialProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().Stream() < 26) {
-		stream >> colorAmbient;
-		stream >> colorDiffuse;
+		stream.Sync(colorAmbient);
+		stream.Sync(colorDiffuse);
 	}
 
-	stream >> colorSpecular;
-	stream >> colorEmissive;
-	stream >> glossiness;
-	stream >> alpha;
+	stream.Sync(colorSpecular);
+	stream.Sync(colorEmissive);
+	stream.Sync(glossiness);
+	stream.Sync(alpha);
 
 	if (stream.GetVersion().Stream() > 21)
-		stream >> emitMulti;
-}
-
-void NiMaterialProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	if (stream.GetVersion().Stream() < 26) {
-		stream << colorAmbient;
-		stream << colorDiffuse;
-	}
-
-	stream << colorSpecular;
-	stream << colorEmissive;
-	stream << glossiness;
-	stream << alpha;
-
-	if (stream.GetVersion().Stream() > 21)
-		stream << emitMulti;
+		stream.Sync(emitMulti);
 }
 
 bool NiMaterialProperty::IsEmissive() {
@@ -1331,18 +851,8 @@ float NiMaterialProperty::GetAlpha() {
 }
 
 
-void NiStencilProperty::Get(NiIStream& stream) {
-	NiProperty::Get(stream);
-
-	stream >> flags;
-	stream >> stencilRef;
-	stream >> stencilMask;
-}
-
-void NiStencilProperty::Put(NiOStream& stream) {
-	NiProperty::Put(stream);
-
-	stream << flags;
-	stream << stencilRef;
-	stream << stencilMask;
+void NiStencilProperty::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(stencilRef);
+	stream.Sync(stencilMask);
 }

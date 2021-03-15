@@ -8,22 +8,11 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiNode::Get(NiIStream& stream) {
-	NiAVObject::Get(stream);
-
-	childRefs.Get(stream);
+void NiNode::Sync(NiStreamReversible& stream) {
+	childRefs.Sync(stream);
 
 	if (stream.GetVersion().User() <= 12 && stream.GetVersion().Stream() < 130)
-		effectRefs.Get(stream);
-}
-
-void NiNode::Put(NiOStream& stream) {
-	NiAVObject::Put(stream);
-
-	childRefs.Put(stream);
-
-	if (stream.GetVersion().User() <= 12 && stream.GetVersion().Stream() < 130)
-		effectRefs.Put(stream);
+		effectRefs.Sync(stream);
 }
 
 void NiNode::GetChildRefs(std::set<Ref*>& refs) {
@@ -49,33 +38,15 @@ BlockRefArray<NiDynamicEffect>& NiNode::GetEffects() {
 }
 
 
-void BSValueNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	stream >> value;
-	stream >> valueFlags;
-}
-
-void BSValueNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	stream << value;
-	stream << valueFlags;
+void BSValueNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(value);
+	stream.Sync(valueFlags);
 }
 
 
-void BSTreeNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	bones1.Get(stream);
-	bones2.Get(stream);
-}
-
-void BSTreeNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	bones1.Put(stream);
-	bones2.Put(stream);
+void BSTreeNode::Sync(NiStreamReversible& stream) {
+	bones1.Sync(stream);
+	bones2.Sync(stream);
 }
 
 void BSTreeNode::GetChildRefs(std::set<Ref*>& refs) {
@@ -101,78 +72,33 @@ BlockRefArray<NiNode>& BSTreeNode::GetBones2() {
 }
 
 
-void BSOrderedNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	stream >> alphaSortBound;
-	stream >> isStaticBound;
-}
-
-void BSOrderedNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	stream << alphaSortBound;
-	stream << isStaticBound;
+void BSOrderedNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(alphaSortBound);
+	stream.Sync(isStaticBound);
 }
 
 
-void BSMultiBoundOBB::Get(NiIStream& stream) {
-	BSMultiBoundData::Get(stream);
-
-	stream >> center;
-	stream >> size;
-	stream >> rotation;
-}
-
-void BSMultiBoundOBB::Put(NiOStream& stream) {
-	BSMultiBoundData::Put(stream);
-
-	stream << center;
-	stream << size;
-	stream << rotation;
+void BSMultiBoundOBB::Sync(NiStreamReversible& stream) {
+	stream.Sync(center);
+	stream.Sync(size);
+	stream.Sync(rotation);
 }
 
 
-void BSMultiBoundAABB::Get(NiIStream& stream) {
-	BSMultiBoundData::Get(stream);
-
-	stream >> center;
-	stream >> halfExtent;
-}
-
-void BSMultiBoundAABB::Put(NiOStream& stream) {
-	BSMultiBoundData::Put(stream);
-
-	stream << center;
-	stream << halfExtent;
+void BSMultiBoundAABB::Sync(NiStreamReversible& stream) {
+	stream.Sync(center);
+	stream.Sync(halfExtent);
 }
 
 
-void BSMultiBoundSphere::Get(NiIStream& stream) {
-	BSMultiBoundData::Get(stream);
-
-	stream >> center;
-	stream >> radius;
-}
-
-void BSMultiBoundSphere::Put(NiOStream& stream) {
-	BSMultiBoundData::Put(stream);
-
-	stream << center;
-	stream << radius;
+void BSMultiBoundSphere::Sync(NiStreamReversible& stream) {
+	stream.Sync(center);
+	stream.Sync(radius);
 }
 
 
-void BSMultiBound::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	dataRef.Get(stream);
-}
-
-void BSMultiBound::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	dataRef.Put(stream);
+void BSMultiBound::Sync(NiStreamReversible& stream) {
+	dataRef.Sync(stream);
 }
 
 void BSMultiBound::GetChildRefs(std::set<Ref*>& refs) {
@@ -196,22 +122,11 @@ void BSMultiBound::SetDataRef(int datRef) {
 }
 
 
-void BSMultiBoundNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	multiBoundRef.Get(stream);
+void BSMultiBoundNode::Sync(NiStreamReversible& stream) {
+	multiBoundRef.Sync(stream);
 
 	if (stream.GetVersion().User() >= 12)
-		stream >> cullingMode;
-}
-
-void BSMultiBoundNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	multiBoundRef.Put(stream);
-
-	if (stream.GetVersion().User() >= 12)
-		stream << cullingMode;
+		stream.Sync(cullingMode);
 }
 
 void BSMultiBoundNode::GetChildRefs(std::set<Ref*>& refs) {
@@ -236,115 +151,49 @@ void BSMultiBoundNode::SetMultiBoundRef(int multBoundRef) {
 }
 
 
-void BSRangeNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	stream >> min;
-	stream >> max;
-	stream >> current;
-}
-
-void BSRangeNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	stream << min;
-	stream << max;
-	stream << current;
+void BSRangeNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(min);
+	stream.Sync(max);
+	stream.Sync(current);
 }
 
 
-void NiBillboardNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	stream >> billboardMode;
-}
-
-void NiBillboardNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	stream << billboardMode;
+void NiBillboardNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(billboardMode);
 }
 
 
-void NiSwitchNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	stream >> flags;
-	stream >> index;
-}
-
-void NiSwitchNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	stream << flags;
-	stream << index;
+void NiSwitchNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(index);
 }
 
 
-void NiRangeLODData::Get(NiIStream& stream) {
-	NiLODData::Get(stream);
-
-	stream >> lodCenter;
-	stream >> numLODLevels;
+void NiRangeLODData::Sync(NiStreamReversible& stream) {
+	stream.Sync(lodCenter);
+	stream.Sync(numLODLevels);
 
 	lodLevels.resize(numLODLevels);
-	for (uint32_t i = 0; i < numLODLevels; i++) {
-		stream >> lodLevels[i].nearExtent;
-		stream >> lodLevels[i].farExtent;
-	}
-}
-
-void NiRangeLODData::Put(NiOStream& stream) {
-	NiLODData::Put(stream);
-
-	stream << lodCenter;
-	stream << numLODLevels;
-
-	for (uint32_t i = 0; i < numLODLevels; i++) {
-		stream << lodLevels[i].nearExtent;
-		stream << lodLevels[i].farExtent;
-	}
+	for (uint32_t i = 0; i < numLODLevels; i++)
+		stream.Sync(lodLevels[i]);
 }
 
 
-void NiScreenLODData::Get(NiIStream& stream) {
-	NiLODData::Get(stream);
-
-	stream >> boundCenter;
-	stream >> boundRadius;
-	stream >> worldCenter;
-	stream >> worldRadius;
-	stream >> numProportions;
+void NiScreenLODData::Sync(NiStreamReversible& stream) {
+	stream.Sync(boundCenter);
+	stream.Sync(boundRadius);
+	stream.Sync(worldCenter);
+	stream.Sync(worldRadius);
+	stream.Sync(numProportions);
 
 	proportionLevels.resize(numProportions);
 	for (uint32_t i = 0; i < numProportions; i++)
-		stream >> proportionLevels[i];
-}
-
-void NiScreenLODData::Put(NiOStream& stream) {
-	NiLODData::Put(stream);
-
-	stream << boundCenter;
-	stream << boundRadius;
-	stream << worldCenter;
-	stream << worldRadius;
-	stream << numProportions;
-
-	for (uint32_t i = 0; i < numProportions; i++)
-		stream << proportionLevels[i];
+		stream.Sync(proportionLevels[i]);
 }
 
 
-void NiLODNode::Get(NiIStream& stream) {
-	NiSwitchNode::Get(stream);
-
-	lodLevelData.Get(stream);
-}
-
-void NiLODNode::Put(NiOStream& stream) {
-	NiSwitchNode::Put(stream);
-
-	lodLevelData.Put(stream);
+void NiLODNode::Sync(NiStreamReversible& stream) {
+	lodLevelData.Sync(stream);
 }
 
 void NiLODNode::GetChildRefs(std::set<Ref*>& refs) {
@@ -368,14 +217,6 @@ void NiLODNode::SetLodLevelDataRef(int dataRef) {
 }
 
 
-void NiSortAdjustNode::Get(NiIStream& stream) {
-	NiNode::Get(stream);
-
-	stream >> sortingMode;
-}
-
-void NiSortAdjustNode::Put(NiOStream& stream) {
-	NiNode::Put(stream);
-
-	stream << sortingMode;
+void NiSortAdjustNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(sortingMode);
 }

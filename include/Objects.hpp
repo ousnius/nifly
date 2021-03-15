@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 #include "ExtraData.hpp"
 
 namespace nifly {
-class NiObjectNET : public NiObjectCRTP<NiObjectNET, NiObject> {
+class NiObjectNET : public NiObjectCRTP<NiObjectNET, NiObject, true> {
 protected:
 	StringRef name;
 
@@ -23,8 +23,7 @@ public:
 	uint32_t bslspShaderType = 0; // BSLightingShaderProperty && User Version >= 12
 	bool bBSLightingShaderProperty = false;
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -42,7 +41,7 @@ public:
 class NiProperty;
 class NiCollisionObject;
 
-class NiAVObject : public NiObjectCRTP<NiAVObject, NiObjectNET> {
+class NiAVObject : public NiObjectCRTP<NiAVObject, NiObjectNET, true> {
 protected:
 	BlockRefArray<NiProperty> propertyRefs;
 	BlockRef<NiCollisionObject> collisionRef;
@@ -54,8 +53,7 @@ public:
 	Recommendation: rename "transform" to "transformToParent". */
 	MatTransform transform;
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -75,7 +73,7 @@ struct AVObject {
 
 class NiAVObjectPalette : public NiObjectCRTP<NiAVObjectPalette, NiObject> {};
 
-class NiDefaultAVObjectPalette : public NiObjectCRTP<NiDefaultAVObjectPalette, NiAVObjectPalette> {
+class NiDefaultAVObjectPalette : public NiObjectCRTP<NiDefaultAVObjectPalette, NiAVObjectPalette, true> {
 private:
 	BlockRef<NiAVObject> sceneRef;
 	uint32_t numObjects = 0;
@@ -85,12 +83,11 @@ public:
 	static constexpr const char* BlockName = "NiDefaultAVObjectPalette";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiCamera : public NiObjectCRTP<NiCamera, NiAVObject> {
+class NiCamera : public NiObjectCRTP<NiCamera, NiAVObject, true> {
 private:
 	uint16_t obsoleteFlags = 0;
 	float frustumLeft = 0.0f;
@@ -114,8 +111,7 @@ public:
 	static constexpr const char* BlockName = "NiCamera";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -129,7 +125,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPalette : public NiObjectCRTP<NiPalette, NiObject> {
+class NiPalette : public NiObjectCRTP<NiPalette, NiObject, true> {
 private:
 	bool hasAlpha = false;
 	uint32_t numEntries = 256;
@@ -139,8 +135,7 @@ public:
 	static constexpr const char* BlockName = "NiPalette";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 enum PixelFormat : uint32_t {
@@ -177,7 +172,7 @@ struct MipMapInfo {
 	uint32_t offset = 0;
 };
 
-class TextureRenderData : public NiObjectCRTP<TextureRenderData, NiObject> {
+class TextureRenderData : public NiObjectCRTP<TextureRenderData, NiObject, true> {
 private:
 	PixelFormat pixelFormat = PX_FMT_RGB8;
 	uint8_t bitsPerPixel = 0;
@@ -194,8 +189,7 @@ private:
 	std::vector<MipMapInfo> mipmaps;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -203,7 +197,7 @@ public:
 	void SetPaletteRef(int palRef);
 };
 
-class NiPersistentSrcTextureRendererData : public NiObjectCRTP<NiPersistentSrcTextureRendererData, TextureRenderData> {
+class NiPersistentSrcTextureRendererData : public NiObjectCRTP<NiPersistentSrcTextureRendererData, TextureRenderData, true> {
 private:
 	uint32_t numPixels = 0;
 	uint32_t unkInt4 = 0;
@@ -216,11 +210,10 @@ public:
 	static constexpr const char* BlockName = "NiPersistentSrcTextureRendererData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiPixelData : public NiObjectCRTP<NiPixelData, TextureRenderData> {
+class NiPixelData : public NiObjectCRTP<NiPixelData, TextureRenderData, true> {
 private:
 	uint32_t numPixels = 0;
 	uint32_t numFaces = 0;
@@ -231,8 +224,7 @@ public:
 	static constexpr const char* BlockName = "NiPixelData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 enum PixelLayout : uint32_t {
@@ -251,7 +243,7 @@ enum AlphaFormat : uint32_t { ALPHA_NONE, ALPHA_BINARY, ALPHA_SMOOTH, ALPHA_DEFA
 
 class NiTexture : public NiObjectCRTP<NiTexture, NiObjectNET> {};
 
-class NiSourceTexture : public NiObjectCRTP<NiSourceTexture, NiTexture> {
+class NiSourceTexture : public NiObjectCRTP<NiSourceTexture, NiTexture, true> {
 private:
 	bool useExternal = true;
 	StringRef fileName;
@@ -271,8 +263,7 @@ public:
 	static constexpr const char* BlockName = "NiSourceTexture";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -313,21 +304,20 @@ enum CoordGenType : uint32_t {
 	CG_DIFFUSE_CUBE_MAP
 };
 
-class NiDynamicEffect : public NiObjectCRTP<NiDynamicEffect, NiAVObject> {
+class NiDynamicEffect : public NiObjectCRTP<NiDynamicEffect, NiAVObject, true> {
 private:
 	bool switchState = false;
 	BlockRefArray<NiNode> affectedNodes;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
 	BlockRefArray<NiNode>& GetAffectedNodes();
 };
 
-class NiTextureEffect : public NiObjectCRTP<NiTextureEffect, NiDynamicEffect> {
+class NiTextureEffect : public NiObjectCRTP<NiTextureEffect, NiDynamicEffect, true> {
 private:
 	Matrix3 modelProjectionMatrix;
 	Vector3 modelProjectionTranslation;
@@ -344,8 +334,7 @@ public:
 	static constexpr const char* BlockName = "NiTextureEffect";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -353,7 +342,7 @@ public:
 	void SetSourceTextureRef(int srcTexRef);
 };
 
-class NiLight : public NiObjectCRTP<NiLight, NiDynamicEffect> {
+class NiLight : public NiObjectCRTP<NiLight, NiDynamicEffect, true> {
 private:
 	float dimmer = 0.0f;
 	Color3 ambientColor;
@@ -361,8 +350,7 @@ private:
 	Color3 specularColor;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiAmbientLight : public NiObjectCRTP<NiAmbientLight, NiLight> {
@@ -377,7 +365,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPointLight : public NiObjectCRTP<NiPointLight, NiLight> {
+class NiPointLight : public NiObjectCRTP<NiPointLight, NiLight, true> {
 private:
 	float constantAttenuation = 0.0f;
 	float linearAttenuation = 0.0f;
@@ -387,11 +375,10 @@ public:
 	static constexpr const char* BlockName = "NiPointLight";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiSpotLight : public NiObjectCRTP<NiSpotLight, NiPointLight> {
+class NiSpotLight : public NiObjectCRTP<NiSpotLight, NiPointLight, true> {
 private:
 	float cutoffAngle = 0.0f;
 	float unkFloat = 0.0f;
@@ -401,7 +388,6 @@ public:
 	static constexpr const char* BlockName = "NiSpotLight";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 } // namespace nifly

@@ -15,84 +15,50 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiAdditionalGeometryData::Get(NiIStream& stream) {
-	AdditionalGeomData::Get(stream);
+void NiAdditionalGeometryData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numVertices);
 
-	stream >> numVertices;
-
-	stream >> numBlockInfos;
+	stream.Sync(numBlockInfos);
 	blockInfos.resize(numBlockInfos);
 	for (uint32_t i = 0; i < numBlockInfos; i++)
-		blockInfos[i].Get(stream);
+		blockInfos[i].Sync(stream);
 
-	stream >> numBlocks;
+	stream.Sync(numBlocks);
 	blocks.resize(numBlocks);
 	for (uint32_t i = 0; i < numBlocks; i++)
-		blocks[i].Get(stream);
-}
-
-void NiAdditionalGeometryData::Put(NiOStream& stream) {
-	AdditionalGeomData::Put(stream);
-
-	stream << numVertices;
-
-	stream << numBlockInfos;
-	for (uint32_t i = 0; i < numBlockInfos; i++)
-		blockInfos[i].Put(stream);
-
-	stream << numBlocks;
-	for (uint32_t i = 0; i < numBlocks; i++)
-		blocks[i].Put(stream);
+		blocks[i].Sync(stream);
 }
 
 
-void BSPackedAdditionalGeometryData::Get(NiIStream& stream) {
-	AdditionalGeomData::Get(stream);
+void BSPackedAdditionalGeometryData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numVertices);
 
-	stream >> numVertices;
-
-	stream >> numBlockInfos;
+	stream.Sync(numBlockInfos);
 	blockInfos.resize(numBlockInfos);
 	for (uint32_t i = 0; i < numBlockInfos; i++)
-		blockInfos[i].Get(stream);
+		blockInfos[i].Sync(stream);
 
-	stream >> numBlocks;
+	stream.Sync(numBlocks);
 	blocks.resize(numBlocks);
 	for (uint32_t i = 0; i < numBlocks; i++)
-		blocks[i].Get(stream);
-}
-
-void BSPackedAdditionalGeometryData::Put(NiOStream& stream) {
-	AdditionalGeomData::Put(stream);
-
-	stream << numVertices;
-
-	stream << numBlockInfos;
-	for (uint32_t i = 0; i < numBlockInfos; i++)
-		blockInfos[i].Put(stream);
-
-	stream << numBlocks;
-	for (uint32_t i = 0; i < numBlocks; i++)
-		blocks[i].Put(stream);
+		blocks[i].Sync(stream);
 }
 
 
-void NiGeometryData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> groupID;
-	stream >> numVertices;
-	stream >> keepFlags;
-	stream >> compressFlags;
-	stream >> hasVertices;
+void NiGeometryData::Sync(NiStreamReversible& stream) {
+	stream.Sync(groupID);
+	stream.Sync(numVertices);
+	stream.Sync(keepFlags);
+	stream.Sync(compressFlags);
+	stream.Sync(hasVertices);
 
 	if (hasVertices && !isPSys) {
 		vertices.resize(numVertices);
 		for (uint32_t i = 0; i < numVertices; i++)
-			stream >> vertices[i];
+			stream.Sync(vertices[i]);
 	}
 
-	stream >> numUVSets;
+	stream.Sync(numUVSets);
 
 	uint16_t nbtMethod = numUVSets & 0xF000;
 	uint8_t numTextureSets = numUVSets & 0x3F;
@@ -100,34 +66,34 @@ void NiGeometryData::Get(NiIStream& stream) {
 		numTextureSets = numUVSets & 0x1;
 
 	if (stream.GetVersion().Stream() > 34)
-		stream >> materialCRC;
+		stream.Sync(materialCRC);
 
-	stream >> hasNormals;
+	stream.Sync(hasNormals);
 	if (hasNormals && !isPSys) {
 		normals.resize(numVertices);
 
 		for (uint32_t i = 0; i < numVertices; i++)
-			stream >> normals[i];
+			stream.Sync(normals[i]);
 
 		if (nbtMethod) {
 			tangents.resize(numVertices);
 			bitangents.resize(numVertices);
 
 			for (uint32_t i = 0; i < numVertices; i++)
-				stream >> tangents[i];
+				stream.Sync(tangents[i]);
 
 			for (uint32_t i = 0; i < numVertices; i++)
-				stream >> bitangents[i];
+				stream.Sync(bitangents[i]);
 		}
 	}
 
-	stream >> bounds;
+	stream.Sync(bounds);
 
-	stream >> hasVertexColors;
+	stream.Sync(hasVertexColors);
 	if (hasVertexColors && !isPSys) {
 		vertexColors.resize(numVertices);
 		for (uint32_t i = 0; i < numVertices; i++)
-			stream >> vertexColors[i];
+			stream.Sync(vertexColors[i]);
 	}
 
 	if (numTextureSets > 0 && !isPSys) {
@@ -135,68 +101,12 @@ void NiGeometryData::Get(NiIStream& stream) {
 		for (uint32_t i = 0; i < numTextureSets; i++) {
 			uvSets[i].resize(numVertices);
 			for (uint32_t j = 0; j < numVertices; j++)
-				stream >> uvSets[i][j];
+				stream.Sync(uvSets[i][j]);
 		}
 	}
 
-	stream >> consistencyFlags;
-	additionalDataRef.Get(stream);
-}
-
-void NiGeometryData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << groupID;
-	stream << numVertices;
-	stream << keepFlags;
-	stream << compressFlags;
-	stream << hasVertices;
-
-	if (hasVertices && !isPSys) {
-		for (uint32_t i = 0; i < numVertices; i++)
-			stream << vertices[i];
-	}
-
-	stream << numUVSets;
-
-	uint16_t nbtMethod = numUVSets & 0xF000;
-	uint8_t numTextureSets = numUVSets & 0x3F;
-	if (stream.GetVersion().Stream() >= 34)
-		numTextureSets = numUVSets & 0x1;
-
-	if (stream.GetVersion().User() == 12)
-		stream << materialCRC;
-
-	stream << hasNormals;
-	if (hasNormals && !isPSys) {
-		for (uint32_t i = 0; i < numVertices; i++)
-			stream << normals[i];
-
-		if (nbtMethod) {
-			for (uint32_t i = 0; i < numVertices; i++)
-				stream << tangents[i];
-
-			for (uint32_t i = 0; i < numVertices; i++)
-				stream << bitangents[i];
-		}
-	}
-
-	stream << bounds;
-
-	stream << hasVertexColors;
-	if (hasVertexColors && !isPSys) {
-		for (uint32_t i = 0; i < numVertices; i++)
-			stream << vertexColors[i];
-	}
-
-	if (numTextureSets > 0 && !isPSys) {
-		for (uint32_t i = 0; i < numTextureSets; i++)
-			for (uint32_t j = 0; j < numVertices; j++)
-				stream << uvSets[i][j];
-	}
-
-	stream << consistencyFlags;
-	additionalDataRef.Put(stream);
+	stream.Sync(consistencyFlags);
+	additionalDataRef.Sync(stream);
 }
 
 void NiGeometryData::GetChildRefs(std::set<Ref*>& refs) {
@@ -556,292 +466,148 @@ BSTriShape::BSTriShape() {
 	vertexDesc.SetFlag(VF_SKINNED);
 }
 
-void BSTriShape::Get(NiIStream& stream) {
-	// The order of definition deviates slightly from previous versions, so can't directly use the super Get... instead
-	// that code is duplicated here and the super super get is called.
-	NiObjectNET::Get(stream);
+void BSTriShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(transform.translation);
+	stream.Sync(transform.rotation);
+	stream.Sync(transform.scale);
 
-	stream >> flags;
-	stream >> transform.translation;
-	stream >> transform.rotation;
-	stream >> transform.scale;
+	collisionRef.Sync(stream);
 
-	collisionRef.Get(stream);
-
-	stream >> bounds;
+	stream.Sync(bounds);
 
 	if (stream.GetVersion().Stream() == 155)
 		for (float& i : boundMinMax)
-			stream >> i;
+			stream.Sync(i);
 
-	skinInstanceRef.Get(stream);
-	shaderPropertyRef.Get(stream);
-	alphaPropertyRef.Get(stream);
+	skinInstanceRef.Sync(stream);
+	shaderPropertyRef.Sync(stream);
+	alphaPropertyRef.Sync(stream);
 
-	vertexDesc.Get(stream);
+	vertexDesc.Sync(stream);
 
-	if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130) {
-		uint16_t num = 0;
-		stream >> num;
-		numTriangles = num;
+	bool syncVertexData = true;
+
+	if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130) {
+			uint16_t num = 0;
+			stream.Sync(num);
+			numTriangles = num;
+		}
+		else
+			stream.Sync(numTriangles);
 	}
-	else
-		stream >> numTriangles;
+	else {
+		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130 && IsSkinned()) {
+			// Triangle and vertex data is in partition instead
+			uint16_t numUShort = 0;
+			uint32_t numUInt = 0;
+			stream.Sync(numUShort);
 
-	stream >> numVertices;
-	stream >> dataSize;
+			if (HasType<BSDynamicTriShape>())
+				stream.Sync(numVertices);
+			else
+				stream.Sync(numUShort);
 
-	vertData.resize(numVertices);
+			stream.Sync(numUInt);
+			syncVertexData = false;
+		}
+		else
+			stream.Sync(numTriangles);
+	}
 
-	if (dataSize > 0) {
-		half_float::half halfData;
-		for (uint32_t i = 0; i < numVertices; i++) {
-			auto& vertex = vertData[i];
-			if (HasVertices()) {
-				if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
-					// Full precision
-					stream >> vertex.vert;
-					stream >> vertex.bitangentX;
-				}
-				else {
-					// Half precision
-					stream.read(reinterpret_cast<char*>(&halfData), 2);
-					vertex.vert.x = halfData;
-					stream.read(reinterpret_cast<char*>(&halfData), 2);
-					vertex.vert.y = halfData;
-					stream.read(reinterpret_cast<char*>(&halfData), 2);
-					vertex.vert.z = halfData;
+	if (syncVertexData) {
+		stream.Sync(numVertices);
+		stream.Sync(dataSize);
 
-					stream.read(reinterpret_cast<char*>(&halfData), 2);
-					vertex.bitangentX = halfData;
-				}
-			}
+		vertData.resize(numVertices);
 
-			if (HasUVs()) {
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				vertex.uv.u = halfData;
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				vertex.uv.v = halfData;
-			}
+		if (dataSize > 0) {
+			for (uint32_t i = 0; i < numVertices; i++) {
+				auto& vertex = vertData[i];
+				if (HasVertices()) {
+					if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
+						// Full precision
+						stream.Sync(vertex.vert);
+						stream.Sync(vertex.bitangentX);
+					}
+					else {
+						// Half precision
+						stream.SyncHalf(vertex.vert.x);
+						stream.SyncHalf(vertex.vert.y);
+						stream.SyncHalf(vertex.vert.z);
 
-			if (HasNormals()) {
-				for (uint8_t& j : vertex.normal)
-					stream >> j;
-
-				stream >> vertex.bitangentY;
-
-				if (HasTangents()) {
-					for (uint8_t& j : vertex.tangent)
-						stream >> j;
-
-					stream >> vertex.bitangentZ;
-				}
-			}
-
-
-			if (HasVertexColors())
-				for (uint8_t& j : vertex.colorData)
-					stream >> j;
-
-			if (IsSkinned()) {
-				for (float& weight : vertex.weights) {
-					stream.read(reinterpret_cast<char*>(&halfData), 2);
-					weight = halfData;
+						stream.SyncHalf(vertex.bitangentX);
+					}
 				}
 
-				for (uint8_t& weightBone : vertex.weightBones)
-					stream >> weightBone;
-			}
+				if (HasUVs()) {
+					stream.SyncHalf(vertex.uv.u);
+					stream.SyncHalf(vertex.uv.v);
+				}
 
-			if (HasEyeData())
-				stream >> vertex.eyeData;
+				if (HasNormals()) {
+					for (uint8_t& j : vertex.normal)
+						stream.Sync(j);
+
+					stream.Sync(vertex.bitangentY);
+
+					if (HasTangents()) {
+						for (uint8_t& j : vertex.tangent)
+							stream.Sync(j);
+
+						stream.Sync(vertex.bitangentZ);
+					}
+				}
+
+
+				if (HasVertexColors())
+					for (uint8_t& j : vertex.colorData)
+						stream.Sync(j);
+
+				if (IsSkinned()) {
+					for (float& weight : vertex.weights)
+						stream.SyncHalf(weight);
+
+					for (uint8_t& weightBone : vertex.weightBones)
+						stream.Sync(weightBone);
+				}
+
+				if (HasEyeData())
+					stream.Sync(vertex.eyeData);
+			}
+		}
+
+		triangles.resize(numTriangles);
+
+		if (dataSize > 0) {
+			for (uint32_t i = 0; i < numTriangles; i++)
+				stream.Sync(triangles[i]);
 		}
 	}
 
-	triangles.resize(numTriangles);
-
-	if (dataSize > 0) {
-		for (uint32_t i = 0; i < numTriangles; i++)
-			stream >> triangles[i];
-	}
-
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 100) {
-		stream >> particleDataSize;
+		stream.Sync(particleDataSize);
 
 		if (particleDataSize > 0) {
 			particleVerts.resize(numVertices);
 			particleNorms.resize(numVertices);
 			particleTris.resize(numTriangles);
 
-			half_float::half halfData;
 			for (uint32_t i = 0; i < numVertices; i++) {
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				particleVerts[i].x = halfData;
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				particleVerts[i].y = halfData;
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				particleVerts[i].z = halfData;
+				stream.SyncHalf(particleVerts[i].x);
+				stream.SyncHalf(particleVerts[i].y);
+				stream.SyncHalf(particleVerts[i].z);
 			}
 
 			for (uint32_t i = 0; i < numVertices; i++) {
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				particleNorms[i].x = halfData;
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				particleNorms[i].y = halfData;
-				stream.read(reinterpret_cast<char*>(&halfData), 2);
-				particleNorms[i].z = halfData;
+				stream.SyncHalf(particleNorms[i].x);
+				stream.SyncHalf(particleNorms[i].y);
+				stream.SyncHalf(particleNorms[i].z);
 			}
 
 			for (uint32_t i = 0; i < numTriangles; i++)
-				stream >> particleTris[i];
-		}
-	}
-}
-
-void BSTriShape::Put(NiOStream& stream) {
-	// The order of definition deviates slightly from previous versions, so can't directly use the super Get... instead
-	// that code is duplicated here and the super super get is called.
-	NiObjectNET::Put(stream);
-
-	stream << flags;
-	stream << transform.translation;
-	stream << transform.rotation;
-	stream << transform.scale;
-
-	collisionRef.Put(stream);
-
-	stream << bounds;
-
-	if (stream.GetVersion().Stream() == 155)
-		for (float& i : boundMinMax)
-			stream << i;
-
-	skinInstanceRef.Put(stream);
-	shaderPropertyRef.Put(stream);
-	alphaPropertyRef.Put(stream);
-
-	vertexDesc.Put(stream);
-
-	if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130 && IsSkinned()) {
-		// Triangle and vertex data is in partition instead
-		uint16_t numUShort = 0;
-		uint32_t numUInt = 0;
-		stream << numUShort;
-
-		if (HasType<BSDynamicTriShape>())
-			stream << numVertices;
-		else
-			stream << numUShort;
-
-		stream << numUInt;
-	}
-	else {
-		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130) {
-			uint16_t numUShort = numTriangles;
-			stream << numUShort;
-		}
-		else
-			stream << numTriangles;
-
-		stream << numVertices;
-		stream << dataSize;
-
-		if (dataSize > 0) {
-			half_float::half halfData;
-			for (uint32_t i = 0; i < numVertices; i++) {
-				auto& vertex = vertData[i];
-				if (HasVertices()) {
-					if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
-						// Full precision
-						stream << vertex.vert;
-						stream << vertex.bitangentX;
-					}
-					else {
-						// Half precision
-						halfData = vertex.vert.x;
-						stream.write(reinterpret_cast<char*>(&halfData), 2);
-						halfData = vertex.vert.y;
-						stream.write(reinterpret_cast<char*>(&halfData), 2);
-						halfData = vertex.vert.z;
-						stream.write(reinterpret_cast<char*>(&halfData), 2);
-
-						halfData = vertex.bitangentX;
-						stream.write(reinterpret_cast<char*>(&halfData), 2);
-					}
-				}
-
-				if (HasUVs()) {
-					halfData = vertex.uv.u;
-					stream.write(reinterpret_cast<char*>(&halfData), 2);
-
-					halfData = vertex.uv.v;
-					stream.write(reinterpret_cast<char*>(&halfData), 2);
-				}
-
-				if (HasNormals()) {
-					for (uint8_t& j : vertex.normal)
-						stream << j;
-
-					stream << vertex.bitangentY;
-
-					if (HasTangents()) {
-						for (uint8_t& j : vertex.tangent)
-							stream << j;
-
-						stream << vertex.bitangentZ;
-					}
-				}
-
-				if (HasVertexColors())
-					for (uint8_t& j : vertex.colorData)
-						stream << j;
-
-				if (IsSkinned()) {
-					for (float weight : vertex.weights) {
-						halfData = weight;
-						stream.write(reinterpret_cast<char*>(&halfData), 2);
-					}
-
-					for (uint8_t& weightBone : vertex.weightBones)
-						stream << weightBone;
-				}
-
-				if (HasEyeData())
-					stream << vertex.eyeData;
-			}
-		}
-
-		if (dataSize > 0) {
-			for (uint32_t i = 0; i < numTriangles; i++)
-				stream << triangles[i];
-		}
-	}
-
-	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 100) {
-		stream << particleDataSize;
-
-		if (particleDataSize > 0) {
-			half_float::half halfData;
-			for (uint32_t i = 0; i < numVertices; i++) {
-				halfData = particleVerts[i].x;
-				stream.write(reinterpret_cast<char*>(&halfData), 2);
-				halfData = particleVerts[i].y;
-				stream.write(reinterpret_cast<char*>(&halfData), 2);
-				halfData = particleVerts[i].z;
-				stream.write(reinterpret_cast<char*>(&halfData), 2);
-			}
-
-			for (uint32_t i = 0; i < numVertices; i++) {
-				halfData = particleNorms[i].x;
-				stream.write(reinterpret_cast<char*>(&halfData), 2);
-				halfData = particleNorms[i].y;
-				stream.write(reinterpret_cast<char*>(&halfData), 2);
-				halfData = particleNorms[i].z;
-				stream.write(reinterpret_cast<char*>(&halfData), 2);
-			}
-
-			for (uint32_t i = 0; i < numTriangles; i++)
-				stream << particleTris[i];
+				stream.Sync(particleTris[i]);
 		}
 	}
 }
@@ -1476,107 +1242,56 @@ void BSTriShape::Create(NiVersion& version,
 }
 
 
-void BSSubIndexTriShape::Get(NiIStream& stream) {
-	BSTriShape::Get(stream);
-
+void BSSubIndexTriShape::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().Stream() >= 130 && dataSize > 0) {
-		stream >> segmentation.numPrimitives;
-		stream >> segmentation.numSegments;
-		stream >> segmentation.numTotalSegments;
+		stream.Sync(segmentation.numPrimitives);
+		stream.Sync(segmentation.numSegments);
+		stream.Sync(segmentation.numTotalSegments);
 
 		segmentation.segments.resize(segmentation.numSegments);
 		for (auto& segment : segmentation.segments) {
-			stream >> segment.startIndex;
-			stream >> segment.numPrimitives;
-			stream >> segment.parentArrayIndex;
-			stream >> segment.numSubSegments;
+			stream.Sync(segment.startIndex);
+			stream.Sync(segment.numPrimitives);
+			stream.Sync(segment.parentArrayIndex);
+			stream.Sync(segment.numSubSegments);
 
 			segment.subSegments.resize(segment.numSubSegments);
 			for (auto& subSegment : segment.subSegments) {
-				stream >> subSegment.startIndex;
-				stream >> subSegment.numPrimitives;
-				stream >> subSegment.arrayIndex;
-				stream >> subSegment.unkInt1;
+				stream.Sync(subSegment.startIndex);
+				stream.Sync(subSegment.numPrimitives);
+				stream.Sync(subSegment.arrayIndex);
+				stream.Sync(subSegment.unkInt1);
 			}
 		}
 
 		if (segmentation.numSegments < segmentation.numTotalSegments) {
-			stream >> segmentation.subSegmentData.numSegments;
-			stream >> segmentation.subSegmentData.numTotalSegments;
+			stream.Sync(segmentation.subSegmentData.numSegments);
+			stream.Sync(segmentation.subSegmentData.numTotalSegments);
 
 			segmentation.subSegmentData.arrayIndices.resize(segmentation.numSegments);
 			for (auto& arrayIndex : segmentation.subSegmentData.arrayIndices)
-				stream >> arrayIndex;
+				stream.Sync(arrayIndex);
 
 			segmentation.subSegmentData.dataRecords.resize(segmentation.numTotalSegments);
 			for (auto& dataRecord : segmentation.subSegmentData.dataRecords) {
-				stream >> dataRecord.userSlotID;
-				stream >> dataRecord.material;
-				stream >> dataRecord.numData;
+				stream.Sync(dataRecord.userSlotID);
+				stream.Sync(dataRecord.material);
+				stream.Sync(dataRecord.numData);
 
 				dataRecord.extraData.resize(dataRecord.numData);
 				for (auto& data : dataRecord.extraData)
-					stream >> data;
+					stream.Sync(data);
 			}
 
-			segmentation.subSegmentData.ssfFile.Get(stream, 2);
+			segmentation.subSegmentData.ssfFile.Sync(stream, 2);
 		}
 	}
 	else if (stream.GetVersion().Stream() == 100) {
-		stream >> numSegments;
+		stream.Sync(numSegments);
 		segments.resize(numSegments);
 
 		for (auto& segment : segments)
-			segment.Get(stream);
-	}
-}
-
-void BSSubIndexTriShape::Put(NiOStream& stream) {
-	BSTriShape::Put(stream);
-
-	if (stream.GetVersion().Stream() >= 130 && dataSize > 0) {
-		stream << segmentation.numPrimitives;
-		stream << segmentation.numSegments;
-		stream << segmentation.numTotalSegments;
-
-		for (auto& segment : segmentation.segments) {
-			stream << segment.startIndex;
-			stream << segment.numPrimitives;
-			stream << segment.parentArrayIndex;
-			stream << segment.numSubSegments;
-
-			for (auto& subSegment : segment.subSegments) {
-				stream << subSegment.startIndex;
-				stream << subSegment.numPrimitives;
-				stream << subSegment.arrayIndex;
-				stream << subSegment.unkInt1;
-			}
-		}
-
-		if (segmentation.numSegments < segmentation.numTotalSegments) {
-			stream << segmentation.subSegmentData.numSegments;
-			stream << segmentation.subSegmentData.numTotalSegments;
-
-			for (auto& arrayIndex : segmentation.subSegmentData.arrayIndices)
-				stream << arrayIndex;
-
-			for (auto& dataRecord : segmentation.subSegmentData.dataRecords) {
-				stream << dataRecord.userSlotID;
-				stream << dataRecord.material;
-				stream << dataRecord.numData;
-
-				for (auto& data : dataRecord.extraData)
-					stream << data;
-			}
-
-			segmentation.subSegmentData.ssfFile.Put(stream, 2, false);
-		}
-	}
-	else if (stream.GetVersion().Stream() == 100) {
-		stream << numSegments;
-
-		for (auto& segment : segments)
-			segment.Put(stream);
+			segment.Sync(stream);
 	}
 }
 
@@ -1847,20 +1562,10 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 }
 
 
-void BSMeshLODTriShape::Get(NiIStream& stream) {
-	BSTriShape::Get(stream);
-
-	stream >> lodSize0;
-	stream >> lodSize1;
-	stream >> lodSize2;
-}
-
-void BSMeshLODTriShape::Put(NiOStream& stream) {
-	BSTriShape::Put(stream);
-
-	stream << lodSize0;
-	stream << lodSize1;
-	stream << lodSize2;
+void BSMeshLODTriShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(lodSize0);
+	stream.Sync(lodSize1);
+	stream.Sync(lodSize2);
 }
 
 void BSMeshLODTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
@@ -1880,23 +1585,12 @@ BSDynamicTriShape::BSDynamicTriShape() {
 	dynamicDataSize = 0;
 }
 
-void BSDynamicTriShape::Get(NiIStream& stream) {
-	BSTriShape::Get(stream);
-
-	stream >> dynamicDataSize;
+void BSDynamicTriShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(dynamicDataSize);
 
 	dynamicData.resize(numVertices);
 	for (uint32_t i = 0; i < numVertices; i++)
-		stream >> dynamicData[i];
-}
-
-void BSDynamicTriShape::Put(NiOStream& stream) {
-	BSTriShape::Put(stream);
-
-	stream << dynamicDataSize;
-
-	for (uint32_t i = 0; i < numVertices; i++)
-		stream << dynamicData[i];
+		stream.Sync(dynamicData[i]);
 }
 
 void BSDynamicTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
@@ -1948,71 +1642,37 @@ void BSDynamicTriShape::Create(NiVersion& version,
 }
 
 
-void NiGeometry::Get(NiIStream& stream) {
-	NiAVObject::Get(stream);
-
-	dataRef.Get(stream);
-	skinInstanceRef.Get(stream);
+void NiGeometry::Sync(NiStreamReversible& stream) {
+	dataRef.Sync(stream);
+	skinInstanceRef.Sync(stream);
 
 	if (stream.GetVersion().File() >= V20_2_0_5) {
-		stream >> numMaterials;
+		stream.Sync(numMaterials);
 		materialNameRefs.resize(numMaterials);
 		materials.resize(numMaterials);
 
 		for (uint32_t i = 0; i < numMaterials; i++) {
-			materialNameRefs[i].Get(stream);
-			stream >> materials[i];
+			materialNameRefs[i].Sync(stream);
+			stream.Sync(materials[i]);
 		}
 
-		stream >> activeMaterial;
+		stream.Sync(activeMaterial);
 	}
 	else {
-		stream >> shader;
+		stream.Sync(shader);
 
 		if (shader) {
-			shaderName.Get(stream);
-			stream >> implementation;
+			shaderName.Sync(stream);
+			stream.Sync(implementation);
 		}
 	}
 
 	if (stream.GetVersion().File() >= V20_2_0_7)
-		stream >> defaultMatNeedsUpdateFlag;
+		stream.Sync(defaultMatNeedsUpdateFlag);
 
 	if (stream.GetVersion().Stream() > 34) {
-		shaderPropertyRef.Get(stream);
-		alphaPropertyRef.Get(stream);
-	}
-}
-
-void NiGeometry::Put(NiOStream& stream) {
-	NiAVObject::Put(stream);
-
-	dataRef.Put(stream);
-	skinInstanceRef.Put(stream);
-
-	if (stream.GetVersion().File() >= V20_2_0_5) {
-		stream << numMaterials;
-		for (uint32_t i = 0; i < numMaterials; i++) {
-			materialNameRefs[i].Put(stream);
-			stream << materials[i];
-		}
-		stream << activeMaterial;
-	}
-	else {
-		stream << shader;
-
-		if (shader) {
-			shaderName.Put(stream);
-			stream << implementation;
-		}
-	}
-
-	if (stream.GetVersion().File() >= V20_2_0_7)
-		stream << defaultMatNeedsUpdateFlag;
-
-	if (stream.GetVersion().Stream() > 34) {
-		shaderPropertyRef.Put(stream);
-		alphaPropertyRef.Put(stream);
+		shaderPropertyRef.Sync(stream);
+		alphaPropertyRef.Sync(stream);
 	}
 }
 
@@ -2078,16 +1738,8 @@ void NiGeometry::SetAlphaPropertyRef(int alphaPropRef) {
 }
 
 
-void NiTriBasedGeomData::Get(NiIStream& stream) {
-	NiGeometryData::Get(stream);
-
-	stream >> numTriangles;
-}
-
-void NiTriBasedGeomData::Put(NiOStream& stream) {
-	NiGeometryData::Put(stream);
-
-	stream << numTriangles;
+void NiTriBasedGeomData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numTriangles);
 }
 
 void NiTriBasedGeomData::Create(NiVersion& version,
@@ -2111,52 +1763,32 @@ void NiTriBasedGeomData::Create(NiVersion& version,
 }
 
 
-void NiTriShapeData::Get(NiIStream& stream) {
-	NiTriBasedGeomData::Get(stream);
-
-	stream >> numTrianglePoints;
-	stream >> hasTriangles;
+void NiTriShapeData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numTrianglePoints);
+	stream.Sync(hasTriangles);
 
 	if (hasTriangles) {
 		triangles.resize(numTriangles);
 		for (uint32_t i = 0; i < numTriangles; i++)
-			stream >> triangles[i];
+			stream.Sync(triangles[i]);
 	}
 
-	MatchGroup mg;
-	stream >> numMatchGroups;
+	stream.Sync(numMatchGroups);
 	matchGroups.resize(numMatchGroups);
-	for (uint32_t i = 0; i < numMatchGroups; i++) {
-		stream >> mg.count;
-		mg.matches.resize(mg.count);
-		for (uint32_t j = 0; j < mg.count; j++)
-			stream >> mg.matches[j];
 
-		matchGroups[i] = mg;
+	for (uint32_t i = 0; i < numMatchGroups; i++) {
+		auto& mg = matchGroups[i];
+
+		stream.Sync(mg.count);
+		mg.matches.resize(mg.count);
+
+		for (uint32_t j = 0; j < mg.count; j++)
+			stream.Sync(mg.matches[j]);
 	}
 
 	// Not supported yet, so clear it again after reading
 	matchGroups.clear();
 	numMatchGroups = 0;
-}
-
-void NiTriShapeData::Put(NiOStream& stream) {
-	NiTriBasedGeomData::Put(stream);
-
-	stream << numTrianglePoints;
-	stream << hasTriangles;
-
-	if (hasTriangles) {
-		for (uint32_t i = 0; i < numTriangles; i++)
-			stream << triangles[i];
-	}
-
-	stream << numMatchGroups;
-	for (uint32_t i = 0; i < numMatchGroups; i++) {
-		stream << matchGroups[i].count;
-		for (uint32_t j = 0; j < matchGroups[i].count; j++)
-			stream << matchGroups[i].matches[j];
-	}
 }
 
 void NiTriShapeData::Create(NiVersion& version,
@@ -2315,37 +1947,20 @@ void NiTriShape::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void NiTriStripsData::Get(NiIStream& stream) {
-	NiTriBasedGeomData::Get(stream);
-
-	stream >> numStrips;
+void NiTriStripsData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numStrips);
 	stripLengths.resize(numStrips);
 	for (uint32_t i = 0; i < numStrips; i++)
-		stream >> stripLengths[i];
+		stream.Sync(stripLengths[i]);
 
-	stream >> hasPoints;
+	stream.Sync(hasPoints);
 	if (hasPoints) {
 		points.resize(numStrips);
 		for (uint32_t i = 0; i < numStrips; i++) {
 			points[i].resize(stripLengths[i]);
 			for (uint32_t j = 0; j < stripLengths[i]; j++)
-				stream >> points[i][j];
+				stream.Sync(points[i][j]);
 		}
-	}
-}
-
-void NiTriStripsData::Put(NiOStream& stream) {
-	NiTriBasedGeomData::Put(stream);
-
-	stream << numStrips;
-	for (uint32_t i = 0; i < numStrips; i++)
-		stream << stripLengths[i];
-
-	stream << hasPoints;
-	if (hasPoints) {
-		for (uint32_t i = 0; i < numStrips; i++)
-			for (uint32_t j = 0; j < stripLengths[i]; j++)
-				stream << points[i][j];
 	}
 }
 
@@ -2497,19 +2112,10 @@ void NiTriStrips::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void NiLinesData::Get(NiIStream& stream) {
-	NiGeometryData::Get(stream);
-
+void NiLinesData::Sync(NiStreamReversible& stream) {
 	lineFlags.resize(numVertices);
 	for (uint32_t i = 0; i < numVertices; i++)
-		stream >> lineFlags[i];
-}
-
-void NiLinesData::Put(NiOStream& stream) {
-	NiGeometryData::Put(stream);
-
-	for (uint32_t i = 0; i < numVertices; i++)
-		stream << lineFlags[i];
+		stream.Sync(lineFlags[i]);
 }
 
 void NiLinesData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
@@ -2530,42 +2136,22 @@ void NiLines::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void NiScreenElementsData::Get(NiIStream& stream) {
-	NiTriShapeData::Get(stream);
-
-	stream >> maxPolygons;
+void NiScreenElementsData::Sync(NiStreamReversible& stream) {
+	stream.Sync(maxPolygons);
 	polygons.resize(maxPolygons);
 	for (uint32_t i = 0; i < maxPolygons; i++)
-		stream >> polygons[i];
+		stream.Sync(polygons[i]);
 
 	polygonIndices.resize(maxPolygons);
 	for (uint32_t i = 0; i < maxPolygons; i++)
-		stream >> polygonIndices[i];
+		stream.Sync(polygonIndices[i]);
 
-	stream >> unkShort1;
-	stream >> numPolygons;
-	stream >> usedVertices;
-	stream >> unkShort2;
-	stream >> usedTrianglePoints;
-	stream >> unkShort3;
-}
-
-void NiScreenElementsData::Put(NiOStream& stream) {
-	NiTriShapeData::Put(stream);
-
-	stream << maxPolygons;
-	for (uint32_t i = 0; i < maxPolygons; i++)
-		stream << polygons[i];
-
-	for (uint32_t i = 0; i < maxPolygons; i++)
-		stream << polygonIndices[i];
-
-	stream << unkShort1;
-	stream << numPolygons;
-	stream << usedVertices;
-	stream << unkShort2;
-	stream << usedTrianglePoints;
-	stream << unkShort3;
+	stream.Sync(unkShort1);
+	stream.Sync(numPolygons);
+	stream.Sync(usedVertices);
+	stream.Sync(unkShort2);
+	stream.Sync(usedTrianglePoints);
+	stream.Sync(unkShort3);
 }
 
 void NiScreenElementsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
@@ -2592,20 +2178,10 @@ void NiScreenElements::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void BSLODTriShape::Get(NiIStream& stream) {
-	NiTriBasedGeom::Get(stream);
-
-	stream >> level0;
-	stream >> level1;
-	stream >> level2;
-}
-
-void BSLODTriShape::Put(NiOStream& stream) {
-	NiTriBasedGeom::Put(stream);
-
-	stream << level0;
-	stream << level1;
-	stream << level2;
+void BSLODTriShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(level0);
+	stream.Sync(level1);
+	stream.Sync(level2);
 }
 
 NiGeometryData* BSLODTriShape::GetGeomData() {
@@ -2619,34 +2195,17 @@ void BSLODTriShape::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void BSGeometrySegmentData::Get(NiIStream& stream) {
-	stream >> flags;
-	stream >> index;
-	stream >> numTris;
-}
-
-void BSGeometrySegmentData::Put(NiOStream& stream) {
-	stream << flags;
-	stream << index;
-	stream << numTris;
+void BSGeometrySegmentData::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(index);
+	stream.Sync(numTris);
 }
 
 
-void BSSegmentedTriShape::Get(NiIStream& stream) {
-	NiTriShape::Get(stream);
-
-	stream >> numSegments;
+void BSSegmentedTriShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(numSegments);
 	segments.resize(numSegments);
 
 	for (auto& segment : segments)
-		segment.Get(stream);
-}
-
-void BSSegmentedTriShape::Put(NiOStream& stream) {
-	NiTriShape::Put(stream);
-
-	stream << numSegments;
-
-	for (auto& segment : segments)
-		segment.Put(stream);
+		segment.Sync(stream);
 }

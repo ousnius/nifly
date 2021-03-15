@@ -922,7 +922,8 @@ void ConstraintData::Get(NiIStream& stream) {
 void ConstraintData::Put(NiOStream& stream) {
 	stream << type;
 
-	entityRefs.Put(stream, 2);
+	entityRefs.SetSize(2);
+	entityRefs.Put(stream);
 	stream << priority;
 
 	switch (type) {

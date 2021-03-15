@@ -8,166 +8,76 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiKeyframeData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> numRotationKeys;
+void NiKeyframeData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numRotationKeys);
 
 	if (numRotationKeys > 0) {
-		stream >> rotationType;
+		stream.Sync(rotationType);
 
 		if (rotationType != XYZ_ROTATION_KEY) {
 			quaternionKeys.resize(numRotationKeys);
 
 			for (uint32_t i = 0; i < numRotationKeys; i++) {
-				stream >> quaternionKeys[i].time;
-				stream >> quaternionKeys[i].value;
+				stream.Sync(quaternionKeys[i].time);
+				stream.Sync(quaternionKeys[i].value);
 
 				if (rotationType == TBC_KEY)
-					stream >> quaternionKeys[i].tbc;
+					stream.Sync(quaternionKeys[i].tbc);
 			}
 		}
 		else {
-			xRotations.Get(stream);
-			yRotations.Get(stream);
-			zRotations.Get(stream);
+			xRotations.Sync(stream);
+			yRotations.Sync(stream);
+			zRotations.Sync(stream);
 		}
 	}
 
-	translations.Get(stream);
-	scales.Get(stream);
-}
-
-void NiKeyframeData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << numRotationKeys;
-
-	if (numRotationKeys > 0) {
-		stream << rotationType;
-
-		if (rotationType != XYZ_ROTATION_KEY) {
-			for (uint32_t i = 0; i < numRotationKeys; i++) {
-				stream << quaternionKeys[i].time;
-				stream << quaternionKeys[i].value;
-
-				if (rotationType == TBC_KEY)
-					stream << quaternionKeys[i].tbc;
-			}
-		}
-		else {
-			xRotations.Put(stream);
-			yRotations.Put(stream);
-			zRotations.Put(stream);
-		}
-	}
-
-	translations.Put(stream);
-	scales.Put(stream);
+	translations.Sync(stream);
+	scales.Sync(stream);
 }
 
 
-void NiPosData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	data.Get(stream);
-}
-
-void NiPosData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	data.Put(stream);
+void NiPosData::Sync(NiStreamReversible& stream) {
+	data.Sync(stream);
 }
 
 
-void NiBoolData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	data.Get(stream);
-}
-
-void NiBoolData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	data.Put(stream);
+void NiBoolData::Sync(NiStreamReversible& stream) {
+	data.Sync(stream);
 }
 
 
-void NiFloatData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	data.Get(stream);
-}
-
-void NiFloatData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	data.Put(stream);
+void NiFloatData::Sync(NiStreamReversible& stream) {
+	data.Sync(stream);
 }
 
 
-void NiBSplineData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> numFloatControlPoints;
+void NiBSplineData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numFloatControlPoints);
 	floatControlPoints.resize(numFloatControlPoints);
 	for (uint32_t i = 0; i < numFloatControlPoints; i++)
-		stream >> floatControlPoints[i];
+		stream.Sync(floatControlPoints[i]);
 
-	stream >> numShortControlPoints;
+	stream.Sync(numShortControlPoints);
 	shortControlPoints.resize(numShortControlPoints);
 	for (uint32_t i = 0; i < numShortControlPoints; i++)
-		stream >> shortControlPoints[i];
-}
-
-void NiBSplineData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << numFloatControlPoints;
-	for (uint32_t i = 0; i < numFloatControlPoints; i++)
-		stream << floatControlPoints[i];
-
-	stream << numShortControlPoints;
-	for (uint32_t i = 0; i < numShortControlPoints; i++)
-		stream << shortControlPoints[i];
+		stream.Sync(shortControlPoints[i]);
 }
 
 
-void NiBSplineBasisData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> numControlPoints;
-}
-
-void NiBSplineBasisData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << numControlPoints;
+void NiBSplineBasisData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numControlPoints);
 }
 
 
-void NiTimeController::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	nextControllerRef.Get(stream);
-	stream >> flags;
-	stream >> frequency;
-	stream >> phase;
-	stream >> startTime;
-	stream >> stopTime;
-	targetRef.Get(stream);
-}
-
-void NiTimeController::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	nextControllerRef.Put(stream);
-	stream << flags;
-	stream << frequency;
-	stream << phase;
-	stream << startTime;
-	stream << stopTime;
-	targetRef.Put(stream);
+void NiTimeController::Sync(NiStreamReversible& stream) {
+	nextControllerRef.Sync(stream);
+	stream.Sync(flags);
+	stream.Sync(frequency);
+	stream.Sync(phase);
+	stream.Sync(startTime);
+	stream.Sync(stopTime);
+	targetRef.Sync(stream);
 }
 
 void NiTimeController::GetChildRefs(std::set<Ref*>& refs) {
@@ -189,18 +99,9 @@ void NiTimeController::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void NiLookAtController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
-
-	stream >> unkShort1;
-	lookAtNodePtr.Get(stream);
-}
-
-void NiLookAtController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	stream << unkShort1;
-	lookAtNodePtr.Put(stream);
+void NiLookAtController::Sync(NiStreamReversible& stream) {
+	stream.Sync(unkShort1);
+	lookAtNodePtr.Sync(stream);
 }
 
 void NiLookAtController::GetPtrs(std::set<Ref*>& ptrs) {
@@ -210,28 +111,14 @@ void NiLookAtController::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void NiPathController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
-
-	stream >> unkShort1;
-	stream >> unkInt1;
-	stream >> unkFloat1;
-	stream >> unkFloat2;
-	stream >> unkShort2;
-	posDataRef.Get(stream);
-	floatDataRef.Get(stream);
-}
-
-void NiPathController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	stream << unkShort1;
-	stream << unkInt1;
-	stream << unkFloat1;
-	stream << unkFloat2;
-	stream << unkShort2;
-	posDataRef.Put(stream);
-	floatDataRef.Put(stream);
+void NiPathController::Sync(NiStreamReversible& stream) {
+	stream.Sync(unkShort1);
+	stream.Sync(unkInt1);
+	stream.Sync(unkFloat1);
+	stream.Sync(unkFloat2);
+	stream.Sync(unkShort2);
+	posDataRef.Sync(stream);
+	floatDataRef.Sync(stream);
 }
 
 void NiPathController::GetChildRefs(std::set<Ref*>& refs) {
@@ -249,37 +136,17 @@ void NiPathController::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiUVData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	uTrans.Get(stream);
-	vTrans.Get(stream);
-	uScale.Get(stream);
-	vScale.Get(stream);
-}
-
-void NiUVData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	uTrans.Put(stream);
-	vTrans.Put(stream);
-	uScale.Put(stream);
-	vScale.Put(stream);
+void NiUVData::Sync(NiStreamReversible& stream) {
+	uTrans.Sync(stream);
+	vTrans.Sync(stream);
+	uScale.Sync(stream);
+	vScale.Sync(stream);
 }
 
 
-void NiUVController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
-
-	stream >> textureSet;
-	dataRef.Get(stream);
-}
-
-void NiUVController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	stream << textureSet;
-	dataRef.Put(stream);
+void NiUVController::Sync(NiStreamReversible& stream) {
+	stream.Sync(textureSet);
+	dataRef.Sync(stream);
 }
 
 void NiUVController::GetChildRefs(std::set<Ref*>& refs) {
@@ -295,16 +162,8 @@ void NiUVController::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void BSFrustumFOVController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
-
-	interpolatorRef.Get(stream);
-}
-
-void BSFrustumFOVController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	interpolatorRef.Put(stream);
+void BSFrustumFOVController::Sync(NiStreamReversible& stream) {
+	interpolatorRef.Sync(stream);
 }
 
 void BSFrustumFOVController::GetChildRefs(std::set<Ref*>& refs) {
@@ -320,81 +179,39 @@ void BSFrustumFOVController::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void BSLagBoneController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
-
-	stream >> linearVelocity;
-	stream >> linearRotation;
-	stream >> maxDistance;
-}
-
-void BSLagBoneController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	stream << linearVelocity;
-	stream << linearRotation;
-	stream << maxDistance;
+void BSLagBoneController::Sync(NiStreamReversible& stream) {
+	stream.Sync(linearVelocity);
+	stream.Sync(linearRotation);
+	stream.Sync(maxDistance);
 }
 
 
-void BSProceduralLightningController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
+void BSProceduralLightningController::Sync(NiStreamReversible& stream) {
+	generationInterpRef.Sync(stream);
+	mutationInterpRef.Sync(stream);
+	subdivisionInterpRef.Sync(stream);
+	numBranchesInterpRef.Sync(stream);
+	numBranchesVarInterpRef.Sync(stream);
+	lengthInterpRef.Sync(stream);
+	lengthVarInterpRef.Sync(stream);
+	widthInterpRef.Sync(stream);
+	arcOffsetInterpRef.Sync(stream);
 
-	generationInterpRef.Get(stream);
-	mutationInterpRef.Get(stream);
-	subdivisionInterpRef.Get(stream);
-	numBranchesInterpRef.Get(stream);
-	numBranchesVarInterpRef.Get(stream);
-	lengthInterpRef.Get(stream);
-	lengthVarInterpRef.Get(stream);
-	widthInterpRef.Get(stream);
-	arcOffsetInterpRef.Get(stream);
+	stream.Sync(subdivisions);
+	stream.Sync(numBranches);
+	stream.Sync(numBranchesPerVariation);
 
-	stream >> subdivisions;
-	stream >> numBranches;
-	stream >> numBranchesPerVariation;
+	stream.Sync(length);
+	stream.Sync(lengthVariation);
+	stream.Sync(width);
+	stream.Sync(childWidthMult);
+	stream.Sync(arcOffset);
 
-	stream >> length;
-	stream >> lengthVariation;
-	stream >> width;
-	stream >> childWidthMult;
-	stream >> arcOffset;
+	stream.Sync(fadeMainBolt);
+	stream.Sync(fadeChildBolts);
+	stream.Sync(animateArcOffset);
 
-	stream >> fadeMainBolt;
-	stream >> fadeChildBolts;
-	stream >> animateArcOffset;
-
-	shaderPropertyRef.Get(stream);
-}
-
-void BSProceduralLightningController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	generationInterpRef.Put(stream);
-	mutationInterpRef.Put(stream);
-	subdivisionInterpRef.Put(stream);
-	numBranchesInterpRef.Put(stream);
-	numBranchesVarInterpRef.Put(stream);
-	lengthInterpRef.Put(stream);
-	lengthVarInterpRef.Put(stream);
-	widthInterpRef.Put(stream);
-	arcOffsetInterpRef.Put(stream);
-
-	stream << subdivisions;
-	stream << numBranches;
-	stream << numBranchesPerVariation;
-
-	stream << length;
-	stream << lengthVariation;
-	stream << width;
-	stream << childWidthMult;
-	stream << arcOffset;
-
-	stream << fadeMainBolt;
-	stream << fadeChildBolts;
-	stream << animateArcOffset;
-
-	shaderPropertyRef.Put(stream);
+	shaderPropertyRef.Sync(stream);
 }
 
 void BSProceduralLightningController::GetChildRefs(std::set<Ref*>& refs) {
@@ -428,27 +245,14 @@ void BSProceduralLightningController::GetChildIndices(std::vector<int>& indices)
 }
 
 
-void NiBoneLODController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
+void NiBoneLODController::Sync(NiStreamReversible& stream) {
+	stream.Sync(lod);
+	stream.Sync(numLODs);
 
-	stream >> lod;
-	stream >> numLODs;
-
-	stream >> boneArraysSize;
+	stream.Sync(boneArraysSize);
 	boneArrays.resize(boneArraysSize);
 	for (uint32_t i = 0; i < boneArraysSize; i++)
-		boneArrays[i].Get(stream);
-}
-
-void NiBoneLODController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	stream << lod;
-	stream << numLODs;
-
-	stream << boneArraysSize;
-	for (uint32_t i = 0; i < boneArraysSize; i++)
-		boneArrays[i].Put(stream);
+		boneArrays[i].Sync(stream);
 }
 
 void NiBoneLODController::GetPtrs(std::set<Ref*>& ptrs) {
@@ -459,27 +263,14 @@ void NiBoneLODController::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void NiMorphData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> numMorphs;
-	stream >> numVertices;
-	stream >> relativeTargets;
+void NiMorphData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numMorphs);
+	stream.Sync(numVertices);
+	stream.Sync(relativeTargets);
 
 	morphs.resize(numMorphs);
 	for (uint32_t i = 0; i < numMorphs; i++)
-		morphs[i].Get(stream, numVertices);
-}
-
-void NiMorphData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << numMorphs;
-	stream << numVertices;
-	stream << relativeTargets;
-
-	for (uint32_t i = 0; i < numMorphs; i++)
-		morphs[i].Put(stream, numVertices);
+		morphs[i].Sync(stream, numVertices);
 }
 
 void NiMorphData::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -490,29 +281,15 @@ void NiMorphData::GetStringRefs(std::vector<StringRef*>& refs) {
 }
 
 
-void NiGeomMorpherController::Get(NiIStream& stream) {
-	NiInterpController::Get(stream);
+void NiGeomMorpherController::Sync(NiStreamReversible& stream) {
+	stream.Sync(extraFlags);
+	dataRef.Sync(stream);
+	stream.Sync(alwaysUpdate);
 
-	stream >> extraFlags;
-	dataRef.Get(stream);
-	stream >> alwaysUpdate;
-
-	stream >> numTargets;
+	stream.Sync(numTargets);
 	interpWeights.resize(numTargets);
 	for (uint32_t i = 0; i < numTargets; i++)
-		interpWeights[i].Get(stream);
-}
-
-void NiGeomMorpherController::Put(NiOStream& stream) {
-	NiInterpController::Put(stream);
-
-	stream << extraFlags;
-	dataRef.Put(stream);
-	stream << alwaysUpdate;
-
-	stream << numTargets;
-	for (uint32_t i = 0; i < numTargets; i++)
-		interpWeights[i].Put(stream);
+		interpWeights[i].Sync(stream);
 }
 
 void NiGeomMorpherController::GetChildRefs(std::set<Ref*>& refs) {
@@ -534,18 +311,9 @@ void NiGeomMorpherController::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiSingleInterpController::Get(NiIStream& stream) {
-	NiInterpController::Get(stream);
-
+void NiSingleInterpController::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().File() >= V10_1_0_104)
-		interpolatorRef.Get(stream);
-}
-
-void NiSingleInterpController::Put(NiOStream& stream) {
-	NiInterpController::Put(stream);
-
-	if (stream.GetVersion().File() >= V10_1_0_104)
-		interpolatorRef.Put(stream);
+		interpolatorRef.Sync(stream);
 }
 
 void NiSingleInterpController::GetChildRefs(std::set<Ref*>& refs) {
@@ -561,16 +329,8 @@ void NiSingleInterpController::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiRollController::Get(NiIStream& stream) {
-	NiSingleInterpController::Get(stream);
-
-	dataRef.Get(stream);
-}
-
-void NiRollController::Put(NiOStream& stream) {
-	NiSingleInterpController::Put(stream);
-
-	dataRef.Put(stream);
+void NiRollController::Sync(NiStreamReversible& stream) {
+	dataRef.Sync(stream);
 }
 
 void NiRollController::GetChildRefs(std::set<Ref*>& refs) {
@@ -586,29 +346,13 @@ void NiRollController::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiPoint3InterpController::Get(NiIStream& stream) {
-	NiSingleInterpController::Get(stream);
-
-	stream >> targetColor;
-}
-
-void NiPoint3InterpController::Put(NiOStream& stream) {
-	NiSingleInterpController::Put(stream);
-
-	stream << targetColor;
+void NiPoint3InterpController::Sync(NiStreamReversible& stream) {
+	stream.Sync(targetColor);
 }
 
 
-void NiFloatExtraDataController::Get(NiIStream& stream) {
-	NiExtraDataController::Get(stream);
-
-	extraData.Get(stream);
-}
-
-void NiFloatExtraDataController::Put(NiOStream& stream) {
-	NiExtraDataController::Put(stream);
-
-	extraData.Put(stream);
+void NiFloatExtraDataController::Sync(NiStreamReversible& stream) {
+	extraData.Sync(stream);
 }
 
 void NiFloatExtraDataController::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -618,40 +362,19 @@ void NiFloatExtraDataController::GetStringRefs(std::vector<StringRef*>& refs) {
 }
 
 
-void NiVisData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> numKeys;
+void NiVisData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numKeys);
 	keys.resize(numKeys);
 	for (uint32_t i = 0; i < numKeys; i++) {
-		stream >> keys[i].time;
-		stream >> keys[i].value;
-	}
-}
-
-void NiVisData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << numKeys;
-	for (uint32_t i = 0; i < numKeys; i++) {
-		stream << keys[i].time;
-		stream << keys[i].value;
+		stream.Sync(keys[i].time);
+		stream.Sync(keys[i].value);
 	}
 }
 
 
-void NiFlipController::Get(NiIStream& stream) {
-	NiFloatInterpController::Get(stream);
-
-	stream >> textureSlot;
-	sourceRefs.Get(stream);
-}
-
-void NiFlipController::Put(NiOStream& stream) {
-	NiFloatInterpController::Put(stream);
-
-	stream << textureSlot;
-	sourceRefs.Put(stream);
+void NiFlipController::Sync(NiStreamReversible& stream) {
+	stream.Sync(textureSlot);
+	sourceRefs.Sync(stream);
 }
 
 void NiFlipController::GetChildRefs(std::set<Ref*>& refs) {
@@ -671,99 +394,41 @@ BlockRefArray<NiSourceTexture>& NiFlipController::GetSources() {
 }
 
 
-void NiTextureTransformController::Get(NiIStream& stream) {
-	NiFloatInterpController::Get(stream);
-
-	stream >> unkByte1;
-	stream >> textureSlot;
-	stream >> operation;
-}
-
-void NiTextureTransformController::Put(NiOStream& stream) {
-	NiFloatInterpController::Put(stream);
-
-	stream << unkByte1;
-	stream << textureSlot;
-	stream << operation;
+void NiTextureTransformController::Sync(NiStreamReversible& stream) {
+	stream.Sync(unkByte1);
+	stream.Sync(textureSlot);
+	stream.Sync(operation);
 }
 
 
-void BSLightingShaderPropertyColorController::Get(NiIStream& stream) {
-	NiFloatInterpController::Get(stream);
-
-	stream >> typeOfControlledColor;
-}
-
-void BSLightingShaderPropertyColorController::Put(NiOStream& stream) {
-	NiFloatInterpController::Put(stream);
-
-	stream << typeOfControlledColor;
+void BSLightingShaderPropertyColorController::Sync(NiStreamReversible& stream) {
+	stream.Sync(typeOfControlledColor);
 }
 
 
-void BSLightingShaderPropertyFloatController::Get(NiIStream& stream) {
-	NiFloatInterpController::Get(stream);
-
-	stream >> typeOfControlledVariable;
-}
-
-void BSLightingShaderPropertyFloatController::Put(NiOStream& stream) {
-	NiFloatInterpController::Put(stream);
-
-	stream << typeOfControlledVariable;
+void BSLightingShaderPropertyFloatController::Sync(NiStreamReversible& stream) {
+	stream.Sync(typeOfControlledVariable);
 }
 
 
-void BSLightingShaderPropertyUShortController::Get(NiIStream& stream) {
-	NiFloatInterpController::Get(stream);
-
-	stream >> typeOfControlledVariable;
-}
-
-void BSLightingShaderPropertyUShortController::Put(NiOStream& stream) {
-	NiFloatInterpController::Put(stream);
-
-	stream << typeOfControlledVariable;
+void BSLightingShaderPropertyUShortController::Sync(NiStreamReversible& stream) {
+	stream.Sync(typeOfControlledVariable);
 }
 
 
-void BSEffectShaderPropertyColorController::Get(NiIStream& stream) {
-	NiFloatInterpController::Get(stream);
-
-	stream >> typeOfControlledColor;
-}
-
-void BSEffectShaderPropertyColorController::Put(NiOStream& stream) {
-	NiFloatInterpController::Put(stream);
-
-	stream << typeOfControlledColor;
+void BSEffectShaderPropertyColorController::Sync(NiStreamReversible& stream) {
+	stream.Sync(typeOfControlledColor);
 }
 
 
-void BSEffectShaderPropertyFloatController::Get(NiIStream& stream) {
-	NiFloatInterpController::Get(stream);
-
-	stream >> typeOfControlledVariable;
-}
-
-void BSEffectShaderPropertyFloatController::Put(NiOStream& stream) {
-	NiFloatInterpController::Put(stream);
-
-	stream << typeOfControlledVariable;
+void BSEffectShaderPropertyFloatController::Sync(NiStreamReversible& stream) {
+	stream.Sync(typeOfControlledVariable);
 }
 
 
-void NiMultiTargetTransformController::Get(NiIStream& stream) {
-	NiInterpController::Get(stream);
-
-	targetRefs.Get(stream);
-}
-
-void NiMultiTargetTransformController::Put(NiOStream& stream) {
-	NiInterpController::Put(stream);
-
+void NiMultiTargetTransformController::Sync(NiStreamReversible& stream) {
 	targetRefs.SetKeepEmptyRefs();
-	targetRefs.Put(stream);
+	targetRefs.Sync(stream);
 }
 
 void NiMultiTargetTransformController::GetPtrs(std::set<Ref*>& ptrs) {
@@ -777,16 +442,8 @@ BlockRefShortArray<NiAVObject>& NiMultiTargetTransformController::GetTargets() {
 }
 
 
-void NiPSysModifierCtlr::Get(NiIStream& stream) {
-	NiSingleInterpController::Get(stream);
-
-	modifierName.Get(stream);
-}
-
-void NiPSysModifierCtlr::Put(NiOStream& stream) {
-	NiSingleInterpController::Put(stream);
-
-	modifierName.Put(stream);
+void NiPSysModifierCtlr::Sync(NiStreamReversible& stream) {
+	modifierName.Sync(stream);
 }
 
 void NiPSysModifierCtlr::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -796,16 +453,8 @@ void NiPSysModifierCtlr::GetStringRefs(std::vector<StringRef*>& refs) {
 }
 
 
-void NiPSysEmitterCtlr::Get(NiIStream& stream) {
-	NiPSysModifierCtlr::Get(stream);
-
-	visInterpolatorRef.Get(stream);
-}
-
-void NiPSysEmitterCtlr::Put(NiOStream& stream) {
-	NiPSysModifierCtlr::Put(stream);
-
-	visInterpolatorRef.Put(stream);
+void NiPSysEmitterCtlr::Sync(NiStreamReversible& stream) {
+	visInterpolatorRef.Sync(stream);
 }
 
 void NiPSysEmitterCtlr::GetChildRefs(std::set<Ref*>& refs) {
@@ -821,18 +470,9 @@ void NiPSysEmitterCtlr::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void BSPSysMultiTargetEmitterCtlr::Get(NiIStream& stream) {
-	NiPSysEmitterCtlr::Get(stream);
-
-	stream >> maxEmitters;
-	masterParticleSystemRef.Get(stream);
-}
-
-void BSPSysMultiTargetEmitterCtlr::Put(NiOStream& stream) {
-	NiPSysEmitterCtlr::Put(stream);
-
-	stream << maxEmitters;
-	masterParticleSystemRef.Put(stream);
+void BSPSysMultiTargetEmitterCtlr::Sync(NiStreamReversible& stream) {
+	stream.Sync(maxEmitters);
+	masterParticleSystemRef.Sync(stream);
 }
 
 void BSPSysMultiTargetEmitterCtlr::GetPtrs(std::set<Ref*>& ptrs) {
@@ -842,22 +482,11 @@ void BSPSysMultiTargetEmitterCtlr::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void NiBSplineInterpolator::Get(NiIStream& stream) {
-	NiInterpolator::Get(stream);
-
-	stream >> startTime;
-	stream >> stopTime;
-	splineDataRef.Get(stream);
-	basisDataRef.Get(stream);
-}
-
-void NiBSplineInterpolator::Put(NiOStream& stream) {
-	NiInterpolator::Put(stream);
-
-	stream << startTime;
-	stream << stopTime;
-	splineDataRef.Put(stream);
-	basisDataRef.Put(stream);
+void NiBSplineInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(startTime);
+	stream.Sync(stopTime);
+	splineDataRef.Sync(stream);
+	basisDataRef.Sync(stream);
 }
 
 void NiBSplineInterpolator::GetChildRefs(std::set<Ref*>& refs) {
@@ -875,162 +504,69 @@ void NiBSplineInterpolator::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiBSplineCompFloatInterpolator::Get(NiIStream& stream) {
-	NiBSplineFloatInterpolator::Get(stream);
-
-	stream >> base;
-	stream >> offset;
-	stream >> bias;
-	stream >> multiplier;
-}
-
-void NiBSplineCompFloatInterpolator::Put(NiOStream& stream) {
-	NiBSplineFloatInterpolator::Put(stream);
-
-	stream << base;
-	stream << offset;
-	stream << bias;
-	stream << multiplier;
+void NiBSplineCompFloatInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(base);
+	stream.Sync(offset);
+	stream.Sync(bias);
+	stream.Sync(multiplier);
 }
 
 
-void NiBSplinePoint3Interpolator::Get(NiIStream& stream) {
-	NiBSplineInterpolator::Get(stream);
-
-	stream >> unkFloat1;
-	stream >> unkFloat2;
-	stream >> unkFloat3;
-	stream >> unkFloat4;
-	stream >> unkFloat5;
-	stream >> unkFloat6;
-}
-
-void NiBSplinePoint3Interpolator::Put(NiOStream& stream) {
-	NiBSplineInterpolator::Put(stream);
-
-	stream << unkFloat1;
-	stream << unkFloat2;
-	stream << unkFloat3;
-	stream << unkFloat4;
-	stream << unkFloat5;
-	stream << unkFloat6;
+void NiBSplinePoint3Interpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(unkFloat1);
+	stream.Sync(unkFloat2);
+	stream.Sync(unkFloat3);
+	stream.Sync(unkFloat4);
+	stream.Sync(unkFloat5);
+	stream.Sync(unkFloat6);
 }
 
 
-void NiBSplineTransformInterpolator::Get(NiIStream& stream) {
-	NiBSplineInterpolator::Get(stream);
+void NiBSplineTransformInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(translation);
+	stream.Sync(rotation);
+	stream.Sync(scale);
 
-	stream >> translation;
-	stream >> rotation;
-	stream >> scale;
-
-	stream >> translationOffset;
-	stream >> rotationOffset;
-	stream >> scaleOffset;
-}
-
-void NiBSplineTransformInterpolator::Put(NiOStream& stream) {
-	NiBSplineInterpolator::Put(stream);
-
-	stream << translation;
-	stream << rotation;
-	stream << scale;
-
-	stream << translationOffset;
-	stream << rotationOffset;
-	stream << scaleOffset;
+	stream.Sync(translationOffset);
+	stream.Sync(rotationOffset);
+	stream.Sync(scaleOffset);
 }
 
 
-void NiBSplineCompTransformInterpolator::Get(NiIStream& stream) {
-	NiBSplineTransformInterpolator::Get(stream);
-
-	stream >> translationBias;
-	stream >> translationMultiplier;
-	stream >> rotationBias;
-	stream >> rotationMultiplier;
-	stream >> scaleBias;
-	stream >> scaleMultiplier;
-}
-
-void NiBSplineCompTransformInterpolator::Put(NiOStream& stream) {
-	NiBSplineTransformInterpolator::Put(stream);
-
-	stream << translationBias;
-	stream << translationMultiplier;
-	stream << rotationBias;
-	stream << rotationMultiplier;
-	stream << scaleBias;
-	stream << scaleMultiplier;
+void NiBSplineCompTransformInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(translationBias);
+	stream.Sync(translationMultiplier);
+	stream.Sync(rotationBias);
+	stream.Sync(rotationMultiplier);
+	stream.Sync(scaleBias);
+	stream.Sync(scaleMultiplier);
 }
 
 
-void NiBlendInterpolator::Get(NiIStream& stream) {
-	NiInterpolator::Get(stream);
-
-	stream >> flags;
-	stream >> unkInt;
-}
-
-void NiBlendInterpolator::Put(NiOStream& stream) {
-	NiInterpolator::Put(stream);
-
-	stream << flags;
-	stream << unkInt;
+void NiBlendInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(unkInt);
 }
 
 
-void NiBlendBoolInterpolator::Get(NiIStream& stream) {
-	NiBlendInterpolator::Get(stream);
-
-	stream >> value;
-}
-
-void NiBlendBoolInterpolator::Put(NiOStream& stream) {
-	NiBlendInterpolator::Put(stream);
-
-	stream << value;
+void NiBlendBoolInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(value);
 }
 
 
-void NiBlendFloatInterpolator::Get(NiIStream& stream) {
-	NiBlendInterpolator::Get(stream);
-
-	stream >> value;
-}
-
-void NiBlendFloatInterpolator::Put(NiOStream& stream) {
-	NiBlendInterpolator::Put(stream);
-
-	stream << value;
+void NiBlendFloatInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(value);
 }
 
 
-void NiBlendPoint3Interpolator::Get(NiIStream& stream) {
-	NiBlendInterpolator::Get(stream);
-
-	stream >> point;
-}
-
-void NiBlendPoint3Interpolator::Put(NiOStream& stream) {
-	NiBlendInterpolator::Put(stream);
-
-	stream << point;
+void NiBlendPoint3Interpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(point);
 }
 
 
-void NiBoolInterpolator::Get(NiIStream& stream) {
-	NiKeyBasedInterpolator::Get(stream);
-
-	stream >> boolValue;
-	dataRef.Get(stream);
-}
-
-void NiBoolInterpolator::Put(NiOStream& stream) {
-	NiKeyBasedInterpolator::Put(stream);
-
-	stream << boolValue;
-	dataRef.Put(stream);
+void NiBoolInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(boolValue);
+	dataRef.Sync(stream);
 }
 
 void NiBoolInterpolator::GetChildRefs(std::set<Ref*>& refs) {
@@ -1046,18 +582,9 @@ void NiBoolInterpolator::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiFloatInterpolator::Get(NiIStream& stream) {
-	NiKeyBasedInterpolator::Get(stream);
-
-	stream >> floatValue;
-	dataRef.Get(stream);
-}
-
-void NiFloatInterpolator::Put(NiOStream& stream) {
-	NiKeyBasedInterpolator::Put(stream);
-
-	stream << floatValue;
-	dataRef.Put(stream);
+void NiFloatInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(floatValue);
+	dataRef.Sync(stream);
 }
 
 void NiFloatInterpolator::GetChildRefs(std::set<Ref*>& refs) {
@@ -1073,22 +600,11 @@ void NiFloatInterpolator::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiTransformInterpolator::Get(NiIStream& stream) {
-	NiKeyBasedInterpolator::Get(stream);
-
-	stream >> translation;
-	stream >> rotation;
-	stream >> scale;
-	dataRef.Get(stream);
-}
-
-void NiTransformInterpolator::Put(NiOStream& stream) {
-	NiKeyBasedInterpolator::Put(stream);
-
-	stream << translation;
-	stream << rotation;
-	stream << scale;
-	dataRef.Put(stream);
+void NiTransformInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(translation);
+	stream.Sync(rotation);
+	stream.Sync(scale);
+	dataRef.Sync(stream);
 }
 
 void NiTransformInterpolator::GetChildRefs(std::set<Ref*>& refs) {
@@ -1104,18 +620,9 @@ void NiTransformInterpolator::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiPoint3Interpolator::Get(NiIStream& stream) {
-	NiKeyBasedInterpolator::Get(stream);
-
-	stream >> point3Value;
-	dataRef.Get(stream);
-}
-
-void NiPoint3Interpolator::Put(NiOStream& stream) {
-	NiKeyBasedInterpolator::Put(stream);
-
-	stream << point3Value;
-	dataRef.Put(stream);
+void NiPoint3Interpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(point3Value);
+	dataRef.Sync(stream);
 }
 
 void NiPoint3Interpolator::GetChildRefs(std::set<Ref*>& refs) {
@@ -1131,28 +638,14 @@ void NiPoint3Interpolator::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiPathInterpolator::Get(NiIStream& stream) {
-	NiKeyBasedInterpolator::Get(stream);
-
-	stream >> flags;
-	stream >> bankDir;
-	stream >> maxBankAngle;
-	stream >> smoothing;
-	stream >> followAxis;
-	pathDataRef.Get(stream);
-	percentDataRef.Get(stream);
-}
-
-void NiPathInterpolator::Put(NiOStream& stream) {
-	NiKeyBasedInterpolator::Put(stream);
-
-	stream << flags;
-	stream << bankDir;
-	stream << maxBankAngle;
-	stream << smoothing;
-	stream << followAxis;
-	pathDataRef.Put(stream);
-	percentDataRef.Put(stream);
+void NiPathInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	stream.Sync(bankDir);
+	stream.Sync(maxBankAngle);
+	stream.Sync(smoothing);
+	stream.Sync(followAxis);
+	pathDataRef.Sync(stream);
+	percentDataRef.Sync(stream);
 }
 
 void NiPathInterpolator::GetChildRefs(std::set<Ref*>& refs) {
@@ -1170,28 +663,14 @@ void NiPathInterpolator::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiLookAtInterpolator::Get(NiIStream& stream) {
-	NiInterpolator::Get(stream);
-
-	stream >> flags;
-	lookAtRef.Get(stream);
-	lookAtName.Get(stream);
-	stream >> transform;
-	translateInterpRef.Get(stream);
-	rollInterpRef.Get(stream);
-	scaleInterpRef.Get(stream);
-}
-
-void NiLookAtInterpolator::Put(NiOStream& stream) {
-	NiInterpolator::Put(stream);
-
-	stream << flags;
-	lookAtRef.Put(stream);
-	lookAtName.Put(stream);
-	stream << transform;
-	translateInterpRef.Put(stream);
-	rollInterpRef.Put(stream);
-	scaleInterpRef.Put(stream);
+void NiLookAtInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	lookAtRef.Sync(stream);
+	lookAtName.Sync(stream);
+	stream.Sync(transform);
+	translateInterpRef.Sync(stream);
+	rollInterpRef.Sync(stream);
+	scaleInterpRef.Sync(stream);
 }
 
 void NiLookAtInterpolator::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -1223,25 +702,13 @@ void NiLookAtInterpolator::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void BSTreadTransfInterpolator::Get(NiIStream& stream) {
-	NiInterpolator::Get(stream);
-
-	stream >> numTreadTransforms;
+void BSTreadTransfInterpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(numTreadTransforms);
 	treadTransforms.resize(numTreadTransforms);
 	for (uint32_t i = 0; i < numTreadTransforms; i++)
-		treadTransforms[i].Get(stream);
+		treadTransforms[i].Sync(stream);
 
-	dataRef.Get(stream);
-}
-
-void BSTreadTransfInterpolator::Put(NiOStream& stream) {
-	NiInterpolator::Put(stream);
-
-	stream << numTreadTransforms;
-	for (uint32_t i = 0; i < numTreadTransforms; i++)
-		treadTransforms[i].Put(stream);
-
-	dataRef.Put(stream);
+	dataRef.Sync(stream);
 }
 
 void BSTreadTransfInterpolator::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -1264,62 +731,30 @@ void BSTreadTransfInterpolator::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void NiStringPalette::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	palette.Get(stream, 4);
-	stream >> length;
-}
-
-void NiStringPalette::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
+void NiStringPalette::Sync(NiStreamReversible& stream) {
+	palette.Sync(stream, 4);
 	length = palette.GetLength();
-
-	palette.Put(stream, 4, false);
-	stream << length;
+	stream.Sync(length);
 }
 
 
-void NiSequence::Get(NiIStream& stream) {
-	NiObject::Get(stream);
+void NiSequence::Sync(NiStreamReversible& stream) {
+	name.Sync(stream);
 
-	name.Get(stream);
-
-	stream >> numControlledBlocks;
-	stream >> arrayGrowBy;
+	stream.Sync(numControlledBlocks);
+	stream.Sync(arrayGrowBy);
 
 	controlledBlocks.resize(numControlledBlocks);
 	for (uint32_t i = 0; i < numControlledBlocks; i++) {
-		controlledBlocks[i].interpolatorRef.Get(stream);
-		controlledBlocks[i].controllerRef.Get(stream);
-		stream >> controlledBlocks[i].priority;
+		controlledBlocks[i].interpolatorRef.Sync(stream);
+		controlledBlocks[i].controllerRef.Sync(stream);
+		stream.Sync(controlledBlocks[i].priority);
 
-		controlledBlocks[i].nodeName.Get(stream);
-		controlledBlocks[i].propType.Get(stream);
-		controlledBlocks[i].ctrlType.Get(stream);
-		controlledBlocks[i].ctrlID.Get(stream);
-		controlledBlocks[i].interpID.Get(stream);
-	}
-}
-
-void NiSequence::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	name.Put(stream);
-
-	stream << numControlledBlocks;
-	stream << arrayGrowBy;
-
-	for (uint32_t i = 0; i < numControlledBlocks; i++) {
-		controlledBlocks[i].interpolatorRef.Put(stream);
-		controlledBlocks[i].controllerRef.Put(stream);
-		stream << controlledBlocks[i].priority;
-		controlledBlocks[i].nodeName.Put(stream);
-		controlledBlocks[i].propType.Put(stream);
-		controlledBlocks[i].ctrlType.Put(stream);
-		controlledBlocks[i].ctrlID.Put(stream);
-		controlledBlocks[i].interpID.Put(stream);
+		controlledBlocks[i].nodeName.Sync(stream);
+		controlledBlocks[i].propType.Sync(stream);
+		controlledBlocks[i].ctrlType.Sync(stream);
+		controlledBlocks[i].ctrlID.Sync(stream);
+		controlledBlocks[i].interpID.Sync(stream);
 	}
 }
 
@@ -1356,47 +791,22 @@ void NiSequence::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void BSAnimNote::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> type;
-	stream >> time;
+void BSAnimNote::Sync(NiStreamReversible& stream) {
+	stream.Sync(type);
+	stream.Sync(time);
 
 	if (type == ANT_GRABIK)
-		stream >> arm;
+		stream.Sync(arm);
 
 	if (type != ANT_INVALID) {
-		stream >> gain;
-		stream >> state;
-	}
-}
-
-void BSAnimNote::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << type;
-	stream << time;
-
-	if (type == ANT_GRABIK)
-		stream << arm;
-
-	if (type != ANT_INVALID) {
-		stream << gain;
-		stream << state;
+		stream.Sync(gain);
+		stream.Sync(state);
 	}
 }
 
 
-void BSAnimNotes::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	animNoteRefs.Get(stream);
-}
-
-void BSAnimNotes::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	animNoteRefs.Put(stream);
+void BSAnimNotes::Sync(NiStreamReversible& stream) {
+	animNoteRefs.Sync(stream);
 }
 
 void BSAnimNotes::GetChildRefs(std::set<Ref*>& refs) {
@@ -1416,40 +826,20 @@ BlockRefShortArray<BSAnimNote>& BSAnimNotes::GetAnimNotes() {
 }
 
 
-void NiControllerSequence::Get(NiIStream& stream) {
-	NiSequence::Get(stream);
-
-	stream >> weight;
-	textKeyRef.Get(stream);
-	stream >> cycleType;
-	stream >> frequency;
-	stream >> startTime;
-	stream >> stopTime;
-	managerRef.Get(stream);
-	accumRootName.Get(stream);
+void NiControllerSequence::Sync(NiStreamReversible& stream) {
+	stream.Sync(weight);
+	textKeyRef.Sync(stream);
+	stream.Sync(cycleType);
+	stream.Sync(frequency);
+	stream.Sync(startTime);
+	stream.Sync(stopTime);
+	managerRef.Sync(stream);
+	accumRootName.Sync(stream);
 
 	if (stream.GetVersion().Stream() >= 24 && stream.GetVersion().Stream() <= 28)
-		animNotesRef.Get(stream);
+		animNotesRef.Sync(stream);
 	else if (stream.GetVersion().Stream() > 28)
-		animNotesRefs.Get(stream);
-}
-
-void NiControllerSequence::Put(NiOStream& stream) {
-	NiSequence::Put(stream);
-
-	stream << weight;
-	textKeyRef.Put(stream);
-	stream << cycleType;
-	stream << frequency;
-	stream << startTime;
-	stream << stopTime;
-	managerRef.Put(stream);
-	accumRootName.Put(stream);
-
-	if (stream.GetVersion().Stream() >= 24 && stream.GetVersion().Stream() <= 28)
-		animNotesRef.Put(stream);
-	else if (stream.GetVersion().Stream() > 28)
-		animNotesRefs.Put(stream);
+		animNotesRefs.Sync(stream);
 }
 
 void NiControllerSequence::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -1493,22 +883,11 @@ BlockRefShortArray<BSAnimNotes>& NiControllerSequence::GetAnimNotes() {
 }
 
 
-void NiControllerManager::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
+void NiControllerManager::Sync(NiStreamReversible& stream) {
+	stream.Sync(cumulative);
 
-	stream >> cumulative;
-
-	controllerSequenceRefs.Get(stream);
-	objectPaletteRef.Get(stream);
-}
-
-void NiControllerManager::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	stream << cumulative;
-
-	controllerSequenceRefs.Put(stream);
-	objectPaletteRef.Put(stream);
+	controllerSequenceRefs.Sync(stream);
+	objectPaletteRef.Sync(stream);
 }
 
 void NiControllerManager::GetChildRefs(std::set<Ref*>& refs) {

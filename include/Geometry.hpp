@@ -22,24 +22,14 @@ struct AdditionalDataInfo {
 	uint32_t channelOffset = 0;
 	uint8_t unkByte1 = 2;
 
-	void Get(NiIStream& stream) {
-		stream >> dataType;
-		stream >> numChannelBytesPerElement;
-		stream >> numChannelBytes;
-		stream >> numTotalBytesPerElement;
-		stream >> blockIndex;
-		stream >> channelOffset;
-		stream >> unkByte1;
-	}
-
-	void Put(NiOStream& stream) {
-		stream << dataType;
-		stream << numChannelBytesPerElement;
-		stream << numChannelBytes;
-		stream << numTotalBytesPerElement;
-		stream << blockIndex;
-		stream << channelOffset;
-		stream << unkByte1;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(dataType);
+		stream.Sync(numChannelBytesPerElement);
+		stream.Sync(numChannelBytes);
+		stream.Sync(numTotalBytesPerElement);
+		stream.Sync(blockIndex);
+		stream.Sync(channelOffset);
+		stream.Sync(unkByte1);
 	}
 };
 
@@ -54,55 +44,35 @@ struct AdditionalDataBlock {
 	std::vector<uint32_t> dataSizes;
 	std::vector<std::vector<uint8_t>> data;
 
-	void Get(NiIStream& stream) {
-		stream >> hasData;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(hasData);
 
 		if (hasData) {
-			stream >> blockSize;
+			stream.Sync(blockSize);
 
-			stream >> numBlocks;
+			stream.Sync(numBlocks);
 			blockOffsets.resize(numBlocks);
 			for (uint32_t i = 0; i < numBlocks; i++)
-				stream >> blockOffsets[i];
+				stream.Sync(blockOffsets[i]);
 
-			stream >> numData;
+			stream.Sync(numData);
 			dataSizes.resize(numData);
 			for (uint32_t i = 0; i < numData; i++)
-				stream >> dataSizes[i];
+				stream.Sync(dataSizes[i]);
 
 			data.resize(numData);
 			for (uint32_t i = 0; i < numData; i++) {
 				data[i].resize(blockSize);
 				for (uint32_t j = 0; j < blockSize; j++)
-					stream >> data[i][j];
+					stream.Sync(data[i][j]);
 			}
-		}
-	}
-
-	void Put(NiOStream& stream) {
-		stream << hasData;
-
-		if (hasData) {
-			stream << blockSize;
-
-			stream << numBlocks;
-			for (uint32_t i = 0; i < numBlocks; i++)
-				stream << blockOffsets[i];
-
-			stream << numData;
-			for (uint32_t i = 0; i < numData; i++)
-				stream << dataSizes[i];
-
-			for (uint32_t i = 0; i < numData; i++)
-				for (uint32_t j = 0; j < blockSize; j++)
-					stream << data[i][j];
 		}
 	}
 };
 
 class AdditionalGeomData : public NiObjectCRTP<AdditionalGeomData, NiObject> {};
 
-class NiAdditionalGeometryData : public NiObjectCRTP<NiAdditionalGeometryData, AdditionalGeomData> {
+class NiAdditionalGeometryData : public NiObjectCRTP<NiAdditionalGeometryData, AdditionalGeomData, true> {
 private:
 	uint16_t numVertices = 0;
 
@@ -116,8 +86,7 @@ public:
 	static constexpr const char* BlockName = "NiAdditionalGeometryData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 struct BSPackedAdditionalDataBlock {
@@ -134,55 +103,34 @@ struct BSPackedAdditionalDataBlock {
 	uint32_t unkInt1 = 0;
 	uint32_t numTotalBytesPerElement = 0;
 
-	void Get(NiIStream& stream) {
-		stream >> hasData;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(hasData);
 
 		if (hasData) {
-			stream >> numTotalBytes;
+			stream.Sync(numTotalBytes);
 
-			stream >> numBlocks;
+			stream.Sync(numBlocks);
 			blockOffsets.resize(numBlocks);
 			for (uint32_t i = 0; i < numBlocks; i++)
-				stream >> blockOffsets[i];
+				stream.Sync(blockOffsets[i]);
 
-			stream >> numAtoms;
+			stream.Sync(numAtoms);
 			atomSizes.resize(numAtoms);
 			for (uint32_t i = 0; i < numAtoms; i++)
-				stream >> atomSizes[i];
+				stream.Sync(atomSizes[i]);
 
 			data.resize(numTotalBytes);
 			for (uint32_t i = 0; i < numTotalBytes; i++)
-				stream >> data[i];
+				stream.Sync(data[i]);
 		}
 
-		stream >> unkInt1;
-		stream >> numTotalBytesPerElement;
-	}
-
-	void Put(NiOStream& stream) {
-		stream << hasData;
-
-		if (hasData) {
-			stream << numTotalBytes;
-
-			stream << numBlocks;
-			for (uint32_t i = 0; i < numBlocks; i++)
-				stream << blockOffsets[i];
-
-			stream << numAtoms;
-			for (uint32_t i = 0; i < numAtoms; i++)
-				stream << atomSizes[i];
-
-			for (uint32_t i = 0; i < numTotalBytes; i++)
-				stream << data[i];
-		}
-
-		stream << unkInt1;
-		stream << numTotalBytesPerElement;
+		stream.Sync(unkInt1);
+		stream.Sync(numTotalBytesPerElement);
 	}
 };
 
-class BSPackedAdditionalGeometryData : public NiObjectCRTP<BSPackedAdditionalGeometryData, AdditionalGeomData> {
+class BSPackedAdditionalGeometryData
+	: public NiObjectCRTP<BSPackedAdditionalGeometryData, AdditionalGeomData, true> {
 private:
 	uint16_t numVertices = 0;
 
@@ -196,11 +144,10 @@ public:
 	static constexpr const char* BlockName = "BSPackedAdditionalGeometryData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiGeometryData : public NiObjectCRTP<NiGeometryData, NiObject> {
+class NiGeometryData : public NiObjectCRTP<NiGeometryData, NiObject, true> {
 protected:
 	bool isPSys = false;
 
@@ -227,8 +174,7 @@ public:
 
 	uint16_t consistencyFlags = 0;
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -319,7 +265,7 @@ public:
 };
 
 
-class BSTriShape : public NiObjectCRTP<BSTriShape, NiShape> {
+class BSTriShape : public NiObjectCRTP<BSTriShape, NiShape, true> {
 protected:
 	BlockRef<NiObject> skinInstanceRef;
 	BlockRef<NiProperty> shaderPropertyRef;
@@ -361,8 +307,7 @@ public:
 	static constexpr const char* BlockName = "BSTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -480,11 +425,10 @@ public:
 	uint32_t index = 0;
 	uint32_t numTris = 0;
 
-	void Get(NiIStream& stream);
-	void Put(NiOStream& stream);
+	void Sync(NiStreamReversible& stream);
 };
 
-class BSSubIndexTriShape : public NiObjectCRTP<BSSubIndexTriShape, BSTriShape> {
+class BSSubIndexTriShape : public NiObjectCRTP<BSSubIndexTriShape, BSTriShape, true> {
 public:
 	class BSSITSSubSegment {
 	public:
@@ -541,8 +485,7 @@ public:
 	static constexpr const char* BlockName = "BSSubIndexTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	void GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts);
@@ -556,7 +499,7 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
-class BSMeshLODTriShape : public NiObjectCRTP<BSMeshLODTriShape, BSTriShape> {
+class BSMeshLODTriShape : public NiObjectCRTP<BSMeshLODTriShape, BSTriShape, true> {
 public:
 	uint32_t lodSize0 = 0;
 	uint32_t lodSize1 = 0;
@@ -565,12 +508,11 @@ public:
 	static constexpr const char* BlockName = "BSMeshLODTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class BSDynamicTriShape : public NiObjectCRTP<BSDynamicTriShape, BSTriShape> {
+class BSDynamicTriShape : public NiObjectCRTP<BSDynamicTriShape, BSTriShape, true> {
 public:
 	uint32_t dynamicDataSize;
 	std::vector<Vector4> dynamicData;
@@ -580,8 +522,7 @@ public:
 	static constexpr const char* BlockName = "BSDynamicTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void CalcDynamicData();
 
@@ -594,7 +535,7 @@ public:
 
 class NiSkinInstance;
 
-class NiGeometry : public NiObjectCRTP<NiGeometry, NiShape> {
+class NiGeometry : public NiObjectCRTP<NiGeometry, NiShape, true> {
 protected:
 	BlockRef<NiGeometryData> dataRef;
 	BlockRef<NiSkinInstance> skinInstanceRef;
@@ -612,8 +553,7 @@ protected:
 	uint32_t implementation = 0;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -635,13 +575,12 @@ public:
 
 class NiTriBasedGeom : public NiObjectCRTP<NiTriBasedGeom, NiGeometry> {};
 
-class NiTriBasedGeomData : public NiObjectCRTP<NiTriBasedGeomData, NiGeometryData> {
+class NiTriBasedGeomData : public NiObjectCRTP<NiTriBasedGeomData, NiGeometryData, true> {
 protected:
 	uint16_t numTriangles = 0;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
@@ -655,7 +594,7 @@ struct MatchGroup {
 	std::vector<uint16_t> matches;
 };
 
-class NiTriShapeData : public NiObjectCRTP<NiTriShapeData, NiTriBasedGeomData> {
+class NiTriShapeData : public NiObjectCRTP<NiTriShapeData, NiTriBasedGeomData, true> {
 protected:
 	uint32_t numTrianglePoints = 0;
 	bool hasTriangles = false;
@@ -668,8 +607,7 @@ public:
 	static constexpr const char* BlockName = "NiTriShapeData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void Create(NiVersion& version,
 				const std::vector<Vector3>* verts,
 				const std::vector<Triangle>* tris,
@@ -697,7 +635,7 @@ public:
 	void SetGeomData(NiGeometryData* geomDataPtr);
 };
 
-class NiTriStripsData : public NiObjectCRTP<NiTriStripsData, NiTriBasedGeomData> {
+class NiTriStripsData : public NiObjectCRTP<NiTriStripsData, NiTriBasedGeomData, true> {
 protected:
 	uint16_t numStrips = 0;
 	std::vector<uint16_t> stripLengths;
@@ -708,8 +646,7 @@ public:
 	static constexpr const char* BlockName = "NiTriStripsData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	uint32_t GetNumTriangles() override;
@@ -735,7 +672,7 @@ public:
 	bool ReorderTriangles(const std::vector<uint32_t>&) override { return false; }
 };
 
-class NiLinesData : public NiObjectCRTP<NiLinesData, NiGeometryData> {
+class NiLinesData : public NiObjectCRTP<NiLinesData, NiGeometryData, true> {
 protected:
 	std::deque<bool> lineFlags;
 
@@ -743,8 +680,7 @@ public:
 	static constexpr const char* BlockName = "NiLinesData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
@@ -767,7 +703,7 @@ struct PolygonInfo {
 	uint16_t triangleOffset = 0;
 };
 
-class NiScreenElementsData : public NiObjectCRTP<NiScreenElementsData, NiTriShapeData> {
+class NiScreenElementsData : public NiObjectCRTP<NiScreenElementsData, NiTriShapeData, true> {
 protected:
 	uint16_t maxPolygons = 0;
 	std::vector<PolygonInfo> polygons;
@@ -784,8 +720,7 @@ public:
 	static constexpr const char* BlockName = "NiScreenElementsData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
@@ -801,7 +736,7 @@ public:
 	void SetGeomData(NiGeometryData* geomDataPtr);
 };
 
-class BSLODTriShape : public NiObjectCRTP<BSLODTriShape, NiTriBasedGeom> {
+class BSLODTriShape : public NiObjectCRTP<BSLODTriShape, NiTriBasedGeom, true> {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -816,11 +751,10 @@ public:
 	NiGeometryData* GetGeomData();
 	void SetGeomData(NiGeometryData* geomDataPtr);
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class BSSegmentedTriShape : public NiObjectCRTP<BSSegmentedTriShape, NiTriShape> {
+class BSSegmentedTriShape : public NiObjectCRTP<BSSegmentedTriShape, NiTriShape, true> {
 public:
 	uint32_t numSegments = 0;
 	std::vector<BSGeometrySegmentData> segments;
@@ -828,7 +762,6 @@ public:
 	static constexpr const char* BlockName = "BSSegmentedTriShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 } // namespace nifly

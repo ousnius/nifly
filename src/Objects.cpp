@@ -5,31 +5,18 @@ See the included GPLv3 LICENSE file
 */
 
 #include "Objects.hpp"
+#include "Geometry.hpp"
 
 using namespace nifly;
 
-void NiObjectNET::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
+void NiObjectNET::Sync(NiStreamReversible& stream) {
 	if (bBSLightingShaderProperty && stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() <= 130)
-		stream >> bslspShaderType;
+		stream.Sync(bslspShaderType);
 
-	name.Get(stream);
+	name.Sync(stream);
 
-	extraDataRefs.Get(stream);
-	controllerRef.Get(stream);
-}
-
-void NiObjectNET::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	if (bBSLightingShaderProperty && stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() <= 130)
-		stream << bslspShaderType;
-
-	name.Put(stream);
-
-	extraDataRefs.Put(stream);
-	controllerRef.Put(stream);
+	extraDataRefs.Sync(stream);
+	controllerRef.Sync(stream);
 }
 
 void NiObjectNET::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -77,43 +64,30 @@ BlockRefArray<NiExtraData>& NiObjectNET::GetExtraData() {
 }
 
 
-void NiAVObject::Get(NiIStream& stream) {
-	NiObjectNET::Get(stream);
+void NiAVObject::Sync(NiStreamReversible& stream) {
+	if (HasType<BSTriShape>()) {
+		// The order of definition for BSTriShape deviates slightly from previous versions.
+		// NiObjectNET -> NiAVObject (duplicated in BSTriShape) -> BSTriShape
+		return;
+	}
 
-	flags = 0;
-	if (stream.GetVersion().Stream() <= 26)
-		stream.read(reinterpret_cast<char*>(&flags), 2);
+	if (stream.GetVersion().Stream() <= 26) {
+		auto flagsShort = static_cast<uint16_t>(flags);
+		stream.Sync(flagsShort);
+		flags = flagsShort;
+	}
 	else
-		stream >> flags;
+		stream.Sync(flags);
 
-	stream >> transform.translation;
-	stream >> transform.rotation;
-	stream >> transform.scale;
+	stream.Sync(transform.translation);
+	stream.Sync(transform.rotation);
+	stream.Sync(transform.scale);
 
 	if (stream.GetVersion().Stream() <= 34)
-		propertyRefs.Get(stream);
+		propertyRefs.Sync(stream);
 
 	if (stream.GetVersion().File() >= V10_0_1_0)
-		collisionRef.Get(stream);
-}
-
-void NiAVObject::Put(NiOStream& stream) {
-	NiObjectNET::Put(stream);
-
-	if (stream.GetVersion().Stream() <= 26)
-		stream.write(reinterpret_cast<char*>(&flags), 2);
-	else
-		stream << flags;
-
-	stream << transform.translation;
-	stream << transform.rotation;
-	stream << transform.scale;
-
-	if (stream.GetVersion().Stream() <= 34)
-		propertyRefs.Put(stream);
-
-	if (stream.GetVersion().File() >= V10_0_1_0)
-		collisionRef.Put(stream);
+		collisionRef.Sync(stream);
 }
 
 void NiAVObject::GetChildRefs(std::set<Ref*>& refs) {
@@ -135,28 +109,14 @@ BlockRefArray<NiProperty>& NiAVObject::GetProperties() {
 }
 
 
-void NiDefaultAVObjectPalette::Get(NiIStream& stream) {
-	NiAVObjectPalette::Get(stream);
+void NiDefaultAVObjectPalette::Sync(NiStreamReversible& stream) {
+	sceneRef.Sync(stream);
 
-	sceneRef.Get(stream);
-
-	stream >> numObjects;
+	stream.Sync(numObjects);
 	objects.resize(numObjects);
 	for (uint32_t i = 0; i < numObjects; i++) {
-		objects[i].name.Get(stream, 4);
-		objects[i].objectRef.Get(stream);
-	}
-}
-
-void NiDefaultAVObjectPalette::Put(NiOStream& stream) {
-	NiAVObjectPalette::Put(stream);
-
-	sceneRef.Put(stream);
-
-	stream << numObjects;
-	for (uint32_t i = 0; i < numObjects; i++) {
-		objects[i].name.Put(stream, 4, false);
-		objects[i].objectRef.Put(stream);
+		objects[i].name.Sync(stream, 4);
+		objects[i].objectRef.Sync(stream);
 	}
 }
 
@@ -170,48 +130,24 @@ void NiDefaultAVObjectPalette::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void NiCamera::Get(NiIStream& stream) {
-	NiAVObject::Get(stream);
+void NiCamera::Sync(NiStreamReversible& stream) {
+	stream.Sync(obsoleteFlags);
+	stream.Sync(frustumLeft);
+	stream.Sync(frustumRight);
+	stream.Sync(frustumTop);
+	stream.Sync(frustomBottom);
+	stream.Sync(frustumNear);
+	stream.Sync(frustumFar);
+	stream.Sync(useOrtho);
+	stream.Sync(viewportLeft);
+	stream.Sync(viewportRight);
+	stream.Sync(viewportTop);
+	stream.Sync(viewportBottom);
+	stream.Sync(lodAdjust);
 
-	stream >> obsoleteFlags;
-	stream >> frustumLeft;
-	stream >> frustumRight;
-	stream >> frustumTop;
-	stream >> frustomBottom;
-	stream >> frustumNear;
-	stream >> frustumFar;
-	stream >> useOrtho;
-	stream >> viewportLeft;
-	stream >> viewportRight;
-	stream >> viewportTop;
-	stream >> viewportBottom;
-	stream >> lodAdjust;
-
-	sceneRef.Get(stream);
-	stream >> numScreenPolygons;
-	stream >> numScreenTextures;
-}
-
-void NiCamera::Put(NiOStream& stream) {
-	NiAVObject::Put(stream);
-
-	stream << obsoleteFlags;
-	stream << frustumLeft;
-	stream << frustumRight;
-	stream << frustumTop;
-	stream << frustomBottom;
-	stream << frustumNear;
-	stream << frustumFar;
-	stream << useOrtho;
-	stream << viewportLeft;
-	stream << viewportRight;
-	stream << viewportTop;
-	stream << viewportBottom;
-	stream << lodAdjust;
-
-	sceneRef.Put(stream);
-	stream << numScreenPolygons;
-	stream << numScreenTextures;
+	sceneRef.Sync(stream);
+	stream.Sync(numScreenPolygons);
+	stream.Sync(numScreenTextures);
 }
 
 void NiCamera::GetChildRefs(std::set<Ref*>& refs) {
@@ -235,85 +171,48 @@ void NiCamera::SetSceneRef(int scRef) {
 }
 
 
-void NiPalette::Get(NiIStream& stream) {
-	NiObject::Get(stream);
+void NiPalette::Sync(NiStreamReversible& stream) {
+	stream.Sync(hasAlpha);
 
-	stream >> hasAlpha;
-	stream >> numEntries;
+	if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+		// Size can only be 16 or 256
+		if (numEntries != 16 && numEntries != 256) {
+			if (numEntries >= 128)
+				numEntries = 256;
+			else
+				numEntries = 16;
+		}
+	}
+
+	stream.Sync(numEntries);
 	palette.resize(numEntries);
 	for (uint32_t i = 0; i < numEntries; i++)
-		stream >> palette[i];
-}
-
-void NiPalette::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	// Size can only be 16 or 256
-	if (numEntries != 16 && numEntries != 256) {
-		if (numEntries >= 128)
-			numEntries = 256;
-		else
-			numEntries = 16;
-
-		palette.resize(numEntries);
-	}
-
-	stream << hasAlpha;
-	stream << numEntries;
-	for (uint32_t i = 0; i < numEntries; i++)
-		stream << palette[i];
+		stream.Sync(palette[i]);
 }
 
 
-void TextureRenderData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> pixelFormat;
-	stream >> bitsPerPixel;
-	stream >> unkInt1;
-	stream >> unkInt2;
-	stream >> flags;
-	stream >> unkInt3;
+void TextureRenderData::Sync(NiStreamReversible& stream) {
+	stream.Sync(pixelFormat);
+	stream.Sync(bitsPerPixel);
+	stream.Sync(unkInt1);
+	stream.Sync(unkInt2);
+	stream.Sync(flags);
+	stream.Sync(unkInt3);
 
 	for (uint32_t i = 0; i < 4; i++) {
-		stream >> channels[i].type;
-		stream >> channels[i].convention;
-		stream >> channels[i].bitsPerChannel;
-		stream >> channels[i].unkByte1;
+		stream.Sync(channels[i].type);
+		stream.Sync(channels[i].convention);
+		stream.Sync(channels[i].bitsPerChannel);
+		stream.Sync(channels[i].unkByte1);
 	}
 
-	paletteRef.Get(stream);
+	paletteRef.Sync(stream);
 
-	stream >> numMipmaps;
-	stream >> bytesPerPixel;
+	stream.Sync(numMipmaps);
+	stream.Sync(bytesPerPixel);
 	mipmaps.resize(numMipmaps);
 	for (uint32_t i = 0; i < numMipmaps; i++)
-		stream >> mipmaps[i];
-}
-
-void TextureRenderData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << pixelFormat;
-	stream << bitsPerPixel;
-	stream << unkInt1;
-	stream << unkInt2;
-	stream << flags;
-	stream << unkInt3;
-
-	for (uint32_t i = 0; i < 4; i++) {
-		stream << channels[i].type;
-		stream << channels[i].convention;
-		stream << channels[i].bitsPerChannel;
-		stream << channels[i].unkByte1;
-	}
-
-	paletteRef.Put(stream);
-
-	stream << numMipmaps;
-	stream << bytesPerPixel;
-	for (uint32_t i = 0; i < numMipmaps; i++)
-		stream << mipmaps[i];
+		stream.Sync(mipmaps[i]);
 }
 
 void TextureRenderData::GetChildRefs(std::set<Ref*>& refs) {
@@ -337,94 +236,47 @@ void TextureRenderData::SetPaletteRef(int palRef) {
 }
 
 
-void NiPersistentSrcTextureRendererData::Get(NiIStream& stream) {
-	TextureRenderData::Get(stream);
-
-	stream >> numPixels;
-	stream >> unkInt4;
-	stream >> numFaces;
-	stream >> unkInt5;
+void NiPersistentSrcTextureRendererData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numPixels);
+	stream.Sync(unkInt4);
+	stream.Sync(numFaces);
+	stream.Sync(unkInt5);
 
 	pixelData.resize(numFaces);
 	for (uint32_t f = 0; f < numFaces; f++) {
 		pixelData[f].resize(numPixels);
 		for (uint32_t p = 0; p < numPixels; p++)
-			stream >> pixelData[f][p];
+			stream.Sync(pixelData[f][p]);
 	}
 }
 
-void NiPersistentSrcTextureRendererData::Put(NiOStream& stream) {
-	TextureRenderData::Put(stream);
 
-	stream << numPixels;
-	stream << unkInt4;
-	stream << numFaces;
-	stream << unkInt5;
-
-	for (uint32_t f = 0; f < numFaces; f++)
-		for (uint32_t p = 0; p < numPixels; p++)
-			stream << pixelData[f][p];
-}
-
-
-void NiPixelData::Get(NiIStream& stream) {
-	TextureRenderData::Get(stream);
-
-	stream >> numPixels;
-	stream >> numFaces;
+void NiPixelData::Sync(NiStreamReversible& stream) {
+	stream.Sync(numPixels);
+	stream.Sync(numFaces);
 
 	pixelData.resize(numFaces);
 	for (uint32_t f = 0; f < numFaces; f++) {
 		pixelData[f].resize(numPixels);
 		for (uint32_t p = 0; p < numPixels; p++)
-			stream >> pixelData[f][p];
+			stream.Sync(pixelData[f][p]);
 	}
 }
 
-void NiPixelData::Put(NiOStream& stream) {
-	TextureRenderData::Put(stream);
 
-	stream << numPixels;
-	stream << numFaces;
-
-	for (uint32_t f = 0; f < numFaces; f++)
-		for (uint32_t p = 0; p < numPixels; p++)
-			stream << pixelData[f][p];
-}
-
-
-void NiSourceTexture::Get(NiIStream& stream) {
-	NiTexture::Get(stream);
-
-	stream >> useExternal;
-	fileName.Get(stream);
-	dataRef.Get(stream);
-	stream >> pixelLayout;
-	stream >> mipMapFormat;
-	stream >> alphaFormat;
-	stream >> isStatic;
+void NiSourceTexture::Sync(NiStreamReversible& stream) {
+	stream.Sync(useExternal);
+	fileName.Sync(stream);
+	dataRef.Sync(stream);
+	stream.Sync(pixelLayout);
+	stream.Sync(mipMapFormat);
+	stream.Sync(alphaFormat);
+	stream.Sync(isStatic);
 
 	if (stream.GetVersion().File() >= NiVersion::ToFile(10, 1, 0, 103))
-		stream >> directRender;
+		stream.Sync(directRender);
 	if (stream.GetVersion().File() >= NiVersion::ToFile(20, 2, 0, 4))
-		stream >> persistentRenderData;
-}
-
-void NiSourceTexture::Put(NiOStream& stream) {
-	NiTexture::Put(stream);
-
-	stream << useExternal;
-	fileName.Put(stream);
-	dataRef.Put(stream);
-	stream << pixelLayout;
-	stream << mipMapFormat;
-	stream << alphaFormat;
-	stream << isStatic;
-
-	if (stream.GetVersion().File() >= NiVersion::ToFile(10, 1, 0, 103))
-		stream << directRender;
-	if (stream.GetVersion().File() >= NiVersion::ToFile(20, 2, 0, 4))
-		stream << persistentRenderData;
+		stream.Sync(persistentRenderData);
 }
 
 void NiSourceTexture::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -454,21 +306,10 @@ void NiSourceTexture::SetDataRef(int datRef) {
 }
 
 
-void NiDynamicEffect::Get(NiIStream& stream) {
-	NiAVObject::Get(stream);
-
+void NiDynamicEffect::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().Stream() < 130) {
-		stream >> switchState;
-		affectedNodes.Get(stream);
-	}
-}
-
-void NiDynamicEffect::Put(NiOStream& stream) {
-	NiAVObject::Put(stream);
-
-	if (stream.GetVersion().Stream() < 130) {
-		stream << switchState;
-		affectedNodes.Put(stream);
+		stream.Sync(switchState);
+		affectedNodes.Sync(stream);
 	}
 }
 
@@ -489,34 +330,17 @@ BlockRefArray<NiNode>& NiDynamicEffect::GetAffectedNodes() {
 }
 
 
-void NiTextureEffect::Get(NiIStream& stream) {
-	NiDynamicEffect::Get(stream);
-
-	stream >> modelProjectionMatrix;
-	stream >> modelProjectionTranslation;
-	stream >> textureFiltering;
-	stream >> textureClamping;
-	stream >> textureType;
-	stream >> coordinateGenerationType;
-	sourceTexture.Get(stream);
-	stream >> clippingPlane;
-	stream >> unkVector;
-	stream >> unkFloat;
-}
-
-void NiTextureEffect::Put(NiOStream& stream) {
-	NiDynamicEffect::Put(stream);
-
-	stream << modelProjectionMatrix;
-	stream << modelProjectionTranslation;
-	stream << textureFiltering;
-	stream << textureClamping;
-	stream << textureType;
-	stream << coordinateGenerationType;
-	sourceTexture.Put(stream);
-	stream << clippingPlane;
-	stream << unkVector;
-	stream << unkFloat;
+void NiTextureEffect::Sync(NiStreamReversible& stream) {
+	stream.Sync(modelProjectionMatrix);
+	stream.Sync(modelProjectionTranslation);
+	stream.Sync(textureFiltering);
+	stream.Sync(textureClamping);
+	stream.Sync(textureType);
+	stream.Sync(coordinateGenerationType);
+	sourceTexture.Sync(stream);
+	stream.Sync(clippingPlane);
+	stream.Sync(unkVector);
+	stream.Sync(unkFloat);
 }
 
 void NiTextureEffect::GetChildRefs(std::set<Ref*>& refs) {
@@ -540,54 +364,23 @@ void NiTextureEffect::SetSourceTextureRef(int srcTexRef) {
 }
 
 
-void NiLight::Get(NiIStream& stream) {
-	NiDynamicEffect::Get(stream);
-
-	stream >> dimmer;
-	stream >> ambientColor;
-	stream >> diffuseColor;
-	stream >> specularColor;
-}
-
-void NiLight::Put(NiOStream& stream) {
-	NiDynamicEffect::Put(stream);
-
-	stream << dimmer;
-	stream << ambientColor;
-	stream << diffuseColor;
-	stream << specularColor;
+void NiLight::Sync(NiStreamReversible& stream) {
+	stream.Sync(dimmer);
+	stream.Sync(ambientColor);
+	stream.Sync(diffuseColor);
+	stream.Sync(specularColor);
 }
 
 
-void NiPointLight::Get(NiIStream& stream) {
-	NiLight::Get(stream);
-
-	stream >> constantAttenuation;
-	stream >> linearAttenuation;
-	stream >> quadraticAttenuation;
-}
-
-void NiPointLight::Put(NiOStream& stream) {
-	NiLight::Put(stream);
-
-	stream << constantAttenuation;
-	stream << linearAttenuation;
-	stream << quadraticAttenuation;
+void NiPointLight::Sync(NiStreamReversible& stream) {
+	stream.Sync(constantAttenuation);
+	stream.Sync(linearAttenuation);
+	stream.Sync(quadraticAttenuation);
 }
 
 
-void NiSpotLight::Get(NiIStream& stream) {
-	NiPointLight::Get(stream);
-
-	stream >> cutoffAngle;
-	stream >> unkFloat;
-	stream >> exponent;
-}
-
-void NiSpotLight::Put(NiOStream& stream) {
-	NiPointLight::Put(stream);
-
-	stream << cutoffAngle;
-	stream << unkFloat;
-	stream << exponent;
+void NiSpotLight::Sync(NiStreamReversible& stream) {
+	stream.Sync(cutoffAngle);
+	stream.Sync(unkFloat);
+	stream.Sync(exponent);
 }

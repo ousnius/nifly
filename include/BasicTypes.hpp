@@ -7,6 +7,7 @@ See the included GPLv3 LICENSE file
 #pragma once
 
 #include "Object3d.hpp"
+#include "half.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -209,8 +210,15 @@ public:
 	Mode GetMode() { return mode; }
 
 	template<typename T>
-	void Sync(const T& t) {
+	void Sync(T& t) {
 		Sync(reinterpret_cast<char*>(&t), sizeof(T));
+	}
+
+	NiVersion& GetVersion() {
+		if (mode == Mode::Reading)
+			return istream->GetVersion();
+		else
+			return ostream->GetVersion();
 	}
 
 	void Sync(char* ptr, std::streamsize count) {
@@ -225,6 +233,18 @@ public:
 			istream->getline(ptr, count);
 		else
 			ostream->writeline(ptr, count);
+	}
+
+	void SyncHalf(float& fl) {
+		half_float::half halfData;
+
+		if (mode == Mode::Writing)
+			halfData = fl;
+
+		Sync(reinterpret_cast<char*>(&halfData), 2);
+
+		if (mode == Mode::Reading)
+			fl = halfData;
 	}
 
 	NiOStream* asWrite() { return ostream; }
@@ -262,12 +282,12 @@ public:
 	void Get(NiIStream& stream) override {
 		Base::Get(stream);
 		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
-		asDer().GetPut(s);
+		asDer().Sync(s);
 	}
 	void Put(NiOStream& stream) override {
 		Base::Put(stream);
 		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
-		asDer().GetPut(s);
+		asDer().Sync(s);
 	}
 
 private:
@@ -278,20 +298,28 @@ private:
 class NiString {
 private:
 	std::string str;
+	bool nullOutput = false; // append a null byte when writing the string
 
 public:
 	NiString(){};
 
 	std::string GetString() { return str; }
-
 	void SetString(const std::string& s) { this->str = s; }
 
 	size_t GetLength() { return str.length(); }
 
+	void SetNullOutput(const bool wantNullOutput = true) { nullOutput = wantNullOutput; }
 	void Clear() { str.clear(); }
 
 	void Get(NiIStream& stream, const int szSize);
-	void Put(NiOStream& stream, const int szSize, const bool wantNullOutput = true);
+	void Put(NiOStream& stream, const int szSize);
+
+	void Sync(NiStreamReversible& stream, const int szSize) {
+		if (auto istream = stream.asRead())
+			Get(*istream, szSize);
+		else if (auto ostream = stream.asWrite())
+			Put(*ostream, szSize);
+	}
 };
 
 class StringRef {
@@ -323,9 +351,16 @@ public:
 
 	void Put(NiOStream& stream) {
 		if (stream.GetVersion().File() < V20_1_0_1)
-			str.Put(stream, 4, false);
+			str.Put(stream, 4);
 		else
 			stream << index;
+	}
+
+	void Sync(NiStreamReversible& stream) {
+		if (auto istream = stream.asRead())
+			Get(*istream);
+		else if (auto ostream = stream.asWrite())
+			Put(*ostream);
 	}
 };
 
@@ -352,6 +387,8 @@ public:
 	void Get(NiIStream& stream) { stream >> base::index; }
 
 	void Put(NiOStream& stream) { stream << base::index; }
+
+	void Sync(NiStreamReversible& stream) { stream.Sync(base::index); }
 };
 
 class RefArray {
@@ -368,7 +405,14 @@ public:
 
 	virtual void Get(NiIStream& stream) = 0;
 	virtual void Put(NiOStream& stream) = 0;
-	virtual void Put(NiOStream& stream, const int forcedSize) = 0;
+
+	void Sync(NiStreamReversible& stream) {
+		if (auto istream = stream.asRead())
+			Get(*istream);
+		else if (auto ostream = stream.asWrite())
+			Put(*ostream);
+	}
+
 	virtual void AddBlockRef(const int id) = 0;
 	virtual int GetBlockRef(const int id) = 0;
 	virtual void SetBlockRef(const int id, const int index) = 0;
@@ -421,6 +465,11 @@ public:
 		keepEmptyRefs = false;
 	}
 
+	void SetSize(const int size) {
+		arraySize = size;
+		refs.resize(arraySize);
+	}
+
 	void Get(NiIStream& stream) override {
 		stream >> arraySize;
 		refs.resize(arraySize);
@@ -431,17 +480,6 @@ public:
 
 	void Put(NiOStream& stream) override {
 		CleanInvalidRefs();
-		stream << arraySize;
-
-		for (auto& r : refs)
-			r.Put(stream);
-	}
-
-	void Put(NiOStream& stream, const int forcedSize) override {
-		CleanInvalidRefs();
-		arraySize = forcedSize;
-		refs.resize(forcedSize);
-
 		stream << arraySize;
 
 		for (auto& r : refs)
@@ -508,17 +546,6 @@ public:
 
 	void Put(NiOStream& stream) override {
 		base::CleanInvalidRefs();
-		stream.write((char*) &arraySize, 2);
-
-		for (auto& r : refs)
-			r.Put(stream);
-	}
-
-	void Put(NiOStream& stream, const int forcedSize) override {
-		base::CleanInvalidRefs();
-		arraySize = forcedSize;
-		refs.resize(forcedSize);
-
 		stream.write((char*) &arraySize, 2);
 
 		for (auto& r : refs)
@@ -720,7 +747,7 @@ public:
 	NiUnknown(NiIStream& stream, const uint32_t size);
 	NiUnknown(const uint32_t size);
 
-	void GetPut(NiStreamReversible& stream);
+	void Sync(NiStreamReversible& stream);
 
 	std::vector<char> GetData() { return data; }
 };

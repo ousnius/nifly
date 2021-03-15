@@ -34,7 +34,7 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
-class NiSkinData : public NiObjectCRTP<NiSkinData, NiObject> {
+class NiSkinData : public NiObjectCRTP<NiSkinData, NiObject, true> {
 public:
 	struct BoneData {
 		// boneTransform transforms from skin CS to bone CS.
@@ -55,12 +55,11 @@ public:
 	static constexpr const char* BlockName = "NiSkinData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiSkinPartition : public NiObjectCRTP<NiSkinPartition, NiObject> {
+class NiSkinPartition : public NiObjectCRTP<NiSkinPartition, NiObject, true> {
 public:
 	struct PartitionBlock {
 		uint16_t numVertices = 0;
@@ -127,8 +126,7 @@ public:
 	static constexpr const char* BlockName = "NiSkinPartition";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
 	void DeletePartitions(const std::vector<int>& partInds);
@@ -171,7 +169,7 @@ public:
 	BlockRefArray<NiNode>& GetBones();
 };
 
-class NiSkinInstance : public NiObjectCRTP<NiSkinInstance, NiBoneContainer> {
+class NiSkinInstance : public NiObjectCRTP<NiSkinInstance, NiBoneContainer, true> {
 private:
 	BlockRef<NiSkinData> dataRef;
 	BlockRef<NiSkinPartition> skinPartitionRef;
@@ -181,8 +179,7 @@ public:
 	static constexpr const char* BlockName = "NiSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
@@ -200,7 +197,7 @@ public:
 
 enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
-class BSDismemberSkinInstance : public NiObjectCRTP<BSDismemberSkinInstance, NiSkinInstance> {
+class BSDismemberSkinInstance : public NiObjectCRTP<BSDismemberSkinInstance, NiSkinInstance, true> {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
@@ -215,8 +212,7 @@ public:
 	static constexpr const char* BlockName = "BSDismemberSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 
 	int GetNumPartitions() { return numPartitions; }
 	std::vector<PartitionInfo> GetPartitions() { return partitions; }
@@ -233,7 +229,7 @@ public:
 	}
 };
 
-class BSSkinBoneData : public NiObjectCRTP<BSSkinBoneData, NiObject> {
+class BSSkinBoneData : public NiObjectCRTP<BSSkinBoneData, NiObject, true> {
 public:
 	uint32_t nBones = 0;
 
@@ -253,13 +249,12 @@ public:
 	static constexpr const char* BlockName = "BSSkin::BoneData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiAVObject;
 
-class BSSkinInstance : public NiObjectCRTP<BSSkinInstance, NiBoneContainer> {
+class BSSkinInstance : public NiObjectCRTP<BSSkinInstance, NiBoneContainer, true> {
 private:
 	BlockRef<NiAVObject> targetRef;
 	BlockRef<BSSkinBoneData> dataRef;
@@ -271,8 +266,7 @@ public:
 	static constexpr const char* BlockName = "BSSkin::Instance";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;

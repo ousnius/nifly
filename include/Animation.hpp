@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 #include "Keys.hpp"
 
 namespace nifly {
-class NiKeyframeData : public NiObjectCRTP<NiKeyframeData, NiObject> {
+class NiKeyframeData : public NiObjectCRTP<NiKeyframeData, NiObject, true> {
 private:
 	uint32_t numRotationKeys = 0;
 	KeyType rotationType = NO_INTERP;
@@ -26,8 +26,7 @@ public:
 	static constexpr const char* BlockName = "NiKeyframeData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiTransformData : public NiObjectCRTP<NiTransformData, NiKeyframeData> {
@@ -37,7 +36,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPosData : public NiObjectCRTP<NiPosData, NiObject> {
+class NiPosData : public NiObjectCRTP<NiPosData, NiObject, true> {
 private:
 	KeyGroup<Vector3> data;
 
@@ -45,11 +44,10 @@ public:
 	static constexpr const char* BlockName = "NiPosData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBoolData : public NiObjectCRTP<NiBoolData, NiObject> {
+class NiBoolData : public NiObjectCRTP<NiBoolData, NiObject, true> {
 private:
 	KeyGroup<uint8_t> data;
 
@@ -57,11 +55,10 @@ public:
 	static constexpr const char* BlockName = "NiBoolData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiFloatData : public NiObjectCRTP<NiFloatData, NiObject> {
+class NiFloatData : public NiObjectCRTP<NiFloatData, NiObject, true> {
 private:
 	KeyGroup<float> data;
 
@@ -69,11 +66,10 @@ public:
 	static constexpr const char* BlockName = "NiFloatData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplineData : public NiObjectCRTP<NiBSplineData, NiObject> {
+class NiBSplineData : public NiObjectCRTP<NiBSplineData, NiObject, true> {
 private:
 	uint32_t numFloatControlPoints = 0;
 	std::vector<float> floatControlPoints;
@@ -85,11 +81,10 @@ public:
 	static constexpr const char* BlockName = "NiBSplineData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplineBasisData : public NiObjectCRTP<NiBSplineBasisData, NiObject> {
+class NiBSplineBasisData : public NiObjectCRTP<NiBSplineBasisData, NiObject, true> {
 private:
 	uint32_t numControlPoints = 0;
 
@@ -97,13 +92,12 @@ public:
 	static constexpr const char* BlockName = "NiBSplineBasisData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiInterpolator : public NiObjectCRTP<NiInterpolator, NiObject> {};
 
-class NiBSplineInterpolator : public NiObjectCRTP<NiBSplineInterpolator, NiInterpolator> {
+class NiBSplineInterpolator : public NiObjectCRTP<NiBSplineInterpolator, NiInterpolator, true> {
 private:
 	float startTime = 0.0f;
 	float stopTime = 0.0f;
@@ -111,8 +105,7 @@ private:
 	BlockRef<NiBSplineBasisData> basisDataRef;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -120,7 +113,7 @@ public:
 class NiBSplineFloatInterpolator : public NiObjectCRTP<NiBSplineFloatInterpolator, NiBSplineInterpolator> {};
 
 class NiBSplineCompFloatInterpolator
-	: public NiObjectCRTP<NiBSplineCompFloatInterpolator, NiBSplineFloatInterpolator> {
+	: public NiObjectCRTP<NiBSplineCompFloatInterpolator, NiBSplineFloatInterpolator, true> {
 private:
 	float base = 0.0f;
 	uint32_t offset = 0;
@@ -131,11 +124,11 @@ public:
 	static constexpr const char* BlockName = "NiBSplineCompFloatInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplinePoint3Interpolator : public NiObjectCRTP<NiBSplinePoint3Interpolator, NiBSplineInterpolator> {
+class NiBSplinePoint3Interpolator
+	: public NiObjectCRTP<NiBSplinePoint3Interpolator, NiBSplineInterpolator, true> {
 private:
 	float unkFloat1 = 0.0f;
 	float unkFloat2 = 0.0f;
@@ -145,8 +138,7 @@ private:
 	float unkFloat6 = 0.0f;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiBSplineCompPoint3Interpolator
@@ -158,7 +150,7 @@ public:
 };
 
 class NiBSplineTransformInterpolator
-	: public NiObjectCRTP<NiBSplineTransformInterpolator, NiBSplineInterpolator> {
+	: public NiObjectCRTP<NiBSplineTransformInterpolator, NiBSplineInterpolator, true> {
 private:
 	Vector3 translation;
 	Quaternion rotation;
@@ -172,12 +164,11 @@ public:
 	static constexpr const char* BlockName = "NiBSplineTransformInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiBSplineCompTransformInterpolator
-	: public NiObjectCRTP<NiBSplineCompTransformInterpolator, NiBSplineTransformInterpolator> {
+	: public NiObjectCRTP<NiBSplineCompTransformInterpolator, NiBSplineTransformInterpolator, true> {
 private:
 	float translationBias = 0.0f;
 	float translationMultiplier = 0.0f;
@@ -190,21 +181,19 @@ public:
 	static constexpr const char* BlockName = "NiBSplineCompTransformInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendInterpolator : public NiObjectCRTP<NiBlendInterpolator, NiInterpolator> {
+class NiBlendInterpolator : public NiObjectCRTP<NiBlendInterpolator, NiInterpolator, true> {
 private:
 	uint16_t flags = 0;
 	uint32_t unkInt = 0;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendBoolInterpolator : public NiObjectCRTP<NiBlendBoolInterpolator, NiBlendInterpolator> {
+class NiBlendBoolInterpolator : public NiObjectCRTP<NiBlendBoolInterpolator, NiBlendInterpolator, true> {
 private:
 	bool value = false;
 
@@ -212,11 +201,10 @@ public:
 	static constexpr const char* BlockName = "NiBlendBoolInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendFloatInterpolator : public NiObjectCRTP<NiBlendFloatInterpolator, NiBlendInterpolator> {
+class NiBlendFloatInterpolator : public NiObjectCRTP<NiBlendFloatInterpolator, NiBlendInterpolator, true> {
 private:
 	float value = 0.0f;
 
@@ -224,11 +212,10 @@ public:
 	static constexpr const char* BlockName = "NiBlendFloatInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendPoint3Interpolator : public NiObjectCRTP<NiBlendPoint3Interpolator, NiBlendInterpolator> {
+class NiBlendPoint3Interpolator : public NiObjectCRTP<NiBlendPoint3Interpolator, NiBlendInterpolator, true> {
 private:
 	Vector3 point;
 
@@ -236,11 +223,11 @@ public:
 	static constexpr const char* BlockName = "NiBlendPoint3Interpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendTransformInterpolator : public NiObjectCRTP<NiBlendTransformInterpolator, NiBlendInterpolator> {
+class NiBlendTransformInterpolator
+	: public NiObjectCRTP<NiBlendTransformInterpolator, NiBlendInterpolator, true> {
 public:
 	static constexpr const char* BlockName = "NiBlendTransformInterpolator";
 	const char* GetBlockName() override { return BlockName; }
@@ -257,8 +244,7 @@ public:
 	static constexpr const char* BlockName = "NiBoolInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -272,7 +258,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiFloatInterpolator : public NiObjectCRTP<NiFloatInterpolator, NiKeyBasedInterpolator> {
+class NiFloatInterpolator : public NiObjectCRTP<NiFloatInterpolator, NiKeyBasedInterpolator, true> {
 private:
 	float floatValue = 0.0f;
 	BlockRef<NiFloatData> dataRef;
@@ -281,8 +267,7 @@ public:
 	static constexpr const char* BlockName = "NiFloatInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -290,7 +275,7 @@ public:
 	void SetDataRef(int datRef) { dataRef.SetIndex(datRef); }
 };
 
-class NiTransformInterpolator : public NiObjectCRTP<NiTransformInterpolator, NiKeyBasedInterpolator> {
+class NiTransformInterpolator : public NiObjectCRTP<NiTransformInterpolator, NiKeyBasedInterpolator, true> {
 private:
 	Vector3 translation;
 	Quaternion rotation;
@@ -301,8 +286,7 @@ public:
 	static constexpr const char* BlockName = "NiTransformInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -317,7 +301,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPoint3Interpolator : public NiObjectCRTP<NiPoint3Interpolator, NiKeyBasedInterpolator> {
+class NiPoint3Interpolator : public NiObjectCRTP<NiPoint3Interpolator, NiKeyBasedInterpolator, true> {
 private:
 	Vector3 point3Value;
 	BlockRef<NiPosData> dataRef;
@@ -326,8 +310,7 @@ public:
 	static constexpr const char* BlockName = "NiPoint3Interpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -335,7 +318,7 @@ public:
 	void SetDataRef(int datRef) { dataRef.SetIndex(datRef); }
 };
 
-class NiPathInterpolator : public NiObjectCRTP<NiPathInterpolator, NiKeyBasedInterpolator> {
+class NiPathInterpolator : public NiObjectCRTP<NiPathInterpolator, NiKeyBasedInterpolator, true> {
 private:
 	uint16_t flags = 0;
 	uint32_t bankDir = 0;
@@ -350,8 +333,7 @@ public:
 	static constexpr const char* BlockName = "NiPathInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -365,7 +347,7 @@ enum LookAtFlags : uint16_t {
 
 class NiNode;
 
-class NiLookAtInterpolator : public NiObjectCRTP<NiLookAtInterpolator, NiInterpolator> {
+class NiLookAtInterpolator : public NiObjectCRTP<NiLookAtInterpolator, NiInterpolator, true> {
 private:
 	LookAtFlags flags = LOOK_X_AXIS;
 	BlockRef<NiNode> lookAtRef;
@@ -381,8 +363,7 @@ public:
 	static constexpr const char* BlockName = "NiLookAtInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -400,22 +381,16 @@ struct BSTreadTransform {
 	BSTreadTransformData transform1;
 	BSTreadTransformData transform2;
 
-	void Get(NiIStream& stream) {
-		name.Get(stream);
-		stream >> transform1;
-		stream >> transform2;
-	}
-
-	void Put(NiOStream& stream) {
-		name.Put(stream);
-		stream << transform1;
-		stream << transform2;
+	void Sync(NiStreamReversible& stream) {
+		name.Sync(stream);
+		stream.Sync(transform1);
+		stream.Sync(transform2);
 	}
 
 	void GetStringRefs(std::vector<StringRef*>& refs) { refs.emplace_back(&name); }
 };
 
-class BSTreadTransfInterpolator : public NiObjectCRTP<BSTreadTransfInterpolator, NiInterpolator> {
+class BSTreadTransfInterpolator : public NiObjectCRTP<BSTreadTransfInterpolator, NiInterpolator, true> {
 private:
 	uint32_t numTreadTransforms = 0;
 	std::vector<BSTreadTransform> treadTransforms;
@@ -425,8 +400,7 @@ public:
 	static constexpr const char* BlockName = "BSTreadTransfInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -434,7 +408,7 @@ public:
 
 class NiObjectNET;
 
-class NiTimeController : public NiObjectCRTP<NiTimeController, NiObject> {
+class NiTimeController : public NiObjectCRTP<NiTimeController, NiObject, true> {
 private:
 	BlockRef<NiTimeController> nextControllerRef;
 	uint16_t flags = 0x000C;
@@ -445,8 +419,7 @@ private:
 	BlockRef<NiObjectNET> targetRef;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
@@ -458,7 +431,7 @@ public:
 	void SetTargetRef(int targRef) { targetRef.SetIndex(targRef); }
 };
 
-class NiLookAtController : public NiObjectCRTP<NiLookAtController, NiTimeController> {
+class NiLookAtController : public NiObjectCRTP<NiLookAtController, NiTimeController, true> {
 private:
 	uint16_t unkShort1 = 0;
 	BlockRef<NiNode> lookAtNodePtr;
@@ -467,12 +440,11 @@ public:
 	static constexpr const char* BlockName = "NiLookAtController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiPathController : public NiObjectCRTP<NiPathController, NiTimeController> {
+class NiPathController : public NiObjectCRTP<NiPathController, NiTimeController, true> {
 private:
 	uint16_t unkShort1 = 0;
 	uint32_t unkInt1 = 1;
@@ -486,8 +458,7 @@ public:
 	static constexpr const char* BlockName = "NiPathController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
@@ -498,7 +469,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiUVData : public NiObjectCRTP<NiUVData, NiObject> {
+class NiUVData : public NiObjectCRTP<NiUVData, NiObject, true> {
 private:
 	KeyGroup<float> uTrans;
 	KeyGroup<float> vTrans;
@@ -509,11 +480,10 @@ public:
 	static constexpr const char* BlockName = "NiUVData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class NiUVController : public NiObjectCRTP<NiUVController, NiTimeController> {
+class NiUVController : public NiObjectCRTP<NiUVController, NiTimeController, true> {
 private:
 	uint16_t textureSet = 0;
 	BlockRef<NiUVData> dataRef;
@@ -522,13 +492,12 @@ public:
 	static constexpr const char* BlockName = "NiUVController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class BSFrustumFOVController : public NiObjectCRTP<BSFrustumFOVController, NiTimeController> {
+class BSFrustumFOVController : public NiObjectCRTP<BSFrustumFOVController, NiTimeController, true> {
 private:
 	BlockRef<NiInterpolator> interpolatorRef;
 
@@ -536,8 +505,7 @@ public:
 	static constexpr const char* BlockName = "BSFrustumFOVController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -546,7 +514,7 @@ public:
 	void SetInterpolatorRef(int interpRef) { interpolatorRef.SetIndex(interpRef); }
 };
 
-class BSLagBoneController : public NiObjectCRTP<BSLagBoneController, NiTimeController> {
+class BSLagBoneController : public NiObjectCRTP<BSLagBoneController, NiTimeController, true> {
 private:
 	float linearVelocity = 0.0f;
 	float linearRotation = 0.0f;
@@ -556,14 +524,13 @@ public:
 	static constexpr const char* BlockName = "BSLagBoneController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class BSShaderProperty;
 
 class BSProceduralLightningController
-	: public NiObjectCRTP<BSProceduralLightningController, NiTimeController> {
+	: public NiObjectCRTP<BSProceduralLightningController, NiTimeController, true> {
 private:
 	BlockRef<NiInterpolator> generationInterpRef;
 	BlockRef<NiInterpolator> mutationInterpRef;
@@ -594,8 +561,7 @@ public:
 	static constexpr const char* BlockName = "BSProceduralLightningController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -631,7 +597,7 @@ public:
 	void SetShaderPropertyRef(int shaderRef) { shaderPropertyRef.SetIndex(shaderRef); }
 };
 
-class NiBoneLODController : public NiObjectCRTP<NiBoneLODController, NiTimeController> {
+class NiBoneLODController : public NiObjectCRTP<NiBoneLODController, NiTimeController, true> {
 private:
 	uint32_t lod = 0;
 	uint32_t numLODs = 0;
@@ -642,8 +608,7 @@ public:
 	static constexpr const char* BlockName = "NiBoneLODController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
@@ -657,23 +622,17 @@ struct Morph {
 	StringRef frameName;
 	std::vector<Vector3> vectors;
 
-	void Get(NiIStream& stream, uint32_t numVerts) {
-		frameName.Get(stream);
+	void Sync(NiStreamReversible& stream, uint32_t numVerts) {
+		frameName.Sync(stream);
 		vectors.resize(numVerts);
 		for (uint32_t i = 0; i < numVerts; i++)
-			stream >> vectors[i];
-	}
-
-	void Put(NiOStream& stream, uint32_t numVerts) {
-		frameName.Put(stream);
-		for (uint32_t i = 0; i < numVerts; i++)
-			stream << vectors[i];
+			stream.Sync(vectors[i]);
 	}
 
 	void GetStringRefs(std::vector<StringRef*>& refs) { refs.emplace_back(&frameName); }
 };
 
-class NiMorphData : public NiObjectCRTP<NiMorphData, NiObject> {
+class NiMorphData : public NiObjectCRTP<NiMorphData, NiObject, true> {
 private:
 	uint32_t numMorphs = 0;
 	uint32_t numVertices = 0;
@@ -684,8 +643,7 @@ public:
 	static constexpr const char* BlockName = "NiMorphData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
@@ -695,14 +653,9 @@ struct MorphWeight {
 	BlockRef<NiInterpolator> interpRef;
 	float weight = 0.0f;
 
-	void Get(NiIStream& stream) {
-		interpRef.Get(stream);
-		stream >> weight;
-	}
-
-	void Put(NiOStream& stream) {
-		interpRef.Put(stream);
-		stream << weight;
+	void Sync(NiStreamReversible& stream) {
+		interpRef.Sync(stream);
+		stream.Sync(weight);
 	}
 
 	void GetChildRefs(std::set<Ref*>& refs) { refs.insert(&interpRef); }
@@ -710,7 +663,7 @@ struct MorphWeight {
 	void GetChildIndices(std::vector<int>& indices) { indices.push_back(interpRef.GetIndex()); }
 };
 
-class NiGeomMorpherController : public NiObjectCRTP<NiGeomMorpherController, NiInterpController> {
+class NiGeomMorpherController : public NiObjectCRTP<NiGeomMorpherController, NiInterpController, true> {
 private:
 	uint16_t extraFlags = 0;
 	BlockRef<NiMorphData> dataRef;
@@ -723,19 +676,17 @@ public:
 	static constexpr const char* BlockName = "NiGeomMorpherController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiSingleInterpController : public NiObjectCRTP<NiSingleInterpController, NiInterpController> {
+class NiSingleInterpController : public NiObjectCRTP<NiSingleInterpController, NiInterpController, true> {
 private:
 	BlockRef<NiInterpController> interpolatorRef;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -743,7 +694,7 @@ public:
 	void SetInterpolatorRef(int interpRef) { interpolatorRef.SetIndex(interpRef); }
 };
 
-class NiRollController : public NiObjectCRTP<NiRollController, NiSingleInterpController> {
+class NiRollController : public NiObjectCRTP<NiRollController, NiSingleInterpController, true> {
 private:
 	BlockRef<NiFloatData> dataRef;
 
@@ -751,21 +702,20 @@ public:
 	static constexpr const char* BlockName = "NiRollController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
 enum TargetColor : uint16_t { TC_AMBIENT, TC_DIFFUSE, TC_SPECULAR, TC_SELF_ILLUM };
 
-class NiPoint3InterpController : public NiObjectCRTP<NiPoint3InterpController, NiSingleInterpController> {
+class NiPoint3InterpController
+	: public NiObjectCRTP<NiPoint3InterpController, NiSingleInterpController, true> {
 private:
 	TargetColor targetColor = TC_AMBIENT;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiMaterialColorController : public NiObjectCRTP<NiMaterialColorController, NiPoint3InterpController> {
@@ -782,7 +732,8 @@ public:
 
 class NiExtraDataController : public NiObjectCRTP<NiExtraDataController, NiSingleInterpController> {};
 
-class NiFloatExtraDataController : public NiObjectCRTP<NiFloatExtraDataController, NiExtraDataController> {
+class NiFloatExtraDataController
+	: public NiObjectCRTP<NiFloatExtraDataController, NiExtraDataController, true> {
 private:
 	StringRef extraData;
 
@@ -790,12 +741,11 @@ public:
 	static constexpr const char* BlockName = "NiFloatExtraDataController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
-class NiVisData : public NiObjectCRTP<NiVisData, NiObject> {
+class NiVisData : public NiObjectCRTP<NiVisData, NiObject, true> {
 private:
 	uint32_t numKeys = 0;
 	std::vector<Key<uint8_t>> keys;
@@ -804,8 +754,7 @@ public:
 	static constexpr const char* BlockName = "NiVisData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiBoolInterpController : public NiObjectCRTP<NiBoolInterpController, NiSingleInterpController> {};
@@ -842,7 +791,7 @@ public:
 
 class NiSourceTexture;
 
-class NiFlipController : public NiObjectCRTP<NiFlipController, NiFloatInterpController> {
+class NiFlipController : public NiObjectCRTP<NiFlipController, NiFloatInterpController, true> {
 private:
 	TexType textureSlot = BASE_MAP;
 	BlockRefArray<NiSourceTexture> sourceRefs;
@@ -851,11 +800,9 @@ public:
 	static constexpr const char* BlockName = "NiFlipController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-
 
 	BlockRefArray<NiSourceTexture>& GetSources();
 };
@@ -863,7 +810,7 @@ public:
 enum TexTransformType : uint32_t { TT_TRANSLATE_U, TT_TRANSLATE_V, TT_ROTATE, TT_SCALE_U, TT_SCALE_V };
 
 class NiTextureTransformController
-	: public NiObjectCRTP<NiTextureTransformController, NiFloatInterpController> {
+	: public NiObjectCRTP<NiTextureTransformController, NiFloatInterpController, true> {
 private:
 	uint8_t unkByte1 = 0;
 	TexType textureSlot = BASE_MAP;
@@ -873,8 +820,7 @@ public:
 	static constexpr const char* BlockName = "NiTextureTransformController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiLightDimmerController : public NiObjectCRTP<NiLightDimmerController, NiFloatInterpController> {
@@ -935,7 +881,7 @@ public:
 };
 
 class BSLightingShaderPropertyColorController
-	: public NiObjectCRTP<BSLightingShaderPropertyColorController, NiFloatInterpController> {
+	: public NiObjectCRTP<BSLightingShaderPropertyColorController, NiFloatInterpController, true> {
 private:
 	uint32_t typeOfControlledColor = 0;
 
@@ -943,12 +889,11 @@ public:
 	static constexpr const char* BlockName = "BSLightingShaderPropertyColorController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class BSLightingShaderPropertyFloatController
-	: public NiObjectCRTP<BSLightingShaderPropertyFloatController, NiFloatInterpController> {
+	: public NiObjectCRTP<BSLightingShaderPropertyFloatController, NiFloatInterpController, true> {
 private:
 	uint32_t typeOfControlledVariable = 0;
 
@@ -956,12 +901,11 @@ public:
 	static constexpr const char* BlockName = "BSLightingShaderPropertyFloatController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class BSLightingShaderPropertyUShortController
-	: public NiObjectCRTP<BSLightingShaderPropertyUShortController, NiFloatInterpController> {
+	: public NiObjectCRTP<BSLightingShaderPropertyUShortController, NiFloatInterpController, true> {
 private:
 	uint32_t typeOfControlledVariable = 0;
 
@@ -969,12 +913,11 @@ public:
 	static constexpr const char* BlockName = "BSLightingShaderPropertyUShortController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class BSEffectShaderPropertyColorController
-	: public NiObjectCRTP<BSEffectShaderPropertyColorController, NiFloatInterpController> {
+	: public NiObjectCRTP<BSEffectShaderPropertyColorController, NiFloatInterpController, true> {
 private:
 	uint32_t typeOfControlledColor = 0;
 
@@ -982,12 +925,11 @@ public:
 	static constexpr const char* BlockName = "BSEffectShaderPropertyColorController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class BSEffectShaderPropertyFloatController
-	: public NiObjectCRTP<BSEffectShaderPropertyFloatController, NiFloatInterpController> {
+	: public NiObjectCRTP<BSEffectShaderPropertyFloatController, NiFloatInterpController, true> {
 private:
 	uint32_t typeOfControlledVariable = 0;
 
@@ -995,14 +937,13 @@ public:
 	static constexpr const char* BlockName = "BSEffectShaderPropertyFloatController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiAVObject;
 
 class NiMultiTargetTransformController
-	: public NiObjectCRTP<NiMultiTargetTransformController, NiInterpController> {
+	: public NiObjectCRTP<NiMultiTargetTransformController, NiInterpController, true> {
 private:
 	BlockRefShortArray<NiAVObject> targetRefs;
 
@@ -1010,20 +951,18 @@ public:
 	static constexpr const char* BlockName = "NiMultiTargetTransformController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 
 	BlockRefShortArray<NiAVObject>& GetTargets();
 };
 
-class NiPSysModifierCtlr : public NiObjectCRTP<NiPSysModifierCtlr, NiSingleInterpController> {
+class NiPSysModifierCtlr : public NiObjectCRTP<NiPSysModifierCtlr, NiSingleInterpController, true> {
 private:
 	StringRef modifierName;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
@@ -1154,7 +1093,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterCtlr : public NiObjectCRTP<NiPSysEmitterCtlr, NiPSysModifierCtlr> {
+class NiPSysEmitterCtlr : public NiObjectCRTP<NiPSysEmitterCtlr, NiPSysModifierCtlr, true> {
 private:
 	BlockRef<NiInterpolator> visInterpolatorRef;
 
@@ -1162,15 +1101,15 @@ public:
 	static constexpr const char* BlockName = "NiPSysEmitterCtlr";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
 class BSMasterParticleSystem;
 
-class BSPSysMultiTargetEmitterCtlr : public NiObjectCRTP<BSPSysMultiTargetEmitterCtlr, NiPSysEmitterCtlr> {
+class BSPSysMultiTargetEmitterCtlr
+	: public NiObjectCRTP<BSPSysMultiTargetEmitterCtlr, NiPSysEmitterCtlr, true> {
 private:
 	uint16_t maxEmitters = 0;
 	BlockRef<BSMasterParticleSystem> masterParticleSystemRef;
@@ -1179,12 +1118,11 @@ public:
 	static constexpr const char* BlockName = "BSPSysMultiTargetEmitterCtlr";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiStringPalette : public NiObjectCRTP<NiStringPalette, NiObject> {
+class NiStringPalette : public NiObjectCRTP<NiStringPalette, NiObject, true> {
 private:
 	NiString palette;
 	uint32_t length = 0;
@@ -1193,8 +1131,7 @@ public:
 	static constexpr const char* BlockName = "NiStringPalette";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 struct ControllerLink {
@@ -1209,7 +1146,7 @@ struct ControllerLink {
 	StringRef interpID;
 };
 
-class NiSequence : public NiObjectCRTP<NiSequence, NiObject> {
+class NiSequence : public NiObjectCRTP<NiSequence, NiObject, true> {
 private:
 	StringRef name;
 	uint32_t numControlledBlocks = 0;
@@ -1220,8 +1157,7 @@ public:
 	static constexpr const char* BlockName = "NiSequence";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -1229,7 +1165,7 @@ public:
 
 enum CycleType : uint32_t { CYCLE_LOOP, CYCLE_REVERSE, CYCLE_CLAMP };
 
-class BSAnimNote : public NiObjectCRTP<BSAnimNote, NiObject> {
+class BSAnimNote : public NiObjectCRTP<BSAnimNote, NiObject, true> {
 public:
 	enum AnimNoteType : uint32_t { ANT_INVALID, ANT_GRABIK, ANT_LOOKIK };
 
@@ -1244,11 +1180,10 @@ public:
 	static constexpr const char* BlockName = "BSAnimNote";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class BSAnimNotes : public NiObjectCRTP<BSAnimNotes, NiObject> {
+class BSAnimNotes : public NiObjectCRTP<BSAnimNotes, NiObject, true> {
 private:
 	BlockRefShortArray<BSAnimNote> animNoteRefs;
 
@@ -1256,18 +1191,16 @@ public:
 	static constexpr const char* BlockName = "BSAnimNotes";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-
 
 	BlockRefShortArray<BSAnimNote>& GetAnimNotes();
 };
 
 class NiControllerManager;
 
-class NiControllerSequence : public NiObjectCRTP<NiControllerSequence, NiSequence> {
+class NiControllerSequence : public NiObjectCRTP<NiControllerSequence, NiSequence, true> {
 private:
 	float weight = 1.0f;
 	BlockRef<NiTextKeyExtraData> textKeyRef;
@@ -1285,8 +1218,7 @@ public:
 	static constexpr const char* BlockName = "NiControllerSequence";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
@@ -1300,7 +1232,7 @@ public:
 
 class NiDefaultAVObjectPalette;
 
-class NiControllerManager : public NiObjectCRTP<NiControllerManager, NiTimeController> {
+class NiControllerManager : public NiObjectCRTP<NiControllerManager, NiTimeController, true> {
 private:
 	bool cumulative = false;
 	BlockRefArray<NiControllerSequence> controllerSequenceRefs;
@@ -1310,8 +1242,7 @@ public:
 	static constexpr const char* BlockName = "NiControllerManager";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 

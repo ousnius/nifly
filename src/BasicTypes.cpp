@@ -88,12 +88,12 @@ void NiString::Get(NiIStream& stream, const int szSize) {
 	str = buf.data();
 }
 
-void NiString::Put(NiOStream& stream, const int szSize, const bool wantNullOutput) {
+void NiString::Put(NiOStream& stream, const int szSize) {
 	if (szSize == 1) {
 		auto sz = uint8_t(str.length());
 		str.resize(sz);
 
-		if (wantNullOutput)
+		if (nullOutput)
 			sz += 1;
 
 		stream << sz;
@@ -102,7 +102,7 @@ void NiString::Put(NiOStream& stream, const int szSize, const bool wantNullOutpu
 		auto sz = uint16_t(str.length());
 		str.resize(sz);
 
-		if (wantNullOutput)
+		if (nullOutput)
 			sz += 1;
 
 		stream << sz;
@@ -111,14 +111,14 @@ void NiString::Put(NiOStream& stream, const int szSize, const bool wantNullOutpu
 		auto sz = uint32_t(str.length());
 		str.resize(sz);
 
-		if (wantNullOutput)
+		if (nullOutput)
 			sz += 1;
 
 		stream << sz;
 	}
 
 	stream.write(str.c_str(), str.length());
-	if (wantNullOutput)
+	if (nullOutput)
 		stream << uint8_t(0);
 }
 
@@ -707,16 +707,22 @@ void NiHeader::Put(NiOStream& stream) {
 	if (version.IsBethesda()) {
 		stream << version.Stream();
 
+		creator.SetNullOutput();
 		creator.Put(stream, 1);
 
 		if (version.Stream() > 130)
 			stream << unkInt1;
 
+		exportInfo1.SetNullOutput();
 		exportInfo1.Put(stream, 1);
+
+		exportInfo2.SetNullOutput();
 		exportInfo2.Put(stream, 1);
 
-		if (version.Stream() == 130)
+		if (version.Stream() == 130) {
+			exportInfo3.SetNullOutput();
 			exportInfo3.Put(stream, 1);
+		}
 	}
 	else if (version.File() >= V30_0_0_2) {
 		stream << embedDataSize;
@@ -727,7 +733,7 @@ void NiHeader::Put(NiOStream& stream) {
 	if (version.File() >= V5_0_0_1) {
 		stream << numBlockTypes;
 		for (uint16_t i = 0; i < numBlockTypes; i++)
-			blockTypes[i].Put(stream, 4, false);
+			blockTypes[i].Put(stream, 4);
 
 		for (uint32_t i = 0; i < numBlocks; i++)
 			stream << blockTypeIndices[i];
@@ -743,7 +749,7 @@ void NiHeader::Put(NiOStream& stream) {
 		stream << numStrings;
 		stream << maxStringLen;
 		for (uint32_t i = 0; i < numStrings; i++)
-			strings[i].Put(stream, 4, false);
+			strings[i].Put(stream, 4);
 	}
 
 	if (version.File() >= NiVersion::ToFile(5, 0, 0, 6)) {
@@ -767,7 +773,7 @@ NiUnknown::NiUnknown(const uint32_t size) {
 	blockSize = size;
 }
 
-void NiUnknown::GetPut(NiStreamReversible& stream) {
+void NiUnknown::Sync(NiStreamReversible& stream) {
 	if (data.empty())
 		return;
 
