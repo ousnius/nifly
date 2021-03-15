@@ -86,8 +86,6 @@ public:
 
 	void SetFlags(VertexFlags flags) { desc |= ((uint64_t) flags << 44) | (desc & DESC_MASK_FLAGS); }
 
-	void Get(NiIStream& stream) { stream >> desc; }
-	void Put(NiOStream& stream) { stream << desc; }
 	void Sync(NiStreamReversible& stream) { stream.Sync(desc); }
 };
 

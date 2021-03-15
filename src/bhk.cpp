@@ -8,16 +8,8 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void NiCollisionObject::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	targetRef.Get(stream);
-}
-
-void NiCollisionObject::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	targetRef.Put(stream);
+void NiCollisionObject::Sync(NiStreamReversible& stream) {
+	targetRef.Sync(stream);
 }
 
 void NiCollisionObject::GetPtrs(std::set<Ref*>& ptrs) {
@@ -27,68 +19,33 @@ void NiCollisionObject::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void BoundingVolume::Get(NiIStream& stream) {
-	stream >> collisionType;
+void BoundingVolume::Sync(NiStreamReversible& stream) {
+	stream.Sync(collisionType);
 
 	switch (collisionType) {
-		case SPHERE_BV: stream >> bvSphere; break;
-		case BOX_BV: stream >> bvBox; break;
-		case CAPSULE_BV: stream >> bvCapsule; break;
-		case UNION_BV: bvUnion->Get(stream); break;
-		case HALFSPACE_BV: stream >> bvHalfSpace; break;
-		default: break;
-	}
-}
-
-void BoundingVolume::Put(NiOStream& stream) {
-	stream << collisionType;
-
-	switch (collisionType) {
-		case SPHERE_BV: stream << bvSphere; break;
-		case BOX_BV: stream << bvBox; break;
-		case CAPSULE_BV: stream << bvCapsule; break;
-		case UNION_BV: bvUnion->Put(stream); break;
-		case HALFSPACE_BV: stream << bvHalfSpace; break;
+		case SPHERE_BV: stream.Sync(bvSphere); break;
+		case BOX_BV: stream.Sync(bvBox); break;
+		case CAPSULE_BV: stream.Sync(bvCapsule); break;
+		case UNION_BV: bvUnion->Sync(stream); break;
+		case HALFSPACE_BV: stream.Sync(bvHalfSpace); break;
 		default: break;
 	}
 }
 
 
-void NiCollisionData::Get(NiIStream& stream) {
-	NiCollisionObject::Get(stream);
-
-	stream >> propagationMode;
-	stream >> collisionMode;
-	stream >> useABV;
+void NiCollisionData::Sync(NiStreamReversible& stream) {
+	stream.Sync(propagationMode);
+	stream.Sync(collisionMode);
+	stream.Sync(useABV);
 
 	if (useABV)
-		boundingVolume.Get(stream);
-}
-
-void NiCollisionData::Put(NiOStream& stream) {
-	NiCollisionObject::Put(stream);
-
-	stream << propagationMode;
-	stream << collisionMode;
-	stream << useABV;
-
-	if (useABV)
-		boundingVolume.Put(stream);
+		boundingVolume.Sync(stream);
 }
 
 
-void bhkNiCollisionObject::Get(NiIStream& stream) {
-	NiCollisionObject::Get(stream);
-
-	stream >> flags;
-	bodyRef.Get(stream);
-}
-
-void bhkNiCollisionObject::Put(NiOStream& stream) {
-	NiCollisionObject::Put(stream);
-
-	stream << flags;
-	bodyRef.Put(stream);
+void bhkNiCollisionObject::Sync(NiStreamReversible& stream) {
+	stream.Sync(flags);
+	bodyRef.Sync(stream);
 }
 
 void bhkNiCollisionObject::GetChildRefs(std::set<Ref*>& refs) {
@@ -104,31 +61,14 @@ void bhkNiCollisionObject::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void bhkNPCollisionObject::Get(NiIStream& stream) {
-	bhkCollisionObject::Get(stream);
-
-	stream >> bodyID;
-}
-
-void bhkNPCollisionObject::Put(NiOStream& stream) {
-	bhkCollisionObject::Put(stream);
-
-	stream << bodyID;
+void bhkNPCollisionObject::Sync(NiStreamReversible& stream) {
+	stream.Sync(bodyID);
 }
 
 
-void bhkBlendCollisionObject::Get(NiIStream& stream) {
-	bhkCollisionObject::Get(stream);
-
-	stream >> heirGain;
-	stream >> velGain;
-}
-
-void bhkBlendCollisionObject::Put(NiOStream& stream) {
-	bhkCollisionObject::Put(stream);
-
-	stream << heirGain;
-	stream << velGain;
+void bhkBlendCollisionObject::Sync(NiStreamReversible& stream) {
+	stream.Sync(heirGain);
+	stream.Sync(velGain);
 }
 
 
@@ -137,25 +77,13 @@ bhkPhysicsSystem::bhkPhysicsSystem(const uint32_t size) {
 	data.resize(size);
 }
 
-void bhkPhysicsSystem::Get(NiIStream& stream) {
-	BSExtraData::Get(stream);
-
-	stream >> numBytes;
+void bhkPhysicsSystem::Sync(NiStreamReversible& stream) {
+	stream.Sync(numBytes);
 	data.resize(numBytes);
 	if (data.empty())
 		return;
 
-	stream.read(&data[0], numBytes);
-}
-
-void bhkPhysicsSystem::Put(NiOStream& stream) {
-	BSExtraData::Put(stream);
-
-	stream << numBytes;
-	if (data.empty())
-		return;
-
-	stream.write(&data[0], numBytes);
+	stream.Sync(&data[0], numBytes);
 }
 
 
@@ -164,127 +92,57 @@ bhkRagdollSystem::bhkRagdollSystem(const uint32_t size) {
 	data.resize(size);
 }
 
-void bhkRagdollSystem::Get(NiIStream& stream) {
-	BSExtraData::Get(stream);
-
-	stream >> numBytes;
+void bhkRagdollSystem::Sync(NiStreamReversible& stream) {
+	stream.Sync(numBytes);
 	data.resize(numBytes);
 	if (data.empty())
 		return;
 
-	stream.read(&data[0], numBytes);
-}
-
-void bhkRagdollSystem::Put(NiOStream& stream) {
-	BSExtraData::Put(stream);
-
-	stream << numBytes;
-	if (data.empty())
-		return;
-
-	stream.write(&data[0], numBytes);
+	stream.Sync(&data[0], numBytes);
 }
 
 
-void bhkBlendController::Get(NiIStream& stream) {
-	NiTimeController::Get(stream);
-
-	stream >> keys;
-}
-
-void bhkBlendController::Put(NiOStream& stream) {
-	NiTimeController::Put(stream);
-
-	stream << keys;
+void bhkBlendController::Sync(NiStreamReversible& stream) {
+	stream.Sync(keys);
 }
 
 
-void bhkPlaneShape::Get(NiIStream& stream) {
-	bhkHeightFieldShape::Get(stream);
-
-	stream >> material;
-	stream >> unkVec;
-	stream >> direction;
-	stream >> constant;
-	stream >> halfExtents;
-	stream >> center;
-}
-
-void bhkPlaneShape::Put(NiOStream& stream) {
-	bhkHeightFieldShape::Put(stream);
-
-	stream << material;
-	stream << unkVec;
-	stream << direction;
-	stream << constant;
-	stream << halfExtents;
-	stream << center;
+void bhkPlaneShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(material);
+	stream.Sync(unkVec);
+	stream.Sync(direction);
+	stream.Sync(constant);
+	stream.Sync(halfExtents);
+	stream.Sync(center);
 }
 
 
-void bhkSphereRepShape::Get(NiIStream& stream) {
-	bhkShape::Get(stream);
-
-	stream >> material;
-	stream >> radius;
-}
-
-void bhkSphereRepShape::Put(NiOStream& stream) {
-	bhkShape::Put(stream);
-
-	stream << material;
-	stream << radius;
+void bhkSphereRepShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(material);
+	stream.Sync(radius);
 }
 
 
-void bhkMultiSphereShape::Get(NiIStream& stream) {
-	bhkSphereRepShape::Get(stream);
+void bhkMultiSphereShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(unkFloat1);
+	stream.Sync(unkFloat2);
 
-	stream >> unkFloat1;
-	stream >> unkFloat2;
-
-	stream >> numSpheres;
+	stream.Sync(numSpheres);
 	spheres.resize(numSpheres);
 	for (uint32_t i = 0; i < numSpheres; i++)
-		stream >> spheres[i];
-}
-
-void bhkMultiSphereShape::Put(NiOStream& stream) {
-	bhkSphereRepShape::Put(stream);
-
-	stream << unkFloat1;
-	stream << unkFloat2;
-
-	stream << numSpheres;
-	for (uint32_t i = 0; i < numSpheres; i++)
-		stream << spheres[i];
+		stream.Sync(spheres[i]);
 }
 
 
-void bhkConvexListShape::Get(NiIStream& stream) {
-	bhkShape::Get(stream);
-
-	shapeRefs.Get(stream);
-	stream >> material;
-	stream >> radius;
-	stream >> unkInt1;
-	stream >> unkFloat1;
-	stream >> childShapeProp;
-	stream >> unkByte1;
-	stream >> unkFloat2;
-}
-
-void bhkConvexListShape::Put(NiOStream& stream) {
-	bhkShape::Put(stream);
-
-	shapeRefs.Put(stream);
-	stream << material;
-	stream << radius;
-	stream << unkInt1;
-	stream << unkFloat1;
-	stream << childShapeProp;
-	stream << unkByte1;
-	stream << unkFloat2;
+void bhkConvexListShape::Sync(NiStreamReversible& stream) {
+	shapeRefs.Sync(stream);
+	stream.Sync(material);
+	stream.Sync(radius);
+	stream.Sync(unkInt1);
+	stream.Sync(unkFloat1);
+	stream.Sync(childShapeProp);
+	stream.Sync(unkByte1);
+	stream.Sync(unkFloat2);
 }
 
 void bhkConvexListShape::GetChildRefs(std::set<Ref*>& refs) {
@@ -304,74 +162,35 @@ BlockRefArray<bhkConvexShape>& bhkConvexListShape::GetShapes() {
 }
 
 
-void bhkConvexVerticesShape::Get(NiIStream& stream) {
-	bhkConvexShape::Get(stream);
+void bhkConvexVerticesShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(vertsProp);
+	stream.Sync(normalsProp);
 
-	stream >> vertsProp;
-	stream >> normalsProp;
-
-	stream >> numVerts;
+	stream.Sync(numVerts);
 	verts.resize(numVerts);
 	for (uint32_t i = 0; i < numVerts; i++)
-		stream >> verts[i];
+		stream.Sync(verts[i]);
 
-	stream >> numNormals;
+	stream.Sync(numNormals);
 	normals.resize(numNormals);
 	for (uint32_t i = 0; i < numNormals; i++)
-		stream >> normals[i];
-}
-
-void bhkConvexVerticesShape::Put(NiOStream& stream) {
-	bhkConvexShape::Put(stream);
-
-	stream << vertsProp;
-	stream << normalsProp;
-
-	stream << numVerts;
-	for (uint32_t i = 0; i < numVerts; i++)
-		stream << verts[i];
-
-	stream << numNormals;
-	for (uint32_t i = 0; i < numNormals; i++)
-		stream << normals[i];
+		stream.Sync(normals[i]);
 }
 
 
-void bhkBoxShape::Get(NiIStream& stream) {
-	bhkConvexShape::Get(stream);
-
-	stream >> padding;
-	stream >> dimensions;
-	stream >> radius2;
-}
-
-void bhkBoxShape::Put(NiOStream& stream) {
-	bhkConvexShape::Put(stream);
-
-	stream << padding;
-	stream << dimensions;
-	stream << radius2;
+void bhkBoxShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(padding);
+	stream.Sync(dimensions);
+	stream.Sync(radius2);
 }
 
 
-void bhkTransformShape::Get(NiIStream& stream) {
-	bhkShape::Get(stream);
-
-	shapeRef.Get(stream);
-	stream >> material;
-	stream >> radius;
-	stream >> padding;
-	stream >> xform;
-}
-
-void bhkTransformShape::Put(NiOStream& stream) {
-	bhkShape::Put(stream);
-
-	shapeRef.Put(stream);
-	stream << material;
-	stream << radius;
-	stream << padding;
-	stream << xform;
+void bhkTransformShape::Sync(NiStreamReversible& stream) {
+	shapeRef.Sync(stream);
+	stream.Sync(material);
+	stream.Sync(radius);
+	stream.Sync(padding);
+	stream.Sync(xform);
 }
 
 void bhkTransformShape::GetChildRefs(std::set<Ref*>& refs) {
@@ -387,62 +206,30 @@ void bhkTransformShape::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void bhkCapsuleShape::Get(NiIStream& stream) {
-	bhkConvexShape::Get(stream);
-
-	stream >> padding;
-	stream >> point1;
-	stream >> radius1;
-	stream >> point2;
-	stream >> radius2;
-}
-
-void bhkCapsuleShape::Put(NiOStream& stream) {
-	bhkConvexShape::Put(stream);
-
-	stream << padding;
-	stream << point1;
-	stream << radius1;
-	stream << point2;
-	stream << radius2;
+void bhkCapsuleShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(padding);
+	stream.Sync(point1);
+	stream.Sync(radius1);
+	stream.Sync(point2);
+	stream.Sync(radius2);
 }
 
 
-void bhkMoppBvTreeShape::Get(NiIStream& stream) {
-	bhkBvTreeShape::Get(stream);
-
-	shapeRef.Get(stream);
-	stream >> userData;
-	stream >> shapeCollection;
-	stream >> code;
-	stream >> scale;
-	stream >> dataSize;
-	stream >> offset;
+void bhkMoppBvTreeShape::Sync(NiStreamReversible& stream) {
+	shapeRef.Sync(stream);
+	stream.Sync(userData);
+	stream.Sync(shapeCollection);
+	stream.Sync(code);
+	stream.Sync(scale);
+	stream.Sync(dataSize);
+	stream.Sync(offset);
 
 	if (stream.GetVersion().User() >= 12)
-		stream >> buildType;
+		stream.Sync(buildType);
 
 	data.resize(dataSize);
 	for (uint32_t i = 0; i < dataSize; i++)
-		stream >> data[i];
-}
-
-void bhkMoppBvTreeShape::Put(NiOStream& stream) {
-	bhkBvTreeShape::Put(stream);
-
-	shapeRef.Put(stream);
-	stream << userData;
-	stream << shapeCollection;
-	stream << code;
-	stream << scale;
-	stream << dataSize;
-	stream << offset;
-
-	if (stream.GetVersion().User() >= 12)
-		stream << buildType;
-
-	for (uint32_t i = 0; i < dataSize; i++)
-		stream << data[i];
+		stream.Sync(data[i]);
 }
 
 void bhkMoppBvTreeShape::GetChildRefs(std::set<Ref*>& refs) {
@@ -458,45 +245,23 @@ void bhkMoppBvTreeShape::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void bhkNiTriStripsShape::Get(NiIStream& stream) {
-	bhkShape::Get(stream);
+void bhkNiTriStripsShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(material);
+	stream.Sync(radius);
+	stream.Sync(unused1);
+	stream.Sync(unused2);
+	stream.Sync(unused3);
+	stream.Sync(unused4);
+	stream.Sync(unused5);
+	stream.Sync(growBy);
+	stream.Sync(scale);
 
-	stream >> material;
-	stream >> radius;
-	stream >> unused1;
-	stream >> unused2;
-	stream >> unused3;
-	stream >> unused4;
-	stream >> unused5;
-	stream >> growBy;
-	stream >> scale;
+	partRefs.Sync(stream);
 
-	partRefs.Get(stream);
-
-	stream >> numFilters;
+	stream.Sync(numFilters);
 	filters.resize(numFilters);
 	for (uint32_t i = 0; i < numFilters; i++)
-		stream >> filters[i];
-}
-
-void bhkNiTriStripsShape::Put(NiOStream& stream) {
-	bhkShape::Put(stream);
-
-	stream << material;
-	stream << radius;
-	stream << unused1;
-	stream << unused2;
-	stream << unused3;
-	stream << unused4;
-	stream << unused5;
-	stream << growBy;
-	stream << scale;
-
-	partRefs.Put(stream);
-
-	stream << numFilters;
-	for (uint32_t i = 0; i < numFilters; i++)
-		stream << filters[i];
+		stream.Sync(filters[i]);
 }
 
 void bhkNiTriStripsShape::GetChildRefs(std::set<Ref*>& refs) {
@@ -516,34 +281,18 @@ BlockRefArray<NiTriStripsData>& bhkNiTriStripsShape::GetParts() {
 }
 
 
-void bhkListShape::Get(NiIStream& stream) {
-	bhkShapeCollection::Get(stream);
+void bhkListShape::Sync(NiStreamReversible& stream) {
+	subShapeRefs.Sync(stream);
 
-	subShapeRefs.Get(stream);
+	stream.Sync(material);
+	stream.Sync(childShapeProp);
+	stream.Sync(childFilterProp);
 
-	stream >> material;
-	stream >> childShapeProp;
-	stream >> childFilterProp;
-
-	stream >> numUnkInts;
+	stream.Sync(numUnkInts);
 	unkInts.resize(numUnkInts);
 
 	for (uint32_t i = 0; i < numUnkInts; i++)
-		stream >> unkInts[i];
-}
-
-void bhkListShape::Put(NiOStream& stream) {
-	bhkShapeCollection::Put(stream);
-
-	subShapeRefs.Put(stream);
-
-	stream << material;
-	stream << childShapeProp;
-	stream << childFilterProp;
-
-	stream << numUnkInts;
-	for (uint32_t i = 0; i < numUnkInts; i++)
-		stream << unkInts[i];
+		stream.Sync(unkInts[i]);
 }
 
 void bhkListShape::GetChildRefs(std::set<Ref*>& refs) {
@@ -563,106 +312,54 @@ BlockRefArray<bhkShape>& bhkListShape::GetSubShapes() {
 }
 
 
-void hkPackedNiTriStripsData::Get(NiIStream& stream) {
-	bhkShapeCollection::Get(stream);
-
-	stream >> keyCount;
+void hkPackedNiTriStripsData::Sync(NiStreamReversible& stream) {
+	stream.Sync(keyCount);
 
 	if (stream.GetVersion().Stream() > 11) {
 		triData.resize(keyCount);
 		for (uint32_t i = 0; i < keyCount; i++)
-			stream >> triData[i];
+			stream.Sync(triData[i]);
 	}
 	else {
 		triNormData.resize(keyCount);
 		for (uint32_t i = 0; i < keyCount; i++)
-			stream >> triNormData[i];
+			stream.Sync(triNormData[i]);
 	}
 
-	stream >> numVerts;
+	stream.Sync(numVerts);
 
 	if (stream.GetVersion().Stream() > 11)
-		stream >> unkByte;
+		stream.Sync(unkByte);
 
 	compressedVertData.resize(numVerts);
 	for (uint32_t i = 0; i < numVerts; i++)
-		stream >> compressedVertData[i];
+		stream.Sync(compressedVertData[i]);
 
 	if (stream.GetVersion().Stream() > 11) {
-		stream >> partCount;
+		stream.Sync(partCount);
 		data.resize(partCount);
 		for (uint32_t i = 0; i < partCount; i++)
-			stream >> data[i];
-	}
-}
-
-void hkPackedNiTriStripsData::Put(NiOStream& stream) {
-	bhkShapeCollection::Put(stream);
-
-	stream << keyCount;
-
-	if (stream.GetVersion().Stream() > 11) {
-		for (uint32_t i = 0; i < keyCount; i++)
-			stream << triData[i];
-	}
-	else {
-		for (uint32_t i = 0; i < keyCount; i++)
-			stream << triNormData[i];
-	}
-
-	stream << numVerts;
-
-	if (stream.GetVersion().Stream() > 11)
-		stream << unkByte;
-
-	for (uint32_t i = 0; i < numVerts; i++)
-		stream << compressedVertData[i];
-
-	if (stream.GetVersion().Stream() > 11) {
-		stream << partCount;
-		for (uint32_t i = 0; i < partCount; i++)
-			stream << data[i];
+			stream.Sync(data[i]);
 	}
 }
 
 
-void bhkPackedNiTriStripsShape::Get(NiIStream& stream) {
-	bhkShapeCollection::Get(stream);
-
+void bhkPackedNiTriStripsShape::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().Stream() <= 11) {
-		stream >> partCount;
+		stream.Sync(partCount);
 		data.resize(partCount);
 		for (int i = 0; i < partCount; i++)
-			stream >> data[i];
+			stream.Sync(data[i]);
 	}
 
-	stream >> userData;
-	stream >> unused1;
-	stream >> radius;
-	stream >> unused2;
-	stream >> scaling;
-	stream >> radius2;
-	stream >> scaling2;
-	dataRef.Get(stream);
-}
-
-void bhkPackedNiTriStripsShape::Put(NiOStream& stream) {
-	bhkShapeCollection::Put(stream);
-
-	if (stream.GetVersion().Stream() <= 11) {
-		stream << partCount;
-		for (int i = 0; i < partCount; i++)
-			stream << data[i];
-	}
-
-	stream << userData;
-	stream << unused1;
-	stream << radius;
-	stream << unused2;
-	stream << scaling;
-	stream << radius2;
-	stream << scaling2;
-	dataRef.Put(stream);
+	stream.Sync(userData);
+	stream.Sync(unused1);
+	stream.Sync(radius);
+	stream.Sync(unused2);
+	stream.Sync(scaling);
+	stream.Sync(radius2);
+	stream.Sync(scaling2);
+	dataRef.Sync(stream);
 }
 
 void bhkPackedNiTriStripsShape::GetChildRefs(std::set<Ref*>& refs) {
@@ -678,57 +375,27 @@ void bhkPackedNiTriStripsShape::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void bhkLiquidAction::Get(NiIStream& stream) {
-	bhkSerializable::Get(stream);
-
-	stream >> userData;
-	stream >> unkInt1;
-	stream >> unkInt2;
-	stream >> initialStickForce;
-	stream >> stickStrength;
-	stream >> neighborDistance;
-	stream >> neighborStrength;
-}
-
-void bhkLiquidAction::Put(NiOStream& stream) {
-	bhkSerializable::Put(stream);
-
-	stream << userData;
-	stream << unkInt1;
-	stream << unkInt2;
-	stream << initialStickForce;
-	stream << stickStrength;
-	stream << neighborDistance;
-	stream << neighborStrength;
+void bhkLiquidAction::Sync(NiStreamReversible& stream) {
+	stream.Sync(userData);
+	stream.Sync(unkInt1);
+	stream.Sync(unkInt2);
+	stream.Sync(initialStickForce);
+	stream.Sync(stickStrength);
+	stream.Sync(neighborDistance);
+	stream.Sync(neighborStrength);
 }
 
 
-void bhkOrientHingedBodyAction::Get(NiIStream& stream) {
-	bhkSerializable::Get(stream);
-
-	bodyRef.Get(stream);
-	stream >> unkInt1;
-	stream >> unkInt2;
-	stream >> padding;
-	stream >> hingeAxisLS;
-	stream >> forwardLS;
-	stream >> strength;
-	stream >> damping;
-	stream >> padding2;
-}
-
-void bhkOrientHingedBodyAction::Put(NiOStream& stream) {
-	bhkSerializable::Put(stream);
-
-	bodyRef.Put(stream);
-	stream << unkInt1;
-	stream << unkInt2;
-	stream << padding;
-	stream << hingeAxisLS;
-	stream << forwardLS;
-	stream << strength;
-	stream << damping;
-	stream << padding2;
+void bhkOrientHingedBodyAction::Sync(NiStreamReversible& stream) {
+	bodyRef.Sync(stream);
+	stream.Sync(unkInt1);
+	stream.Sync(unkInt2);
+	stream.Sync(padding);
+	stream.Sync(hingeAxisLS);
+	stream.Sync(forwardLS);
+	stream.Sync(strength);
+	stream.Sync(damping);
+	stream.Sync(padding2);
 }
 
 void bhkOrientHingedBodyAction::GetPtrs(std::set<Ref*>& ptrs) {
@@ -738,26 +405,13 @@ void bhkOrientHingedBodyAction::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void bhkWorldObject::Get(NiIStream& stream) {
-	bhkSerializable::Get(stream);
-
-	shapeRef.Get(stream);
-	stream >> collisionFilter;
-	stream >> unkInt1;
-	stream >> broadPhaseType;
-	stream.read(reinterpret_cast<char*>(unkBytes), 3);
-	stream >> prop;
-}
-
-void bhkWorldObject::Put(NiOStream& stream) {
-	bhkSerializable::Put(stream);
-
-	shapeRef.Put(stream);
-	stream << collisionFilter;
-	stream << unkInt1;
-	stream << broadPhaseType;
-	stream.write(reinterpret_cast<char*>(unkBytes), 3);
-	stream << prop;
+void bhkWorldObject::Sync(NiStreamReversible& stream) {
+	shapeRef.Sync(stream);
+	stream.Sync(collisionFilter);
+	stream.Sync(unkInt1);
+	stream.Sync(broadPhaseType);
+	stream.Sync(reinterpret_cast<char*>(unkBytes), 3);
+	stream.Sync(prop);
 }
 
 void bhkWorldObject::GetChildRefs(std::set<Ref*>& refs) {
@@ -773,52 +427,23 @@ void bhkWorldObject::GetChildIndices(std::vector<int>& indices) {
 }
 
 
-void bhkSimpleShapePhantom::Get(NiIStream& stream) {
-	bhkShapePhantom::Get(stream);
-
-	stream >> padding;
-	stream >> transform;
-}
-
-void bhkSimpleShapePhantom::Put(NiOStream& stream) {
-	bhkShapePhantom::Put(stream);
-
-	stream << padding;
-	stream << transform;
+void bhkSimpleShapePhantom::Sync(NiStreamReversible& stream) {
+	stream.Sync(padding);
+	stream.Sync(transform);
 }
 
 
-void bhkAabbPhantom::Get(NiIStream& stream) {
-	bhkShapePhantom::Get(stream);
-
-	stream >> padding;
-	stream >> aabbMin;
-	stream >> aabbMax;
-}
-
-void bhkAabbPhantom::Put(NiOStream& stream) {
-	bhkShapePhantom::Put(stream);
-
-	stream << padding;
-	stream << aabbMin;
-	stream << aabbMax;
+void bhkAabbPhantom::Sync(NiStreamReversible& stream) {
+	stream.Sync(padding);
+	stream.Sync(aabbMin);
+	stream.Sync(aabbMax);
 }
 
 
-void bhkConstraint::Get(NiIStream& stream) {
-	bhkSerializable::Get(stream);
+void bhkConstraint::Sync(NiStreamReversible& stream) {
+	entityRefs.Sync(stream);
 
-	entityRefs.Get(stream);
-
-	stream >> priority;
-}
-
-void bhkConstraint::Put(NiOStream& stream) {
-	bhkSerializable::Put(stream);
-
-	entityRefs.Put(stream);
-
-	stream << priority;
+	stream.Sync(priority);
 }
 
 void bhkConstraint::GetPtrs(std::set<Ref*>& ptrs) {
@@ -832,145 +457,71 @@ BlockRefArray<bhkEntity>& bhkConstraint::GetEntities() {
 }
 
 
-void bhkHingeConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	stream >> hinge;
-}
-
-void bhkHingeConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	stream << hinge;
+void bhkHingeConstraint::Sync(NiStreamReversible& stream) {
+	stream.Sync(hinge);
 }
 
 
-void bhkLimitedHingeConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	stream >> limitedHinge.hinge;
-	stream >> limitedHinge.minAngle;
-	stream >> limitedHinge.maxAngle;
-	stream >> limitedHinge.maxFriction;
-	limitedHinge.motorDesc.Get(stream);
-}
-
-void bhkLimitedHingeConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	stream << limitedHinge.hinge;
-	stream << limitedHinge.minAngle;
-	stream << limitedHinge.maxAngle;
-	stream << limitedHinge.maxFriction;
-	limitedHinge.motorDesc.Put(stream);
+void bhkLimitedHingeConstraint::Sync(NiStreamReversible& stream) {
+	stream.Sync(limitedHinge.hinge);
+	stream.Sync(limitedHinge.minAngle);
+	stream.Sync(limitedHinge.maxAngle);
+	stream.Sync(limitedHinge.maxFriction);
+	limitedHinge.motorDesc.Sync(stream);
 }
 
 
-void ConstraintData::Get(NiIStream& stream) {
-	stream >> type;
+void ConstraintData::Sync(NiStreamReversible& stream) {
+	stream.Sync(type);
 
-	entityRefs.Get(stream);
-	stream >> priority;
+	entityRefs.Sync(stream);
+	stream.Sync(priority);
 
 	switch (type) {
-		case BallAndSocket: stream.read(reinterpret_cast<char*>(&desc1), 32); break;
-		case Hinge: stream.read(reinterpret_cast<char*>(&desc2), 128); break;
+		case BallAndSocket: stream.Sync(reinterpret_cast<char*>(&desc1), 32); break;
+		case Hinge: stream.Sync(reinterpret_cast<char*>(&desc2), 128); break;
 		case LimitedHinge:
-			stream >> desc3.hinge;
-			stream >> desc3.minAngle;
-			stream >> desc3.maxAngle;
-			stream >> desc3.maxFriction;
-			desc3.motorDesc.Get(stream);
+			stream.Sync(desc3.hinge);
+			stream.Sync(desc3.minAngle);
+			stream.Sync(desc3.maxAngle);
+			stream.Sync(desc3.maxFriction);
+			desc3.motorDesc.Sync(stream);
 			break;
 		case Prismatic:
-			stream >> desc4.slidingA;
-			stream >> desc4.rotationA;
-			stream >> desc4.planeA;
-			stream >> desc4.pivotA;
-			stream >> desc4.slidingB;
-			stream >> desc4.rotationB;
-			stream >> desc4.planeB;
-			stream >> desc4.pivotB;
-			stream >> desc4.minDistance;
-			stream >> desc4.maxDistance;
-			stream >> desc4.friction;
-			desc4.motorDesc.Get(stream);
+			stream.Sync(desc4.slidingA);
+			stream.Sync(desc4.rotationA);
+			stream.Sync(desc4.planeA);
+			stream.Sync(desc4.pivotA);
+			stream.Sync(desc4.slidingB);
+			stream.Sync(desc4.rotationB);
+			stream.Sync(desc4.planeB);
+			stream.Sync(desc4.pivotB);
+			stream.Sync(desc4.minDistance);
+			stream.Sync(desc4.maxDistance);
+			stream.Sync(desc4.friction);
+			desc4.motorDesc.Sync(stream);
 			break;
 		case Ragdoll:
-			stream >> desc5.twistA;
-			stream >> desc5.planeA;
-			stream >> desc5.motorA;
-			stream >> desc5.pivotA;
-			stream >> desc5.twistB;
-			stream >> desc5.planeB;
-			stream >> desc5.motorB;
-			stream >> desc5.pivotB;
-			stream >> desc5.coneMaxAngle;
-			stream >> desc5.planeMinAngle;
-			stream >> desc5.planeMaxAngle;
-			stream >> desc5.twistMinAngle;
-			stream >> desc5.twistMaxAngle;
-			stream >> desc5.maxFriction;
-			desc5.motorDesc.Get(stream);
+			stream.Sync(desc5.twistA);
+			stream.Sync(desc5.planeA);
+			stream.Sync(desc5.motorA);
+			stream.Sync(desc5.pivotA);
+			stream.Sync(desc5.twistB);
+			stream.Sync(desc5.planeB);
+			stream.Sync(desc5.motorB);
+			stream.Sync(desc5.pivotB);
+			stream.Sync(desc5.coneMaxAngle);
+			stream.Sync(desc5.planeMinAngle);
+			stream.Sync(desc5.planeMaxAngle);
+			stream.Sync(desc5.twistMinAngle);
+			stream.Sync(desc5.twistMaxAngle);
+			stream.Sync(desc5.maxFriction);
+			desc5.motorDesc.Sync(stream);
 			break;
-		case StiffSpring: stream.read(reinterpret_cast<char*>(&desc6), 36); break;
+		case StiffSpring: stream.Sync(reinterpret_cast<char*>(&desc6), 36); break;
 	}
 
-	stream >> strength;
-}
-
-void ConstraintData::Put(NiOStream& stream) {
-	stream << type;
-
-	entityRefs.SetSize(2);
-	entityRefs.Put(stream);
-	stream << priority;
-
-	switch (type) {
-		case BallAndSocket: stream.write(reinterpret_cast<char*>(&desc1), 32); break;
-		case Hinge: stream.write(reinterpret_cast<char*>(&desc2), 128); break;
-		case LimitedHinge:
-			stream << desc3.hinge;
-			stream << desc3.minAngle;
-			stream << desc3.maxAngle;
-			stream << desc3.maxFriction;
-			desc3.motorDesc.Put(stream);
-			break;
-		case Prismatic:
-			stream << desc4.slidingA;
-			stream << desc4.rotationA;
-			stream << desc4.planeA;
-			stream << desc4.pivotA;
-			stream << desc4.slidingB;
-			stream << desc4.rotationB;
-			stream << desc4.planeB;
-			stream << desc4.pivotB;
-			stream << desc4.minDistance;
-			stream << desc4.maxDistance;
-			stream << desc4.friction;
-			desc4.motorDesc.Put(stream);
-			break;
-		case Ragdoll:
-			stream << desc5.twistA;
-			stream << desc5.planeA;
-			stream << desc5.motorA;
-			stream << desc5.pivotA;
-			stream << desc5.twistB;
-			stream << desc5.planeB;
-			stream << desc5.motorB;
-			stream << desc5.pivotB;
-			stream << desc5.coneMaxAngle;
-			stream << desc5.planeMinAngle;
-			stream << desc5.planeMaxAngle;
-			stream << desc5.twistMinAngle;
-			stream << desc5.twistMaxAngle;
-			stream << desc5.maxFriction;
-			desc5.motorDesc.Put(stream);
-			break;
-		case StiffSpring: stream.write(reinterpret_cast<char*>(&desc6), 36); break;
-	}
-
-	stream << strength;
+	stream.Sync(strength);
 }
 
 void ConstraintData::GetPtrs(std::set<Ref*>& ptrs) {
@@ -982,18 +533,9 @@ BlockRefArray<bhkEntity>& ConstraintData::GetEntities() {
 }
 
 
-void bhkBreakableConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	subConstraint.Get(stream);
-	stream >> removeWhenBroken;
-}
-
-void bhkBreakableConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	subConstraint.Put(stream);
-	stream << removeWhenBroken;
+void bhkBreakableConstraint::Sync(NiStreamReversible& stream) {
+	subConstraint.Sync(stream);
+	stream.Sync(removeWhenBroken);
 }
 
 void bhkBreakableConstraint::GetPtrs(std::set<Ref*>& ptrs) {
@@ -1003,166 +545,76 @@ void bhkBreakableConstraint::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void bhkRagdollConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	stream >> ragdoll.twistA;
-	stream >> ragdoll.planeA;
-	stream >> ragdoll.motorA;
-	stream >> ragdoll.pivotA;
-	stream >> ragdoll.twistB;
-	stream >> ragdoll.planeB;
-	stream >> ragdoll.motorB;
-	stream >> ragdoll.pivotB;
-	stream >> ragdoll.coneMaxAngle;
-	stream >> ragdoll.planeMinAngle;
-	stream >> ragdoll.planeMaxAngle;
-	stream >> ragdoll.twistMinAngle;
-	stream >> ragdoll.twistMaxAngle;
-	stream >> ragdoll.maxFriction;
-	ragdoll.motorDesc.Get(stream);
-}
-
-void bhkRagdollConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	stream << ragdoll.twistA;
-	stream << ragdoll.planeA;
-	stream << ragdoll.motorA;
-	stream << ragdoll.pivotA;
-	stream << ragdoll.twistB;
-	stream << ragdoll.planeB;
-	stream << ragdoll.motorB;
-	stream << ragdoll.pivotB;
-	stream << ragdoll.coneMaxAngle;
-	stream << ragdoll.planeMinAngle;
-	stream << ragdoll.planeMaxAngle;
-	stream << ragdoll.twistMinAngle;
-	stream << ragdoll.twistMaxAngle;
-	stream << ragdoll.maxFriction;
-	ragdoll.motorDesc.Put(stream);
+void bhkRagdollConstraint::Sync(NiStreamReversible& stream) {
+	stream.Sync(ragdoll.twistA);
+	stream.Sync(ragdoll.planeA);
+	stream.Sync(ragdoll.motorA);
+	stream.Sync(ragdoll.pivotA);
+	stream.Sync(ragdoll.twistB);
+	stream.Sync(ragdoll.planeB);
+	stream.Sync(ragdoll.motorB);
+	stream.Sync(ragdoll.pivotB);
+	stream.Sync(ragdoll.coneMaxAngle);
+	stream.Sync(ragdoll.planeMinAngle);
+	stream.Sync(ragdoll.planeMaxAngle);
+	stream.Sync(ragdoll.twistMinAngle);
+	stream.Sync(ragdoll.twistMaxAngle);
+	stream.Sync(ragdoll.maxFriction);
+	ragdoll.motorDesc.Sync(stream);
 }
 
 
-void bhkStiffSpringConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	stream >> stiffSpring.pivotA;
-	stream >> stiffSpring.pivotB;
-	stream >> stiffSpring.length;
-}
-
-void bhkStiffSpringConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	stream << stiffSpring.pivotA;
-	stream << stiffSpring.pivotB;
-	stream << stiffSpring.length;
+void bhkStiffSpringConstraint::Sync(NiStreamReversible& stream) {
+	stream.Sync(stiffSpring.pivotA);
+	stream.Sync(stiffSpring.pivotB);
+	stream.Sync(stiffSpring.length);
 }
 
 
-void bhkPrismaticConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	stream >> prismatic.slidingA;
-	stream >> prismatic.rotationA;
-	stream >> prismatic.planeA;
-	stream >> prismatic.pivotA;
-	stream >> prismatic.slidingB;
-	stream >> prismatic.rotationB;
-	stream >> prismatic.planeB;
-	stream >> prismatic.pivotB;
-	stream >> prismatic.minDistance;
-	stream >> prismatic.maxDistance;
-	stream >> prismatic.friction;
-	prismatic.motorDesc.Get(stream);
-}
-
-void bhkPrismaticConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	stream << prismatic.slidingA;
-	stream << prismatic.rotationA;
-	stream << prismatic.planeA;
-	stream << prismatic.pivotA;
-	stream << prismatic.slidingB;
-	stream << prismatic.rotationB;
-	stream << prismatic.planeB;
-	stream << prismatic.pivotB;
-	stream << prismatic.minDistance;
-	stream << prismatic.maxDistance;
-	stream << prismatic.friction;
-	prismatic.motorDesc.Put(stream);
+void bhkPrismaticConstraint::Sync(NiStreamReversible& stream) {
+	stream.Sync(prismatic.slidingA);
+	stream.Sync(prismatic.rotationA);
+	stream.Sync(prismatic.planeA);
+	stream.Sync(prismatic.pivotA);
+	stream.Sync(prismatic.slidingB);
+	stream.Sync(prismatic.rotationB);
+	stream.Sync(prismatic.planeB);
+	stream.Sync(prismatic.pivotB);
+	stream.Sync(prismatic.minDistance);
+	stream.Sync(prismatic.maxDistance);
+	stream.Sync(prismatic.friction);
+	prismatic.motorDesc.Sync(stream);
 }
 
 
-void bhkMalleableConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	subConstraint.Get(stream);
-}
-
-void bhkMalleableConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	subConstraint.Put(stream);
+void bhkMalleableConstraint::Sync(NiStreamReversible& stream) {
+	subConstraint.Sync(stream);
 }
 
 
-void bhkBallAndSocketConstraint::Get(NiIStream& stream) {
-	bhkConstraint::Get(stream);
-
-	stream >> ballAndSocket.translationA;
-	stream >> ballAndSocket.translationB;
-}
-
-void bhkBallAndSocketConstraint::Put(NiOStream& stream) {
-	bhkConstraint::Put(stream);
-
-	stream << ballAndSocket.translationA;
-	stream << ballAndSocket.translationB;
+void bhkBallAndSocketConstraint::Sync(NiStreamReversible& stream) {
+	stream.Sync(ballAndSocket.translationA);
+	stream.Sync(ballAndSocket.translationB);
 }
 
 
-void bhkBallSocketConstraintChain::Get(NiIStream& stream) {
-	bhkSerializable::Get(stream);
-
-	stream >> numPivots;
+void bhkBallSocketConstraintChain::Sync(NiStreamReversible& stream) {
+	stream.Sync(numPivots);
 	pivots.resize(numPivots);
 	for (uint32_t i = 0; i < numPivots; i++)
-		stream >> pivots[i];
+		stream.Sync(pivots[i]);
 
-	stream >> tau;
-	stream >> damping;
-	stream >> cfm;
-	stream >> maxErrorDistance;
+	stream.Sync(tau);
+	stream.Sync(damping);
+	stream.Sync(cfm);
+	stream.Sync(maxErrorDistance);
 
-	entityARefs.Get(stream);
+	entityARefs.Sync(stream);
 
-	stream >> numEntities;
-	entityARef.Get(stream);
-	entityBRef.Get(stream);
-	stream >> priority;
-}
-
-void bhkBallSocketConstraintChain::Put(NiOStream& stream) {
-	bhkSerializable::Put(stream);
-
-	stream << numPivots;
-	for (uint32_t i = 0; i < numPivots; i++)
-		stream.write(reinterpret_cast<char*>(&pivots[i]), 16);
-
-	stream << tau;
-	stream << damping;
-	stream << cfm;
-	stream << maxErrorDistance;
-
-	entityARefs.Put(stream);
-
-	stream << numEntities;
-	entityARef.Put(stream);
-	entityBRef.Put(stream);
-	stream << priority;
+	stream.Sync(numEntities);
+	entityARef.Sync(stream);
+	entityBRef.Sync(stream);
+	stream.Sync(priority);
 }
 
 void bhkBallSocketConstraintChain::GetPtrs(std::set<Ref*>& ptrs) {
@@ -1194,116 +646,58 @@ void bhkBallSocketConstraintChain::SetEntityBRef(int entityRef) {
 }
 
 
-void bhkRigidBody::Get(NiIStream& stream) {
-	bhkEntity::Get(stream);
-
-	stream >> collisionResponse;
-	stream >> unusedByte1;
-	stream >> processContactCallbackDelay;
-	stream >> unkInt1;
-	stream >> collisionFilterCopy;
-	stream.read(reinterpret_cast<char*>(unkShorts2), 12);
-	stream >> translation;
-	stream >> rotation;
-	stream >> linearVelocity;
-	stream >> angularVelocity;
-	stream.read(reinterpret_cast<char*>(inertiaMatrix), 48);
-	stream >> center;
-	stream >> mass;
-	stream >> linearDamping;
-	stream >> angularDamping;
+void bhkRigidBody::Sync(NiStreamReversible& stream) {
+	stream.Sync(collisionResponse);
+	stream.Sync(unusedByte1);
+	stream.Sync(processContactCallbackDelay);
+	stream.Sync(unkInt1);
+	stream.Sync(collisionFilterCopy);
+	stream.Sync(reinterpret_cast<char*>(unkShorts2), 12);
+	stream.Sync(translation);
+	stream.Sync(rotation);
+	stream.Sync(linearVelocity);
+	stream.Sync(angularVelocity);
+	stream.Sync(reinterpret_cast<char*>(inertiaMatrix), 48);
+	stream.Sync(center);
+	stream.Sync(mass);
+	stream.Sync(linearDamping);
+	stream.Sync(angularDamping);
 
 	if (stream.GetVersion().User() >= 12) {
-		stream >> timeFactor;
-		stream >> gravityFactor;
+		stream.Sync(timeFactor);
+		stream.Sync(gravityFactor);
 	}
 
-	stream >> friction;
+	stream.Sync(friction);
 
 	if (stream.GetVersion().User() >= 12)
-		stream >> rollingFrictionMult;
+		stream.Sync(rollingFrictionMult);
 
-	stream >> restitution;
-	stream >> maxLinearVelocity;
-	stream >> maxAngularVelocity;
-	stream >> penetrationDepth;
-	stream >> motionSystem;
-	stream >> deactivatorType;
-	stream >> solverDeactivation;
-	stream >> qualityType;
-	stream >> autoRemoveLevel;
-	stream >> responseModifierFlag;
-	stream >> numShapeKeysInContactPointProps;
-	stream >> forceCollideOntoPpu;
-	stream >> unkInt2;
-	stream >> unkInt3;
+	stream.Sync(restitution);
+	stream.Sync(maxLinearVelocity);
+	stream.Sync(maxAngularVelocity);
+	stream.Sync(penetrationDepth);
+	stream.Sync(motionSystem);
+	stream.Sync(deactivatorType);
+	stream.Sync(solverDeactivation);
+	stream.Sync(qualityType);
+	stream.Sync(autoRemoveLevel);
+	stream.Sync(responseModifierFlag);
+	stream.Sync(numShapeKeysInContactPointProps);
+	stream.Sync(forceCollideOntoPpu);
+	stream.Sync(unkInt2);
+	stream.Sync(unkInt3);
 
 	if (stream.GetVersion().User() >= 12)
-		stream >> unkInt4;
+		stream.Sync(unkInt4);
 
-	constraintRefs.Get(stream);
+	constraintRefs.Sync(stream);
 
 	if (stream.GetVersion().User() <= 11)
-		stream >> unkInt5;
+		stream.Sync(unkInt5);
 
 	if (stream.GetVersion().User() >= 12)
-		stream >> bodyFlags;
-}
-
-void bhkRigidBody::Put(NiOStream& stream) {
-	bhkEntity::Put(stream);
-
-	stream << collisionResponse;
-	stream << unusedByte1;
-	stream << processContactCallbackDelay;
-	stream << unkInt1;
-	stream << collisionFilterCopy;
-	stream.write(reinterpret_cast<char*>(unkShorts2), 12);
-	stream << translation;
-	stream << rotation;
-	stream << linearVelocity;
-	stream << angularVelocity;
-	stream.write(reinterpret_cast<char*>(inertiaMatrix), 48);
-	stream << center;
-	stream << mass;
-	stream << linearDamping;
-	stream << angularDamping;
-
-	if (stream.GetVersion().User() >= 12) {
-		stream << timeFactor;
-		stream << gravityFactor;
-	}
-
-	stream << friction;
-
-	if (stream.GetVersion().User() >= 12)
-		stream << rollingFrictionMult;
-
-	stream << restitution;
-	stream << maxLinearVelocity;
-	stream << maxAngularVelocity;
-	stream << penetrationDepth;
-	stream << motionSystem;
-	stream << deactivatorType;
-	stream << solverDeactivation;
-	stream << qualityType;
-	stream << autoRemoveLevel;
-	stream << responseModifierFlag;
-	stream << numShapeKeysInContactPointProps;
-	stream << forceCollideOntoPpu;
-	stream << unkInt2;
-	stream << unkInt3;
-
-	if (stream.GetVersion().User() >= 12)
-		stream << unkInt4;
-
-	constraintRefs.Put(stream);
-
-	if (stream.GetVersion().User() <= 11)
-		stream << unkInt5;
-
-	if (stream.GetVersion().User() >= 12)
-		stream << bodyFlags;
+		stream.Sync(bodyFlags);
 }
 
 void bhkRigidBody::GetChildRefs(std::set<Ref*>& refs) {
@@ -1323,183 +717,96 @@ BlockRefArray<bhkSerializable>& bhkRigidBody::GetConstraints() {
 }
 
 
-void bhkCompressedMeshShapeData::Get(NiIStream& stream) {
-	bhkRefObject::Get(stream);
+void bhkCompressedMeshShapeData::Sync(NiStreamReversible& stream) {
+	stream.Sync(bitsPerIndex);
+	stream.Sync(bitsPerWIndex);
+	stream.Sync(maskWIndex);
+	stream.Sync(maskIndex);
+	stream.Sync(error);
+	stream.Sync(aabbBoundMin);
+	stream.Sync(aabbBoundMax);
+	stream.Sync(weldingType);
+	stream.Sync(materialType);
 
-	stream >> bitsPerIndex;
-	stream >> bitsPerWIndex;
-	stream >> maskWIndex;
-	stream >> maskIndex;
-	stream >> error;
-	stream >> aabbBoundMin;
-	stream >> aabbBoundMax;
-	stream >> weldingType;
-	stream >> materialType;
-
-	stream >> numMat32;
+	stream.Sync(numMat32);
 	mat32.resize(numMat32);
 	for (uint32_t i = 0; i < numMat32; i++)
-		stream >> mat32[i];
+		stream.Sync(mat32[i]);
 
-	stream >> numMat16;
+	stream.Sync(numMat16);
 	mat16.resize(numMat16);
 	for (uint32_t i = 0; i < numMat16; i++)
-		stream >> mat16[i];
+		stream.Sync(mat16[i]);
 
-	stream >> numMat8;
+	stream.Sync(numMat8);
 	mat8.resize(numMat8);
 	for (uint32_t i = 0; i < numMat8; i++)
-		stream >> mat8[i];
+		stream.Sync(mat8[i]);
 
-	stream >> numMaterials;
+	stream.Sync(numMaterials);
 	materials.resize(numMaterials);
 	for (uint32_t i = 0; i < numMaterials; i++)
-		stream >> materials[i];
+		stream.Sync(materials[i]);
 
-	stream >> numNamedMat;
+	stream.Sync(numNamedMat);
 
-	stream >> numTransforms;
+	stream.Sync(numTransforms);
 	transforms.resize(numTransforms);
 	for (uint32_t i = 0; i < numTransforms; i++)
-		stream >> transforms[i];
+		stream.Sync(transforms[i]);
 
-	stream >> numBigVerts;
+	stream.Sync(numBigVerts);
 	bigVerts.resize(numBigVerts);
 	for (uint32_t i = 0; i < numBigVerts; i++)
-		stream >> bigVerts[i];
+		stream.Sync(bigVerts[i]);
 
-	stream >> numBigTris;
+	stream.Sync(numBigTris);
 	bigTris.resize(numBigTris);
 	for (uint32_t i = 0; i < numBigTris; i++)
-		stream.read(reinterpret_cast<char*>(&bigTris[i]), 12);
+		stream.Sync(reinterpret_cast<char*>(&bigTris[i]), 12);
 
-	stream >> numChunks;
+	stream.Sync(numChunks);
 	chunks.resize(numChunks);
 	for (uint32_t i = 0; i < numChunks; i++) {
-		stream >> chunks[i].translation;
-		stream >> chunks[i].matIndex;
-		stream >> chunks[i].reference;
-		stream >> chunks[i].transformIndex;
+		stream.Sync(chunks[i].translation);
+		stream.Sync(chunks[i].matIndex);
+		stream.Sync(chunks[i].reference);
+		stream.Sync(chunks[i].transformIndex);
 
-		stream >> chunks[i].numVerts;
+		stream.Sync(chunks[i].numVerts);
 		chunks[i].verts.resize(chunks[i].numVerts);
 		for (uint32_t j = 0; j < chunks[i].numVerts; j++)
-			stream >> chunks[i].verts[j];
+			stream.Sync(chunks[i].verts[j]);
 
-		stream >> chunks[i].numIndices;
+		stream.Sync(chunks[i].numIndices);
 		chunks[i].indices.resize(chunks[i].numIndices);
 		for (uint32_t j = 0; j < chunks[i].numIndices; j++)
-			stream >> chunks[i].indices[j];
+			stream.Sync(chunks[i].indices[j]);
 
-		stream >> chunks[i].numStrips;
+		stream.Sync(chunks[i].numStrips);
 		chunks[i].strips.resize(chunks[i].numStrips);
 		for (uint32_t j = 0; j < chunks[i].numStrips; j++)
-			stream >> chunks[i].strips[j];
+			stream.Sync(chunks[i].strips[j]);
 
-		stream >> chunks[i].numWeldingInfo;
+		stream.Sync(chunks[i].numWeldingInfo);
 		chunks[i].weldingInfo.resize(chunks[i].numWeldingInfo);
 		for (uint32_t j = 0; j < chunks[i].numWeldingInfo; j++)
-			stream >> chunks[i].weldingInfo[j];
+			stream.Sync(chunks[i].weldingInfo[j]);
 	}
 
-	stream >> numConvexPieceA;
-}
-
-void bhkCompressedMeshShapeData::Put(NiOStream& stream) {
-	bhkRefObject::Put(stream);
-
-	stream << bitsPerIndex;
-	stream << bitsPerWIndex;
-	stream << maskWIndex;
-	stream << maskIndex;
-	stream << error;
-	stream << aabbBoundMin;
-	stream << aabbBoundMax;
-	stream << weldingType;
-	stream << materialType;
-
-	stream << numMat32;
-	for (uint32_t i = 0; i < numMat32; i++)
-		stream << mat32[i];
-
-	stream << numMat16;
-	for (uint32_t i = 0; i < numMat16; i++)
-		stream << mat16[i];
-
-	stream << numMat8;
-	for (uint32_t i = 0; i < numMat8; i++)
-		stream << mat8[i];
-
-	stream << numMaterials;
-	for (uint32_t i = 0; i < numMaterials; i++)
-		stream << materials[i];
-
-	stream << numNamedMat;
-
-	stream << numTransforms;
-	for (uint32_t i = 0; i < numTransforms; i++)
-		stream << transforms[i];
-
-	stream << numBigVerts;
-	for (uint32_t i = 0; i < numBigVerts; i++)
-		stream << bigVerts[i];
-
-	stream << numBigTris;
-	for (uint32_t i = 0; i < numBigTris; i++)
-		stream.write(reinterpret_cast<char*>(&bigTris[i]), 12);
-
-	stream << numChunks;
-	for (uint32_t i = 0; i < numChunks; i++) {
-		stream << chunks[i].translation;
-		stream << chunks[i].matIndex;
-		stream << chunks[i].reference;
-		stream << chunks[i].transformIndex;
-
-		stream << chunks[i].numVerts;
-		for (uint32_t j = 0; j < chunks[i].numVerts; j++)
-			stream << chunks[i].verts[j];
-
-		stream << chunks[i].numIndices;
-		for (uint32_t j = 0; j < chunks[i].numIndices; j++)
-			stream << chunks[i].indices[j];
-
-		stream << chunks[i].numStrips;
-		for (uint32_t j = 0; j < chunks[i].numStrips; j++)
-			stream << chunks[i].strips[j];
-
-		stream << chunks[i].numWeldingInfo;
-		for (uint32_t j = 0; j < chunks[i].numWeldingInfo; j++)
-			stream << chunks[i].weldingInfo[j];
-	}
-
-	stream << numConvexPieceA;
+	stream.Sync(numConvexPieceA);
 }
 
 
-void bhkCompressedMeshShape::Get(NiIStream& stream) {
-	bhkShape::Get(stream);
-
-	targetRef.Get(stream);
-	stream >> userData;
-	stream >> radius;
-	stream >> unkFloat;
-	stream >> scaling;
-	stream >> radius2;
-	stream >> scaling2;
-	dataRef.Get(stream);
-}
-
-void bhkCompressedMeshShape::Put(NiOStream& stream) {
-	bhkShape::Put(stream);
-
-	targetRef.Put(stream);
-	stream << userData;
-	stream << radius;
-	stream << unkFloat;
-	stream << scaling;
-	stream << radius2;
-	stream << scaling2;
-	dataRef.Put(stream);
+void bhkCompressedMeshShape::Sync(NiStreamReversible& stream) {
+	targetRef.Sync(stream);
+	stream.Sync(userData);
+	stream.Sync(radius);
+	stream.Sync(unkFloat);
+	stream.Sync(scaling);
+	stream.Sync(radius2);
+	stream.Sync(scaling2);
+	dataRef.Sync(stream);
 }
 
 void bhkCompressedMeshShape::GetChildRefs(std::set<Ref*>& refs) {
@@ -1521,30 +828,16 @@ void bhkCompressedMeshShape::GetPtrs(std::set<Ref*>& ptrs) {
 }
 
 
-void bhkPoseArray::Get(NiIStream& stream) {
-	NiObject::Get(stream);
-
-	stream >> numBones;
+void bhkPoseArray::Sync(NiStreamReversible& stream) {
+	stream.Sync(numBones);
 	bones.resize(numBones);
 	for (uint32_t i = 0; i < numBones; i++)
-		bones[i].Get(stream);
+		bones[i].Sync(stream);
 
-	stream >> numPoses;
+	stream.Sync(numPoses);
 	poses.resize(numPoses);
 	for (uint32_t i = 0; i < numPoses; i++)
-		poses[i].Get(stream);
-}
-
-void bhkPoseArray::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	stream << numBones;
-	for (uint32_t i = 0; i < numBones; i++)
-		bones[i].Put(stream);
-
-	stream << numPoses;
-	for (uint32_t i = 0; i < numPoses; i++)
-		poses[i].Put(stream);
+		poses[i].Sync(stream);
 }
 
 void bhkPoseArray::GetStringRefs(std::vector<StringRef*>& refs) {
@@ -1555,18 +848,9 @@ void bhkPoseArray::GetStringRefs(std::vector<StringRef*>& refs) {
 }
 
 
-void bhkRagdollTemplate::Get(NiIStream& stream) {
-	NiExtraData::Get(stream);
-
-	stream >> numBones;
-	boneRefs.Get(stream);
-}
-
-void bhkRagdollTemplate::Put(NiOStream& stream) {
-	NiExtraData::Put(stream);
-
-	stream << numBones;
-	boneRefs.Put(stream);
+void bhkRagdollTemplate::Sync(NiStreamReversible& stream) {
+	stream.Sync(numBones);
+	boneRefs.Sync(stream);
 }
 
 void bhkRagdollTemplate::GetChildRefs(std::set<Ref*>& refs) {
@@ -1586,35 +870,18 @@ BlockRefArray<NiObject>& bhkRagdollTemplate::GetBones() {
 }
 
 
-void bhkRagdollTemplateData::Get(NiIStream& stream) {
-	NiObject::Get(stream);
+void bhkRagdollTemplateData::Sync(NiStreamReversible& stream) {
+	name.Sync(stream);
+	stream.Sync(mass);
+	stream.Sync(restitution);
+	stream.Sync(friction);
+	stream.Sync(radius);
+	stream.Sync(material);
 
-	name.Get(stream);
-	stream >> mass;
-	stream >> restitution;
-	stream >> friction;
-	stream >> radius;
-	stream >> material;
-
-	stream >> numConstraints;
+	stream.Sync(numConstraints);
 	constraints.resize(numConstraints);
 	for (uint32_t i = 0; i < numConstraints; i++)
-		constraints[i].Get(stream);
-}
-
-void bhkRagdollTemplateData::Put(NiOStream& stream) {
-	NiObject::Put(stream);
-
-	name.Put(stream);
-	stream << mass;
-	stream << restitution;
-	stream << friction;
-	stream << radius;
-	stream << material;
-
-	stream << numConstraints;
-	for (uint32_t i = 0; i < numConstraints; i++)
-		constraints[i].Put(stream);
+		constraints[i].Sync(stream);
 }
 
 void bhkRagdollTemplateData::GetStringRefs(std::vector<StringRef*>& refs) {

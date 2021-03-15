@@ -342,25 +342,11 @@ public:
 		str.Clear();
 	}
 
-	void Get(NiIStream& stream) {
-		if (stream.GetVersion().File() < V20_1_0_1)
-			str.Get(stream, 4);
-		else
-			stream >> index;
-	}
-
-	void Put(NiOStream& stream) {
-		if (stream.GetVersion().File() < V20_1_0_1)
-			str.Put(stream, 4);
-		else
-			stream << index;
-	}
-
 	void Sync(NiStreamReversible& stream) {
-		if (auto istream = stream.asRead())
-			Get(*istream);
-		else if (auto ostream = stream.asWrite())
-			Put(*ostream);
+		if (stream.GetVersion().File() < V20_1_0_1)
+			str.Sync(stream, 4);
+		else
+			stream.Sync(index);
 	}
 };
 
@@ -384,10 +370,6 @@ public:
 	BlockRef() {}
 	BlockRef(const int id) { Ref::index = id; }
 
-	void Get(NiIStream& stream) { stream >> base::index; }
-
-	void Put(NiOStream& stream) { stream << base::index; }
-
 	void Sync(NiStreamReversible& stream) { stream.Sync(base::index); }
 };
 
@@ -403,15 +385,7 @@ public:
 
 	void SetKeepEmptyRefs(const bool keep = true) { keepEmptyRefs = keep; }
 
-	virtual void Get(NiIStream& stream) = 0;
-	virtual void Put(NiOStream& stream) = 0;
-
-	void Sync(NiStreamReversible& stream) {
-		if (auto istream = stream.asRead())
-			Get(*istream);
-		else if (auto ostream = stream.asWrite())
-			Put(*ostream);
-	}
+	virtual void Sync(NiStreamReversible& stream) = 0;
 
 	virtual void AddBlockRef(const int id) = 0;
 	virtual int GetBlockRef(const int id) = 0;
@@ -470,20 +444,15 @@ public:
 		refs.resize(arraySize);
 	}
 
-	void Get(NiIStream& stream) override {
-		stream >> arraySize;
+	void Sync(NiStreamReversible& stream) override {
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+			CleanInvalidRefs();
+
+		stream.Sync(arraySize);
 		refs.resize(arraySize);
 
 		for (auto& r : refs)
-			r.Get(stream);
-	}
-
-	void Put(NiOStream& stream) override {
-		CleanInvalidRefs();
-		stream << arraySize;
-
-		for (auto& r : refs)
-			r.Put(stream);
+			r.Sync(stream);
 	}
 
 	void AddBlockRef(const int index) override {
@@ -536,20 +505,15 @@ public:
 	using base::arraySize;
 	using base::refs;
 
-	void Get(NiIStream& stream) override {
-		stream.read((char*) &arraySize, 2);
+	void Sync(NiStreamReversible& stream) override {
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+			base::CleanInvalidRefs();
+
+		stream.Sync(reinterpret_cast<char*>(&arraySize), 2);
 		refs.resize(arraySize);
 
 		for (auto& r : refs)
-			r.Get(stream);
-	}
-
-	void Put(NiOStream& stream) override {
-		base::CleanInvalidRefs();
-		stream.write((char*) &arraySize, 2);
-
-		for (auto& r : refs)
-			r.Put(stream);
+			r.Sync(stream);
 	}
 };
 

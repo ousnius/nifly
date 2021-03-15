@@ -34,48 +34,6 @@ private:
 	std::vector<Key<T>> keys;
 
 public:
-	void Get(NiIStream& stream) {
-		stream >> numKeys;
-		keys.resize(numKeys);
-		if (numKeys > 0) {
-			stream >> interpolation;
-			for (int i = 0; i < numKeys; i++) {
-				Key<T> key;
-				stream >> key.time;
-				stream >> key.value;
-				switch (interpolation) {
-					case QUADRATIC_KEY:
-						stream >> key.forward;
-						stream >> key.backward;
-						break;
-					case TBC_KEY: stream >> key.tbc; break;
-					default: break;
-				}
-				keys[i] = std::move(key);
-			}
-		}
-	}
-
-	void Put(NiOStream& stream) {
-		stream << numKeys;
-		if (numKeys > 0) {
-			stream << interpolation;
-			for (int i = 0; i < numKeys; i++) {
-				auto& key = keys[i];
-				stream << key.time;
-				stream << key.value;
-				switch (interpolation) {
-					case QUADRATIC_KEY:
-						stream << key.forward;
-						stream << key.backward;
-						break;
-					case TBC_KEY: stream << key.tbc; break;
-					default: break;
-				}
-			}
-		}
-	}
-
 	void Sync(NiStreamReversible& stream) {
 		stream.Sync(numKeys);
 		keys.resize(numKeys);

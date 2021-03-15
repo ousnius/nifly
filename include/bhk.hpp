@@ -39,24 +39,14 @@ struct bhkPositionConstraintMotor : bhkLimitedForceConstraintMotor {
 	float proportionalRecoveryVelocity = 2.0f;
 	float constantRecoveryVelocity = 1.0f;
 
-	void Get(NiIStream& stream) {
-		stream >> minForce;
-		stream >> maxForce;
-		stream >> tau;
-		stream >> damping;
-		stream >> proportionalRecoveryVelocity;
-		stream >> constantRecoveryVelocity;
-		stream >> motorEnabled;
-	}
-
-	void Put(NiOStream& stream) {
-		stream << minForce;
-		stream << maxForce;
-		stream << tau;
-		stream << damping;
-		stream << proportionalRecoveryVelocity;
-		stream << constantRecoveryVelocity;
-		stream << motorEnabled;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(minForce);
+		stream.Sync(maxForce);
+		stream.Sync(tau);
+		stream.Sync(damping);
+		stream.Sync(proportionalRecoveryVelocity);
+		stream.Sync(constantRecoveryVelocity);
+		stream.Sync(motorEnabled);
 	}
 };
 
@@ -65,22 +55,13 @@ struct bhkVelocityConstraintMotor : bhkLimitedForceConstraintMotor {
 	float velocityTarget = 0.0f;
 	bool useVelocityTargetFromConstraintTargets = 0.0f;
 
-	void Get(NiIStream& stream) {
-		stream >> minForce;
-		stream >> maxForce;
-		stream >> tau;
-		stream >> velocityTarget;
-		stream >> useVelocityTargetFromConstraintTargets;
-		stream >> motorEnabled;
-	}
-
-	void Put(NiOStream& stream) {
-		stream << minForce;
-		stream << maxForce;
-		stream << tau;
-		stream << velocityTarget;
-		stream << useVelocityTargetFromConstraintTargets;
-		stream << motorEnabled;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(minForce);
+		stream.Sync(maxForce);
+		stream.Sync(tau);
+		stream.Sync(velocityTarget);
+		stream.Sync(useVelocityTargetFromConstraintTargets);
+		stream.Sync(motorEnabled);
 	}
 };
 
@@ -88,20 +69,12 @@ struct bhkSpringDamperConstraintMotor : bhkLimitedForceConstraintMotor {
 	float springConstant = 0.0f;
 	float springDamping = 0.0f;
 
-	void Get(NiIStream& stream) {
-		stream >> minForce;
-		stream >> maxForce;
-		stream >> springConstant;
-		stream >> springDamping;
-		stream >> motorEnabled;
-	}
-
-	void Put(NiOStream& stream) {
-		stream << minForce;
-		stream << maxForce;
-		stream << springConstant;
-		stream << springDamping;
-		stream << motorEnabled;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(minForce);
+		stream.Sync(maxForce);
+		stream.Sync(springConstant);
+		stream.Sync(springDamping);
+		stream.Sync(motorEnabled);
 	}
 };
 
@@ -111,24 +84,13 @@ struct MotorDesc {
 	bhkVelocityConstraintMotor motorVelocity;
 	bhkSpringDamperConstraintMotor motorSpringDamper;
 
-	void Get(NiIStream& stream) {
-		stream >> motorType;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(motorType);
 
 		switch (motorType) {
-			case MOTOR_POSITION: motorPosition.Get(stream); break;
-			case MOTOR_VELOCITY: motorVelocity.Get(stream); break;
-			case MOTOR_SPRING: motorSpringDamper.Get(stream); break;
-			default: break;
-		}
-	}
-
-	void Put(NiOStream& stream) {
-		stream << motorType;
-
-		switch (motorType) {
-			case MOTOR_POSITION: motorPosition.Put(stream); break;
-			case MOTOR_VELOCITY: motorVelocity.Put(stream); break;
-			case MOTOR_SPRING: motorSpringDamper.Put(stream); break;
+			case MOTOR_POSITION: motorPosition.Sync(stream); break;
+			case MOTOR_VELOCITY: motorVelocity.Sync(stream); break;
+			case MOTOR_SPRING: motorSpringDamper.Sync(stream); break;
 			default: break;
 		}
 	}
@@ -242,7 +204,7 @@ struct bhkCMSDChunk {
 
 class NiAVObject;
 
-class NiCollisionObject : public NiObjectCRTP<NiCollisionObject, NiObject> {
+class NiCollisionObject : public NiObjectCRTP<NiCollisionObject, NiObject, true> {
 private:
 	BlockRef<NiAVObject> targetRef;
 
@@ -250,8 +212,7 @@ public:
 	static constexpr const char* BlockName = "NiCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 
 	int GetTargetRef() { return targetRef.GetIndex(); }
@@ -319,29 +280,22 @@ struct BoundingVolume {
 		, bvUnion(std::make_unique<UnionBV>(*other.bvUnion))
 		, bvHalfSpace(other.bvHalfSpace) {}
 
-	void Get(NiIStream& stream);
-	void Put(NiOStream& stream);
+	void Sync(NiStreamReversible& stream);
 };
 
 struct UnionBV {
 	uint32_t numBV = 0;
 	std::vector<BoundingVolume> boundingVolumes;
 
-	void Get(NiIStream& stream) {
-		stream >> numBV;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(numBV);
 		boundingVolumes.resize(numBV);
 		for (uint32_t i = 0; i < numBV; i++)
-			boundingVolumes[i].Get(stream);
-	}
-
-	void Put(NiOStream& stream) {
-		stream << numBV;
-		for (uint32_t i = 0; i < numBV; i++)
-			boundingVolumes[i].Put(stream);
+			boundingVolumes[i].Sync(stream);
 	}
 };
 
-class NiCollisionData : public NiObjectCRTP<NiCollisionData, NiCollisionObject> {
+class NiCollisionData : public NiObjectCRTP<NiCollisionData, NiCollisionObject, true> {
 private:
 	PropagationMode propagationMode = PROPAGATE_ON_SUCCESS;
 	CollisionMode collisionMode = CM_USE_OBB;
@@ -352,11 +306,10 @@ public:
 	static constexpr const char* BlockName = "NiCollisionData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkNiCollisionObject : public NiObjectCRTP<bhkNiCollisionObject, NiCollisionObject> {
+class bhkNiCollisionObject : public NiObjectCRTP<bhkNiCollisionObject, NiCollisionObject, true> {
 private:
 	uint16_t flags = 1;
 	BlockRef<NiObject> bodyRef;
@@ -365,8 +318,7 @@ public:
 	static constexpr const char* BlockName = "bhkNiCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -380,7 +332,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkNPCollisionObject : public NiObjectCRTP<bhkNPCollisionObject, bhkCollisionObject> {
+class bhkNPCollisionObject : public NiObjectCRTP<bhkNPCollisionObject, bhkCollisionObject, true> {
 private:
 	uint32_t bodyID = 0;
 
@@ -388,8 +340,7 @@ public:
 	static constexpr const char* BlockName = "bhkNPCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class bhkPCollisionObject : public NiObjectCRTP<bhkPCollisionObject, bhkNiCollisionObject> {
@@ -404,7 +355,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkBlendCollisionObject : public NiObjectCRTP<bhkBlendCollisionObject, bhkCollisionObject> {
+class bhkBlendCollisionObject : public NiObjectCRTP<bhkBlendCollisionObject, bhkCollisionObject, true> {
 private:
 	float heirGain = 0.0f;
 	float velGain = 0.0f;
@@ -413,11 +364,10 @@ public:
 	static constexpr const char* BlockName = "bhkBlendCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkPhysicsSystem : public NiObjectCRTP<bhkPhysicsSystem, BSExtraData> {
+class bhkPhysicsSystem : public NiObjectCRTP<bhkPhysicsSystem, BSExtraData, true> {
 private:
 	uint32_t numBytes = 0;
 	std::vector<char> data;
@@ -428,11 +378,10 @@ public:
 	static constexpr const char* BlockName = "bhkPhysicsSystem";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkRagdollSystem : public NiObjectCRTP<bhkRagdollSystem, BSExtraData> {
+class bhkRagdollSystem : public NiObjectCRTP<bhkRagdollSystem, BSExtraData, true> {
 private:
 	uint32_t numBytes = 0;
 	std::vector<char> data;
@@ -443,11 +392,10 @@ public:
 	static constexpr const char* BlockName = "bhkRagdollSystem";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBlendController : public NiObjectCRTP<bhkBlendController, NiTimeController> {
+class bhkBlendController : public NiObjectCRTP<bhkBlendController, NiTimeController, true> {
 private:
 	uint32_t keys = 0;
 
@@ -455,8 +403,7 @@ public:
 	static constexpr const char* BlockName = "bhkBlendController";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class bhkRefObject : public NiObjectCRTP<bhkRefObject, NiObject> {};
@@ -471,7 +418,7 @@ public:
 
 class bhkHeightFieldShape : public NiObjectCRTP<bhkHeightFieldShape, bhkShape> {};
 
-class bhkPlaneShape : public NiObjectCRTP<bhkPlaneShape, bhkHeightFieldShape> {
+class bhkPlaneShape : public NiObjectCRTP<bhkPlaneShape, bhkHeightFieldShape, true> {
 private:
 	HavokMaterial material = 0;
 	Vector3 unkVec;
@@ -484,21 +431,19 @@ public:
 	static constexpr const char* BlockName = "bhkPlaneShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 
 	HavokMaterial GetMaterial() override { return material; }
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
-class bhkSphereRepShape : public NiObjectCRTP<bhkSphereRepShape, bhkShape> {
+class bhkSphereRepShape : public NiObjectCRTP<bhkSphereRepShape, bhkShape, true> {
 private:
 	HavokMaterial material = 0;
 	float radius = 0.0f;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 
 	HavokMaterial GetMaterial() { return material; }
 	void SetMaterial(HavokMaterial mat) { material = mat; }
@@ -507,7 +452,7 @@ public:
 	void SetRadius(const float r) { radius = r; }
 };
 
-class bhkMultiSphereShape : public NiObjectCRTP<bhkMultiSphereShape, bhkSphereRepShape> {
+class bhkMultiSphereShape : public NiObjectCRTP<bhkMultiSphereShape, bhkSphereRepShape, true> {
 private:
 	float unkFloat1 = 0.0f;
 	float unkFloat2 = 0.0f;
@@ -518,13 +463,12 @@ public:
 	static constexpr const char* BlockName = "bhkMultiSphereShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class bhkConvexShape : public NiObjectCRTP<bhkConvexShape, bhkSphereRepShape> {};
 
-class bhkConvexListShape : public NiObjectCRTP<bhkConvexListShape, bhkShape> {
+class bhkConvexListShape : public NiObjectCRTP<bhkConvexListShape, bhkShape, true> {
 private:
 	BlockRefArray<bhkConvexShape> shapeRefs;
 	HavokMaterial material = 0;
@@ -539,8 +483,7 @@ public:
 	static constexpr const char* BlockName = "bhkConvexListShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -553,7 +496,7 @@ public:
 	void SetRadius(const float r) { radius = r; }
 };
 
-class bhkConvexVerticesShape : public NiObjectCRTP<bhkConvexVerticesShape, bhkConvexShape> {
+class bhkConvexVerticesShape : public NiObjectCRTP<bhkConvexVerticesShape, bhkConvexShape, true> {
 private:
 	hkWorldObjCInfoProperty vertsProp;
 	hkWorldObjCInfoProperty normalsProp;
@@ -568,11 +511,10 @@ public:
 	static constexpr const char* BlockName = "bhkConvexVerticesShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBoxShape : public NiObjectCRTP<bhkBoxShape, bhkConvexShape> {
+class bhkBoxShape : public NiObjectCRTP<bhkBoxShape, bhkConvexShape, true> {
 private:
 	uint64_t padding = 0;
 	Vector3 dimensions;
@@ -582,8 +524,7 @@ public:
 	static constexpr const char* BlockName = "bhkBoxShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 
 	Vector3 GetDimensions() { return dimensions; }
 	void SetDimensions(const Vector3 d) { dimensions = d; }
@@ -598,7 +539,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkTransformShape : public NiObjectCRTP<bhkTransformShape, bhkShape> {
+class bhkTransformShape : public NiObjectCRTP<bhkTransformShape, bhkShape, true> {
 private:
 	BlockRef<bhkShape> shapeRef;
 	HavokMaterial material = 0;
@@ -610,8 +551,7 @@ public:
 	static constexpr const char* BlockName = "bhkTransformShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -631,7 +571,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkCapsuleShape : public NiObjectCRTP<bhkCapsuleShape, bhkConvexShape> {
+class bhkCapsuleShape : public NiObjectCRTP<bhkCapsuleShape, bhkConvexShape, true> {
 private:
 	uint64_t padding = 0;
 	Vector3 point1;
@@ -643,8 +583,7 @@ public:
 	static constexpr const char* BlockName = "bhkCapsuleShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 
 	Vector3 GetPoint1() { return point1; }
 	void SetPoint1(const Vector3 p) { point1 = p; }
@@ -661,7 +600,7 @@ public:
 
 class bhkBvTreeShape : public NiObjectCRTP<bhkBvTreeShape, bhkShape> {};
 
-class bhkMoppBvTreeShape : public NiObjectCRTP<bhkMoppBvTreeShape, bhkBvTreeShape> {
+class bhkMoppBvTreeShape : public NiObjectCRTP<bhkMoppBvTreeShape, bhkBvTreeShape, true> {
 private:
 	BlockRef<bhkShape> shapeRef;
 	uint32_t userData = 0;
@@ -677,8 +616,7 @@ public:
 	static constexpr const char* BlockName = "bhkMoppBvTreeShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -688,7 +626,7 @@ public:
 
 class NiTriStripsData;
 
-class bhkNiTriStripsShape : public NiObjectCRTP<bhkNiTriStripsShape, bhkShape> {
+class bhkNiTriStripsShape : public NiObjectCRTP<bhkNiTriStripsShape, bhkShape, true> {
 private:
 	HavokMaterial material = 0;
 	float radius = 0.1f;
@@ -709,8 +647,7 @@ public:
 	static constexpr const char* BlockName = "bhkNiTriStripsShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -725,7 +662,7 @@ public:
 
 class bhkShapeCollection : public NiObjectCRTP<bhkShapeCollection, bhkShape> {};
 
-class bhkListShape : public NiObjectCRTP<bhkListShape, bhkShapeCollection> {
+class bhkListShape : public NiObjectCRTP<bhkListShape, bhkShapeCollection, true> {
 private:
 	BlockRefArray<bhkShape> subShapeRefs;
 	HavokMaterial material = 0;
@@ -738,8 +675,7 @@ public:
 	static constexpr const char* BlockName = "bhkListShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -766,7 +702,7 @@ struct hkSubPartData {
 	HavokMaterial material = 0;
 };
 
-class hkPackedNiTriStripsData : public NiObjectCRTP<hkPackedNiTriStripsData, bhkShapeCollection> {
+class hkPackedNiTriStripsData : public NiObjectCRTP<hkPackedNiTriStripsData, bhkShapeCollection, true> {
 private:
 	uint32_t keyCount = 0;
 	std::vector<hkTriangleData> triData;
@@ -783,11 +719,10 @@ public:
 	static constexpr const char* BlockName = "hkPackedNiTriStripsData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkPackedNiTriStripsShape : public NiObjectCRTP<bhkPackedNiTriStripsShape, bhkShapeCollection> {
+class bhkPackedNiTriStripsShape : public NiObjectCRTP<bhkPackedNiTriStripsShape, bhkShapeCollection, true> {
 private:
 	uint16_t partCount = 0;
 	std::vector<hkSubPartData> data;
@@ -805,8 +740,7 @@ public:
 	static constexpr const char* BlockName = "bhkPackedNiTriStripsShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -820,7 +754,7 @@ public:
 	void SetDataRef(const int ref) { dataRef.SetIndex(ref); }
 };
 
-class bhkLiquidAction : public NiObjectCRTP<bhkLiquidAction, bhkSerializable> {
+class bhkLiquidAction : public NiObjectCRTP<bhkLiquidAction, bhkSerializable, true> {
 private:
 	uint32_t userData = 0;
 	uint32_t unkInt1 = 0;
@@ -834,11 +768,10 @@ public:
 	static constexpr const char* BlockName = "bhkLiquidAction";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkOrientHingedBodyAction : public NiObjectCRTP<bhkOrientHingedBodyAction, bhkSerializable> {
+class bhkOrientHingedBodyAction : public NiObjectCRTP<bhkOrientHingedBodyAction, bhkSerializable, true> {
 private:
 	BlockRef<NiObject> bodyRef;
 	uint32_t unkInt1 = 0;
@@ -854,15 +787,14 @@ public:
 	static constexpr const char* BlockName = "bhkOrientHingedBodyAction";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 
 	int GetBodyRef() { return bodyRef.GetIndex(); }
 	void SetBodyRef(const int ref) { bodyRef.SetIndex(ref); }
 };
 
-class bhkWorldObject : public NiObjectCRTP<bhkWorldObject, bhkSerializable> {
+class bhkWorldObject : public NiObjectCRTP<bhkWorldObject, bhkSerializable, true> {
 private:
 	BlockRef<bhkShape> shapeRef;
 	HavokFilter collisionFilter;
@@ -872,8 +804,7 @@ private:
 	hkWorldObjCInfoProperty prop;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -892,7 +823,7 @@ class bhkPhantom : public NiObjectCRTP<bhkPhantom, bhkWorldObject> {};
 
 class bhkShapePhantom : public NiObjectCRTP<bhkShapePhantom, bhkPhantom> {};
 
-class bhkSimpleShapePhantom : public NiObjectCRTP<bhkSimpleShapePhantom, bhkShapePhantom> {
+class bhkSimpleShapePhantom : public NiObjectCRTP<bhkSimpleShapePhantom, bhkShapePhantom, true> {
 private:
 	uint64_t padding = 0;
 	Matrix4 transform;
@@ -901,11 +832,10 @@ public:
 	static constexpr const char* BlockName = "bhkSimpleShapePhantom";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkAabbPhantom : public NiObjectCRTP<bhkAabbPhantom, bhkShapePhantom> {
+class bhkAabbPhantom : public NiObjectCRTP<bhkAabbPhantom, bhkShapePhantom, true> {
 private:
 	uint64_t padding = 0;
 	Vector4 aabbMin;
@@ -915,26 +845,24 @@ public:
 	static constexpr const char* BlockName = "bhkAabbPhantom";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class bhkEntity : public NiObjectCRTP<bhkEntity, bhkWorldObject> {};
 
-class bhkConstraint : public NiObjectCRTP<bhkConstraint, bhkSerializable> {
+class bhkConstraint : public NiObjectCRTP<bhkConstraint, bhkSerializable, true> {
 private:
 	BlockRefArray<bhkEntity> entityRefs;
 	uint32_t priority = 0;
 
 public:
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 
 	BlockRefArray<bhkEntity>& GetEntities();
 };
 
-class bhkHingeConstraint : public NiObjectCRTP<bhkHingeConstraint, bhkConstraint> {
+class bhkHingeConstraint : public NiObjectCRTP<bhkHingeConstraint, bhkConstraint, true> {
 private:
 	HingeDesc hinge;
 
@@ -942,11 +870,10 @@ public:
 	static constexpr const char* BlockName = "bhkHingeConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkLimitedHingeConstraint : public NiObjectCRTP<bhkLimitedHingeConstraint, bhkConstraint> {
+class bhkLimitedHingeConstraint : public NiObjectCRTP<bhkLimitedHingeConstraint, bhkConstraint, true> {
 private:
 	LimitedHingeDesc limitedHinge;
 
@@ -954,8 +881,7 @@ public:
 	static constexpr const char* BlockName = "bhkLimitedHingeConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
 class ConstraintData {
@@ -974,14 +900,13 @@ private:
 	float strength = 0.0f;
 
 public:
-	void Get(NiIStream& stream);
-	void Put(NiOStream& stream);
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs);
 
 	BlockRefArray<bhkEntity>& GetEntities();
 };
 
-class bhkBreakableConstraint : public NiObjectCRTP<bhkBreakableConstraint, bhkConstraint> {
+class bhkBreakableConstraint : public NiObjectCRTP<bhkBreakableConstraint, bhkConstraint, true> {
 private:
 	ConstraintData subConstraint;
 	bool removeWhenBroken = false;
@@ -990,12 +915,11 @@ public:
 	static constexpr const char* BlockName = "bhkBreakableConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class bhkRagdollConstraint : public NiObjectCRTP<bhkRagdollConstraint, bhkConstraint> {
+class bhkRagdollConstraint : public NiObjectCRTP<bhkRagdollConstraint, bhkConstraint, true> {
 private:
 	RagdollDesc ragdoll;
 
@@ -1003,11 +927,10 @@ public:
 	static constexpr const char* BlockName = "bhkRagdollConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkStiffSpringConstraint : public NiObjectCRTP<bhkStiffSpringConstraint, bhkConstraint> {
+class bhkStiffSpringConstraint : public NiObjectCRTP<bhkStiffSpringConstraint, bhkConstraint, true> {
 private:
 	StiffSpringDesc stiffSpring;
 
@@ -1015,11 +938,10 @@ public:
 	static constexpr const char* BlockName = "bhkStiffSpringConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkPrismaticConstraint : public NiObjectCRTP<bhkPrismaticConstraint, bhkConstraint> {
+class bhkPrismaticConstraint : public NiObjectCRTP<bhkPrismaticConstraint, bhkConstraint, true> {
 private:
 	PrismaticDesc prismatic;
 
@@ -1027,11 +949,10 @@ public:
 	static constexpr const char* BlockName = "bhkPrismaticConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkMalleableConstraint : public NiObjectCRTP<bhkMalleableConstraint, bhkConstraint> {
+class bhkMalleableConstraint : public NiObjectCRTP<bhkMalleableConstraint, bhkConstraint, true> {
 private:
 	ConstraintData subConstraint;
 
@@ -1039,11 +960,10 @@ public:
 	static constexpr const char* BlockName = "bhkMalleableConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBallAndSocketConstraint : public NiObjectCRTP<bhkBallAndSocketConstraint, bhkConstraint> {
+class bhkBallAndSocketConstraint : public NiObjectCRTP<bhkBallAndSocketConstraint, bhkConstraint, true> {
 private:
 	BallAndSocketDesc ballAndSocket;
 
@@ -1051,11 +971,10 @@ public:
 	static constexpr const char* BlockName = "bhkBallAndSocketConstraint";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBallSocketConstraintChain : public NiObjectCRTP<bhkBallSocketConstraintChain, bhkSerializable> {
+class bhkBallSocketConstraintChain : public NiObjectCRTP<bhkBallSocketConstraintChain, bhkSerializable, true> {
 private:
 	uint32_t numPivots = 0;
 	std::vector<Vector4> pivots;
@@ -1076,8 +995,7 @@ public:
 	static constexpr const char* BlockName = "bhkBallSocketConstraintChain";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 
 
@@ -1097,7 +1015,7 @@ enum hkResponseType : uint8_t {
 	RESPONSE_NONE
 };
 
-class bhkRigidBody : public NiObjectCRTP<bhkRigidBody, bhkEntity> {
+class bhkRigidBody : public NiObjectCRTP<bhkRigidBody, bhkEntity, true> {
 private:
 	hkResponseType collisionResponse = RESPONSE_SIMPLE_CONTACT;
 	uint8_t unusedByte1 = 0;
@@ -1141,8 +1059,7 @@ public:
 	static constexpr const char* BlockName = "bhkRigidBody";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
@@ -1159,7 +1076,7 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkCompressedMeshShapeData : public NiObjectCRTP<bhkCompressedMeshShapeData, bhkRefObject> {
+class bhkCompressedMeshShapeData : public NiObjectCRTP<bhkCompressedMeshShapeData, bhkRefObject, true> {
 private:
 	uint32_t bitsPerIndex = 0;
 	uint32_t bitsPerWIndex = 0;
@@ -1201,11 +1118,10 @@ public:
 	static constexpr const char* BlockName = "bhkCompressedMeshShapeData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 };
 
-class bhkCompressedMeshShape : public NiObjectCRTP<bhkCompressedMeshShape, bhkShape> {
+class bhkCompressedMeshShape : public NiObjectCRTP<bhkCompressedMeshShape, bhkShape, true> {
 private:
 	BlockRef<NiAVObject> targetRef;
 	uint32_t userData = 0;
@@ -1220,8 +1136,7 @@ public:
 	static constexpr const char* BlockName = "bhkCompressedMeshShape";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 	void GetPtrs(std::set<Ref*>& ptrs) override;
@@ -1249,21 +1164,15 @@ struct BonePose {
 	uint32_t numMatrices = 0;
 	std::vector<BoneMatrix> matrices;
 
-	void Get(NiIStream& stream) {
-		stream >> numMatrices;
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(numMatrices);
 		matrices.resize(numMatrices);
 		for (uint32_t i = 0; i < numMatrices; i++)
-			stream >> matrices[i];
-	}
-
-	void Put(NiOStream& stream) {
-		stream << numMatrices;
-		for (uint32_t i = 0; i < numMatrices; i++)
-			stream << matrices[i];
+			stream.Sync(matrices[i]);
 	}
 };
 
-class bhkPoseArray : public NiObjectCRTP<bhkPoseArray, NiObject> {
+class bhkPoseArray : public NiObjectCRTP<bhkPoseArray, NiObject, true> {
 private:
 	uint32_t numBones = 0;
 	std::vector<StringRef> bones;
@@ -1275,12 +1184,11 @@ public:
 	static constexpr const char* BlockName = "bhkPoseArray";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
-class bhkRagdollTemplate : public NiObjectCRTP<bhkRagdollTemplate, NiExtraData> {
+class bhkRagdollTemplate : public NiObjectCRTP<bhkRagdollTemplate, NiExtraData, true> {
 private:
 	uint32_t numBones = 0;
 	BlockRefArray<NiObject> boneRefs;
@@ -1289,15 +1197,14 @@ public:
 	static constexpr const char* BlockName = "bhkRagdollTemplate";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<Ref*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
 	BlockRefArray<NiObject>& GetBones();
 };
 
-class bhkRagdollTemplateData : public NiObjectCRTP<bhkRagdollTemplateData, NiObject> {
+class bhkRagdollTemplateData : public NiObjectCRTP<bhkRagdollTemplateData, NiObject, true> {
 private:
 	StringRef name;
 	float mass = 9.0f;
@@ -1312,8 +1219,7 @@ public:
 	static constexpr const char* BlockName = "bhkRagdollTemplateData";
 	const char* GetBlockName() override { return BlockName; }
 
-	void Get(NiIStream& stream) override;
-	void Put(NiOStream& stream) override;
+	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 
 	HavokMaterial GetMaterial() { return material; }
