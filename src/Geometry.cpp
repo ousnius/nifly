@@ -490,27 +490,33 @@ void BSTriShape::Sync(NiStreamReversible& stream) {
 
 	if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
 		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130) {
-			uint16_t num = 0;
-			stream.Sync(num);
-			numTriangles = num;
+			uint16_t numTris = 0;
+			stream.Sync(numTris);
+			numTriangles = numTris;
 		}
 		else
 			stream.Sync(numTriangles);
 	}
 	else {
-		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130 && IsSkinned()) {
-			// Triangle and vertex data is in partition instead
-			uint16_t numUShort = 0;
-			uint32_t numUInt = 0;
-			stream.Sync(numUShort);
-
-			if (HasType<BSDynamicTriShape>())
-				stream.Sync(numVertices);
-			else
+		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() < 130) {
+			if (IsSkinned()) {
+				// Triangle and vertex data is in partition instead
+				uint16_t numUShort = 0;
+				uint32_t numUInt = 0;
 				stream.Sync(numUShort);
 
-			stream.Sync(numUInt);
-			syncVertexData = false;
+				if (HasType<BSDynamicTriShape>())
+					stream.Sync(numVertices);
+				else
+					stream.Sync(numUShort);
+
+				stream.Sync(numUInt);
+				syncVertexData = false;
+			}
+			else {
+				auto numTris = static_cast<uint16_t>(numTriangles);
+				stream.Sync(numTris);
+			}
 		}
 		else
 			stream.Sync(numTriangles);
