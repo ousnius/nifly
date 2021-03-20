@@ -153,6 +153,7 @@ std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<
 	return tris;
 }
 
+#ifndef SWIG
 template<typename Container, typename Value = typename Container::value>
 auto find(Container& cont, Value&& val) {
 	return std::find(std::begin(cont), std::end(cont), std::forward<Value>(val));
@@ -173,7 +174,7 @@ template<typename Container, typename Pred>
 auto find_if(const Container& cont, Pred&& pred) {
 	return std::find_if(std::cbegin(cont), std::cend(cont), std::forward<Pred>(pred));
 }
-
+#endif
 template<typename Container, typename Value = typename Container::value>
 bool contains(const Container& cont, Value&& val) {
 	return find(cont, std::forward<Value>(val)) != std::end(cont);

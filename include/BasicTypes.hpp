@@ -21,7 +21,7 @@ See the included GPLv3 LICENSE file
 #include <unordered_set>
 
 namespace nifly {
-constexpr auto NIF_NPOS = static_cast<uint32_t>(-1);
+constexpr uint32_t NIF_NPOS = static_cast<uint32_t>(-1);
 
 enum NiFileVersion : uint32_t {
 	V2_3 = 0x02030000,
@@ -550,7 +550,7 @@ private:
 	virtual NiObject* Clone_impl() const = 0;
 };
 
-class NiHeader : public NiObjectCRTP<NiHeader, NiObject> {
+class  NiHeader : public NiObjectCRTP<NiHeader, NiObject> {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
