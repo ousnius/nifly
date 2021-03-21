@@ -66,7 +66,7 @@ enum NiFileVersion : uint32_t {
 	V20_6_5_0 = 0x14060500,
 	V30_0_0_2 = 0x1E000002,
 	V30_1_0_3 = 0x1E010003,
-	UNKNOWN = 0xFFFFFFFF
+	UNKNOWN = 0x7FFFFFFF
 };
 
 class NiVersion {
@@ -265,8 +265,8 @@ class NiObjectCRTP<Derived, Base, false> : public Base {
 public:
 	virtual ~NiObjectCRTP() = default;
 
-	std::unique_ptr<Derived> Clone() const {
-		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
+	Derived* Clone() const {
+		return static_cast<Derived*>(this->Clone_impl());
 	}
 
 private:
@@ -537,8 +537,8 @@ public:
 	virtual void GetChildIndices(std::vector<int>&) {}
 	virtual void GetPtrs(std::set<Ref*>&) {}
 
-	std::unique_ptr<NiObject> Clone() const {
-		return std::unique_ptr<NiObject>(static_cast<NiObject*>(this->Clone_impl()));
+	NiObject* Clone() const {
+		return static_cast<NiObject*>(this->Clone_impl());
 	}
 
 	template<typename T>
@@ -642,8 +642,8 @@ public:
 
 	void DeleteBlock(int blockId);
 	void DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly = false);
-	int AddBlock(std::unique_ptr<NiObject> newBlock);
-	int ReplaceBlock(int oldBlockId, std::unique_ptr<NiObject> newBlock);
+	int AddBlock(NiObject* newBlock);
+	int ReplaceBlock(int oldBlockId, NiObject* newBlock);
 	void SetBlockOrder(std::vector<int>& newOrder);
 	void FixBlockAlignment(const std::vector<NiObject*>& currentTree);
 

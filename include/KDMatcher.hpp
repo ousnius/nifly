@@ -19,9 +19,11 @@ public:
 	public:
 		int p;
 		std::vector<int> matchset;
+	private:
 		std::unique_ptr<kd_node> less;
 		std::unique_ptr<kd_node> more;
 
+	public:
 		kd_node(int point) { p = point; }
 
 		void add(const Vector3* pts, int point, int depth) {
@@ -126,9 +128,11 @@ public:
 	public:
 		Vector3* p = nullptr;
 		int p_i = -1;
+	private:
 		std::unique_ptr<kd_node> less;
 		std::unique_ptr<kd_node> more;
 
+	public:
 		kd_node(Vector3* point, int point_index) {
 			p = point;
 			p_i = point_index;
@@ -255,7 +259,9 @@ public:
 		}
 	};
 
+private:
 	std::unique_ptr<kd_node> root;
+public:
 	std::vector<kd_query_result> queryResult;
 
 	kd_tree(Vector3* points, int count) {

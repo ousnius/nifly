@@ -54,9 +54,12 @@ private:
 	bool isValid = false;
 	bool hasUnknown = false;
 	bool isTerrain = false;
+	bool preserveTexturePaths = false;
 
 public:
 	NifFile() {}
+
+	NifFile(const bool keepTexturePaths) : preserveTexturePaths(keepTexturePaths) {}
 
 	NifFile(const std::filesystem::path& fileName, const NifLoadOptions& options = NifLoadOptions()) {
 		Load(fileName, options);
@@ -75,8 +78,10 @@ public:
 	void CopyFrom(const NifFile& other);
 
 	int Load(const std::filesystem::path& fileName, const NifLoadOptions& options = NifLoadOptions());
+	int Load(const std::string& fileName, const NifLoadOptions& options = NifLoadOptions());
 	int Load(std::istream& file, const NifLoadOptions& options = NifLoadOptions());
 	int Save(const std::filesystem::path& fileName, const NifSaveOptions& options = NifSaveOptions());
+	int Save(const std::string& fileName, const NifSaveOptions& options = NifSaveOptions());
 	int Save(std::ostream& file, const NifSaveOptions& options = NifSaveOptions());
 
 	void Optimize();
@@ -108,7 +113,7 @@ public:
 	std::string GetNodeName(const int blockID);
 	void SetNodeName(const int blockID, const std::string& newName);
 
-	int AssignExtraData(NiAVObject* target, std::unique_ptr<NiExtraData> extraData);
+	int AssignExtraData(NiAVObject* target, NiExtraData* extraData);
 
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);
@@ -284,7 +289,7 @@ public:
 	NiAlphaProperty* GetAlphaProperty(NiShape* shape);
 	int AssignAlphaProperty(
 		NiShape* shape,
-		std::unique_ptr<NiAlphaProperty> alphaProp); // uint16_t flags = 4844, uint16_t threshold = 128
+		NiAlphaProperty* alphaProp); // uint16_t flags = 4844, uint16_t threshold = 128
 	void RemoveAlphaProperty(NiShape* shape);
 
 	void DeleteShape(NiShape* shape);

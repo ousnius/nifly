@@ -24,7 +24,7 @@ inline bool FloatsAreNearlyEqual(float a, float b) {
 	return std::fabs(a - b) <= EPSILON * scale;
 }
 
-float CalcMedianOfFloats(const std::vector<float>& data);
+float CalcMedianOfFloats(std::vector<float>& data);
 
 struct Vector2 {
 	float u;
