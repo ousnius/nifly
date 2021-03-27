@@ -11,31 +11,31 @@ See the included GPLv3 LICENSE file
 #include "Nodes.hpp"
 
 namespace nifly {
-class NiParticles : public NiObjectCRTP<NiParticles, NiGeometry> {
+class NiParticles : public Clonable<NiParticles, NiGeometry> {
 public:
 	static constexpr const char* BlockName = "NiParticles";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiAutoNormalParticles : public NiObjectCRTP<NiAutoNormalParticles, NiParticles> {
+class NiAutoNormalParticles : public Clonable<NiAutoNormalParticles, NiParticles> {
 public:
 	static constexpr const char* BlockName = "NiAutoNormalParticles";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiParticleMeshes : public NiObjectCRTP<NiParticleMeshes, NiParticles> {
+class NiParticleMeshes : public Clonable<NiParticleMeshes, NiParticles> {
 public:
 	static constexpr const char* BlockName = "NiParticleMeshes";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiRotatingParticles : public NiObjectCRTP<NiRotatingParticles, NiParticles> {
+class NiRotatingParticles : public Clonable<NiRotatingParticles, NiParticles> {
 public:
 	static constexpr const char* BlockName = "NiRotatingParticles";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiParticlesData : public NiObjectCRTP<NiParticlesData, NiGeometryData, true> {
+class NiParticlesData : public Streamable<NiParticlesData, NiGeometryData> {
 private:
 	bool hasRadii = false;
 	uint16_t numActive = 0;
@@ -63,19 +63,19 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiAutoNormalParticlesData : public NiObjectCRTP<NiAutoNormalParticlesData, NiParticlesData> {
+class NiAutoNormalParticlesData : public Clonable<NiAutoNormalParticlesData, NiParticlesData> {
 public:
 	static constexpr const char* BlockName = "NiAutoNormalParticlesData";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiRotatingParticlesData : public NiObjectCRTP<NiRotatingParticlesData, NiParticlesData> {
+class NiRotatingParticlesData : public Clonable<NiRotatingParticlesData, NiParticlesData> {
 public:
 	static constexpr const char* BlockName = "NiRotatingParticlesData";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiParticleMeshesData : public NiObjectCRTP<NiParticleMeshesData, NiRotatingParticlesData, true> {
+class NiParticleMeshesData : public Streamable<NiParticleMeshesData, NiRotatingParticlesData> {
 private:
 	BlockRef<NiAVObject> dataRef;
 
@@ -88,7 +88,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiPSysData : public NiObjectCRTP<NiPSysData, NiRotatingParticlesData, true> {
+class NiPSysData : public Streamable<NiPSysData, NiRotatingParticlesData> {
 private:
 	Vector3 unknownVector;
 	bool hasRotationSpeeds = false;
@@ -100,7 +100,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiMeshPSysData : public NiObjectCRTP<NiMeshPSysData, NiPSysData, true> {
+class NiMeshPSysData : public Streamable<NiMeshPSysData, NiPSysData> {
 private:
 	uint32_t defaultPoolSize = 0;
 	bool fillPoolsOnLoad = false;
@@ -119,7 +119,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class BSStripPSysData : public NiObjectCRTP<BSStripPSysData, NiPSysData, true> {
+class BSStripPSysData : public Streamable<BSStripPSysData, NiPSysData> {
 private:
 	uint16_t maxPointCount = 0;
 	uint32_t startCapSize = 0;
@@ -133,7 +133,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysEmitterCtlrData : public NiObjectCRTP<NiPSysEmitterCtlrData, NiObject, true> {
+class NiPSysEmitterCtlrData : public Streamable<NiPSysEmitterCtlrData, NiObject> {
 private:
 	KeyGroup<float> floatKeys;
 	uint32_t numVisibilityKeys = 0;
@@ -148,7 +148,7 @@ public:
 
 class NiParticleSystem;
 
-class NiPSysModifier : public NiObjectCRTP<NiPSysModifier, NiObject, true> {
+class NiPSysModifier : public Streamable<NiPSysModifier, NiObject> {
 private:
 	StringRef name;
 	uint32_t order = 0;
@@ -161,7 +161,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class BSPSysStripUpdateModifier : public NiObjectCRTP<BSPSysStripUpdateModifier, NiPSysModifier, true> {
+class BSPSysStripUpdateModifier : public Streamable<BSPSysStripUpdateModifier, NiPSysModifier> {
 private:
 	float updateDeltaTime = 0.0f;
 
@@ -172,7 +172,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysSpawnModifier : public NiObjectCRTP<NiPSysSpawnModifier, NiPSysModifier, true> {
+class NiPSysSpawnModifier : public Streamable<NiPSysSpawnModifier, NiPSysModifier> {
 private:
 	uint16_t numSpawnGenerations = 0;
 	float percentSpawned = 0.0f;
@@ -190,7 +190,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysAgeDeathModifier : public NiObjectCRTP<NiPSysAgeDeathModifier, NiPSysModifier, true> {
+class NiPSysAgeDeathModifier : public Streamable<NiPSysAgeDeathModifier, NiPSysModifier> {
 private:
 	bool spawnOnDeath = false;
 	BlockRef<NiPSysSpawnModifier> spawnModifierRef;
@@ -204,7 +204,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class BSPSysLODModifier : public NiObjectCRTP<BSPSysLODModifier, NiPSysModifier, true> {
+class BSPSysLODModifier : public Streamable<BSPSysLODModifier, NiPSysModifier> {
 private:
 	float lodBeginDistance = 0.0f;
 	float lodEndDistance = 0.0f;
@@ -218,7 +218,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSPSysSimpleColorModifier : public NiObjectCRTP<BSPSysSimpleColorModifier, NiPSysModifier, true> {
+class BSPSysSimpleColorModifier : public Streamable<BSPSysSimpleColorModifier, NiPSysModifier> {
 private:
 	float fadeInPercent = 0.0f;
 	float fadeOutPercent = 0.0f;
@@ -238,7 +238,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysRotationModifier : public NiObjectCRTP<NiPSysRotationModifier, NiPSysModifier, true> {
+class NiPSysRotationModifier : public Streamable<NiPSysRotationModifier, NiPSysModifier> {
 private:
 	float initialSpeed = 0.0f;
 	float initialSpeedVariation = 0.0f;
@@ -257,7 +257,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSPSysScaleModifier : public NiObjectCRTP<BSPSysScaleModifier, NiPSysModifier, true> {
+class BSPSysScaleModifier : public Streamable<BSPSysScaleModifier, NiPSysModifier> {
 private:
 	uint32_t numFloats = 0;
 	std::vector<float> floats;
@@ -271,7 +271,7 @@ public:
 
 enum ForceType : uint32_t { FORCE_PLANAR, FORCE_SPHERICAL, FORCE_UNKNOWN };
 
-class NiPSysGravityModifier : public NiObjectCRTP<NiPSysGravityModifier, NiPSysModifier, true> {
+class NiPSysGravityModifier : public Streamable<NiPSysGravityModifier, NiPSysModifier> {
 private:
 	BlockRef<NiNode> gravityObjRef;
 	Vector3 gravityAxis;
@@ -290,13 +290,13 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiPSysPositionModifier : public NiObjectCRTP<NiPSysPositionModifier, NiPSysModifier> {
+class NiPSysPositionModifier : public Clonable<NiPSysPositionModifier, NiPSysModifier> {
 public:
 	static constexpr const char* BlockName = "NiPSysPositionModifier";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysBoundUpdateModifier : public NiObjectCRTP<NiPSysBoundUpdateModifier, NiPSysModifier, true> {
+class NiPSysBoundUpdateModifier : public Streamable<NiPSysBoundUpdateModifier, NiPSysModifier> {
 private:
 	uint16_t updateSkip = 0;
 
@@ -307,7 +307,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysDragModifier : public NiObjectCRTP<NiPSysDragModifier, NiPSysModifier, true> {
+class NiPSysDragModifier : public Streamable<NiPSysDragModifier, NiPSysModifier> {
 private:
 	BlockRef<NiObject> parentRef;
 	Vector3 dragAxis;
@@ -323,8 +323,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class BSPSysInheritVelocityModifier
-	: public NiObjectCRTP<BSPSysInheritVelocityModifier, NiPSysModifier, true> {
+class BSPSysInheritVelocityModifier	: public Streamable<BSPSysInheritVelocityModifier, NiPSysModifier> {
 private:
 	BlockRef<NiNode> targetNodeRef;
 	float changeToInherit = 0.0f;
@@ -339,7 +338,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class BSPSysSubTexModifier : public NiObjectCRTP<BSPSysSubTexModifier, NiPSysModifier, true> {
+class BSPSysSubTexModifier : public Streamable<BSPSysSubTexModifier, NiPSysModifier> {
 private:
 	float startFrame = 0.0f;
 	float startFrameVariation = 0.0f;
@@ -360,7 +359,7 @@ enum DecayType : uint32_t { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
 
 enum SymmetryType : uint32_t { SYMMETRY_SPHERICAL, SYMMETRY_CYLINDRICAL, SYMMETRY_PLANAR };
 
-class NiPSysBombModifier : public NiObjectCRTP<NiPSysBombModifier, NiPSysModifier, true> {
+class NiPSysBombModifier : public Streamable<NiPSysBombModifier, NiPSysModifier> {
 private:
 	BlockRef<NiNode> bombNodeRef;
 	Vector3 bombAxis;
@@ -377,7 +376,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiColorData : public NiObjectCRTP<NiColorData, NiObject, true> {
+class NiColorData : public Streamable<NiColorData, NiObject> {
 private:
 	KeyGroup<Color4> data;
 
@@ -388,7 +387,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysColorModifier : public NiObjectCRTP<NiPSysColorModifier, NiPSysModifier, true> {
+class NiPSysColorModifier : public Streamable<NiPSysColorModifier, NiPSysModifier> {
 private:
 	BlockRef<NiColorData> dataRef;
 
@@ -401,7 +400,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiPSysGrowFadeModifier : public NiObjectCRTP<NiPSysGrowFadeModifier, NiPSysModifier, true> {
+class NiPSysGrowFadeModifier : public Streamable<NiPSysGrowFadeModifier, NiPSysModifier> {
 private:
 	float growTime = 0.0f;
 	uint16_t growGeneration = 0;
@@ -416,7 +415,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysMeshUpdateModifier : public NiObjectCRTP<NiPSysMeshUpdateModifier, NiPSysModifier, true> {
+class NiPSysMeshUpdateModifier : public Streamable<NiPSysMeshUpdateModifier, NiPSysModifier> {
 private:
 	BlockRefArray<NiAVObject> meshRefs;
 
@@ -431,7 +430,7 @@ public:
 	BlockRefArray<NiAVObject>& GetMeshes();
 };
 
-class NiPSysFieldModifier : public NiObjectCRTP<NiPSysFieldModifier, NiPSysModifier, true> {
+class NiPSysFieldModifier : public Streamable<NiPSysFieldModifier, NiPSysModifier> {
 private:
 	BlockRef<NiAVObject> fieldObjectRef;
 	float magnitude = 0.0f;
@@ -445,7 +444,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiPSysVortexFieldModifier : public NiObjectCRTP<NiPSysVortexFieldModifier, NiPSysFieldModifier, true> {
+class NiPSysVortexFieldModifier : public Streamable<NiPSysVortexFieldModifier, NiPSysFieldModifier> {
 private:
 	Vector3 direction;
 
@@ -456,8 +455,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysGravityFieldModifier
-	: public NiObjectCRTP<NiPSysGravityFieldModifier, NiPSysFieldModifier, true> {
+class NiPSysGravityFieldModifier : public Streamable<NiPSysGravityFieldModifier, NiPSysFieldModifier> {
 private:
 	Vector3 direction;
 
@@ -468,7 +466,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysDragFieldModifier : public NiObjectCRTP<NiPSysDragFieldModifier, NiPSysFieldModifier, true> {
+class NiPSysDragFieldModifier : public Streamable<NiPSysDragFieldModifier, NiPSysFieldModifier> {
 private:
 	bool useDirection = false;
 	Vector3 direction;
@@ -480,8 +478,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysTurbulenceFieldModifier
-	: public NiObjectCRTP<NiPSysTurbulenceFieldModifier, NiPSysFieldModifier, true> {
+class NiPSysTurbulenceFieldModifier	: public Streamable<NiPSysTurbulenceFieldModifier, NiPSysFieldModifier> {
 private:
 	float frequency = 0.0f;
 
@@ -492,7 +489,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysAirFieldModifier : public NiObjectCRTP<NiPSysAirFieldModifier, NiPSysFieldModifier, true> {
+class NiPSysAirFieldModifier : public Streamable<NiPSysAirFieldModifier, NiPSysFieldModifier> {
 private:
 	Vector3 direction;
 	float unkFloat1 = 0.0f;
@@ -509,7 +506,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysRadialFieldModifier : public NiObjectCRTP<NiPSysRadialFieldModifier, NiPSysFieldModifier, true> {
+class NiPSysRadialFieldModifier : public Streamable<NiPSysRadialFieldModifier, NiPSysFieldModifier> {
 private:
 	uint32_t radialType = 0;
 
@@ -520,7 +517,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSWindModifier : public NiObjectCRTP<BSWindModifier, NiPSysModifier, true> {
+class BSWindModifier : public Streamable<BSWindModifier, NiPSysModifier> {
 private:
 	float strength = 0.0f;
 
@@ -531,7 +528,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSPSysRecycleBoundModifier : public NiObjectCRTP<BSPSysRecycleBoundModifier, NiPSysModifier, true> {
+class BSPSysRecycleBoundModifier : public Streamable<BSPSysRecycleBoundModifier, NiPSysModifier> {
 private:
 	Vector3 boundOffset;
 	Vector3 boundExtent;
@@ -545,7 +542,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class BSPSysHavokUpdateModifier : public NiObjectCRTP<BSPSysHavokUpdateModifier, NiPSysModifier, true> {
+class BSPSysHavokUpdateModifier : public Streamable<BSPSysHavokUpdateModifier, NiPSysModifier> {
 private:
 	BlockRefArray<NiNode> nodeRefs;
 	BlockRef<NiPSysModifier> modifierRef;
@@ -564,7 +561,7 @@ public:
 	void SetModifierRef(int modRef);
 };
 
-class BSParentVelocityModifier : public NiObjectCRTP<BSParentVelocityModifier, NiPSysModifier, true> {
+class BSParentVelocityModifier : public Streamable<BSParentVelocityModifier, NiPSysModifier> {
 private:
 	float damping = 0.0f;
 
@@ -575,7 +572,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMasterParticleSystem : public NiObjectCRTP<BSMasterParticleSystem, NiNode, true> {
+class BSMasterParticleSystem : public Streamable<BSMasterParticleSystem, NiNode> {
 private:
 	uint16_t maxEmitterObjs = 0;
 	BlockRefArray<NiAVObject> particleSysRefs;
@@ -592,7 +589,7 @@ public:
 	BlockRefArray<NiAVObject>& GetParticleSystems();
 };
 
-class NiParticleSystem : public NiObjectCRTP<NiParticleSystem, NiAVObject, true> {
+class NiParticleSystem : public Streamable<NiParticleSystem, NiAVObject> {
 private:
 	BlockRef<NiGeometryData> dataRef;
 	BlockRef<NiObject> skinInstanceRef;
@@ -654,13 +651,13 @@ public:
 	BlockRefArray<NiPSysModifier>& GetModifiers();
 };
 
-class NiMeshParticleSystem : public NiObjectCRTP<NiMeshParticleSystem, NiParticleSystem> {
+class NiMeshParticleSystem : public Clonable<NiMeshParticleSystem, NiParticleSystem> {
 public:
 	static constexpr const char* BlockName = "NiMeshParticleSystem";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSStripParticleSystem : public NiObjectCRTP<BSStripParticleSystem, NiParticleSystem> {
+class BSStripParticleSystem : public Clonable<BSStripParticleSystem, NiParticleSystem> {
 public:
 	static constexpr const char* BlockName = "BSStripParticleSystem";
 	const char* GetBlockName() override { return BlockName; }
@@ -668,7 +665,7 @@ public:
 
 class NiPSysColliderManager;
 
-class NiPSysCollider : public NiObjectCRTP<NiPSysCollider, NiObject, true> {
+class NiPSysCollider : public Streamable<NiPSysCollider, NiObject> {
 private:
 	float bounce = 0.0f;
 	bool spawnOnCollide = false;
@@ -685,7 +682,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiPSysSphericalCollider : public NiObjectCRTP<NiPSysSphericalCollider, NiPSysCollider, true> {
+class NiPSysSphericalCollider : public Streamable<NiPSysSphericalCollider, NiPSysCollider> {
 private:
 	float radius = 0.0f;
 
@@ -696,7 +693,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysPlanarCollider : public NiObjectCRTP<NiPSysPlanarCollider, NiPSysCollider, true> {
+class NiPSysPlanarCollider : public Streamable<NiPSysPlanarCollider, NiPSysCollider> {
 private:
 	float width = 0.0f;
 	float height = 0.0f;
@@ -710,7 +707,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysColliderManager : public NiObjectCRTP<NiPSysColliderManager, NiPSysModifier, true> {
+class NiPSysColliderManager : public Streamable<NiPSysColliderManager, NiPSysModifier> {
 private:
 	BlockRef<NiPSysCollider> colliderRef;
 
@@ -723,7 +720,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiPSysEmitter : public NiObjectCRTP<NiPSysEmitter, NiPSysModifier, true> {
+class NiPSysEmitter : public Streamable<NiPSysEmitter, NiPSysModifier> {
 private:
 	float speed = 0.0f;
 	float speedVariation = 0.0f;
@@ -741,7 +738,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysVolumeEmitter : public NiObjectCRTP<NiPSysVolumeEmitter, NiPSysEmitter, true> {
+class NiPSysVolumeEmitter : public Streamable<NiPSysVolumeEmitter, NiPSysEmitter> {
 private:
 	BlockRef<NiNode> emitterNodeRef;
 
@@ -750,7 +747,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiPSysSphereEmitter : public NiObjectCRTP<NiPSysSphereEmitter, NiPSysVolumeEmitter, true> {
+class NiPSysSphereEmitter : public Streamable<NiPSysSphereEmitter, NiPSysVolumeEmitter> {
 private:
 	float radius = 0.0f;
 
@@ -761,7 +758,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysCylinderEmitter : public NiObjectCRTP<NiPSysCylinderEmitter, NiPSysVolumeEmitter, true> {
+class NiPSysCylinderEmitter : public Streamable<NiPSysCylinderEmitter, NiPSysVolumeEmitter> {
 private:
 	float radius = 0.0f;
 	float height = 0.0f;
@@ -773,7 +770,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPSysBoxEmitter : public NiObjectCRTP<NiPSysBoxEmitter, NiPSysVolumeEmitter, true> {
+class NiPSysBoxEmitter : public Streamable<NiPSysBoxEmitter, NiPSysVolumeEmitter> {
 private:
 	float width = 0.0f;
 	float height = 0.0f;
@@ -786,7 +783,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSPSysArrayEmitter : public NiObjectCRTP<BSPSysArrayEmitter, NiPSysVolumeEmitter> {
+class BSPSysArrayEmitter : public Clonable<BSPSysArrayEmitter, NiPSysVolumeEmitter> {
 public:
 	static constexpr const char* BlockName = "BSPSysArrayEmitter";
 	const char* GetBlockName() override { return BlockName; }
@@ -802,7 +799,7 @@ enum EmitFrom : uint32_t {
 	EMIT_FROM_EDGE_SURFACE
 };
 
-class NiPSysMeshEmitter : public NiObjectCRTP<NiPSysMeshEmitter, NiPSysEmitter, true> {
+class NiPSysMeshEmitter : public Streamable<NiPSysMeshEmitter, NiPSysEmitter> {
 private:
 	BlockRefArray<NiAVObject> meshRefs;
 	VelocityType velocityType = VELOCITY_USE_NORMALS;

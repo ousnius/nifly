@@ -70,9 +70,9 @@ struct AdditionalDataBlock {
 	}
 };
 
-class AdditionalGeomData : public NiObjectCRTP<AdditionalGeomData, NiObject> {};
+class AdditionalGeomData : public Clonable<AdditionalGeomData, NiObject> {};
 
-class NiAdditionalGeometryData : public NiObjectCRTP<NiAdditionalGeometryData, AdditionalGeomData, true> {
+class NiAdditionalGeometryData : public Streamable<NiAdditionalGeometryData, AdditionalGeomData> {
 private:
 	uint16_t numVertices = 0;
 
@@ -129,8 +129,7 @@ struct BSPackedAdditionalDataBlock {
 	}
 };
 
-class BSPackedAdditionalGeometryData
-	: public NiObjectCRTP<BSPackedAdditionalGeometryData, AdditionalGeomData, true> {
+class BSPackedAdditionalGeometryData : public Streamable<BSPackedAdditionalGeometryData, AdditionalGeomData> {
 private:
 	uint16_t numVertices = 0;
 
@@ -147,7 +146,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiGeometryData : public NiObjectCRTP<NiGeometryData, NiObject, true> {
+class NiGeometryData : public Streamable<NiGeometryData, NiObject> {
 protected:
 	bool isPSys = false;
 
@@ -216,7 +215,7 @@ public:
 	virtual void CalcTangentSpace();
 };
 
-class NiShape : public NiObjectCRTP<NiShape, NiAVObject> {
+class NiShape : public Clonable<NiShape, NiAVObject> {
 public:
 	virtual NiGeometryData* GetGeomData();
 	virtual void SetGeomData(NiGeometryData* geomDataPtr);
@@ -265,7 +264,7 @@ public:
 };
 
 
-class BSTriShape : public NiObjectCRTP<BSTriShape, NiShape, true> {
+class BSTriShape : public Streamable<BSTriShape, NiShape> {
 protected:
 	BlockRef<NiObject> skinInstanceRef;
 	BlockRef<NiProperty> shaderPropertyRef;
@@ -428,7 +427,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSSubIndexTriShape : public NiObjectCRTP<BSSubIndexTriShape, BSTriShape, true> {
+class BSSubIndexTriShape : public Streamable<BSSubIndexTriShape, BSTriShape> {
 public:
 	class BSSITSSubSegment {
 	public:
@@ -499,7 +498,7 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
-class BSMeshLODTriShape : public NiObjectCRTP<BSMeshLODTriShape, BSTriShape, true> {
+class BSMeshLODTriShape : public Streamable<BSMeshLODTriShape, BSTriShape> {
 public:
 	uint32_t lodSize0 = 0;
 	uint32_t lodSize1 = 0;
@@ -512,7 +511,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class BSDynamicTriShape : public NiObjectCRTP<BSDynamicTriShape, BSTriShape, true> {
+class BSDynamicTriShape : public Streamable<BSDynamicTriShape, BSTriShape> {
 public:
 	uint32_t dynamicDataSize;
 	std::vector<Vector4> dynamicData;
@@ -535,7 +534,7 @@ public:
 
 class NiSkinInstance;
 
-class NiGeometry : public NiObjectCRTP<NiGeometry, NiShape, true> {
+class NiGeometry : public Streamable<NiGeometry, NiShape> {
 protected:
 	BlockRef<NiGeometryData> dataRef;
 	BlockRef<NiSkinInstance> skinInstanceRef;
@@ -573,9 +572,9 @@ public:
 	void SetAlphaPropertyRef(int alphaPropRef);
 };
 
-class NiTriBasedGeom : public NiObjectCRTP<NiTriBasedGeom, NiGeometry> {};
+class NiTriBasedGeom : public Clonable<NiTriBasedGeom, NiGeometry> {};
 
-class NiTriBasedGeomData : public NiObjectCRTP<NiTriBasedGeomData, NiGeometryData, true> {
+class NiTriBasedGeomData : public Streamable<NiTriBasedGeomData, NiGeometryData> {
 protected:
 	uint16_t numTriangles = 0;
 
@@ -594,7 +593,7 @@ struct MatchGroup {
 	std::vector<uint16_t> matches;
 };
 
-class NiTriShapeData : public NiObjectCRTP<NiTriShapeData, NiTriBasedGeomData, true> {
+class NiTriShapeData : public Streamable<NiTriShapeData, NiTriBasedGeomData> {
 protected:
 	uint32_t numTrianglePoints = 0;
 	bool hasTriangles = false;
@@ -623,7 +622,7 @@ public:
 	void CalcTangentSpace() override;
 };
 
-class NiTriShape : public NiObjectCRTP<NiTriShape, NiTriBasedGeom> {
+class NiTriShape : public Clonable<NiTriShape, NiTriBasedGeom> {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -635,7 +634,7 @@ public:
 	void SetGeomData(NiGeometryData* geomDataPtr);
 };
 
-class NiTriStripsData : public NiObjectCRTP<NiTriStripsData, NiTriBasedGeomData, true> {
+class NiTriStripsData : public Streamable<NiTriStripsData, NiTriBasedGeomData> {
 protected:
 	uint16_t numStrips = 0;
 	std::vector<uint16_t> stripLengths;
@@ -658,7 +657,7 @@ public:
 	void CalcTangentSpace() override;
 };
 
-class NiTriStrips : public NiObjectCRTP<NiTriStrips, NiTriBasedGeom> {
+class NiTriStrips : public Clonable<NiTriStrips, NiTriBasedGeom> {
 protected:
 	NiTriStripsData* stripsData = nullptr;
 
@@ -672,7 +671,7 @@ public:
 	bool ReorderTriangles(const std::vector<uint32_t>&) override { return false; }
 };
 
-class NiLinesData : public NiObjectCRTP<NiLinesData, NiGeometryData, true> {
+class NiLinesData : public Streamable<NiLinesData, NiGeometryData> {
 protected:
 	std::deque<bool> lineFlags;
 
@@ -684,7 +683,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiLines : public NiObjectCRTP<NiLines, NiTriBasedGeom> {
+class NiLines : public Clonable<NiLines, NiTriBasedGeom> {
 protected:
 	NiLinesData* linesData = nullptr;
 
@@ -703,7 +702,7 @@ struct PolygonInfo {
 	uint16_t triangleOffset = 0;
 };
 
-class NiScreenElementsData : public NiObjectCRTP<NiScreenElementsData, NiTriShapeData, true> {
+class NiScreenElementsData : public Streamable<NiScreenElementsData, NiTriShapeData> {
 protected:
 	uint16_t maxPolygons = 0;
 	std::vector<PolygonInfo> polygons;
@@ -724,7 +723,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiScreenElements : public NiObjectCRTP<NiScreenElements, NiTriShape> {
+class NiScreenElements : public Clonable<NiScreenElements, NiTriShape> {
 protected:
 	NiScreenElementsData* elemData = nullptr;
 
@@ -736,7 +735,7 @@ public:
 	void SetGeomData(NiGeometryData* geomDataPtr);
 };
 
-class BSLODTriShape : public NiObjectCRTP<BSLODTriShape, NiTriBasedGeom, true> {
+class BSLODTriShape : public Streamable<BSLODTriShape, NiTriBasedGeom> {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -754,7 +753,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSSegmentedTriShape : public NiObjectCRTP<BSSegmentedTriShape, NiTriShape, true> {
+class BSSegmentedTriShape : public Streamable<BSSegmentedTriShape, NiTriShape> {
 public:
 	uint32_t numSegments = 0;
 	std::vector<BSGeometrySegmentData> segments;

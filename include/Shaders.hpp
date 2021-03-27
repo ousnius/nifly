@@ -46,9 +46,9 @@ enum BSLightingShaderPropertyShaderType : uint32_t {
 	BSLSP_LAST = BSLSP_DISMEMBERMENT
 };
 
-class NiProperty : public NiObjectCRTP<NiProperty, NiObjectNET> {};
+class NiProperty : public Clonable<NiProperty, NiObjectNET> {};
 
-class NiShadeProperty : public NiObjectCRTP<NiShadeProperty, NiProperty, true> {
+class NiShadeProperty : public Streamable<NiShadeProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -59,7 +59,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiSpecularProperty : public NiObjectCRTP<NiSpecularProperty, NiProperty, true> {
+class NiSpecularProperty : public Streamable<NiSpecularProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -125,7 +125,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) { data.GetChildIndices(indices); }
 };
 
-class NiTexturingProperty : public NiObjectCRTP<NiTexturingProperty, NiProperty, true> {
+class NiTexturingProperty : public Streamable<NiTexturingProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 	uint32_t textureCount = 0;
@@ -182,7 +182,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiVertexColorProperty : public NiObjectCRTP<NiVertexColorProperty, NiProperty, true> {
+class NiVertexColorProperty : public Streamable<NiVertexColorProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -193,7 +193,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiDitherProperty : public NiObjectCRTP<NiDitherProperty, NiProperty, true> {
+class NiDitherProperty : public Streamable<NiDitherProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -204,7 +204,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiFogProperty : public NiObjectCRTP<NiFogProperty, NiProperty, true> {
+class NiFogProperty : public Streamable<NiFogProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 	float fogDepth = 1.0f;
@@ -217,7 +217,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiWireframeProperty : public NiObjectCRTP<NiWireframeProperty, NiProperty, true> {
+class NiWireframeProperty : public Streamable<NiWireframeProperty, NiProperty> {
 private:
 	uint16_t flags = 0;
 
@@ -228,7 +228,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiZBufferProperty : public NiObjectCRTP<NiZBufferProperty, NiProperty, true> {
+class NiZBufferProperty : public Streamable<NiZBufferProperty, NiProperty> {
 private:
 	uint16_t flags = 3;
 
@@ -239,7 +239,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiShader : public NiObjectCRTP<NiShader, NiProperty> {
+class NiShader : public Clonable<NiShader, NiProperty> {
 public:
 	virtual bool IsSkinTinted() { return false; }
 	virtual bool IsFaceTinted() { return false; }
@@ -287,7 +287,7 @@ public:
 	virtual void SetWetMaterialName(const std::string&) {}
 };
 
-class BSShaderProperty : public NiObjectCRTP<BSShaderProperty, NiShader, true> {
+class BSShaderProperty : public Streamable<BSShaderProperty, NiShader> {
 public:
 	uint16_t shaderFlags = 1;
 	BSShaderType shaderType = SHADER_DEFAULT;
@@ -330,31 +330,31 @@ public:
 	Vector2 GetUVScale() override;
 };
 
-class WaterShaderProperty : public NiObjectCRTP<WaterShaderProperty, BSShaderProperty> {
+class WaterShaderProperty : public Clonable<WaterShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "WaterShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class HairShaderProperty : public NiObjectCRTP<HairShaderProperty, BSShaderProperty> {
+class HairShaderProperty : public Clonable<HairShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "HairShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class DistantLODShaderProperty : public NiObjectCRTP<DistantLODShaderProperty, BSShaderProperty> {
+class DistantLODShaderProperty : public Clonable<DistantLODShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "DistantLODShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSDistantTreeShaderProperty : public NiObjectCRTP<BSDistantTreeShaderProperty, BSShaderProperty> {
+class BSDistantTreeShaderProperty : public Clonable<BSDistantTreeShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "BSDistantTreeShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class TallGrassShaderProperty : public NiObjectCRTP<TallGrassShaderProperty, BSShaderProperty, true> {
+class TallGrassShaderProperty : public Streamable<TallGrassShaderProperty, BSShaderProperty> {
 private:
 	NiString fileName;
 
@@ -365,13 +365,13 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class VolumetricFogShaderProperty : public NiObjectCRTP<VolumetricFogShaderProperty, BSShaderProperty> {
+class VolumetricFogShaderProperty : public Clonable<VolumetricFogShaderProperty, BSShaderProperty> {
 public:
 	static constexpr const char* BlockName = "VolumetricFogShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSShaderTextureSet : public NiObjectCRTP<BSShaderTextureSet, NiObject, true> {
+class BSShaderTextureSet : public Streamable<BSShaderTextureSet, NiObject> {
 public:
 	int numTextures = 13;
 	std::vector<NiString> textures = std::vector<NiString>(13);
@@ -402,7 +402,7 @@ public:
 	}
 };
 
-class BSLightingShaderProperty : public NiObjectCRTP<BSLightingShaderProperty, BSShaderProperty, true> {
+class BSLightingShaderProperty : public Streamable<BSLightingShaderProperty, BSShaderProperty> {
 private:
 	StringRef rootMaterialName;
 	BlockRef<BSShaderTextureSet> textureSetRef;
@@ -510,7 +510,7 @@ public:
 	void SetWetMaterialName(const std::string& matName) override;
 };
 
-class BSEffectShaderProperty : public NiObjectCRTP<BSEffectShaderProperty, BSShaderProperty, true> {
+class BSEffectShaderProperty : public Streamable<BSEffectShaderProperty, BSShaderProperty> {
 public:
 	NiString sourceTexture;
 	uint32_t textureClampMode = 0;
@@ -551,7 +551,7 @@ public:
 	void SetEmissiveMultiple(const float emissive) override;
 };
 
-class BSWaterShaderProperty : public NiObjectCRTP<BSWaterShaderProperty, BSShaderProperty, true> {
+class BSWaterShaderProperty : public Streamable<BSWaterShaderProperty, BSShaderProperty> {
 private:
 	uint32_t waterFlags = 0;
 
@@ -562,7 +562,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSSkyShaderProperty : public NiObjectCRTP<BSSkyShaderProperty, BSShaderProperty, true> {
+class BSSkyShaderProperty : public Streamable<BSSkyShaderProperty, BSShaderProperty> {
 private:
 	NiString baseTexture;
 	uint32_t skyFlags = 0;
@@ -574,7 +574,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSShaderLightingProperty : public NiObjectCRTP<BSShaderLightingProperty, BSShaderProperty, true> {
+class BSShaderLightingProperty : public Streamable<BSShaderLightingProperty, BSShaderProperty> {
 public:
 	uint32_t textureClampMode = 3; // User Version <= 11
 
@@ -590,7 +590,7 @@ enum SkyObjectType : uint32_t {
 	BSSM_SKY_MOON_STARS_MASK = 7
 };
 
-class SkyShaderProperty : public NiObjectCRTP<SkyShaderProperty, BSShaderLightingProperty, true> {
+class SkyShaderProperty : public Streamable<SkyShaderProperty, BSShaderLightingProperty> {
 private:
 	NiString fileName;
 	SkyObjectType skyObjectType = BSSM_SKY_TEXTURE;
@@ -602,7 +602,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class TileShaderProperty : public NiObjectCRTP<TileShaderProperty, BSShaderLightingProperty, true> {
+class TileShaderProperty : public Streamable<TileShaderProperty, BSShaderLightingProperty> {
 private:
 	NiString fileName;
 
@@ -614,7 +614,7 @@ public:
 };
 
 class BSShaderNoLightingProperty
-	: public NiObjectCRTP<BSShaderNoLightingProperty, BSShaderLightingProperty, true> {
+	: public Streamable<BSShaderNoLightingProperty, BSShaderLightingProperty> {
 public:
 	NiString baseTexture;
 	float falloffStartAngle = 1.0f;	  // User Version 2 > 26
@@ -631,8 +631,7 @@ public:
 	void SetSkinned(const bool enable);
 };
 
-class BSShaderPPLightingProperty
-	: public NiObjectCRTP<BSShaderPPLightingProperty, BSShaderLightingProperty, true> {
+class BSShaderPPLightingProperty : public Streamable<BSShaderPPLightingProperty, BSShaderLightingProperty> {
 private:
 	BlockRef<BSShaderTextureSet> textureSetRef;
 
@@ -656,13 +655,13 @@ public:
 	void SetTextureSetRef(const int texSetRef);
 };
 
-class Lighting30ShaderProperty : public NiObjectCRTP<Lighting30ShaderProperty, BSShaderPPLightingProperty> {
+class Lighting30ShaderProperty : public Clonable<Lighting30ShaderProperty, BSShaderPPLightingProperty> {
 public:
 	static constexpr const char* BlockName = "Lighting30ShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiAlphaProperty : public NiObjectCRTP<NiAlphaProperty, NiProperty, true> {
+class NiAlphaProperty : public Streamable<NiAlphaProperty, NiProperty> {
 public:
 	uint16_t flags = 4844;
 	uint8_t threshold = 128;
@@ -674,7 +673,7 @@ public:
 };
 
 
-class NiMaterialProperty : public NiObjectCRTP<NiMaterialProperty, NiProperty, true> {
+class NiMaterialProperty : public Streamable<NiMaterialProperty, NiProperty> {
 private:
 	Vector3 colorSpecular;
 	Vector3 colorEmissive;
@@ -719,7 +718,7 @@ enum StencilMasks {
 
 enum DrawMode { DRAW_CCW_OR_BOTH, DRAW_CCW, DRAW_CW, DRAW_BOTH, DRAW_MAX };
 
-class NiStencilProperty : public NiObjectCRTP<NiStencilProperty, NiProperty, true> {
+class NiStencilProperty : public Streamable<NiStencilProperty, NiProperty> {
 public:
 	uint16_t flags = 19840;
 	uint32_t stencilRef = 0;
