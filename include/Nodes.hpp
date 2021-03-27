@@ -10,7 +10,7 @@ See the included GPLv3 LICENSE file
 #include "Objects.hpp"
 
 namespace nifly {
-class NiNode : public NiObjectCRTP<NiNode, NiAVObject, true> {
+class NiNode : public Streamable<NiNode, NiAVObject> {
 private:
 	BlockRefArray<NiAVObject> childRefs;
 	BlockRefArray<NiDynamicEffect> effectRefs;
@@ -28,7 +28,7 @@ public:
 	BlockRefArray<NiDynamicEffect>& GetEffects();
 };
 
-class BSFadeNode : public NiObjectCRTP<BSFadeNode, NiNode> {
+class BSFadeNode : public Clonable<BSFadeNode, NiNode> {
 public:
 	static constexpr const char* BlockName = "BSFadeNode";
 	const char* GetBlockName() override { return BlockName; }
@@ -40,7 +40,7 @@ enum BSValueNodeFlags : uint8_t {
 	BSVN_USE_PLAYER_ADJUST = 0x2
 };
 
-class BSValueNode : public NiObjectCRTP<BSValueNode, NiNode, true> {
+class BSValueNode : public Streamable<BSValueNode, NiNode> {
 private:
 	int value = 0;
 	BSValueNodeFlags valueFlags = BSVN_NONE;
@@ -52,13 +52,13 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSLeafAnimNode : public NiObjectCRTP<BSLeafAnimNode, NiNode> {
+class BSLeafAnimNode : public Clonable<BSLeafAnimNode, NiNode> {
 public:
 	static constexpr const char* BlockName = "BSLeafAnimNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSTreeNode : public NiObjectCRTP<BSTreeNode, NiNode, true> {
+class BSTreeNode :  public Streamable<BSTreeNode, NiNode> {
 private:
 	BlockRefArray<NiNode> bones1;
 	BlockRefArray<NiNode> bones2;
@@ -76,7 +76,7 @@ public:
 	BlockRefArray<NiNode>& GetBones2();
 };
 
-class BSOrderedNode : public NiObjectCRTP<BSOrderedNode, NiNode, true> {
+class BSOrderedNode : public Streamable<BSOrderedNode, NiNode> {
 private:
 	Vector4 alphaSortBound;
 	bool isStaticBound = false;
@@ -88,9 +88,9 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBoundData : public NiObjectCRTP<BSMultiBoundData, NiObject> {};
+class BSMultiBoundData : public Clonable<BSMultiBoundData, NiObject> {};
 
-class BSMultiBoundOBB : public NiObjectCRTP<BSMultiBoundOBB, BSMultiBoundData, true> {
+class BSMultiBoundOBB : public Streamable<BSMultiBoundOBB, BSMultiBoundData> {
 private:
 	Vector3 center;
 	Vector3 size;
@@ -103,7 +103,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBoundAABB : public NiObjectCRTP<BSMultiBoundAABB, BSMultiBoundData, true> {
+class BSMultiBoundAABB : public Streamable<BSMultiBoundAABB, BSMultiBoundData> {
 private:
 	Vector3 center;
 	Vector3 halfExtent;
@@ -115,7 +115,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBoundSphere : public NiObjectCRTP<BSMultiBoundSphere, BSMultiBoundData, true> {
+class BSMultiBoundSphere : public Streamable<BSMultiBoundSphere, BSMultiBoundData> {
 private:
 	Vector3 center;
 	float radius = 0.0f;
@@ -127,7 +127,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBound : public NiObjectCRTP<BSMultiBound, NiObject, true> {
+class BSMultiBound : public Streamable<BSMultiBound, NiObject> {
 private:
 	BlockRef<BSMultiBoundData> dataRef;
 
@@ -152,7 +152,7 @@ enum BSCPCullingType : uint32_t {
 	BSCP_CULL_FORCEMULTIBOUNDSNOUPDATE
 };
 
-class BSMultiBoundNode : public NiObjectCRTP<BSMultiBoundNode, NiNode, true> {
+class BSMultiBoundNode : public Streamable<BSMultiBoundNode, NiNode> {
 private:
 	BlockRef<BSMultiBound> multiBoundRef;
 	BSCPCullingType cullingMode = BSCP_CULL_NORMAL;
@@ -170,7 +170,7 @@ public:
 	void SetMultiBoundRef(int multBoundRef);
 };
 
-class BSRangeNode : public NiObjectCRTP<BSRangeNode, NiNode, true> {
+class BSRangeNode : public Streamable<BSRangeNode, NiNode> {
 private:
 	uint8_t min = 0;
 	uint8_t max = 0;
@@ -183,19 +183,19 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSDebrisNode : public NiObjectCRTP<BSDebrisNode, BSRangeNode> {
+class BSDebrisNode : public Clonable<BSDebrisNode, BSRangeNode> {
 public:
 	static constexpr const char* BlockName = "BSDebrisNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSBlastNode : public NiObjectCRTP<BSBlastNode, BSRangeNode> {
+class BSBlastNode : public Clonable<BSBlastNode, BSRangeNode> {
 public:
 	static constexpr const char* BlockName = "BSBlastNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSDamageStage : public NiObjectCRTP<BSDamageStage, BSBlastNode> {
+class BSDamageStage : public Clonable<BSDamageStage, BSBlastNode> {
 public:
 	static constexpr const char* BlockName = "BSDamageStage";
 	const char* GetBlockName() override { return BlockName; }
@@ -211,7 +211,7 @@ enum BillboardMode : uint16_t {
 	ROTATE_ABOUT_UP2 = 9
 };
 
-class NiBillboardNode : public NiObjectCRTP<NiBillboardNode, NiNode, true> {
+class NiBillboardNode : public Streamable<NiBillboardNode, NiNode> {
 private:
 	BillboardMode billboardMode = ALWAYS_FACE_CAMERA;
 
@@ -224,7 +224,7 @@ public:
 
 enum NiSwitchFlags : uint16_t { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
 
-class NiSwitchNode : public NiObjectCRTP<NiSwitchNode, NiNode, true> {
+class NiSwitchNode : public Streamable<NiSwitchNode, NiNode> {
 private:
 	NiSwitchFlags flags = UPDATE_ONLY_ACTIVE_CHILD;
 	uint32_t index = 0;
@@ -241,9 +241,9 @@ struct LODRange {
 	float farExtent = 0.0f;
 };
 
-class NiLODData : public NiObjectCRTP<NiLODData, NiObject> {};
+class NiLODData : public Clonable<NiLODData, NiObject> {};
 
-class NiRangeLODData : public NiObjectCRTP<NiRangeLODData, NiLODData, true> {
+class NiRangeLODData : public Streamable<NiRangeLODData, NiLODData> {
 private:
 	Vector3 lodCenter;
 	uint32_t numLODLevels = 0;
@@ -256,7 +256,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiScreenLODData : public NiObjectCRTP<NiScreenLODData, NiLODData, true> {
+class NiScreenLODData : public Streamable<NiScreenLODData, NiLODData> {
 private:
 	Vector3 boundCenter;
 	float boundRadius = 0.0f;
@@ -272,7 +272,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiLODNode : public NiObjectCRTP<NiLODNode, NiSwitchNode, true> {
+class NiLODNode : public Streamable<NiLODNode, NiSwitchNode> {
 private:
 	BlockRef<NiLODData> lodLevelData;
 
@@ -289,7 +289,7 @@ public:
 	void SetLodLevelDataRef(int dataRef);
 };
 
-class NiBone : public NiObjectCRTP<NiBone, NiNode> {
+class NiBone : public Clonable<NiBone, NiNode> {
 public:
 	static constexpr const char* BlockName = "NiBone";
 	const char* GetBlockName() override { return BlockName; }
@@ -297,7 +297,7 @@ public:
 
 enum SortingMode { SORTING_INHERIT, SORTING_OFF };
 
-class NiSortAdjustNode : public NiObjectCRTP<NiSortAdjustNode, NiNode, true> {
+class NiSortAdjustNode : public Streamable<NiSortAdjustNode, NiNode> {
 private:
 	SortingMode sortingMode = SORTING_INHERIT;
 

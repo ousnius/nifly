@@ -257,28 +257,32 @@ private:
 	Mode mode;
 };
 
-template<typename Derived, typename Base, bool GetPut = false>
-class NiObjectCRTP;
-
 template<typename Derived, typename Base>
-class NiObjectCRTP<Derived, Base, false> : public Base {
+class Clonable : public Base {
 public:
-	virtual ~NiObjectCRTP() = default;
+	virtual ~Clonable() = default;
 
 	Derived* Clone() const {
 		return static_cast<Derived*>(this->Clone_impl());
 	}
 
 private:
-	virtual NiObjectCRTP* Clone_impl() const override { return new Derived(asDer()); }
+	virtual Clonable* Clone_impl() const override { return new Derived(asDer()); }
 
 	Derived& asDer() { return static_cast<Derived&>(*this); }
 	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
 };
 
+// this is a superset of Clonable that also supports streaming I/O
 template<typename Derived, typename Base>
-class NiObjectCRTP<Derived, Base, true> : public NiObjectCRTP<Derived, Base, false> {
+class Streamable : public Base {
 public:
+	virtual ~Streamable() = default;
+
+	Derived* Clone() const {
+		return static_cast<Derived*>(this->Clone_impl());
+	}
+
 	void Get(NiIStream& stream) override {
 		Base::Get(stream);
 		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
@@ -291,6 +295,8 @@ public:
 	}
 
 private:
+	virtual Streamable* Clone_impl() const override { return new Derived(asDer()); }
+
 	Derived& asDer() { return static_cast<Derived&>(*this); }
 	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
 };
@@ -425,13 +431,17 @@ public:
 	typedef typename std::vector<BlockRef<T>>::iterator iterator;
 	typedef typename std::vector<BlockRef<T>>::const_iterator const_iterator;
 
-	typename std::vector<BlockRef<T>>::iterator begin() { return refs.begin(); }
+	typename iterator begin() { return refs.begin(); }
 
-	typename std::vector<BlockRef<T>>::iterator end() { return refs.end(); }
+	typename iterator end() { return refs.end(); }
 
-	typename std::vector<BlockRef<T>>::const_iterator begin() const { return refs.begin(); }
+	typename const_iterator cbegin() const { return refs.cbegin(); }
 
-	typename std::vector<BlockRef<T>>::const_iterator end() const { return refs.end(); }
+	typename const_iterator cend() const { return refs.cend(); }
+
+	const std::vector<BlockRef<T>>& GetRefs() const {
+		return refs;
+	}
 
 	void Clear() {
 		refs.clear();
@@ -550,7 +560,7 @@ private:
 	virtual NiObject* Clone_impl() const = 0;
 };
 
-class  NiHeader : public NiObjectCRTP<NiHeader, NiObject> {
+class NiHeader : public Clonable<NiHeader, NiObject> {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -702,7 +712,7 @@ public:
 	void Put(NiOStream& stream) override;
 };
 
-class NiUnknown : public NiObjectCRTP<NiUnknown, NiObject, true> {
+class NiUnknown : public Streamable<NiUnknown, NiObject> {
 private:
 	std::vector<char> data;
 

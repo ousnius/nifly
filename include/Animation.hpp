@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 #include "Keys.hpp"
 
 namespace nifly {
-class NiKeyframeData : public NiObjectCRTP<NiKeyframeData, NiObject, true> {
+class NiKeyframeData : public Streamable<NiKeyframeData, NiObject> {
 private:
 	uint32_t numRotationKeys = 0;
 	KeyType rotationType = NO_INTERP;
@@ -29,14 +29,14 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiTransformData : public NiObjectCRTP<NiTransformData, NiKeyframeData> {
+class NiTransformData : public Clonable<NiTransformData, NiKeyframeData> {
 public:
 	static constexpr const char* BlockName = "NiTransformData";
 
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPosData : public NiObjectCRTP<NiPosData, NiObject, true> {
+class NiPosData : public Streamable<NiPosData, NiObject> {
 private:
 	KeyGroup<Vector3> data;
 
@@ -47,7 +47,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBoolData : public NiObjectCRTP<NiBoolData, NiObject, true> {
+class NiBoolData : public Streamable<NiBoolData, NiObject> {
 private:
 	KeyGroup<uint8_t> data;
 
@@ -58,7 +58,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiFloatData : public NiObjectCRTP<NiFloatData, NiObject, true> {
+class NiFloatData : public Streamable<NiFloatData, NiObject> {
 private:
 	KeyGroup<float> data;
 
@@ -69,7 +69,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplineData : public NiObjectCRTP<NiBSplineData, NiObject, true> {
+class NiBSplineData : public Streamable<NiBSplineData, NiObject> {
 private:
 	uint32_t numFloatControlPoints = 0;
 	std::vector<float> floatControlPoints;
@@ -84,7 +84,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplineBasisData : public NiObjectCRTP<NiBSplineBasisData, NiObject, true> {
+class NiBSplineBasisData : public Streamable<NiBSplineBasisData, NiObject> {
 private:
 	uint32_t numControlPoints = 0;
 
@@ -95,9 +95,9 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiInterpolator : public NiObjectCRTP<NiInterpolator, NiObject> {};
+class NiInterpolator : public Clonable<NiInterpolator, NiObject> {};
 
-class NiBSplineInterpolator : public NiObjectCRTP<NiBSplineInterpolator, NiInterpolator, true> {
+class NiBSplineInterpolator : public Streamable<NiBSplineInterpolator, NiInterpolator> {
 private:
 	float startTime = 0.0f;
 	float stopTime = 0.0f;
@@ -110,10 +110,9 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiBSplineFloatInterpolator : public NiObjectCRTP<NiBSplineFloatInterpolator, NiBSplineInterpolator> {};
+class NiBSplineFloatInterpolator : public Clonable<NiBSplineFloatInterpolator, NiBSplineInterpolator> {};
 
-class NiBSplineCompFloatInterpolator
-	: public NiObjectCRTP<NiBSplineCompFloatInterpolator, NiBSplineFloatInterpolator, true> {
+class NiBSplineCompFloatInterpolator : public Streamable<NiBSplineCompFloatInterpolator, NiBSplineFloatInterpolator> {
 private:
 	float base = 0.0f;
 	uint32_t offset = 0;
@@ -127,8 +126,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplinePoint3Interpolator
-	: public NiObjectCRTP<NiBSplinePoint3Interpolator, NiBSplineInterpolator, true> {
+class NiBSplinePoint3Interpolator : public Streamable<NiBSplinePoint3Interpolator, NiBSplineInterpolator> {
 private:
 	float unkFloat1 = 0.0f;
 	float unkFloat2 = 0.0f;
@@ -141,16 +139,14 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplineCompPoint3Interpolator
-	: public NiObjectCRTP<NiBSplineCompPoint3Interpolator, NiBSplinePoint3Interpolator> {
+class NiBSplineCompPoint3Interpolator : public Clonable<NiBSplineCompPoint3Interpolator, NiBSplinePoint3Interpolator> {
 public:
 	static constexpr const char* BlockName = "NiBSplineCompPoint3Interpolator";
 
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiBSplineTransformInterpolator
-	: public NiObjectCRTP<NiBSplineTransformInterpolator, NiBSplineInterpolator, true> {
+class NiBSplineTransformInterpolator : public Streamable<NiBSplineTransformInterpolator, NiBSplineInterpolator> {
 private:
 	Vector3 translation;
 	Quaternion rotation;
@@ -167,8 +163,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBSplineCompTransformInterpolator
-	: public NiObjectCRTP<NiBSplineCompTransformInterpolator, NiBSplineTransformInterpolator, true> {
+class NiBSplineCompTransformInterpolator : public Streamable<NiBSplineCompTransformInterpolator, NiBSplineTransformInterpolator> {
 private:
 	float translationBias = 0.0f;
 	float translationMultiplier = 0.0f;
@@ -184,7 +179,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendInterpolator : public NiObjectCRTP<NiBlendInterpolator, NiInterpolator, true> {
+class NiBlendInterpolator : public Streamable<NiBlendInterpolator, NiInterpolator> {
 private:
 	uint16_t flags = 0;
 	uint32_t unkInt = 0;
@@ -193,7 +188,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendBoolInterpolator : public NiObjectCRTP<NiBlendBoolInterpolator, NiBlendInterpolator, true> {
+class NiBlendBoolInterpolator : public Streamable<NiBlendBoolInterpolator, NiBlendInterpolator> {
 private:
 	bool value = false;
 
@@ -204,7 +199,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendFloatInterpolator : public NiObjectCRTP<NiBlendFloatInterpolator, NiBlendInterpolator, true> {
+class NiBlendFloatInterpolator : public Streamable<NiBlendFloatInterpolator, NiBlendInterpolator> {
 private:
 	float value = 0.0f;
 
@@ -215,7 +210,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBlendPoint3Interpolator : public NiObjectCRTP<NiBlendPoint3Interpolator, NiBlendInterpolator, true> {
+class NiBlendPoint3Interpolator : public Streamable<NiBlendPoint3Interpolator, NiBlendInterpolator> {
 private:
 	Vector3 point;
 
@@ -227,15 +222,15 @@ public:
 };
 
 class NiBlendTransformInterpolator
-	: public NiObjectCRTP<NiBlendTransformInterpolator, NiBlendInterpolator, true> {
+	: public Streamable<NiBlendTransformInterpolator, NiBlendInterpolator> {
 public:
 	static constexpr const char* BlockName = "NiBlendTransformInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiKeyBasedInterpolator : public NiObjectCRTP<NiKeyBasedInterpolator, NiInterpolator> {};
+class NiKeyBasedInterpolator : public Clonable<NiKeyBasedInterpolator, NiInterpolator> {};
 
-class NiBoolInterpolator : public NiObjectCRTP<NiBoolInterpolator, NiKeyBasedInterpolator, true> {
+class NiBoolInterpolator : public Streamable<NiBoolInterpolator, NiKeyBasedInterpolator> {
 private:
 	uint8_t boolValue = 0;
 	BlockRef<NiBoolData> dataRef;
@@ -252,13 +247,13 @@ public:
 	void SetDataRef(int datRef) { dataRef.SetIndex(datRef); }
 };
 
-class NiBoolTimelineInterpolator : public NiObjectCRTP<NiBoolTimelineInterpolator, NiBoolInterpolator> {
+class NiBoolTimelineInterpolator : public Clonable<NiBoolTimelineInterpolator, NiBoolInterpolator> {
 public:
 	static constexpr const char* BlockName = "NiBoolTimelineInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiFloatInterpolator : public NiObjectCRTP<NiFloatInterpolator, NiKeyBasedInterpolator, true> {
+class NiFloatInterpolator : public Streamable<NiFloatInterpolator, NiKeyBasedInterpolator> {
 private:
 	float floatValue = 0.0f;
 	BlockRef<NiFloatData> dataRef;
@@ -275,7 +270,7 @@ public:
 	void SetDataRef(int datRef) { dataRef.SetIndex(datRef); }
 };
 
-class NiTransformInterpolator : public NiObjectCRTP<NiTransformInterpolator, NiKeyBasedInterpolator, true> {
+class NiTransformInterpolator : public Streamable<NiTransformInterpolator, NiKeyBasedInterpolator> {
 private:
 	Vector3 translation;
 	Quaternion rotation;
@@ -294,14 +289,13 @@ public:
 	void SetDataRef(int datRef) { dataRef.SetIndex(datRef); }
 };
 
-class BSRotAccumTransfInterpolator
-	: public NiObjectCRTP<BSRotAccumTransfInterpolator, NiTransformInterpolator> {
+class BSRotAccumTransfInterpolator : public Clonable<BSRotAccumTransfInterpolator, NiTransformInterpolator> {
 public:
 	static constexpr const char* BlockName = "BSRotAccumTransfInterpolator";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPoint3Interpolator : public NiObjectCRTP<NiPoint3Interpolator, NiKeyBasedInterpolator, true> {
+class NiPoint3Interpolator : public Streamable<NiPoint3Interpolator, NiKeyBasedInterpolator> {
 private:
 	Vector3 point3Value;
 	BlockRef<NiPosData> dataRef;
@@ -318,7 +312,7 @@ public:
 	void SetDataRef(int datRef) { dataRef.SetIndex(datRef); }
 };
 
-class NiPathInterpolator : public NiObjectCRTP<NiPathInterpolator, NiKeyBasedInterpolator, true> {
+class NiPathInterpolator : public Streamable<NiPathInterpolator, NiKeyBasedInterpolator> {
 private:
 	uint16_t flags = 0;
 	uint32_t bankDir = 0;
@@ -347,7 +341,7 @@ enum LookAtFlags : uint16_t {
 
 class NiNode;
 
-class NiLookAtInterpolator : public NiObjectCRTP<NiLookAtInterpolator, NiInterpolator, true> {
+class NiLookAtInterpolator : public Streamable<NiLookAtInterpolator, NiInterpolator> {
 private:
 	LookAtFlags flags = LOOK_X_AXIS;
 	BlockRef<NiNode> lookAtRef;
@@ -390,7 +384,7 @@ struct BSTreadTransform {
 	void GetStringRefs(std::vector<StringRef*>& refs) { refs.emplace_back(&name); }
 };
 
-class BSTreadTransfInterpolator : public NiObjectCRTP<BSTreadTransfInterpolator, NiInterpolator, true> {
+class BSTreadTransfInterpolator : public Streamable<BSTreadTransfInterpolator, NiInterpolator> {
 private:
 	uint32_t numTreadTransforms = 0;
 	std::vector<BSTreadTransform> treadTransforms;
@@ -408,7 +402,7 @@ public:
 
 class NiObjectNET;
 
-class NiTimeController : public NiObjectCRTP<NiTimeController, NiObject, true> {
+class NiTimeController : public Streamable<NiTimeController, NiObject> {
 private:
 	BlockRef<NiTimeController> nextControllerRef;
 	uint16_t flags = 0x000C;
@@ -431,7 +425,7 @@ public:
 	void SetTargetRef(int targRef) { targetRef.SetIndex(targRef); }
 };
 
-class NiLookAtController : public NiObjectCRTP<NiLookAtController, NiTimeController, true> {
+class NiLookAtController : public Streamable<NiLookAtController, NiTimeController> {
 private:
 	uint16_t unkShort1 = 0;
 	BlockRef<NiNode> lookAtNodePtr;
@@ -444,7 +438,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiPathController : public NiObjectCRTP<NiPathController, NiTimeController, true> {
+class NiPathController : public Streamable<NiPathController, NiTimeController> {
 private:
 	uint16_t unkShort1 = 0;
 	uint32_t unkInt1 = 1;
@@ -463,13 +457,13 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiPSysResetOnLoopCtlr : public NiObjectCRTP<NiPSysResetOnLoopCtlr, NiTimeController> {
+class NiPSysResetOnLoopCtlr : public Clonable<NiPSysResetOnLoopCtlr, NiTimeController> {
 public:
 	static constexpr const char* BlockName = "NiPSysResetOnLoopCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiUVData : public NiObjectCRTP<NiUVData, NiObject, true> {
+class NiUVData : public Streamable<NiUVData, NiObject> {
 private:
 	KeyGroup<float> uTrans;
 	KeyGroup<float> vTrans;
@@ -483,7 +477,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiUVController : public NiObjectCRTP<NiUVController, NiTimeController, true> {
+class NiUVController : public Streamable<NiUVController, NiTimeController> {
 private:
 	uint16_t textureSet = 0;
 	BlockRef<NiUVData> dataRef;
@@ -497,7 +491,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class BSFrustumFOVController : public NiObjectCRTP<BSFrustumFOVController, NiTimeController, true> {
+class BSFrustumFOVController : 	public Streamable<BSFrustumFOVController, NiTimeController> {
 private:
 	BlockRef<NiInterpolator> interpolatorRef;
 
@@ -514,7 +508,7 @@ public:
 	void SetInterpolatorRef(int interpRef) { interpolatorRef.SetIndex(interpRef); }
 };
 
-class BSLagBoneController : public NiObjectCRTP<BSLagBoneController, NiTimeController, true> {
+class BSLagBoneController : public Streamable<BSLagBoneController, NiTimeController> {
 private:
 	float linearVelocity = 0.0f;
 	float linearRotation = 0.0f;
@@ -529,8 +523,7 @@ public:
 
 class BSShaderProperty;
 
-class BSProceduralLightningController
-	: public NiObjectCRTP<BSProceduralLightningController, NiTimeController, true> {
+class BSProceduralLightningController : public Streamable<BSProceduralLightningController, NiTimeController> {
 private:
 	BlockRef<NiInterpolator> generationInterpRef;
 	BlockRef<NiInterpolator> mutationInterpRef;
@@ -597,7 +590,7 @@ public:
 	void SetShaderPropertyRef(int shaderRef) { shaderPropertyRef.SetIndex(shaderRef); }
 };
 
-class NiBoneLODController : public NiObjectCRTP<NiBoneLODController, NiTimeController, true> {
+class NiBoneLODController : public Streamable<NiBoneLODController, NiTimeController> {
 private:
 	uint32_t lod = 0;
 	uint32_t numLODs = 0;
@@ -612,7 +605,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiBSBoneLODController : public NiObjectCRTP<NiBSBoneLODController, NiBoneLODController> {
+class NiBSBoneLODController : public Clonable<NiBSBoneLODController, NiBoneLODController> {
 public:
 	static constexpr const char* BlockName = "NiBSBoneLODController";
 	const char* GetBlockName() override { return BlockName; }
@@ -632,7 +625,7 @@ struct Morph {
 	void GetStringRefs(std::vector<StringRef*>& refs) { refs.emplace_back(&frameName); }
 };
 
-class NiMorphData : public NiObjectCRTP<NiMorphData, NiObject, true> {
+class NiMorphData : public Streamable<NiMorphData, NiObject> {
 private:
 	uint32_t numMorphs = 0;
 	uint32_t numVertices = 0;
@@ -647,7 +640,7 @@ public:
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
-class NiInterpController : public NiObjectCRTP<NiInterpController, NiTimeController> {};
+class NiInterpController : public Clonable<NiInterpController, NiTimeController> {};
 
 struct MorphWeight {
 	BlockRef<NiInterpolator> interpRef;
@@ -663,7 +656,7 @@ struct MorphWeight {
 	void GetChildIndices(std::vector<int>& indices) { indices.push_back(interpRef.GetIndex()); }
 };
 
-class NiGeomMorpherController : public NiObjectCRTP<NiGeomMorpherController, NiInterpController, true> {
+class NiGeomMorpherController : public Streamable<NiGeomMorpherController, NiInterpController> {
 private:
 	uint16_t extraFlags = 0;
 	BlockRef<NiMorphData> dataRef;
@@ -681,7 +674,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiSingleInterpController : public NiObjectCRTP<NiSingleInterpController, NiInterpController, true> {
+class NiSingleInterpController : public Streamable<NiSingleInterpController, NiInterpController> {
 private:
 	BlockRef<NiInterpController> interpolatorRef;
 
@@ -694,7 +687,7 @@ public:
 	void SetInterpolatorRef(int interpRef) { interpolatorRef.SetIndex(interpRef); }
 };
 
-class NiRollController : public NiObjectCRTP<NiRollController, NiSingleInterpController, true> {
+class NiRollController : public Streamable<NiRollController, NiSingleInterpController> {
 private:
 	BlockRef<NiFloatData> dataRef;
 
@@ -709,8 +702,7 @@ public:
 
 enum TargetColor : uint16_t { TC_AMBIENT, TC_DIFFUSE, TC_SPECULAR, TC_SELF_ILLUM };
 
-class NiPoint3InterpController
-	: public NiObjectCRTP<NiPoint3InterpController, NiSingleInterpController, true> {
+class NiPoint3InterpController : public Streamable<NiPoint3InterpController, NiSingleInterpController> {
 private:
 	TargetColor targetColor = TC_AMBIENT;
 
@@ -718,22 +710,21 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiMaterialColorController : public NiObjectCRTP<NiMaterialColorController, NiPoint3InterpController> {
+class NiMaterialColorController : public Clonable<NiMaterialColorController, NiPoint3InterpController> {
 public:
 	static constexpr const char* BlockName = "NiMaterialColorController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiLightColorController : public NiObjectCRTP<NiLightColorController, NiPoint3InterpController> {
+class NiLightColorController : public Clonable<NiLightColorController, NiPoint3InterpController> {
 public:
 	static constexpr const char* BlockName = "NiLightColorController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiExtraDataController : public NiObjectCRTP<NiExtraDataController, NiSingleInterpController> {};
+class NiExtraDataController : public Clonable<NiExtraDataController, NiSingleInterpController> {};
 
-class NiFloatExtraDataController
-	: public NiObjectCRTP<NiFloatExtraDataController, NiExtraDataController, true> {
+class NiFloatExtraDataController : public Streamable<NiFloatExtraDataController, NiExtraDataController> {
 private:
 	StringRef extraData;
 
@@ -745,7 +736,7 @@ public:
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
-class NiVisData : public NiObjectCRTP<NiVisData, NiObject, true> {
+class NiVisData : public Streamable<NiVisData, NiObject> {
 private:
 	uint32_t numKeys = 0;
 	std::vector<Key<uint8_t>> keys;
@@ -757,9 +748,9 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBoolInterpController : public NiObjectCRTP<NiBoolInterpController, NiSingleInterpController> {};
+class NiBoolInterpController : public Clonable<NiBoolInterpController, NiSingleInterpController> {};
 
-class NiVisController : public NiObjectCRTP<NiVisController, NiBoolInterpController> {
+class NiVisController : public Clonable<NiVisController, NiBoolInterpController> {
 public:
 	static constexpr const char* BlockName = "NiVisController";
 	const char* GetBlockName() override { return BlockName; }
@@ -780,10 +771,9 @@ enum TexType : uint32_t {
 	DECAL_3_MAP
 };
 
-class NiFloatInterpController : public NiObjectCRTP<NiFloatInterpController, NiSingleInterpController> {};
+class NiFloatInterpController : public Clonable<NiFloatInterpController, NiSingleInterpController> {};
 
-class BSRefractionFirePeriodController
-	: public NiObjectCRTP<BSRefractionFirePeriodController, NiSingleInterpController> {
+class BSRefractionFirePeriodController : public Clonable<BSRefractionFirePeriodController, NiSingleInterpController> {
 public:
 	static constexpr const char* BlockName = "BSRefractionFirePeriodController";
 	const char* GetBlockName() override { return BlockName; }
@@ -791,7 +781,7 @@ public:
 
 class NiSourceTexture;
 
-class NiFlipController : public NiObjectCRTP<NiFlipController, NiFloatInterpController, true> {
+class NiFlipController : public Streamable<NiFlipController, NiFloatInterpController> {
 private:
 	TexType textureSlot = BASE_MAP;
 	BlockRefArray<NiSourceTexture> sourceRefs;
@@ -809,8 +799,7 @@ public:
 
 enum TexTransformType : uint32_t { TT_TRANSLATE_U, TT_TRANSLATE_V, TT_ROTATE, TT_SCALE_U, TT_SCALE_V };
 
-class NiTextureTransformController
-	: public NiObjectCRTP<NiTextureTransformController, NiFloatInterpController, true> {
+class NiTextureTransformController : public Streamable<NiTextureTransformController, NiFloatInterpController> {
 private:
 	uint8_t unkByte1 = 0;
 	TexType textureSlot = BASE_MAP;
@@ -823,65 +812,61 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiLightDimmerController : public NiObjectCRTP<NiLightDimmerController, NiFloatInterpController> {
+class NiLightDimmerController : public Clonable<NiLightDimmerController, NiFloatInterpController> {
 public:
 	static constexpr const char* BlockName = "NiLightDimmerController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiLightRadiusController : public NiObjectCRTP<NiLightRadiusController, NiFloatInterpController> {
+class NiLightRadiusController : public Clonable<NiLightRadiusController, NiFloatInterpController> {
 public:
 	static constexpr const char* BlockName = "NiLightRadiusController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiAlphaController : public NiObjectCRTP<NiAlphaController, NiFloatInterpController> {
+class NiAlphaController : public Clonable<NiAlphaController, NiFloatInterpController> {
 public:
 	static constexpr const char* BlockName = "NiAlphaController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysUpdateCtlr : public NiObjectCRTP<NiPSysUpdateCtlr, NiTimeController> {
+class NiPSysUpdateCtlr : public Clonable<NiPSysUpdateCtlr, NiTimeController> {
 public:
 	static constexpr const char* BlockName = "NiPSysUpdateCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSNiAlphaPropertyTestRefController
-	: public NiObjectCRTP<BSNiAlphaPropertyTestRefController, NiAlphaController> {
+class BSNiAlphaPropertyTestRefController : public Clonable<BSNiAlphaPropertyTestRefController, NiAlphaController> {
 public:
 	static constexpr const char* BlockName = "BSNiAlphaPropertyTestRefController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiKeyframeController : public NiObjectCRTP<NiKeyframeController, NiSingleInterpController> {
+class NiKeyframeController : public Clonable<NiKeyframeController, NiSingleInterpController> {
 public:
 	static constexpr const char* BlockName = "NiKeyframeController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiTransformController : public NiObjectCRTP<NiTransformController, NiKeyframeController> {
+class NiTransformController : public Clonable<NiTransformController, NiKeyframeController> {
 public:
 	static constexpr const char* BlockName = "NiTransformController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSMaterialEmittanceMultController
-	: public NiObjectCRTP<BSMaterialEmittanceMultController, NiFloatInterpController> {
+class BSMaterialEmittanceMultController	: public Clonable<BSMaterialEmittanceMultController, NiFloatInterpController> {
 public:
 	static constexpr const char* BlockName = "BSMaterialEmittanceMultController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSRefractionStrengthController
-	: public NiObjectCRTP<BSRefractionStrengthController, NiFloatInterpController> {
+class BSRefractionStrengthController : public Clonable<BSRefractionStrengthController, NiFloatInterpController> {
 public:
 	static constexpr const char* BlockName = "BSRefractionStrengthController";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSLightingShaderPropertyColorController
-	: public NiObjectCRTP<BSLightingShaderPropertyColorController, NiFloatInterpController, true> {
+class BSLightingShaderPropertyColorController : public Streamable<BSLightingShaderPropertyColorController, NiFloatInterpController> {
 private:
 	uint32_t typeOfControlledColor = 0;
 
@@ -892,8 +877,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSLightingShaderPropertyFloatController
-	: public NiObjectCRTP<BSLightingShaderPropertyFloatController, NiFloatInterpController, true> {
+class BSLightingShaderPropertyFloatController : public Streamable<BSLightingShaderPropertyFloatController, NiFloatInterpController> {
 private:
 	uint32_t typeOfControlledVariable = 0;
 
@@ -904,8 +888,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSLightingShaderPropertyUShortController
-	: public NiObjectCRTP<BSLightingShaderPropertyUShortController, NiFloatInterpController, true> {
+class BSLightingShaderPropertyUShortController : public Streamable<BSLightingShaderPropertyUShortController, NiFloatInterpController> {
 private:
 	uint32_t typeOfControlledVariable = 0;
 
@@ -916,8 +899,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSEffectShaderPropertyColorController
-	: public NiObjectCRTP<BSEffectShaderPropertyColorController, NiFloatInterpController, true> {
+class BSEffectShaderPropertyColorController : public Streamable<BSEffectShaderPropertyColorController, NiFloatInterpController> {
 private:
 	uint32_t typeOfControlledColor = 0;
 
@@ -928,8 +910,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSEffectShaderPropertyFloatController
-	: public NiObjectCRTP<BSEffectShaderPropertyFloatController, NiFloatInterpController, true> {
+class BSEffectShaderPropertyFloatController : public Streamable<BSEffectShaderPropertyFloatController, NiFloatInterpController> {
 private:
 	uint32_t typeOfControlledVariable = 0;
 
@@ -942,8 +923,7 @@ public:
 
 class NiAVObject;
 
-class NiMultiTargetTransformController
-	: public NiObjectCRTP<NiMultiTargetTransformController, NiInterpController, true> {
+class NiMultiTargetTransformController : public Streamable<NiMultiTargetTransformController, NiInterpController> {
 private:
 	BlockRefShortArray<NiAVObject> targetRefs;
 
@@ -957,7 +937,7 @@ public:
 	BlockRefShortArray<NiAVObject>& GetTargets();
 };
 
-class NiPSysModifierCtlr : public NiObjectCRTP<NiPSysModifierCtlr, NiSingleInterpController, true> {
+class NiPSysModifierCtlr : public Streamable<NiPSysModifierCtlr, NiSingleInterpController> {
 private:
 	StringRef modifierName;
 
@@ -966,134 +946,127 @@ public:
 	void GetStringRefs(std::vector<StringRef*>& refs) override;
 };
 
-class NiPSysModifierBoolCtlr : public NiObjectCRTP<NiPSysModifierBoolCtlr, NiPSysModifierCtlr> {};
+class NiPSysModifierBoolCtlr : public Clonable<NiPSysModifierBoolCtlr, NiPSysModifierCtlr> {};
 
-class NiPSysModifierActiveCtlr : public NiObjectCRTP<NiPSysModifierActiveCtlr, NiPSysModifierBoolCtlr> {
+class NiPSysModifierActiveCtlr : public Clonable<NiPSysModifierActiveCtlr, NiPSysModifierBoolCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysModifierActiveCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysModifierFloatCtlr : public NiObjectCRTP<NiPSysModifierFloatCtlr, NiPSysModifierCtlr> {};
+class NiPSysModifierFloatCtlr : public Clonable<NiPSysModifierFloatCtlr, NiPSysModifierCtlr> {};
 
-class NiPSysEmitterLifeSpanCtlr : public NiObjectCRTP<NiPSysEmitterLifeSpanCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysEmitterLifeSpanCtlr : public Clonable<NiPSysEmitterLifeSpanCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterLifeSpanCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterSpeedCtlr : public NiObjectCRTP<NiPSysEmitterSpeedCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysEmitterSpeedCtlr : public Clonable<NiPSysEmitterSpeedCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterSpeedCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterInitialRadiusCtlr
-	: public NiObjectCRTP<NiPSysEmitterInitialRadiusCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysEmitterInitialRadiusCtlr : public Clonable<NiPSysEmitterInitialRadiusCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterInitialRadiusCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterDeclinationCtlr
-	: public NiObjectCRTP<NiPSysEmitterDeclinationCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysEmitterDeclinationCtlr : public Clonable<NiPSysEmitterDeclinationCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterDeclinationCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysGravityStrengthCtlr : public NiObjectCRTP<NiPSysGravityStrengthCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysGravityStrengthCtlr : public Clonable<NiPSysGravityStrengthCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysGravityStrengthCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterDeclinationVarCtlr
-	: public NiObjectCRTP<NiPSysEmitterDeclinationVarCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysEmitterDeclinationVarCtlr : public Clonable<NiPSysEmitterDeclinationVarCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterDeclinationVarCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysFieldMagnitudeCtlr : public NiObjectCRTP<NiPSysFieldMagnitudeCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysFieldMagnitudeCtlr : public Clonable<NiPSysFieldMagnitudeCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysFieldMagnitudeCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysFieldAttenuationCtlr : public NiObjectCRTP<NiPSysFieldAttenuationCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysFieldAttenuationCtlr : public Clonable<NiPSysFieldAttenuationCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysFieldAttenuationCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysFieldMaxDistanceCtlr : public NiObjectCRTP<NiPSysFieldMaxDistanceCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysFieldMaxDistanceCtlr : public Clonable<NiPSysFieldMaxDistanceCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysFieldMaxDistanceCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
 class NiPSysAirFieldAirFrictionCtlr
-	: public NiObjectCRTP<NiPSysAirFieldAirFrictionCtlr, NiPSysModifierFloatCtlr> {
+	: public Clonable<NiPSysAirFieldAirFrictionCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysAirFieldAirFrictionCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysAirFieldInheritVelocityCtlr
-	: public NiObjectCRTP<NiPSysAirFieldInheritVelocityCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysAirFieldInheritVelocityCtlr : public Clonable<NiPSysAirFieldInheritVelocityCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysAirFieldInheritVelocityCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysAirFieldSpreadCtlr : public NiObjectCRTP<NiPSysAirFieldSpreadCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysAirFieldSpreadCtlr : public Clonable<NiPSysAirFieldSpreadCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysAirFieldSpreadCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysInitialRotSpeedCtlr : public NiObjectCRTP<NiPSysInitialRotSpeedCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysInitialRotSpeedCtlr : public Clonable<NiPSysInitialRotSpeedCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysInitialRotSpeedCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
 class NiPSysInitialRotSpeedVarCtlr
-	: public NiObjectCRTP<NiPSysInitialRotSpeedVarCtlr, NiPSysModifierFloatCtlr> {
+	: public Clonable<NiPSysInitialRotSpeedVarCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysInitialRotSpeedVarCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysInitialRotAngleCtlr : public NiObjectCRTP<NiPSysInitialRotAngleCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysInitialRotAngleCtlr : public Clonable<NiPSysInitialRotAngleCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysInitialRotAngleCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysInitialRotAngleVarCtlr
-	: public NiObjectCRTP<NiPSysInitialRotAngleVarCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysInitialRotAngleVarCtlr : public Clonable<NiPSysInitialRotAngleVarCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysInitialRotAngleVarCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterPlanarAngleCtlr
-	: public NiObjectCRTP<NiPSysEmitterPlanarAngleCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysEmitterPlanarAngleCtlr : public Clonable<NiPSysEmitterPlanarAngleCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterPlanarAngleCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterPlanarAngleVarCtlr
-	: public NiObjectCRTP<NiPSysEmitterPlanarAngleVarCtlr, NiPSysModifierFloatCtlr> {
+class NiPSysEmitterPlanarAngleVarCtlr : public Clonable<NiPSysEmitterPlanarAngleVarCtlr, NiPSysModifierFloatCtlr> {
 public:
 	static constexpr const char* BlockName = "NiPSysEmitterPlanarAngleVarCtlr";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPSysEmitterCtlr : public NiObjectCRTP<NiPSysEmitterCtlr, NiPSysModifierCtlr, true> {
+class NiPSysEmitterCtlr : public Streamable<NiPSysEmitterCtlr, NiPSysModifierCtlr> {
 private:
 	BlockRef<NiInterpolator> visInterpolatorRef;
 
@@ -1108,8 +1081,7 @@ public:
 
 class BSMasterParticleSystem;
 
-class BSPSysMultiTargetEmitterCtlr
-	: public NiObjectCRTP<BSPSysMultiTargetEmitterCtlr, NiPSysEmitterCtlr, true> {
+class BSPSysMultiTargetEmitterCtlr : public Streamable<BSPSysMultiTargetEmitterCtlr, NiPSysEmitterCtlr> {
 private:
 	uint16_t maxEmitters = 0;
 	BlockRef<BSMasterParticleSystem> masterParticleSystemRef;
@@ -1122,7 +1094,7 @@ public:
 	void GetPtrs(std::set<Ref*>& ptrs) override;
 };
 
-class NiStringPalette : public NiObjectCRTP<NiStringPalette, NiObject, true> {
+class NiStringPalette : public Streamable<NiStringPalette, NiObject> {
 private:
 	NiString palette;
 	uint32_t length = 0;
@@ -1146,7 +1118,7 @@ struct ControllerLink {
 	StringRef interpID;
 };
 
-class NiSequence : public NiObjectCRTP<NiSequence, NiObject, true> {
+class NiSequence : public Streamable<NiSequence, NiObject> {
 private:
 	StringRef name;
 	uint32_t numControlledBlocks = 0;
@@ -1165,7 +1137,7 @@ public:
 
 enum CycleType : uint32_t { CYCLE_LOOP, CYCLE_REVERSE, CYCLE_CLAMP };
 
-class BSAnimNote : public NiObjectCRTP<BSAnimNote, NiObject, true> {
+class BSAnimNote : public Streamable<BSAnimNote, NiObject> {
 public:
 	enum AnimNoteType : uint32_t { ANT_INVALID, ANT_GRABIK, ANT_LOOKIK };
 
@@ -1183,7 +1155,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSAnimNotes : public NiObjectCRTP<BSAnimNotes, NiObject, true> {
+class BSAnimNotes : public Streamable<BSAnimNotes, NiObject> {
 private:
 	BlockRefShortArray<BSAnimNote> animNoteRefs;
 
@@ -1200,7 +1172,7 @@ public:
 
 class NiControllerManager;
 
-class NiControllerSequence : public NiObjectCRTP<NiControllerSequence, NiSequence, true> {
+class NiControllerSequence : public Streamable<NiControllerSequence, NiSequence> {
 private:
 	float weight = 1.0f;
 	BlockRef<NiTextKeyExtraData> textKeyRef;
@@ -1232,7 +1204,7 @@ public:
 
 class NiDefaultAVObjectPalette;
 
-class NiControllerManager : public NiObjectCRTP<NiControllerManager, NiTimeController, true> {
+class NiControllerManager : public Streamable<NiControllerManager, NiTimeController> {
 private:
 	bool cumulative = false;
 	BlockRefArray<NiControllerSequence> controllerSequenceRefs;
