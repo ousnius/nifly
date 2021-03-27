@@ -104,6 +104,12 @@ void NiStringExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
 	refs.emplace_back(&stringData);
 }
 
+std::vector<StringRef*> NiStringExtraData::GetStringRefList() {
+	std::vector<StringRef*> refs;
+	GetStringRefs(refs);
+	return refs;
+}
+
 std::string NiStringExtraData::GetStringData() {
 	return stringData.GetString();
 }
