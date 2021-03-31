@@ -114,14 +114,14 @@ public:
 	// be called to get them back in sync.
 	std::vector<int> triParts;
 
-	bool HasVertices() { return vertexDesc.HasFlag(VF_VERTEX); }
-	bool HasUVs() { return vertexDesc.HasFlag(VF_UV); }
-	bool HasNormals() { return vertexDesc.HasFlag(VF_NORMAL); }
-	bool HasTangents() { return vertexDesc.HasFlag(VF_TANGENT); }
-	bool HasVertexColors() { return vertexDesc.HasFlag(VF_COLORS); }
-	bool IsSkinned() { return vertexDesc.HasFlag(VF_SKINNED); }
-	bool HasEyeData() { return vertexDesc.HasFlag(VF_EYEDATA); }
-	bool IsFullPrecision() { return true; }
+	bool HasVertices() const { return vertexDesc.HasFlag(VF_VERTEX); }
+	bool HasUVs() const { return vertexDesc.HasFlag(VF_UV); }
+	bool HasNormals() const { return vertexDesc.HasFlag(VF_NORMAL); }
+	bool HasTangents() const { return vertexDesc.HasFlag(VF_TANGENT); }
+	bool HasVertexColors() const { return vertexDesc.HasFlag(VF_COLORS); }
+	bool IsSkinned() const { return vertexDesc.HasFlag(VF_SKINNED); }
+	bool HasEyeData() const { return vertexDesc.HasFlag(VF_EYEDATA); }
+	bool IsFullPrecision() const { return true; }
 
 	static constexpr const char* BlockName = "NiSkinPartition";
 	const char* GetBlockName() override { return BlockName; }
@@ -162,36 +162,23 @@ public:
 class NiNode;
 
 class NiBoneContainer : public NiObjectCRTP<NiBoneContainer, NiObject> {
-protected:
-	BlockRefArray<NiNode> boneRefs;
-
 public:
-	BlockRefArray<NiNode>& GetBones();
+	NiBlockPtrArray<NiNode> boneRefs;
 };
 
 class NiSkinInstance : public NiObjectCRTP<NiSkinInstance, NiBoneContainer, true> {
-private:
-	BlockRef<NiSkinData> dataRef;
-	BlockRef<NiSkinPartition> skinPartitionRef;
-	BlockRef<NiNode> targetRef;
-
 public:
+	NiBlockRef<NiSkinData> dataRef;
+	NiBlockRef<NiSkinPartition> skinPartitionRef;
+	NiBlockPtr<NiNode> targetRef;
+
 	static constexpr const char* BlockName = "NiSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	void GetPtrs(std::set<Ref*>& ptrs) override;
-
-	int GetDataRef() { return dataRef.GetIndex(); }
-	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
-
-	int GetSkinPartitionRef() { return skinPartitionRef.GetIndex(); }
-	void SetSkinPartitionRef(const int skinPartRef) { skinPartitionRef.SetIndex(skinPartRef); }
-
-	int GetSkeletonRootRef() { return targetRef.GetIndex(); }
-	void SetSkeletonRootRef(const int skelRootRef) { targetRef.SetIndex(skelRootRef); }
+	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 
 
@@ -204,7 +191,7 @@ public:
 		uint16_t partID = 0;
 	};
 
-private:
+protected:
 	int numPartitions = 0;
 	std::vector<PartitionInfo> partitions;
 
@@ -214,8 +201,8 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	int GetNumPartitions() { return numPartitions; }
-	std::vector<PartitionInfo> GetPartitions() { return partitions; }
+	int GetNumPartitions() const { return numPartitions; }
+	std::vector<PartitionInfo> GetPartitions() const { return partitions; }
 
 	void AddPartition(const PartitionInfo& partition);
 	void RemovePartition(const int id);
@@ -224,8 +211,8 @@ public:
 	void ClearPartitions();
 
 	void SetPartitions(const std::vector<PartitionInfo>& parts) {
-		this->partitions = parts;
-		this->numPartitions = parts.size();
+		partitions = parts;
+		numPartitions = parts.size();
 	}
 };
 
@@ -255,26 +242,17 @@ public:
 class NiAVObject;
 
 class BSSkinInstance : public NiObjectCRTP<BSSkinInstance, NiBoneContainer, true> {
-private:
-	BlockRef<NiAVObject> targetRef;
-	BlockRef<BSSkinBoneData> dataRef;
-
-	uint32_t numScales = 0;
-	std::vector<Vector3> scales;
-
 public:
+	NiBlockPtr<NiAVObject> targetRef;
+	NiBlockRef<BSSkinBoneData> dataRef;
+	NiVector<Vector3> scales;
+
 	static constexpr const char* BlockName = "BSSkin::Instance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	void GetPtrs(std::set<Ref*>& ptrs) override;
-
-	int GetTargetRef() { return targetRef.GetIndex(); }
-	void SetTargetRef(const int targRef) { targetRef.SetIndex(targRef); }
-
-	int GetDataRef() { return dataRef.GetIndex(); }
-	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
+	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 } // namespace nifly

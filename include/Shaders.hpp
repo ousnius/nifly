@@ -49,10 +49,9 @@ enum BSLightingShaderPropertyShaderType : uint32_t {
 class NiProperty : public NiObjectCRTP<NiProperty, NiObjectNET> {};
 
 class NiShadeProperty : public NiObjectCRTP<NiShadeProperty, NiProperty, true> {
-private:
+public:
 	uint16_t flags = 0;
 
-public:
 	static constexpr const char* BlockName = "NiShadeProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -60,10 +59,9 @@ public:
 };
 
 class NiSpecularProperty : public NiObjectCRTP<NiSpecularProperty, NiProperty, true> {
-private:
+public:
 	uint16_t flags = 0;
 
-public:
 	static constexpr const char* BlockName = "NiSpecularProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -79,13 +77,12 @@ struct TexTransform {
 };
 
 class TexDesc {
-private:
-	BlockRef<NiSourceTexture> sourceRef;
+public:
+	NiBlockRef<NiSourceTexture> sourceRef;
 	uint16_t flags = 0;
 	bool hasTexTransform = false;
 	TexTransform transform;
 
-public:
 	void Sync(NiStreamReversible& stream) {
 		sourceRef.Sync(stream);
 		stream.Sync(flags);
@@ -95,22 +92,16 @@ public:
 			stream.Sync(transform);
 	}
 
-	void GetChildRefs(std::set<Ref*>& refs) { refs.insert(&sourceRef); }
-
-	void GetChildIndices(std::vector<int>& indices) { indices.push_back(sourceRef.GetIndex()); }
-
-	int GetSourceRef() { return sourceRef.GetIndex(); }
-
-	void SetSourceRef(int srcRef) { sourceRef.SetIndex(srcRef); }
+	void GetChildRefs(std::set<NiRef*>& refs) { refs.insert(&sourceRef); }
+	void GetChildIndices(std::vector<int>& indices) { indices.push_back(sourceRef.index); }
 };
 
 class ShaderTexDesc {
-private:
+public:
 	bool isUsed = false;
 	TexDesc data;
 	uint32_t mapIndex = 0;
 
-public:
 	void Sync(NiStreamReversible& stream) {
 		stream.Sync(isUsed);
 
@@ -120,13 +111,16 @@ public:
 		}
 	}
 
-	void GetChildRefs(std::set<Ref*>& refs) { data.GetChildRefs(refs); }
-
+	void GetChildRefs(std::set<NiRef*>& refs) { data.GetChildRefs(refs); }
 	void GetChildIndices(std::vector<int>& indices) { data.GetChildIndices(indices); }
 };
 
 class NiTexturingProperty : public NiObjectCRTP<NiTexturingProperty, NiProperty, true> {
-private:
+protected:
+	uint32_t numShaderTex = 0;
+	std::vector<ShaderTexDesc> shaderTex;
+
+public:
 	uint16_t flags = 0;
 	uint32_t textureCount = 0;
 
@@ -170,23 +164,21 @@ private:
 	bool hasDecalTex3 = false;
 	TexDesc decalTex3;
 
-	uint32_t numShaderTex = 0;
-	std::vector<ShaderTexDesc> shaderTex;
-
-public:
 	static constexpr const char* BlockName = "NiTexturingProperty";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
+
+	std::vector<ShaderTexDesc> GetShaderTex() const;
+	void SetShaderTex(const std::vector<ShaderTexDesc>& stdescs);
 };
 
 class NiVertexColorProperty : public NiObjectCRTP<NiVertexColorProperty, NiProperty, true> {
-private:
+public:
 	uint16_t flags = 0;
 
-public:
 	static constexpr const char* BlockName = "NiVertexColorProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -194,10 +186,9 @@ public:
 };
 
 class NiDitherProperty : public NiObjectCRTP<NiDitherProperty, NiProperty, true> {
-private:
+public:
 	uint16_t flags = 0;
 
-public:
 	static constexpr const char* BlockName = "NiDitherProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -205,12 +196,11 @@ public:
 };
 
 class NiFogProperty : public NiObjectCRTP<NiFogProperty, NiProperty, true> {
-private:
+public:
 	uint16_t flags = 0;
 	float fogDepth = 1.0f;
 	Color3 fogColor;
 
-public:
 	static constexpr const char* BlockName = "NiFogProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -218,10 +208,9 @@ public:
 };
 
 class NiWireframeProperty : public NiObjectCRTP<NiWireframeProperty, NiProperty, true> {
-private:
+public:
 	uint16_t flags = 0;
 
-public:
 	static constexpr const char* BlockName = "NiWireframeProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -229,11 +218,23 @@ public:
 };
 
 class NiZBufferProperty : public NiObjectCRTP<NiZBufferProperty, NiProperty, true> {
-private:
+public:
 	uint16_t flags = 3;
 
-public:
 	static constexpr const char* BlockName = "NiZBufferProperty";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class BSShaderTextureSet : public NiObjectCRTP<BSShaderTextureSet, NiObject, true> {
+public:
+	NiStringVector<> textures = NiStringVector<>(13);
+
+	BSShaderTextureSet() {}
+	BSShaderTextureSet(NiVersion& version);
+
+	static constexpr const char* BlockName = "BSShaderTextureSet";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
@@ -241,49 +242,51 @@ public:
 
 class NiShader : public NiObjectCRTP<NiShader, NiProperty> {
 public:
-	virtual bool IsSkinTinted() { return false; }
-	virtual bool IsFaceTinted() { return false; }
-	virtual bool IsSkinned() { return false; }
+	virtual bool HasTextureSet() const { return false; }
+	virtual NiBlockRef<BSShaderTextureSet>* TextureSetRef() { return nullptr; }
+	virtual const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const { return nullptr; }
+
+	virtual bool IsSkinTinted() const { return false; }
+	virtual bool IsFaceTinted() const { return false; }
+	virtual bool IsSkinned() const { return false; }
 	virtual void SetSkinned(const bool) {}
-	virtual bool IsDoubleSided() { return false; }
-	virtual bool IsModelSpace() { return false; }
-	virtual bool IsEmissive() { return false; }
-	virtual bool HasSpecular() { return true; }
-	virtual bool HasVertexColors() { return false; }
+	virtual bool IsDoubleSided() const { return false; }
+	virtual bool IsModelSpace() const { return false; }
+	virtual bool IsEmissive() const { return false; }
+	virtual bool HasSpecular() const { return true; }
+	virtual bool HasVertexColors() const { return false; }
 	virtual void SetVertexColors(const bool) {}
-	virtual bool HasVertexAlpha() { return false; }
+	virtual bool HasVertexAlpha() const { return false; }
 	virtual void SetVertexAlpha(const bool) {}
-	virtual bool HasBacklight() { return false; }
-	virtual bool HasRimlight() { return false; }
-	virtual bool HasSoftlight() { return false; }
-	virtual bool HasGlowmap() { return false; }
-	virtual bool HasGreyscaleColor() { return false; }
-	virtual bool HasEnvironmentMapping() { return false; }
-	virtual uint32_t GetShaderType() { return 0; }
+	virtual bool HasBacklight() const { return false; }
+	virtual bool HasRimlight() const { return false; }
+	virtual bool HasSoftlight() const { return false; }
+	virtual bool HasGlowmap() const { return false; }
+	virtual bool HasGreyscaleColor() const { return false; }
+	virtual bool HasEnvironmentMapping() const { return false; }
+	virtual uint32_t GetShaderType() const { return 0; }
 	virtual void SetShaderType(const uint32_t) {}
-	virtual Vector2 GetUVOffset() { return Vector2(); }
-	virtual Vector2 GetUVScale() { return Vector2(1.0f, 1.0f); }
-	virtual Vector3 GetSpecularColor() { return Vector3(); }
+	virtual Vector2 GetUVOffset() const { return Vector2(); }
+	virtual Vector2 GetUVScale() const { return Vector2(1.0f, 1.0f); }
+	virtual Vector3 GetSpecularColor() const { return Vector3(); }
 	virtual void SetSpecularColor(const Vector3&) {}
-	virtual float GetSpecularStrength() { return 0.0f; }
+	virtual float GetSpecularStrength() const { return 0.0f; }
 	virtual void SetSpecularStrength(const float) {}
-	virtual float GetGlossiness() { return 0.0f; }
+	virtual float GetGlossiness() const { return 0.0f; }
 	virtual void SetGlossiness(const float) {}
-	virtual float GetEnvironmentMapScale() { return 0.0f; }
-	virtual int GetTextureSetRef() { return NIF_NPOS; }
-	virtual void SetTextureSetRef(const int) {}
-	virtual Color4 GetEmissiveColor() { return Color4(); }
+	virtual float GetEnvironmentMapScale() const { return 0.0f; }
+	virtual Color4 GetEmissiveColor() const { return Color4(); }
 	virtual void SetEmissiveColor(const Color4&) {}
-	virtual float GetEmissiveMultiple() { return 0.0f; }
+	virtual float GetEmissiveMultiple() const { return 0.0f; }
 	virtual void SetEmissiveMultiple(const float) {}
-	virtual float GetAlpha() { return 1.0f; }
-	virtual float GetBacklightPower() { return 0.0f; }
-	virtual float GetRimlightPower() { return 2.0f; }
-	virtual float GetSoftlight() { return 0.3f; }
-	virtual float GetSubsurfaceRolloff() { return 0.3f; }
-	virtual float GetGrayscaleToPaletteScale() { return 1.0; }
-	virtual float GetFresnelPower() { return 5.0f; }
-	virtual std::string GetWetMaterialName() { return std::string(); }
+	virtual float GetAlpha() const { return 1.0f; }
+	virtual float GetBacklightPower() const { return 0.0f; }
+	virtual float GetRimlightPower() const { return 2.0f; }
+	virtual float GetSoftlight() const { return 0.3f; }
+	virtual float GetSubsurfaceRolloff() const { return 0.3f; }
+	virtual float GetGrayscaleToPaletteScale() const { return 1.0; }
+	virtual float GetFresnelPower() const { return 5.0f; }
+	virtual std::string GetWetMaterialName() const { return std::string(); }
 	virtual void SetWetMaterialName(const std::string&) {}
 };
 
@@ -305,29 +308,29 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	uint32_t GetShaderType() override;
+	uint32_t GetShaderType() const override;
 	void SetShaderType(const uint32_t type) override;
-	bool IsSkinTinted() override;
-	bool IsFaceTinted() override;
-	bool IsSkinned() override;
+	bool IsSkinTinted() const override;
+	bool IsFaceTinted() const override;
+	bool IsSkinned() const override;
 	void SetSkinned(const bool enable) override;
-	bool IsDoubleSided() override;
-	bool IsModelSpace() override;
-	bool IsEmissive() override;
-	bool HasSpecular() override;
-	bool HasVertexColors() override;
+	bool IsDoubleSided() const override;
+	bool IsModelSpace() const override;
+	bool IsEmissive() const override;
+	bool HasSpecular() const override;
+	bool HasVertexColors() const override;
 	void SetVertexColors(const bool enable) override;
-	bool HasVertexAlpha() override;
+	bool HasVertexAlpha() const override;
 	void SetVertexAlpha(const bool enable) override;
-	bool HasBacklight() override;
-	bool HasRimlight() override;
-	bool HasSoftlight() override;
-	bool HasGlowmap() override;
-	bool HasGreyscaleColor() override;
-	bool HasEnvironmentMapping() override;
-	float GetEnvironmentMapScale() override;
-	Vector2 GetUVOffset() override;
-	Vector2 GetUVScale() override;
+	bool HasBacklight() const override;
+	bool HasRimlight() const override;
+	bool HasSoftlight() const override;
+	bool HasGlowmap() const override;
+	bool HasGreyscaleColor() const override;
+	bool HasEnvironmentMapping() const override;
+	float GetEnvironmentMapScale() const override;
+	Vector2 GetUVOffset() const override;
+	Vector2 GetUVScale() const override;
 };
 
 class WaterShaderProperty : public NiObjectCRTP<WaterShaderProperty, BSShaderProperty> {
@@ -355,10 +358,9 @@ public:
 };
 
 class TallGrassShaderProperty : public NiObjectCRTP<TallGrassShaderProperty, BSShaderProperty, true> {
-private:
+public:
 	NiString fileName;
 
-public:
 	static constexpr const char* BlockName = "TallGrassShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -371,45 +373,22 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSShaderTextureSet : public NiObjectCRTP<BSShaderTextureSet, NiObject, true> {
-public:
-	int numTextures = 13;
-	std::vector<NiString> textures = std::vector<NiString>(13);
-
-	BSShaderTextureSet() {}
-	BSShaderTextureSet(NiVersion& version);
-
-	static constexpr const char* BlockName = "BSShaderTextureSet";
-	const char* GetBlockName() override { return BlockName; }
-
-	void Sync(NiStreamReversible& stream);
-};
-
 class BSTextureArray {
-private:
-	uint32_t textureArrayWidth = 0;
-	std::vector<NiString> textureArray;
-
 public:
-	void Sync(NiStreamReversible& stream) {
-		stream.Sync(textureArrayWidth);
-		textureArray.resize(textureArrayWidth);
+	NiStringVector<> textureArray;
 
-		for (uint32_t i = 0; i < textureArrayWidth; i++) {
-			auto& tex = textureArray[i];
-			tex.Sync(stream, 4);
-		}
+	void Sync(NiStreamReversible& stream) {
+		textureArray.Sync(stream);
 	}
 };
 
 class BSLightingShaderProperty : public NiObjectCRTP<BSLightingShaderProperty, BSShaderProperty, true> {
-private:
-	StringRef rootMaterialName;
-	BlockRef<BSShaderTextureSet> textureSetRef;
-
 public:
+	NiBlockRef<BSShaderTextureSet> textureSetRef;
+
 	Vector3 emissiveColor;
 	float emissiveMultiple = 1.0f;
+	NiStringRef rootMaterialName;
 	uint32_t textureClampMode = 3;
 	float alpha = 1.0f;
 	float refractionStrength = 0.0f;
@@ -476,37 +455,38 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetStringRefs(std::vector<StringRef*>& refs) override;
-	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
+	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
+	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
+	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
 
-	bool IsSkinTinted() override;
-	bool IsFaceTinted() override;
-	bool HasGlowmap() override;
-	bool HasEnvironmentMapping() override;
-	uint32_t GetShaderType() override;
+	bool IsSkinTinted() const override;
+	bool IsFaceTinted() const override;
+	bool HasGlowmap() const override;
+	bool HasEnvironmentMapping() const override;
+	uint32_t GetShaderType() const override;
 	void SetShaderType(const uint32_t type) override;
-	Vector3 GetSpecularColor() override;
+	Vector3 GetSpecularColor() const override;
 	void SetSpecularColor(const Vector3& color) override;
-	float GetSpecularStrength() override;
+	float GetSpecularStrength() const override;
 	void SetSpecularStrength(const float strength) override;
-	float GetGlossiness() override;
+	float GetGlossiness() const override;
 	void SetGlossiness(const float gloss) override;
-	int GetTextureSetRef() override;
-	void SetTextureSetRef(const int texSetRef) override;
-	Color4 GetEmissiveColor() override;
+	Color4 GetEmissiveColor() const override;
 	void SetEmissiveColor(const Color4& color) override;
-	float GetEmissiveMultiple() override;
+	float GetEmissiveMultiple() const override;
 	void SetEmissiveMultiple(const float emissive) override;
-	float GetAlpha() override;
-	float GetBacklightPower() override;
-	float GetRimlightPower() override;
-	float GetSoftlight() override;
-	float GetSubsurfaceRolloff() override;
-	float GetGrayscaleToPaletteScale() override;
-	float GetFresnelPower() override;
-	std::string GetWetMaterialName() override;
+	float GetAlpha() const override;
+	float GetBacklightPower() const override;
+	float GetRimlightPower() const override;
+	float GetSoftlight() const override;
+	float GetSubsurfaceRolloff() const override;
+	float GetGrayscaleToPaletteScale() const override;
+	float GetFresnelPower() const override;
+	std::string GetWetMaterialName() const override;
 	void SetWetMaterialName(const std::string& matName) override;
 };
 
@@ -544,18 +524,17 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	float GetEnvironmentMapScale() override;
-	Color4 GetEmissiveColor() override;
+	float GetEnvironmentMapScale() const override;
+	Color4 GetEmissiveColor() const override;
 	void SetEmissiveColor(const Color4& color) override;
-	float GetEmissiveMultiple() override;
+	float GetEmissiveMultiple() const override;
 	void SetEmissiveMultiple(const float emissive) override;
 };
 
 class BSWaterShaderProperty : public NiObjectCRTP<BSWaterShaderProperty, BSShaderProperty, true> {
-private:
+public:
 	uint32_t waterFlags = 0;
 
-public:
 	static constexpr const char* BlockName = "BSWaterShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -563,11 +542,10 @@ public:
 };
 
 class BSSkyShaderProperty : public NiObjectCRTP<BSSkyShaderProperty, BSShaderProperty, true> {
-private:
+public:
 	NiString baseTexture;
 	uint32_t skyFlags = 0;
 
-public:
 	static constexpr const char* BlockName = "BSSkyShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -591,11 +569,10 @@ enum SkyObjectType : uint32_t {
 };
 
 class SkyShaderProperty : public NiObjectCRTP<SkyShaderProperty, BSShaderLightingProperty, true> {
-private:
+public:
 	NiString fileName;
 	SkyObjectType skyObjectType = BSSM_SKY_TEXTURE;
 
-public:
 	static constexpr const char* BlockName = "SkyShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -603,10 +580,9 @@ public:
 };
 
 class TileShaderProperty : public NiObjectCRTP<TileShaderProperty, BSShaderLightingProperty, true> {
-private:
+public:
 	NiString fileName;
 
-public:
 	static constexpr const char* BlockName = "TileShaderProperty";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -633,10 +609,9 @@ public:
 
 class BSShaderPPLightingProperty
 	: public NiObjectCRTP<BSShaderPPLightingProperty, BSShaderLightingProperty, true> {
-private:
-	BlockRef<BSShaderTextureSet> textureSetRef;
-
 public:
+	NiBlockRef<BSShaderTextureSet> textureSetRef;
+
 	float refractionStrength = 0.0f; // User Version == 11 && User Version 2 > 14
 	int refractionFirePeriod = 0;	 // User Version == 11 && User Version 2 > 14
 	float parallaxMaxPasses = 4.0f;	 // User Version == 11 && User Version 2 > 24
@@ -647,13 +622,15 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
+
+	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
+	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
+	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
 
 	bool IsSkinned();
 	void SetSkinned(const bool enable);
-	int GetTextureSetRef();
-	void SetTextureSetRef(const int texSetRef);
 };
 
 class Lighting30ShaderProperty : public NiObjectCRTP<Lighting30ShaderProperty, BSShaderPPLightingProperty> {
@@ -675,7 +652,7 @@ public:
 
 
 class NiMaterialProperty : public NiObjectCRTP<NiMaterialProperty, NiProperty, true> {
-private:
+protected:
 	Vector3 colorSpecular;
 	Vector3 colorEmissive;
 	float glossiness = 1.0f;

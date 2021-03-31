@@ -106,7 +106,7 @@ void NiTexturingProperty::Sync(NiStreamReversible& stream) {
 		shaderTex[i].Sync(stream);
 }
 
-void NiTexturingProperty::GetChildRefs(std::set<Ref*>& refs) {
+void NiTexturingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	NiProperty::GetChildRefs(refs);
 
 	baseTex.GetChildRefs(refs);
@@ -144,6 +144,15 @@ void NiTexturingProperty::GetChildIndices(std::vector<int>& indices) {
 
 	for (auto& t : shaderTex)
 		t.GetChildIndices(indices);
+}
+
+std::vector<ShaderTexDesc> NiTexturingProperty::GetShaderTex() const {
+	return shaderTex;
+}
+
+void NiTexturingProperty::SetShaderTex(const std::vector<ShaderTexDesc>& stdescs) {
+	numShaderTex = stdescs.size();
+	shaderTex = stdescs;
 }
 
 
@@ -210,7 +219,7 @@ void BSShaderProperty::Sync(NiStreamReversible& stream) {
 	}
 }
 
-uint32_t BSShaderProperty::GetShaderType() {
+uint32_t BSShaderProperty::GetShaderType() const {
 	return shaderType;
 }
 
@@ -218,15 +227,15 @@ void BSShaderProperty::SetShaderType(uint32_t type) {
 	shaderType = static_cast<BSShaderType>(type);
 }
 
-bool BSShaderProperty::IsSkinTinted() {
+bool BSShaderProperty::IsSkinTinted() const {
 	return shaderType == SHADER_SKIN;
 }
 
-bool BSShaderProperty::IsFaceTinted() {
+bool BSShaderProperty::IsFaceTinted() const {
 	return shaderType == SHADER_SKIN;
 }
 
-bool BSShaderProperty::IsSkinned() {
+bool BSShaderProperty::IsSkinned() const {
 	return (shaderFlags1 & (1 << 1)) != 0;
 }
 
@@ -237,23 +246,23 @@ void BSShaderProperty::SetSkinned(const bool enable) {
 		shaderFlags1 &= ~(1 << 1);
 }
 
-bool BSShaderProperty::IsDoubleSided() {
+bool BSShaderProperty::IsDoubleSided() const {
 	return (shaderFlags2 & (1 << 4)) != 0;
 }
 
-bool BSShaderProperty::IsModelSpace() {
+bool BSShaderProperty::IsModelSpace() const {
 	return (shaderFlags1 & (1 << 12)) != 0;
 }
 
-bool BSShaderProperty::IsEmissive() {
+bool BSShaderProperty::IsEmissive() const {
 	return (shaderFlags1 & (1 << 22)) != 0;
 }
 
-bool BSShaderProperty::HasSpecular() {
+bool BSShaderProperty::HasSpecular() const {
 	return (shaderFlags1 & (1 << 0)) != 0;
 }
 
-bool BSShaderProperty::HasVertexColors() {
+bool BSShaderProperty::HasVertexColors() const {
 	return (shaderFlags2 & (1 << 5)) != 0;
 }
 
@@ -264,7 +273,7 @@ void BSShaderProperty::SetVertexColors(const bool enable) {
 		shaderFlags2 &= ~(1 << 5);
 }
 
-bool BSShaderProperty::HasVertexAlpha() {
+bool BSShaderProperty::HasVertexAlpha() const {
 	return (shaderFlags1 & (1 << 3)) != 0;
 }
 
@@ -275,42 +284,42 @@ void BSShaderProperty::SetVertexAlpha(const bool enable) {
 		shaderFlags1 &= ~(1 << 3);
 }
 
-bool BSShaderProperty::HasBacklight() {
+bool BSShaderProperty::HasBacklight() const {
 	// Skyrim
 	return (shaderFlags2 & (1 << 27)) != 0;
 }
 
-bool BSShaderProperty::HasRimlight() {
+bool BSShaderProperty::HasRimlight() const {
 	// Skyrim
 	return (shaderFlags2 & (1 << 26)) != 0;
 }
 
-bool BSShaderProperty::HasSoftlight() {
+bool BSShaderProperty::HasSoftlight() const {
 	// Skyrim
 	return (shaderFlags2 & (1 << 25)) != 0;
 }
 
-bool BSShaderProperty::HasGlowmap() {
+bool BSShaderProperty::HasGlowmap() const {
 	return (shaderFlags2 & (1 << 6)) != 0;
 }
 
-bool BSShaderProperty::HasGreyscaleColor() {
+bool BSShaderProperty::HasGreyscaleColor() const {
 	return (shaderFlags1 & (1 << 3)) != 0;
 }
 
-bool BSShaderProperty::HasEnvironmentMapping() {
+bool BSShaderProperty::HasEnvironmentMapping() const {
 	return (shaderFlags1 & (1 << 7)) != 0;
 }
 
-float BSShaderProperty::GetEnvironmentMapScale() {
+float BSShaderProperty::GetEnvironmentMapScale() const {
 	return environmentMapScale;
 }
 
-Vector2 BSShaderProperty::GetUVOffset() {
+Vector2 BSShaderProperty::GetUVOffset() const {
 	return uvOffset;
 }
 
-Vector2 BSShaderProperty::GetUVScale() {
+Vector2 BSShaderProperty::GetUVScale() const {
 	return uvScale;
 }
 
@@ -333,22 +342,17 @@ void TileShaderProperty::Sync(NiStreamReversible& stream) {
 
 BSShaderTextureSet::BSShaderTextureSet(NiVersion& version) {
 	if (version.User() == 12 && version.Stream() == 155)
-		numTextures = 13;
+		textures.vec.resize(13);
 	else if (version.User() == 12 && version.Stream() == 130)
-		numTextures = 10;
+		textures.vec.resize(10);
 	else if (version.User() == 12)
-		numTextures = 9;
+		textures.vec.resize(9);
 	else
-		numTextures = 6;
-
-	textures.resize(numTextures);
+		textures.vec.resize(6);
 }
 
 void BSShaderTextureSet::Sync(NiStreamReversible& stream) {
-	stream.Sync(numTextures);
-	textures.resize(numTextures);
-	for (int i = 0; i < numTextures; i++)
-		textures[i].Sync(stream, 4);
+	textures.Sync(stream);
 }
 
 BSLightingShaderProperty::BSLightingShaderProperty() {
@@ -494,13 +498,13 @@ void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 	}
 }
 
-void BSLightingShaderProperty::GetStringRefs(std::vector<StringRef*>& refs) {
+void BSLightingShaderProperty::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	BSShaderProperty::GetStringRefs(refs);
 
 	refs.emplace_back(&rootMaterialName);
 }
 
-void BSLightingShaderProperty::GetChildRefs(std::set<Ref*>& refs) {
+void BSLightingShaderProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	BSShaderProperty::GetChildRefs(refs);
 
 	refs.insert(&textureSetRef);
@@ -509,26 +513,26 @@ void BSLightingShaderProperty::GetChildRefs(std::set<Ref*>& refs) {
 void BSLightingShaderProperty::GetChildIndices(std::vector<int>& indices) {
 	BSShaderProperty::GetChildIndices(indices);
 
-	indices.push_back(textureSetRef.GetIndex());
+	indices.push_back(textureSetRef.index);
 }
 
-bool BSLightingShaderProperty::IsSkinTinted() {
+bool BSLightingShaderProperty::IsSkinTinted() const {
 	return bslspShaderType == BSLSP_SKINTINT;
 }
 
-bool BSLightingShaderProperty::IsFaceTinted() {
+bool BSLightingShaderProperty::IsFaceTinted() const {
 	return bslspShaderType == BSLSP_FACE;
 }
 
-bool BSLightingShaderProperty::HasGlowmap() {
+bool BSLightingShaderProperty::HasGlowmap() const {
 	return bslspShaderType == BSLSP_GLOWMAP && BSShaderProperty::HasGlowmap();
 }
 
-bool BSLightingShaderProperty::HasEnvironmentMapping() {
+bool BSLightingShaderProperty::HasEnvironmentMapping() const {
 	return bslspShaderType == BSLSP_ENVMAP && BSShaderProperty::HasEnvironmentMapping();
 }
 
-uint32_t BSLightingShaderProperty::GetShaderType() {
+uint32_t BSLightingShaderProperty::GetShaderType() const {
 	return bslspShaderType;
 }
 
@@ -536,7 +540,7 @@ void BSLightingShaderProperty::SetShaderType(const uint32_t type) {
 	bslspShaderType = type;
 }
 
-Vector3 BSLightingShaderProperty::GetSpecularColor() {
+Vector3 BSLightingShaderProperty::GetSpecularColor() const {
 	return specularColor;
 }
 
@@ -544,7 +548,7 @@ void BSLightingShaderProperty::SetSpecularColor(const Vector3& color) {
 	specularColor = color;
 }
 
-float BSLightingShaderProperty::GetSpecularStrength() {
+float BSLightingShaderProperty::GetSpecularStrength() const {
 	return specularStrength;
 }
 
@@ -552,7 +556,7 @@ void BSLightingShaderProperty::SetSpecularStrength(const float strength) {
 	specularStrength = strength;
 }
 
-float BSLightingShaderProperty::GetGlossiness() {
+float BSLightingShaderProperty::GetGlossiness() const {
 	return glossiness;
 }
 
@@ -560,15 +564,7 @@ void BSLightingShaderProperty::SetGlossiness(const float gloss) {
 	glossiness = gloss;
 }
 
-int BSLightingShaderProperty::GetTextureSetRef() {
-	return textureSetRef.GetIndex();
-}
-
-void BSLightingShaderProperty::SetTextureSetRef(const int texSetRef) {
-	textureSetRef.SetIndex(texSetRef);
-}
-
-Color4 BSLightingShaderProperty::GetEmissiveColor() {
+Color4 BSLightingShaderProperty::GetEmissiveColor() const {
 	Color4 color;
 	color.r = emissiveColor.x;
 	color.g = emissiveColor.y;
@@ -582,7 +578,7 @@ void BSLightingShaderProperty::SetEmissiveColor(const Color4& color) {
 	emissiveColor.z = color.b;
 }
 
-float BSLightingShaderProperty::GetEmissiveMultiple() {
+float BSLightingShaderProperty::GetEmissiveMultiple() const {
 	return emissiveMultiple;
 }
 
@@ -590,40 +586,40 @@ void BSLightingShaderProperty::SetEmissiveMultiple(const float emissive) {
 	emissiveMultiple = emissive;
 }
 
-float BSLightingShaderProperty::GetAlpha() {
+float BSLightingShaderProperty::GetAlpha() const {
 	return alpha;
 }
 
-float BSLightingShaderProperty::GetBacklightPower() {
+float BSLightingShaderProperty::GetBacklightPower() const {
 	return backlightPower;
 }
 
-float BSLightingShaderProperty::GetRimlightPower() {
+float BSLightingShaderProperty::GetRimlightPower() const {
 	return rimlightPower;
 }
 
-float BSLightingShaderProperty::GetSoftlight() {
+float BSLightingShaderProperty::GetSoftlight() const {
 	return softlighting;
 }
 
-float BSLightingShaderProperty::GetSubsurfaceRolloff() {
+float BSLightingShaderProperty::GetSubsurfaceRolloff() const {
 	return subsurfaceRolloff;
 }
 
-float BSLightingShaderProperty::GetGrayscaleToPaletteScale() {
+float BSLightingShaderProperty::GetGrayscaleToPaletteScale() const {
 	return grayscaleToPaletteScale;
 }
 
-float BSLightingShaderProperty::GetFresnelPower() {
+float BSLightingShaderProperty::GetFresnelPower() const {
 	return fresnelPower;
 }
 
-std::string BSLightingShaderProperty::GetWetMaterialName() {
-	return rootMaterialName.GetString();
+std::string BSLightingShaderProperty::GetWetMaterialName() const {
+	return rootMaterialName.get();
 }
 
 void BSLightingShaderProperty::SetWetMaterialName(const std::string& matName) {
-	rootMaterialName.SetString(matName);
+	rootMaterialName.get() = matName;
 }
 
 
@@ -667,11 +663,11 @@ void BSEffectShaderProperty::Sync(NiStreamReversible& stream) {
 	}
 }
 
-float BSEffectShaderProperty::GetEnvironmentMapScale() {
+float BSEffectShaderProperty::GetEnvironmentMapScale() const {
 	return envMapScale;
 }
 
-Color4 BSEffectShaderProperty::GetEmissiveColor() {
+Color4 BSEffectShaderProperty::GetEmissiveColor() const {
 	return baseColor;
 }
 
@@ -679,7 +675,7 @@ void BSEffectShaderProperty::SetEmissiveColor(const Color4& color) {
 	baseColor = color;
 }
 
-float BSEffectShaderProperty::GetEmissiveMultiple() {
+float BSEffectShaderProperty::GetEmissiveMultiple() const {
 	return baseColorScale;
 }
 
@@ -728,7 +724,7 @@ void BSShaderPPLightingProperty::Sync(NiStreamReversible& stream) {
 		stream.Sync(emissiveColor);
 }
 
-void BSShaderPPLightingProperty::GetChildRefs(std::set<Ref*>& refs) {
+void BSShaderPPLightingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	BSShaderLightingProperty::GetChildRefs(refs);
 
 	refs.insert(&textureSetRef);
@@ -737,7 +733,7 @@ void BSShaderPPLightingProperty::GetChildRefs(std::set<Ref*>& refs) {
 void BSShaderPPLightingProperty::GetChildIndices(std::vector<int>& indices) {
 	BSShaderLightingProperty::GetChildIndices(indices);
 
-	indices.push_back(textureSetRef.GetIndex());
+	indices.push_back(textureSetRef.index);
 }
 
 bool BSShaderPPLightingProperty::IsSkinned() {
@@ -749,14 +745,6 @@ void BSShaderPPLightingProperty::SetSkinned(const bool enable) {
 		shaderFlags1 |= 1 << 1;
 	else
 		shaderFlags1 &= ~(1 << 1);
-}
-
-int BSShaderPPLightingProperty::GetTextureSetRef() {
-	return textureSetRef.GetIndex();
-}
-
-void BSShaderPPLightingProperty::SetTextureSetRef(const int texSetRef) {
-	textureSetRef.SetIndex(texSetRef);
 }
 
 

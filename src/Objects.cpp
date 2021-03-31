@@ -19,13 +19,13 @@ void NiObjectNET::Sync(NiStreamReversible& stream) {
 	controllerRef.Sync(stream);
 }
 
-void NiObjectNET::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiObjectNET::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
 	refs.emplace_back(&name);
 }
 
-void NiObjectNET::GetChildRefs(std::set<Ref*>& refs) {
+void NiObjectNET::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	extraDataRefs.GetIndexPtrs(refs);
@@ -36,31 +36,7 @@ void NiObjectNET::GetChildIndices(std::vector<int>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	extraDataRefs.GetIndices(indices);
-	indices.push_back(controllerRef.GetIndex());
-}
-
-std::string NiObjectNET::GetName() {
-	return name.GetString();
-}
-
-void NiObjectNET::SetName(const std::string& str) {
-	name.SetString(str);
-}
-
-void NiObjectNET::ClearName() {
-	name.Clear();
-}
-
-int NiObjectNET::GetControllerRef() {
-	return controllerRef.GetIndex();
-}
-
-void NiObjectNET::SetControllerRef(int ctlrRef) {
-	controllerRef.SetIndex(ctlrRef);
-}
-
-BlockRefArray<NiExtraData>& NiObjectNET::GetExtraData() {
-	return extraDataRefs;
+	indices.push_back(controllerRef.index);
 }
 
 
@@ -90,7 +66,7 @@ void NiAVObject::Sync(NiStreamReversible& stream) {
 		collisionRef.Sync(stream);
 }
 
-void NiAVObject::GetChildRefs(std::set<Ref*>& refs) {
+void NiAVObject::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObjectNET::GetChildRefs(refs);
 
 	propertyRefs.GetIndexPtrs(refs);
@@ -101,11 +77,7 @@ void NiAVObject::GetChildIndices(std::vector<int>& indices) {
 	NiObjectNET::GetChildIndices(indices);
 
 	propertyRefs.GetIndices(indices);
-	indices.push_back(collisionRef.GetIndex());
-}
-
-BlockRefArray<NiProperty>& NiAVObject::GetProperties() {
-	return propertyRefs;
+	indices.push_back(collisionRef.index);
 }
 
 
@@ -120,13 +92,22 @@ void NiDefaultAVObjectPalette::Sync(NiStreamReversible& stream) {
 	}
 }
 
-void NiDefaultAVObjectPalette::GetPtrs(std::set<Ref*>& ptrs) {
+void NiDefaultAVObjectPalette::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiAVObjectPalette::GetPtrs(ptrs);
 
 	ptrs.insert(&sceneRef);
 
 	for (uint32_t i = 0; i < numObjects; i++)
 		ptrs.insert(&objects[i].objectRef);
+}
+
+std::vector<AVObject> NiDefaultAVObjectPalette::GetAVObjects() const {
+	return objects;
+}
+
+void NiDefaultAVObjectPalette::SetAVObjects(std::vector<AVObject>& avo) {
+	numObjects = avo.size();
+	objects = avo;
 }
 
 
@@ -150,7 +131,7 @@ void NiCamera::Sync(NiStreamReversible& stream) {
 	stream.Sync(numScreenTextures);
 }
 
-void NiCamera::GetChildRefs(std::set<Ref*>& refs) {
+void NiCamera::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
 	refs.insert(&sceneRef);
@@ -159,35 +140,25 @@ void NiCamera::GetChildRefs(std::set<Ref*>& refs) {
 void NiCamera::GetChildIndices(std::vector<int>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
-	indices.push_back(sceneRef.GetIndex());
-}
-
-int NiCamera::GetSceneRef() {
-	return sceneRef.GetIndex();
-}
-
-void NiCamera::SetSceneRef(int scRef) {
-	sceneRef.SetIndex(scRef);
+	indices.push_back(sceneRef.index);
 }
 
 
 void NiPalette::Sync(NiStreamReversible& stream) {
 	stream.Sync(hasAlpha);
 
-	if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+	if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
 		// Size can only be 16 or 256
+		auto numEntries = palette.vec.size();
 		if (numEntries != 16 && numEntries != 256) {
 			if (numEntries >= 128)
-				numEntries = 256;
+				palette.vec.resize(256);
 			else
-				numEntries = 16;
+				palette.vec.resize(16);
 		}
 	}
 
-	stream.Sync(numEntries);
-	palette.resize(numEntries);
-	for (uint32_t i = 0; i < numEntries; i++)
-		stream.Sync(palette[i]);
+	palette.Sync(stream);
 }
 
 
@@ -215,7 +186,7 @@ void TextureRenderData::Sync(NiStreamReversible& stream) {
 		stream.Sync(mipmaps[i]);
 }
 
-void TextureRenderData::GetChildRefs(std::set<Ref*>& refs) {
+void TextureRenderData::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&paletteRef);
@@ -224,15 +195,16 @@ void TextureRenderData::GetChildRefs(std::set<Ref*>& refs) {
 void TextureRenderData::GetChildIndices(std::vector<int>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(paletteRef.GetIndex());
+	indices.push_back(paletteRef.index);
 }
 
-int TextureRenderData::GetPaletteRef() {
-	return paletteRef.GetIndex();
+std::vector<MipMapInfo> TextureRenderData::GetMipmaps() const {
+	return mipmaps;
 }
 
-void TextureRenderData::SetPaletteRef(int palRef) {
-	paletteRef.SetIndex(palRef);
+void TextureRenderData::SetMipmaps(std::vector<MipMapInfo>& mm) {
+	numMipmaps = mm.size();
+	mipmaps = mm;
 }
 
 
@@ -279,13 +251,13 @@ void NiSourceTexture::Sync(NiStreamReversible& stream) {
 		stream.Sync(persistentRenderData);
 }
 
-void NiSourceTexture::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiSourceTexture::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiTexture::GetStringRefs(refs);
 
 	refs.emplace_back(&fileName);
 }
 
-void NiSourceTexture::GetChildRefs(std::set<Ref*>& refs) {
+void NiSourceTexture::GetChildRefs(std::set<NiRef*>& refs) {
 	NiTexture::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
@@ -294,15 +266,7 @@ void NiSourceTexture::GetChildRefs(std::set<Ref*>& refs) {
 void NiSourceTexture::GetChildIndices(std::vector<int>& indices) {
 	NiTexture::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
-}
-
-int NiSourceTexture::GetDataRef() {
-	return dataRef.GetIndex();
-}
-
-void NiSourceTexture::SetDataRef(int datRef) {
-	dataRef.SetIndex(datRef);
+	indices.push_back(dataRef.index);
 }
 
 
@@ -313,20 +277,10 @@ void NiDynamicEffect::Sync(NiStreamReversible& stream) {
 	}
 }
 
-void NiDynamicEffect::GetChildRefs(std::set<Ref*>& refs) {
-	NiAVObject::GetChildRefs(refs);
+void NiDynamicEffect::GetPtrs(std::set<NiPtr*>& ptrs) {
+	NiAVObject::GetPtrs(ptrs);
 
-	affectedNodes.GetIndexPtrs(refs);
-}
-
-void NiDynamicEffect::GetChildIndices(std::vector<int>& indices) {
-	NiAVObject::GetChildIndices(indices);
-
-	affectedNodes.GetIndices(indices);
-}
-
-BlockRefArray<NiNode>& NiDynamicEffect::GetAffectedNodes() {
-	return affectedNodes;
+	affectedNodes.GetIndexPtrs(ptrs);
 }
 
 
@@ -343,7 +297,7 @@ void NiTextureEffect::Sync(NiStreamReversible& stream) {
 	stream.Sync(unkFloat);
 }
 
-void NiTextureEffect::GetChildRefs(std::set<Ref*>& refs) {
+void NiTextureEffect::GetChildRefs(std::set<NiRef*>& refs) {
 	NiDynamicEffect::GetChildRefs(refs);
 
 	refs.insert(&sourceTexture);
@@ -352,15 +306,7 @@ void NiTextureEffect::GetChildRefs(std::set<Ref*>& refs) {
 void NiTextureEffect::GetChildIndices(std::vector<int>& indices) {
 	NiDynamicEffect::GetChildIndices(indices);
 
-	indices.push_back(sourceTexture.GetIndex());
-}
-
-int NiTextureEffect::GetSourceTextureRef() {
-	return sourceTexture.GetIndex();
-}
-
-void NiTextureEffect::SetSourceTextureRef(int srcTexRef) {
-	sourceTexture.SetIndex(srcTexRef);
+	indices.push_back(sourceTexture.index);
 }
 
 

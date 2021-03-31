@@ -55,7 +55,7 @@ public:
 	void RemoveFlag(VertexFlags flag) { desc &= ~((uint64_t) flag << 44); }
 
 	// Checks for a specific flag
-	bool HasFlag(VertexFlags flag) { return ((desc >> 44) & flag) != 0; }
+	bool HasFlag(VertexFlags flag) const { return ((desc >> 44) & flag) != 0; }
 
 	// Sets the vertex size
 	void SetSize(uint32_t size) {
@@ -70,7 +70,7 @@ public:
 	}
 
 	// Return offset to a specific vertex attribute in the description
-	uint32_t GetAttributeOffset(VertexAttribute attr) { return (desc >> (4 * (uint8_t) attr + 2)) & 0x3C; }
+	uint32_t GetAttributeOffset(VertexAttribute attr) const { return (desc >> (4 * (uint8_t) attr + 2)) & 0x3C; }
 
 	// Set offset to a specific vertex attribute in the description
 	void SetAttributeOffset(VertexAttribute attr, uint32_t offset) {
@@ -82,7 +82,7 @@ public:
 
 	void ClearAttributeOffsets() { desc &= DESC_MASK_OFFSET; }
 
-	VertexFlags GetFlags() { return VertexFlags((desc & DESC_MASK_OFFSET) >> 44); }
+	VertexFlags GetFlags() const { return VertexFlags((desc & DESC_MASK_OFFSET) >> 44); }
 
 	void SetFlags(VertexFlags flags) { desc |= ((uint64_t) flags << 44) | (desc & DESC_MASK_FLAGS); }
 
