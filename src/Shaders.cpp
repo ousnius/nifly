@@ -736,7 +736,7 @@ void BSShaderPPLightingProperty::GetChildIndices(std::vector<int>& indices) {
 	indices.push_back(textureSetRef.index);
 }
 
-bool BSShaderPPLightingProperty::IsSkinned() {
+bool BSShaderPPLightingProperty::IsSkinned() const {
 	return (shaderFlags1 & (1 << 1)) != 0;
 }
 
@@ -759,7 +759,7 @@ void BSShaderNoLightingProperty::Sync(NiStreamReversible& stream) {
 	}
 }
 
-bool BSShaderNoLightingProperty::IsSkinned() {
+bool BSShaderNoLightingProperty::IsSkinned() const {
 	return (shaderFlags1 & (1 << 1)) != 0;
 }
 

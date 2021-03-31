@@ -584,7 +584,7 @@ public:
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
 
-	bool IsSkinned() const;
+	bool IsSkinned() const override;
 
 	std::vector<MaterialInfo> GetMaterials() const;
 	void SetMaterials(const std::vector<MaterialInfo>& mi);

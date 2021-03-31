@@ -603,8 +603,8 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	bool IsSkinned();
-	void SetSkinned(const bool enable);
+	bool IsSkinned() const override;
+	void SetSkinned(const bool enable) override;
 };
 
 class BSShaderPPLightingProperty
@@ -629,8 +629,8 @@ public:
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
 	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
 
-	bool IsSkinned();
-	void SetSkinned(const bool enable);
+	bool IsSkinned() const override;
+	void SetSkinned(const bool enable) override;
 };
 
 class Lighting30ShaderProperty : public NiObjectCRTP<Lighting30ShaderProperty, BSShaderPPLightingProperty> {
