@@ -1696,7 +1696,7 @@ void NiGeometry::GetChildIndices(std::vector<int>& indices) {
 }
 
 bool NiGeometry::IsSkinned() const {
-	return skinInstanceRef.IsEmpty();
+	return !skinInstanceRef.IsEmpty();
 }
 
 std::vector<MaterialInfo> NiGeometry::GetMaterials() const {
