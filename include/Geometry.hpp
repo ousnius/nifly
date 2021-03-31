@@ -680,13 +680,14 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiTriStripsData : public NiObjectCRTP<NiTriStripsData, NiTriBasedGeomData> {
+class NiTriStripsData : public NiObjectCRTP<NiTriStripsData, NiTriBasedGeomData, true> {
 public:
 	StripsInfo stripsInfo;
 
 	static constexpr const char* BlockName = "NiTriStripsData";
 	const char* GetBlockName() override { return BlockName; }
 
+	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
 	uint32_t GetNumTriangles() const override;

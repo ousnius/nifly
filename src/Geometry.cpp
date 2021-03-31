@@ -1942,6 +1942,10 @@ void StripsInfo::Sync(NiStreamReversible& stream) {
 }
 
 
+void NiTriStripsData::Sync(NiStreamReversible& stream) {
+	stripsInfo.Sync(stream);
+}
+
 void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, vertices.size());
 
