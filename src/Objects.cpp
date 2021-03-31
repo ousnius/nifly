@@ -170,11 +170,11 @@ void TextureRenderData::Sync(NiStreamReversible& stream) {
 	stream.Sync(flags);
 	stream.Sync(unkInt3);
 
-	for (uint32_t i = 0; i < 4; i++) {
-		stream.Sync(channels[i].type);
-		stream.Sync(channels[i].convention);
-		stream.Sync(channels[i].bitsPerChannel);
-		stream.Sync(channels[i].unkByte1);
+	for (auto& channel : channels) {
+		stream.Sync(channel.type);
+		stream.Sync(channel.convention);
+		stream.Sync(channel.bitsPerChannel);
+		stream.Sync(channel.unkByte1);
 	}
 
 	paletteRef.Sync(stream);

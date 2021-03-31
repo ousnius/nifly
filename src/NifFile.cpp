@@ -681,9 +681,9 @@ void NifFile::TrimTexturePaths() {
 		if (shader) {
 			auto textureSet = hdr.GetBlock(shader->TextureSetRef());
 			if (textureSet) {
-				for (size_t i = 0; i < textureSet->textures.vec.size(); i++) {
-					std::string tex = textureSet->textures.vec[i].get();
-					textureSet->textures.vec[i].get() = fTrimPath(tex);
+				for (auto& i : textureSet->textures.vec) {
+					std::string tex = i.get();
+					i.get() = fTrimPath(tex);
 				}
 
 				auto effectShader = dynamic_cast<BSEffectShaderProperty*>(shader);
