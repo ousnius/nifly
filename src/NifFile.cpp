@@ -3211,7 +3211,7 @@ void NifFile::DeleteShader(NiShape* shape) {
 	RemoveAlphaProperty(shape);
 
 	for (int i = 0; i < shape->propertyRefs.GetSize(); i++) {
-		auto shader = hdr.GetBlock<NiShader>(shape->propertyRefs.GetBlockRef(i));
+		shader = hdr.GetBlock<NiShader>(shape->propertyRefs.GetBlockRef(i));
 		if (shader) {
 			if (shader->HasType<BSShaderPPLightingProperty>() || shader->HasType<NiMaterialProperty>()) {
 				if (shader->HasTextureSet())
