@@ -668,16 +668,16 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	bool IsEmissive();
+	static bool IsEmissive();
 	Vector3 GetSpecularColor();
 	void SetSpecularColor(const Vector3& color);
-	float GetGlossiness();
+	float GetGlossiness() const;
 	void SetGlossiness(const float gloss);
-	Color4 GetEmissiveColor();
+	Color4 GetEmissiveColor() const;
 	void SetEmissiveColor(const Color4& color);
-	float GetEmissiveMultiple();
+	float GetEmissiveMultiple() const;
 	void SetEmissiveMultiple(const float emissive);
-	float GetAlpha();
+	float GetAlpha() const;
 };
 
 enum StencilMasks {

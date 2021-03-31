@@ -804,7 +804,7 @@ void NiMaterialProperty::SetSpecularColor(const Vector3& color) {
 	colorSpecular = color;
 }
 
-float NiMaterialProperty::GetGlossiness() {
+float NiMaterialProperty::GetGlossiness() const {
 	return glossiness;
 }
 
@@ -812,7 +812,7 @@ void NiMaterialProperty::SetGlossiness(const float gloss) {
 	glossiness = gloss;
 }
 
-Color4 NiMaterialProperty::GetEmissiveColor() {
+Color4 NiMaterialProperty::GetEmissiveColor() const {
 	Color4 color;
 	color.r = colorEmissive.x;
 	color.g = colorEmissive.y;
@@ -826,7 +826,7 @@ void NiMaterialProperty::SetEmissiveColor(const Color4& color) {
 	colorEmissive.z = color.b;
 }
 
-float NiMaterialProperty::GetEmissiveMultiple() {
+float NiMaterialProperty::GetEmissiveMultiple() const {
 	return emitMulti;
 }
 
@@ -834,7 +834,7 @@ void NiMaterialProperty::SetEmissiveMultiple(const float emissive) {
 	emitMulti = emissive;
 }
 
-float NiMaterialProperty::GetAlpha() {
+float NiMaterialProperty::GetAlpha() const {
 	return alpha;
 }
 

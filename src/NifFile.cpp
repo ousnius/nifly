@@ -134,7 +134,7 @@ void NifFile::LinkGeomData() {
 	}
 }
 
-void NifFile::RemoveInvalidTris() {
+void NifFile::RemoveInvalidTris() const {
 	for (auto& shape : GetShapes()) {
 		std::vector<Triangle> tris;
 		if (shape->GetTriangles(tris)) {
@@ -151,7 +151,7 @@ void NifFile::RemoveInvalidTris() {
 	}
 }
 
-size_t NifFile::GetVertexLimit() const {
+size_t NifFile::GetVertexLimit() {
 	constexpr size_t maxVertIndex = std::numeric_limits<uint16_t>::max();
 	return maxVertIndex;
 }
@@ -524,7 +524,7 @@ void NifFile::DeleteNode(const std::string& nodeName) {
 	hdr.DeleteBlock(GetBlockID(FindBlockByName<NiNode>(nodeName)));
 }
 
-bool NifFile::CanDeleteNode(NiNode* node) const {
+bool NifFile::CanDeleteNode(NiNode* node) {
 	if (!node)
 		return false;
 
@@ -532,11 +532,7 @@ bool NifFile::CanDeleteNode(NiNode* node) const {
 	node->GetChildRefs(refs);
 
 	// Only delete if the node has no child refs
-	for (auto& ref : refs)
-		if (!ref->IsEmpty())
-			return false;
-
-	return true;
+	return std::all_of(refs.begin(), refs.end(), std::not_fn(&NiRef::IsEmpty));
 }
 
 bool NifFile::CanDeleteNode(const std::string& nodeName) const {
@@ -1873,7 +1869,7 @@ int NifFile::GetShapeBoneWeights(NiShape* shape,
 	return outWeights.size();
 }
 
-bool NifFile::CalcShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransform) {
+bool NifFile::CalcShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransform) const {
 	if (!shape)
 		return false;
 	if (GetShapeTransformGlobalToSkin(shape, outTransform))
@@ -2145,7 +2141,7 @@ void NifFile::SetShapeBoneWeights(const std::string& shapeName,
 void NifFile::SetShapeVertWeights(const std::string& shapeName,
 								  const int vertIndex,
 								  std::vector<uint8_t>& boneids,
-								  std::vector<float>& weights) {
+								  std::vector<float>& weights) const {
 	auto shape = FindBlockByName<NiShape>(shapeName);
 	if (!shape)
 		return;
@@ -2174,7 +2170,7 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 	}
 }
 
-void NifFile::ClearShapeVertWeights(const std::string& shapeName) {
+void NifFile::ClearShapeVertWeights(const std::string& shapeName) const {
 	auto shape = FindBlockByName<NiShape>(shapeName);
 	if (!shape)
 		return;
@@ -2189,7 +2185,7 @@ void NifFile::ClearShapeVertWeights(const std::string& shapeName) {
 	}
 }
 
-bool NifFile::GetShapeSegments(NiShape* shape, NifSegmentationInfo& inf, std::vector<int>& triParts) const {
+bool NifFile::GetShapeSegments(NiShape* shape, NifSegmentationInfo& inf, std::vector<int>& triParts) {
 	auto bssits = dynamic_cast<BSSubIndexTriShape*>(shape);
 	if (!bssits)
 		return false;
