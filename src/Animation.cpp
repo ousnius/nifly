@@ -404,9 +404,9 @@ std::vector<Key<uint8_t>> NiVisData::GetKeys() const {
 	return keys;
 }
 
-void NiVisData::SetKeys(const std::vector<Key<uint8_t>>& m) {
-	numKeys = m.size();
-	keys = m;
+void NiVisData::SetKeys(const std::vector<Key<uint8_t>>& k) {
+	numKeys = k.size();
+	keys = k;
 }
 
 
