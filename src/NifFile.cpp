@@ -605,8 +605,8 @@ int NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIn
 	outTexFile.clear();
 
 	auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-	if (textureSet && texIndex + 1 <= textureSet->textures.vec.size()) {
-		outTexFile = textureSet->textures.vec[texIndex].get();
+	if (textureSet && texIndex + 1 <= textureSet->textures.size()) {
+		outTexFile = textureSet->textures[texIndex].get();
 		return 1;
 	}
 
@@ -630,8 +630,8 @@ int NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIn
 
 void NifFile::SetTextureSlot(NiShader* shader, std::string& inTexFile, int texIndex) {
 	auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-	if (textureSet && texIndex + 1 <= textureSet->textures.vec.size()) {
-		textureSet->textures.vec[texIndex].get() = inTexFile;
+	if (textureSet && texIndex + 1 <= textureSet->textures.size()) {
+		textureSet->textures[texIndex].get() = inTexFile;
 		return;
 	}
 
@@ -677,7 +677,7 @@ void NifFile::TrimTexturePaths() {
 		if (shader) {
 			auto textureSet = hdr.GetBlock(shader->TextureSetRef());
 			if (textureSet) {
-				for (auto& i : textureSet->textures.vec) {
+				for (auto& i : textureSet->textures) {
 					std::string tex = i.get();
 					i.get() = fTrimPath(tex);
 				}
@@ -1024,8 +1024,8 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 								// Remove parallax texture from set
 								auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-								if (textureSet && textureSet->textures.vec.size() >= 4)
-									textureSet->textures.vec[3].clear();
+								if (textureSet && textureSet->textures.size() >= 4)
+									textureSet->textures[3].clear();
 
 								result.shapesParallaxRemoved.push_back(shapeName);
 							}
@@ -1284,8 +1284,8 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 								// Remove parallax texture from set
 								auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-								if (textureSet && textureSet->textures.vec.size() >= 4)
-									textureSet->textures.vec[3].clear();
+								if (textureSet && textureSet->textures.size() >= 4)
+									textureSet->textures[3].clear();
 
 								result.shapesParallaxRemoved.push_back(shapeName);
 							}
@@ -2852,7 +2852,7 @@ void NifFile::CalcNormalsForShape(NiShape* shape,
 	for (auto& extraDataRef : shape->extraDataRefs) {
 		auto integersExtraData = hdr.GetBlock<NiIntegersExtraData>(extraDataRef);
 		if (integersExtraData && integersExtraData->name == "LOCKEDNORM")
-			for (auto& i : integersExtraData->integersData.vec)
+			for (auto& i : integersExtraData->integersData)
 				lockedIndices.insert(i);
 	}
 
@@ -2901,7 +2901,7 @@ int NifFile::ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName)
 	for (auto& extraDataRef : srcShape->extraDataRefs) {
 		integersExtraData = srcNif.GetHeader().GetBlock<NiIntegersExtraData>(extraDataRef);
 		if (integersExtraData && integersExtraData->name == "LOCKEDNORM")
-			for (auto& i : integersExtraData->integersData.vec)
+			for (auto& i : integersExtraData->integersData)
 				lockedNormalIndices.insert(i);
 	}
 
@@ -3320,7 +3320,7 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 	for (auto& extraDataRef : shape->extraDataRefs) {
 		auto integersExtraData = hdr.GetBlock<NiIntegersExtraData>(extraDataRef);
 		if (integersExtraData && integersExtraData->name == "LOCKEDNORM") {
-			auto integersData = integersExtraData->integersData.vec;
+			auto integersData = integersExtraData->integersData;
 			std::sort(integersData.begin(), integersData.end());
 
 			int highestRemoved = indices.back();
@@ -3332,13 +3332,13 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 					val -= indices.size();
 				}
 				else if (indexCollapse[val] == -1) {
-					integersData.erase(integersData.begin() + i);
+					integersData.erase(i);
 				}
 				else
 					val = indexCollapse[val];
 			}
 
-			integersExtraData->integersData.vec = std::move(integersData);
+			integersExtraData->integersData = std::move(integersData);
 		}
 	}
 

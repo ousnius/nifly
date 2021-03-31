@@ -342,13 +342,13 @@ void TileShaderProperty::Sync(NiStreamReversible& stream) {
 
 BSShaderTextureSet::BSShaderTextureSet(NiVersion& version) {
 	if (version.User() == 12 && version.Stream() == 155)
-		textures.vec.resize(13);
+		textures.resize(13);
 	else if (version.User() == 12 && version.Stream() == 130)
-		textures.vec.resize(10);
+		textures.resize(10);
 	else if (version.User() == 12)
-		textures.vec.resize(9);
+		textures.resize(9);
 	else
-		textures.vec.resize(6);
+		textures.resize(6);
 }
 
 void BSShaderTextureSet::Sync(NiStreamReversible& stream) {

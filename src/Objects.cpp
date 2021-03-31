@@ -149,12 +149,12 @@ void NiPalette::Sync(NiStreamReversible& stream) {
 
 	if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
 		// Size can only be 16 or 256
-		auto numEntries = palette.vec.size();
+		auto numEntries = palette.size();
 		if (numEntries != 16 && numEntries != 256) {
 			if (numEntries >= 128)
-				palette.vec.resize(256);
+				palette.resize(256);
 			else
-				palette.vec.resize(16);
+				palette.resize(16);
 		}
 	}
 

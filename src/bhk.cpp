@@ -792,7 +792,7 @@ void bhkPoseArray::Sync(NiStreamReversible& stream) {
 void bhkPoseArray::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
-	for (auto& b : bones.vec)
+	for (auto& b : bones)
 		refs.emplace_back(&b);
 }
 
