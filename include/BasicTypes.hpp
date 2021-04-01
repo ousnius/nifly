@@ -398,6 +398,8 @@ public:
 	SizeType size() const { return vec.size(); }
 	bool empty() const { return vec.empty(); }
 
+	void clear() { vec.clear(); }
+
 	auto begin() { return vec.begin(); }
 	auto cbegin() const { return vec.begin(); }
 
