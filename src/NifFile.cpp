@@ -964,13 +964,13 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 	auto shapes = GetShapes();
 	if (toSSE) {
-		std::for_each(shapes.begin(), shapes.end(), [this, &options, &result](auto* shape) {
+		for (auto* shape : shapes) {
 			std::string shapeName = shape->name.get();
 
 			auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
 
 			if (!geomData)
-				return;
+				continue;
 
 			bool removeVertexColors = true;
 			bool hasTangents = geomData->HasTangents();
@@ -1214,7 +1214,8 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			auto bsOptShapeObserver = bsOptShape.get();
 			hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
 			UpdateSkinPartitions(bsOptShapeObserver);
-		});
+		}
+
 		DeleteUnreferencedBlocks();
 
 		// For files without a root node, remove the leftover data blocks anyway
@@ -1222,12 +1223,12 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 		hdr.DeleteBlockByType("NiTriShapeData", true);
 	}
 	else {
-		std::for_each(shapes.begin(), shapes.end(), [this, &options, &result](auto* shape) {
+		for (auto* shape : shapes) {
 			std::string shapeName = shape->name.get();
 
 			auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 			if (!bsTriShape)
-				return;
+				continue;
 
 			bool removeVertexColors = true;
 			bool hasTangents = bsTriShape->HasTangents();
@@ -1390,7 +1391,8 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			auto bsOptShapeObserver = bsOptShape.get();
 			hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
 			UpdateSkinPartitions(bsOptShapeObserver);
-		});
+		}
+
 		DeleteUnreferencedBlocks();
 		PrettySortBlocks();
 	}
