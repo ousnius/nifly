@@ -949,454 +949,450 @@ void NifFile::Optimize() {
 OptResult NifFile::OptimizeFor(OptOptions& options) {
 	OptResult result;
 
-	if (options.targetVersion.IsSSE() && hdr.GetVersion().IsSK()) {
-		// SK -> SSE
-		if (!isTerrain)
-			result.dupesRenamed = RenameDuplicateShapes();
+	const bool toSSE = options.targetVersion.IsSSE() && hdr.GetVersion().IsSK();
+	const bool toLE = options.targetVersion.IsSK() && hdr.GetVersion().IsSSE();
 
-		hdr.SetVersion(options.targetVersion);
+	if (!toSSE && !toLE) {
+		result.versionMismatch = true;
+		return result;
+	}
 
-		for (auto& shape : GetShapes()) {
+	if (!isTerrain)
+		result.dupesRenamed = RenameDuplicateShapes();
+
+	hdr.SetVersion(options.targetVersion);
+
+	auto shapes = GetShapes();
+	if (toSSE) {
+		std::for_each(shapes.begin(), shapes.end(), [this, &options, &result](auto* shape) {
 			std::string shapeName = shape->name.get();
 
 			auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
-			if (geomData) {
-				bool removeVertexColors = true;
-				bool hasTangents = geomData->HasTangents();
-				std::vector<Vector3>* vertices = &geomData->vertices;
-				std::vector<Vector3>* normals = &geomData->normals;
-				const std::vector<Color4>& colors = geomData->vertexColors;
-				std::vector<Vector2>* uvs = nullptr;
-				if (!geomData->uvSets.empty())
-					uvs = &geomData->uvSets[0];
 
-				std::vector<Triangle> triangles;
-				geomData->GetTriangles(triangles);
+			if (!geomData)
+				return;
 
-				if (!options.removeParallax)
-					removeVertexColors = false;
+			bool removeVertexColors = true;
+			bool hasTangents = geomData->HasTangents();
+			std::vector<Vector3>* vertices = &geomData->vertices;
+			std::vector<Vector3>* normals = &geomData->normals;
+			const std::vector<Color4>& colors = geomData->vertexColors;
+			std::vector<Vector2>* uvs = nullptr;
+			if (!geomData->uvSets.empty())
+				uvs = &geomData->uvSets[0];
 
-				// Only remove vertex colors if all are 0xFFFFFFFF
-				if (removeVertexColors) {
-					Color4 white(1.0f, 1.0f, 1.0f, 1.0f);
-					for (auto& c : colors) {
-						if (white != c) {
-							removeVertexColors = false;
-							break;
+			std::vector<Triangle> triangles;
+			geomData->GetTriangles(triangles);
+
+			if (!options.removeParallax)
+				removeVertexColors = false;
+
+			// Only remove vertex colors if all are 0xFFFFFFFF
+			if (removeVertexColors) {
+				Color4 white(1.0f, 1.0f, 1.0f, 1.0f);
+				for (auto& c : colors) {
+					if (white != c) {
+						removeVertexColors = false;
+						break;
+					}
+				}
+			}
+
+			bool headPartEyes = false;
+			NiShader* shader = GetShader(shape);
+			if (shader) {
+				auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
+				if (bslsp) {
+					// Remember eyes flag for later
+					if ((bslsp->shaderFlags1 & (1 << 17)) != 0)
+						headPartEyes = true;
+
+					// No normals and tangents with model space maps
+					if (bslsp->IsModelSpace()) {
+						if (!normals->empty())
+							result.shapesNormalsRemoved.push_back(shapeName);
+
+						normals = nullptr;
+					}
+
+					// Check tree anim flag
+					if ((bslsp->shaderFlags2 & (1 << 29)) != 0)
+						removeVertexColors = false;
+
+					// Disable flags if vertex colors were removed
+					if (removeVertexColors) {
+						bslsp->SetVertexColors(false);
+						bslsp->SetVertexAlpha(false);
+					}
+
+					if (options.removeParallax) {
+						if (bslsp->GetShaderType() == BSLSP_PARALLAX) {
+							// Change type from parallax to default
+							bslsp->SetShaderType(BSLSP_DEFAULT);
+
+							// Remove parallax flag
+							bslsp->shaderFlags1 &= ~(1 << 11);
+
+							// Remove parallax texture from set
+							auto textureSet = hdr.GetBlock(shader->TextureSetRef());
+							if (textureSet && textureSet->textures.size() >= 4)
+								textureSet->textures[3].clear();
+
+							result.shapesParallaxRemoved.push_back(shapeName);
 						}
 					}
 				}
 
-				bool headPartEyes = false;
-				NiShader* shader = GetShader(shape);
-				if (shader) {
-					auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
-					if (bslsp) {
-						// Remember eyes flag for later
-						if ((bslsp->shaderFlags1 & (1 << 17)) != 0)
-							headPartEyes = true;
+				auto bsesp = dynamic_cast<BSEffectShaderProperty*>(shader);
+				if (bsesp) {
+					// Remember eyes flag for later
+					if ((bsesp->shaderFlags1 & (1 << 17)) != 0)
+						headPartEyes = true;
 
-						// No normals and tangents with model space maps
-						if (bslsp->IsModelSpace()) {
-							if (!normals->empty())
-								result.shapesNormalsRemoved.push_back(shapeName);
+					// Check tree anim flag
+					if ((bsesp->shaderFlags2 & (1 << 29)) != 0)
+						removeVertexColors = false;
 
-							normals = nullptr;
-						}
-
-						// Check tree anim flag
-						if ((bslsp->shaderFlags2 & (1 << 29)) != 0)
-							removeVertexColors = false;
-
-						// Disable flags if vertex colors were removed
-						if (removeVertexColors) {
-							bslsp->SetVertexColors(false);
-							bslsp->SetVertexAlpha(false);
-						}
-
-						if (options.removeParallax) {
-							if (bslsp->GetShaderType() == BSLSP_PARALLAX) {
-								// Change type from parallax to default
-								bslsp->SetShaderType(BSLSP_DEFAULT);
-
-								// Remove parallax flag
-								bslsp->shaderFlags1 &= ~(1 << 11);
-
-								// Remove parallax texture from set
-								auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-								if (textureSet && textureSet->textures.size() >= 4)
-									textureSet->textures[3].clear();
-
-								result.shapesParallaxRemoved.push_back(shapeName);
-							}
-						}
+					// Disable flags if vertex colors were removed
+					if (removeVertexColors) {
+						bsesp->SetVertexColors(false);
+						bsesp->SetVertexAlpha(false);
 					}
+				}
+			}
 
-					auto bsesp = dynamic_cast<BSEffectShaderProperty*>(shader);
-					if (bsesp) {
-						// Remember eyes flag for later
-						if ((bsesp->shaderFlags1 & (1 << 17)) != 0)
-							headPartEyes = true;
+			if (!colors.empty() && removeVertexColors)
+				result.shapesVColorsRemoved.push_back(shapeName);
 
-						// Check tree anim flag
-						if ((bsesp->shaderFlags2 & (1 << 29)) != 0)
-							removeVertexColors = false;
+			std::unique_ptr<BSTriShape> bsOptShape = nullptr;
 
-						// Disable flags if vertex colors were removed
-						if (removeVertexColors) {
-							bsesp->SetVertexColors(false);
-							bsesp->SetVertexAlpha(false);
+			auto bsSegmentShape = dynamic_cast<BSSegmentedTriShape*>(shape);
+			if (bsSegmentShape) {
+				bsOptShape = std::make_unique<BSSubIndexTriShape>();
+			}
+			else {
+				if (options.headParts)
+					bsOptShape = std::make_unique<BSDynamicTriShape>();
+				else
+					bsOptShape = std::make_unique<BSTriShape>();
+			}
+
+			bsOptShape->name.get() = shape->name.get();
+			bsOptShape->controllerRef = shape->controllerRef;
+
+			if (shape->HasSkinInstance())
+				bsOptShape->SkinInstanceRef()->index = shape->SkinInstanceRef()->index;
+
+			if (shape->HasShaderProperty())
+				bsOptShape->ShaderPropertyRef()->index = shape->ShaderPropertyRef()->index;
+
+			if (shape->HasAlphaProperty())
+				bsOptShape->AlphaPropertyRef()->index = shape->AlphaPropertyRef()->index;
+
+			bsOptShape->collisionRef = shape->collisionRef;
+			bsOptShape->propertyRefs = shape->propertyRefs;
+			bsOptShape->extraDataRefs = shape->extraDataRefs;
+
+			bsOptShape->SetTransformToParent(shape->GetTransformToParent());
+
+			bsOptShape->Create(hdr.GetVersion(), vertices, &triangles, uvs, normals);
+			bsOptShape->flags = shape->flags;
+
+			// Move segments to new shape
+			if (bsSegmentShape) {
+				auto bsSITS = static_cast<BSSubIndexTriShape*>(bsOptShape.get());
+				bsSITS->SetSegments(bsSegmentShape->GetSegments());
+			}
+
+			// Restore old bounds for static meshes or when calc bounds is off
+			if (!shape->IsSkinned() || !options.calcBounds)
+				bsOptShape->SetBounds(geomData->GetBounds());
+
+			// Vertex Colors
+			if (bsOptShape->GetNumVertices() > 0) {
+				if (!removeVertexColors && !colors.empty()) {
+					bsOptShape->SetVertexColors(true);
+					for (uint32_t i = 0; i < bsOptShape->GetNumVertices(); i++) {
+						auto& vertex = bsOptShape->vertData[i];
+
+						float f = std::max(0.0f, std::min(1.0f, colors[i].r));
+						vertex.colorData[0] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
+
+						f = std::max(0.0f, std::min(1.0f, colors[i].g));
+						vertex.colorData[1] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
+
+						f = std::max(0.0f, std::min(1.0f, colors[i].b));
+						vertex.colorData[2] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
+
+						f = std::max(0.0f, std::min(1.0f, colors[i].a));
+						vertex.colorData[3] = static_cast<uint8_t>(std::floor(f == 1.0f ? 255 : f * 256.0));
+					}
+				}
+
+				// Find NiOptimizeKeep string
+				for (auto& extraData : bsOptShape->extraDataRefs) {
+					auto stringData = hdr.GetBlock<NiStringExtraData>(extraData);
+					if (stringData) {
+						if (stringData->stringData.get().find("NiOptimizeKeep") != std::string::npos) {
+							bsOptShape->particleDataSize = bsOptShape->GetNumVertices() * 6
+														   + triangles.size() * 3;
+							bsOptShape->particleVerts = *vertices;
+
+							bsOptShape->particleNorms.resize(vertices->size(), Vector3(1.0f, 0.0f, 0.0f));
+							if (normals && normals->size() == vertices->size())
+								bsOptShape->particleNorms = *normals;
+
+							bsOptShape->particleTris = triangles;
 						}
 					}
 				}
 
-				if (!colors.empty() && removeVertexColors)
-					result.shapesVColorsRemoved.push_back(shapeName);
+				// Skinning and partitions
+				if (shape->IsSkinned()) {
+					bsOptShape->SetSkinned(true);
 
-				std::unique_ptr<BSTriShape> bsOptShape = nullptr;
+					auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
+					if (skinInst) {
+						auto skinPart = hdr.GetBlock(skinInst->skinPartitionRef);
+						if (skinPart) {
+							bool triangulated = skinPart->ConvertStripsToTriangles();
+							if (triangulated)
+								result.shapesPartTriangulated.push_back(shapeName);
 
-				auto bsSegmentShape = dynamic_cast<BSSegmentedTriShape*>(shape);
-				if (bsSegmentShape) {
-					bsOptShape = std::make_unique<BSSubIndexTriShape>();
-				}
-				else {
-					if (options.headParts)
-						bsOptShape = std::make_unique<BSDynamicTriShape>();
-					else
-						bsOptShape = std::make_unique<BSTriShape>();
-				}
+							for (uint32_t partID = 0; partID < skinPart->numPartitions; partID++) {
+								NiSkinPartition::PartitionBlock& part = skinPart->partitions[partID];
 
-				bsOptShape->name.get() = shape->name.get();
-				bsOptShape->controllerRef = shape->controllerRef;
+								for (uint32_t i = 0; i < part.numVertices; i++) {
+									const uint16_t v = part.vertexMap[i];
 
-				if (shape->HasSkinInstance())
-					bsOptShape->SkinInstanceRef()->index = shape->SkinInstanceRef()->index;
+									if (bsOptShape->vertData.size() > v) {
+										auto& vertex = bsOptShape->vertData[v];
 
-				if (shape->HasShaderProperty())
-					bsOptShape->ShaderPropertyRef()->index = shape->ShaderPropertyRef()->index;
+										if (part.hasVertexWeights) {
+											auto& weights = part.vertexWeights[i];
+											vertex.weights[0] = weights.w1;
+											vertex.weights[1] = weights.w2;
+											vertex.weights[2] = weights.w3;
+											vertex.weights[3] = weights.w4;
+										}
 
-				if (shape->HasAlphaProperty())
-					bsOptShape->AlphaPropertyRef()->index = shape->AlphaPropertyRef()->index;
-
-				bsOptShape->collisionRef = shape->collisionRef;
-				bsOptShape->propertyRefs = shape->propertyRefs;
-				bsOptShape->extraDataRefs = shape->extraDataRefs;
-
-				bsOptShape->SetTransformToParent(shape->GetTransformToParent());
-
-				bsOptShape->Create(hdr.GetVersion(), vertices, &triangles, uvs, normals);
-				bsOptShape->flags = shape->flags;
-
-				// Move segments to new shape
-				if (bsSegmentShape) {
-					auto bsSITS = static_cast<BSSubIndexTriShape*>(bsOptShape.get());
-					bsSITS->SetSegments(bsSegmentShape->GetSegments());
-				}
-
-				// Restore old bounds for static meshes or when calc bounds is off
-				if (!shape->IsSkinned() || !options.calcBounds)
-					bsOptShape->SetBounds(geomData->GetBounds());
-
-				// Vertex Colors
-				if (bsOptShape->GetNumVertices() > 0) {
-					if (!removeVertexColors && !colors.empty()) {
-						bsOptShape->SetVertexColors(true);
-						for (uint32_t i = 0; i < bsOptShape->GetNumVertices(); i++) {
-							auto& vertex = bsOptShape->vertData[i];
-
-							float f = std::max(0.0f, std::min(1.0f, colors[i].r));
-							vertex.colorData[0] = static_cast<uint8_t>(
-								std::floor(f == 1.0f ? 255 : f * 256.0));
-
-							f = std::max(0.0f, std::min(1.0f, colors[i].g));
-							vertex.colorData[1] = static_cast<uint8_t>(
-								std::floor(f == 1.0f ? 255 : f * 256.0));
-
-							f = std::max(0.0f, std::min(1.0f, colors[i].b));
-							vertex.colorData[2] = static_cast<uint8_t>(
-								std::floor(f == 1.0f ? 255 : f * 256.0));
-
-							f = std::max(0.0f, std::min(1.0f, colors[i].a));
-							vertex.colorData[3] = static_cast<uint8_t>(
-								std::floor(f == 1.0f ? 255 : f * 256.0));
-						}
-					}
-
-					// Find NiOptimizeKeep string
-					for (auto& extraData : bsOptShape->extraDataRefs) {
-						auto stringData = hdr.GetBlock<NiStringExtraData>(extraData);
-						if (stringData) {
-							if (stringData->stringData.get().find("NiOptimizeKeep") != std::string::npos) {
-								bsOptShape->particleDataSize = bsOptShape->GetNumVertices() * 6
-															   + triangles.size() * 3;
-								bsOptShape->particleVerts = *vertices;
-
-								bsOptShape->particleNorms.resize(vertices->size(), Vector3(1.0f, 0.0f, 0.0f));
-								if (normals && normals->size() == vertices->size())
-									bsOptShape->particleNorms = *normals;
-
-								bsOptShape->particleTris = triangles;
-							}
-						}
-					}
-
-					// Skinning and partitions
-					if (shape->IsSkinned()) {
-						bsOptShape->SetSkinned(true);
-
-						auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
-						if (skinInst) {
-							auto skinPart = hdr.GetBlock(skinInst->skinPartitionRef);
-							if (skinPart) {
-								bool triangulated = skinPart->ConvertStripsToTriangles();
-								if (triangulated)
-									result.shapesPartTriangulated.push_back(shapeName);
-
-								for (uint32_t partID = 0; partID < skinPart->numPartitions; partID++) {
-									NiSkinPartition::PartitionBlock& part = skinPart->partitions[partID];
-
-									for (uint32_t i = 0; i < part.numVertices; i++) {
-										const uint16_t v = part.vertexMap[i];
-
-										if (bsOptShape->vertData.size() > v) {
-											auto& vertex = bsOptShape->vertData[v];
-
-											if (part.hasVertexWeights) {
-												auto& weights = part.vertexWeights[i];
-												vertex.weights[0] = weights.w1;
-												vertex.weights[1] = weights.w2;
-												vertex.weights[2] = weights.w3;
-												vertex.weights[3] = weights.w4;
-											}
-
-											if (part.hasBoneIndices) {
-												auto& boneIndices = part.boneIndices[i];
-												vertex.weightBones[0] = part.bones[boneIndices.i1];
-												vertex.weightBones[1] = part.bones[boneIndices.i2];
-												vertex.weightBones[2] = part.bones[boneIndices.i3];
-												vertex.weightBones[3] = part.bones[boneIndices.i4];
-											}
+										if (part.hasBoneIndices) {
+											auto& boneIndices = part.boneIndices[i];
+											vertex.weightBones[0] = part.bones[boneIndices.i1];
+											vertex.weightBones[1] = part.bones[boneIndices.i2];
+											vertex.weightBones[2] = part.bones[boneIndices.i3];
+											vertex.weightBones[3] = part.bones[boneIndices.i4];
 										}
 									}
-
-									part.GenerateTrueTrianglesFromMappedTriangles();
-									part.triangles = part.trueTriangles;
 								}
-								skinPart->bMappedIndices = false;
+
+								part.GenerateTrueTrianglesFromMappedTriangles();
+								part.triangles = part.trueTriangles;
 							}
+							skinPart->bMappedIndices = false;
 						}
 					}
-					else
-						bsOptShape->SetSkinned(false);
 				}
 				else
-					bsOptShape->SetVertices(false);
-
-				// Check if tangents were added
-				if (!hasTangents && bsOptShape->HasTangents())
-					result.shapesTangentsAdded.push_back(shapeName);
-
-				// Enable eye data flag
-				if (!bsSegmentShape) {
-					if (options.headParts) {
-						if (headPartEyes)
-							bsOptShape->SetEyeData(true);
-					}
-				}
-
-				auto bsOptShapeObserver = bsOptShape.get();
-				hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
-				UpdateSkinPartitions(bsOptShapeObserver);
+					bsOptShape->SetSkinned(false);
 			}
-		}
+			else
+				bsOptShape->SetVertices(false);
 
+			// Check if tangents were added
+			if (!hasTangents && bsOptShape->HasTangents())
+				result.shapesTangentsAdded.push_back(shapeName);
+
+			// Enable eye data flag
+			if (!bsSegmentShape) {
+				if (options.headParts) {
+					if (headPartEyes)
+						bsOptShape->SetEyeData(true);
+				}
+			}
+
+			auto bsOptShapeObserver = bsOptShape.get();
+			hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
+			UpdateSkinPartitions(bsOptShapeObserver);
+		});
 		DeleteUnreferencedBlocks();
 
 		// For files without a root node, remove the leftover data blocks anyway
 		hdr.DeleteBlockByType("NiTriStripsData", true);
 		hdr.DeleteBlockByType("NiTriShapeData", true);
 	}
-	else if (options.targetVersion.IsSK() && hdr.GetVersion().IsSSE()) {
-		// SSE -> SK
-		if (!isTerrain)
-			result.dupesRenamed = RenameDuplicateShapes();
-
-		hdr.SetVersion(options.targetVersion);
-
-		for (auto& shape : GetShapes()) {
+	else {
+		std::for_each(shapes.begin(), shapes.end(), [this, &options, &result](auto* shape) {
 			std::string shapeName = shape->name.get();
 
 			auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-			if (bsTriShape) {
-				bool removeVertexColors = true;
-				bool hasTangents = bsTriShape->HasTangents();
-				std::vector<Vector3>* vertices = bsTriShape->GetRawVerts();
-				std::vector<Vector3>* normals = bsTriShape->GetNormalData(false);
-				std::vector<Color4>* colors = bsTriShape->GetColorData();
-				std::vector<Vector2>* uvs = bsTriShape->GetUVData();
+			if (!bsTriShape)
+				return;
 
-				std::vector<Triangle> triangles;
-				bsTriShape->GetTriangles(triangles);
+			bool removeVertexColors = true;
+			bool hasTangents = bsTriShape->HasTangents();
+			std::vector<Vector3>* vertices = bsTriShape->GetRawVerts();
+			std::vector<Vector3>* normals = bsTriShape->GetNormalData(false);
+			std::vector<Color4>* colors = bsTriShape->GetColorData();
+			std::vector<Vector2>* uvs = bsTriShape->GetUVData();
 
-				if (!options.removeParallax)
-					removeVertexColors = false;
+			std::vector<Triangle> triangles;
+			bsTriShape->GetTriangles(triangles);
 
-				// Only remove vertex colors if all are 0xFFFFFFFF
-				if (colors && removeVertexColors) {
-					Color4 white(1.0f, 1.0f, 1.0f, 1.0f);
-					for (auto& c : (*colors)) {
-						if (white != c) {
-							removeVertexColors = false;
-							break;
-						}
+			if (!options.removeParallax)
+				removeVertexColors = false;
+
+			// Only remove vertex colors if all are 0xFFFFFFFF
+			if (colors && removeVertexColors) {
+				Color4 white(1.0f, 1.0f, 1.0f, 1.0f);
+				for (auto& c : (*colors)) {
+					if (white != c) {
+						removeVertexColors = false;
+						break;
 					}
 				}
-
-				NiShader* shader = GetShader(shape);
-				if (shader) {
-					auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
-					if (bslsp) {
-						// No normals and tangents with model space maps
-						if (bslsp->IsModelSpace()) {
-							if (normals && !normals->empty())
-								result.shapesNormalsRemoved.push_back(shapeName);
-
-							normals = nullptr;
-						}
-
-						// Check tree anim flag
-						if ((bslsp->shaderFlags2 & (1 << 29)) != 0)
-							removeVertexColors = false;
-
-						// Disable flags if vertex colors were removed
-						if (removeVertexColors) {
-							bslsp->SetVertexColors(false);
-							bslsp->SetVertexAlpha(false);
-						}
-
-						if (options.removeParallax) {
-							if (bslsp->GetShaderType() == BSLSP_PARALLAX) {
-								// Change type from parallax to default
-								bslsp->SetShaderType(BSLSP_DEFAULT);
-
-								// Remove parallax flag
-								bslsp->shaderFlags1 &= ~(1 << 11);
-
-								// Remove parallax texture from set
-								auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-								if (textureSet && textureSet->textures.size() >= 4)
-									textureSet->textures[3].clear();
-
-								result.shapesParallaxRemoved.push_back(shapeName);
-							}
-						}
-					}
-
-					auto bsesp = dynamic_cast<BSEffectShaderProperty*>(shader);
-					if (bsesp) {
-						// Check tree anim flag
-						if ((bsesp->shaderFlags2 & (1 << 29)) != 0)
-							removeVertexColors = false;
-
-						// Disable flags if vertex colors were removed
-						if (removeVertexColors) {
-							bsesp->SetVertexColors(false);
-							bsesp->SetVertexAlpha(false);
-						}
-					}
-				}
-
-				if (colors && !colors->empty() && removeVertexColors)
-					result.shapesVColorsRemoved.push_back(shapeName);
-
-				std::unique_ptr<NiTriShape> bsOptShape = nullptr;
-				auto [bsOptShapeDataS, bsOptShapeData] = make_unique<NiTriShapeData>();
-				auto bsSITS = dynamic_cast<BSSubIndexTriShape*>(shape);
-				if (bsSITS)
-					bsOptShape = std::make_unique<BSSegmentedTriShape>();
-				else
-					bsOptShape = std::make_unique<NiTriShape>();
-
-				int dataId = hdr.AddBlock(std::move(bsOptShapeDataS));
-				bsOptShape->DataRef()->index = dataId;
-				bsOptShape->SetGeomData(bsOptShapeData);
-				bsOptShapeData->Create(hdr.GetVersion(), vertices, &triangles, uvs, normals);
-
-				bsOptShape->name.get() = shape->name.get();
-
-				if (shape->HasSkinInstance())
-					bsOptShape->SkinInstanceRef()->index = shape->SkinInstanceRef()->index;
-
-				if (shape->HasShaderProperty())
-					bsOptShape->ShaderPropertyRef()->index = shape->ShaderPropertyRef()->index;
-
-				if (shape->HasAlphaProperty())
-					bsOptShape->AlphaPropertyRef()->index = shape->AlphaPropertyRef()->index;
-
-				bsOptShape->controllerRef = shape->controllerRef;
-				bsOptShape->collisionRef = shape->collisionRef;
-				bsOptShape->propertyRefs = shape->propertyRefs;
-				bsOptShape->extraDataRefs = shape->extraDataRefs;
-
-				bsOptShape->SetTransformToParent(shape->GetTransformToParent());
-				bsOptShape->flags = shape->flags;
-
-				// Move segments to new shape
-				if (bsSITS) {
-					auto bsSegmentShape = static_cast<BSSegmentedTriShape*>(bsOptShape.get());
-					bsSegmentShape->SetSegments(bsSITS->GetSegments());
-				}
-
-				// Restore old bounds for static meshes or when calc bounds is off
-				if (!shape->IsSkinned() || !options.calcBounds)
-					bsOptShape->SetBounds(bsTriShape->GetBounds());
-
-				// Vertex Colors
-				if (bsOptShape->GetNumVertices() > 0) {
-					if (!removeVertexColors && colors && !colors->empty()) {
-						bsOptShape->SetVertexColors(true);
-						for (uint32_t i = 0; i < bsOptShape->GetNumVertices(); i++)
-							bsOptShapeData->vertexColors[i] = (*colors)[i];
-					}
-
-					// Skinning and partitions
-					if (shape->IsSkinned()) {
-						auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
-						if (skinInst) {
-							auto skinPart = hdr.GetBlock(skinInst->skinPartitionRef);
-							if (skinPart) {
-								bool triangulated = skinPart->ConvertStripsToTriangles();
-								if (triangulated)
-									result.shapesPartTriangulated.push_back(shapeName);
-
-								for (uint32_t partID = 0; partID < skinPart->numPartitions; partID++) {
-									NiSkinPartition::PartitionBlock& part = skinPart->partitions[partID];
-
-									part.GenerateMappedTrianglesFromTrueTrianglesAndVertexMap();
-								}
-								skinPart->bMappedIndices = true;
-							}
-						}
-					}
-				}
-				else
-					bsOptShape->SetVertices(false);
-
-				// Check if tangents were added
-				if (!hasTangents && bsOptShape->HasTangents())
-					result.shapesTangentsAdded.push_back(shapeName);
-
-				auto bsOptShapeObserver = bsOptShape.get();
-				hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
-				UpdateSkinPartitions(bsOptShapeObserver);
 			}
-		}
 
+			NiShader* shader = GetShader(shape);
+			if (shader) {
+				auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
+				if (bslsp) {
+					// No normals and tangents with model space maps
+					if (bslsp->IsModelSpace()) {
+						if (normals && !normals->empty())
+							result.shapesNormalsRemoved.push_back(shapeName);
+
+						normals = nullptr;
+					}
+
+					// Check tree anim flag
+					if ((bslsp->shaderFlags2 & (1 << 29)) != 0)
+						removeVertexColors = false;
+
+					// Disable flags if vertex colors were removed
+					if (removeVertexColors) {
+						bslsp->SetVertexColors(false);
+						bslsp->SetVertexAlpha(false);
+					}
+
+					if (options.removeParallax) {
+						if (bslsp->GetShaderType() == BSLSP_PARALLAX) {
+							// Change type from parallax to default
+							bslsp->SetShaderType(BSLSP_DEFAULT);
+
+							// Remove parallax flag
+							bslsp->shaderFlags1 &= ~(1 << 11);
+
+							// Remove parallax texture from set
+							auto textureSet = hdr.GetBlock(shader->TextureSetRef());
+							if (textureSet && textureSet->textures.size() >= 4)
+								textureSet->textures[3].clear();
+
+							result.shapesParallaxRemoved.push_back(shapeName);
+						}
+					}
+				}
+
+				auto bsesp = dynamic_cast<BSEffectShaderProperty*>(shader);
+				if (bsesp) {
+					// Check tree anim flag
+					if ((bsesp->shaderFlags2 & (1 << 29)) != 0)
+						removeVertexColors = false;
+
+					// Disable flags if vertex colors were removed
+					if (removeVertexColors) {
+						bsesp->SetVertexColors(false);
+						bsesp->SetVertexAlpha(false);
+					}
+				}
+			}
+
+			if (colors && !colors->empty() && removeVertexColors)
+				result.shapesVColorsRemoved.push_back(shapeName);
+
+			std::unique_ptr<NiTriShape> bsOptShape = nullptr;
+			auto [bsOptShapeDataS, bsOptShapeData] = make_unique<NiTriShapeData>();
+			auto bsSITS = dynamic_cast<BSSubIndexTriShape*>(shape);
+			if (bsSITS)
+				bsOptShape = std::make_unique<BSSegmentedTriShape>();
+			else
+				bsOptShape = std::make_unique<NiTriShape>();
+
+			int dataId = hdr.AddBlock(std::move(bsOptShapeDataS));
+			bsOptShape->DataRef()->index = dataId;
+			bsOptShape->SetGeomData(bsOptShapeData);
+			bsOptShapeData->Create(hdr.GetVersion(), vertices, &triangles, uvs, normals);
+
+			bsOptShape->name.get() = shape->name.get();
+
+			if (shape->HasSkinInstance())
+				bsOptShape->SkinInstanceRef()->index = shape->SkinInstanceRef()->index;
+
+			if (shape->HasShaderProperty())
+				bsOptShape->ShaderPropertyRef()->index = shape->ShaderPropertyRef()->index;
+
+			if (shape->HasAlphaProperty())
+				bsOptShape->AlphaPropertyRef()->index = shape->AlphaPropertyRef()->index;
+
+			bsOptShape->controllerRef = shape->controllerRef;
+			bsOptShape->collisionRef = shape->collisionRef;
+			bsOptShape->propertyRefs = shape->propertyRefs;
+			bsOptShape->extraDataRefs = shape->extraDataRefs;
+
+			bsOptShape->SetTransformToParent(shape->GetTransformToParent());
+			bsOptShape->flags = shape->flags;
+
+			// Move segments to new shape
+			if (bsSITS) {
+				auto bsSegmentShape = static_cast<BSSegmentedTriShape*>(bsOptShape.get());
+				bsSegmentShape->SetSegments(bsSITS->GetSegments());
+			}
+
+			// Restore old bounds for static meshes or when calc bounds is off
+			if (!shape->IsSkinned() || !options.calcBounds)
+				bsOptShape->SetBounds(bsTriShape->GetBounds());
+
+			// Vertex Colors
+			if (bsOptShape->GetNumVertices() > 0) {
+				if (!removeVertexColors && colors && !colors->empty()) {
+					bsOptShape->SetVertexColors(true);
+					for (uint32_t i = 0; i < bsOptShape->GetNumVertices(); i++)
+						bsOptShapeData->vertexColors[i] = (*colors)[i];
+				}
+
+				// Skinning and partitions
+				if (shape->IsSkinned()) {
+					auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
+					if (skinInst) {
+						auto skinPart = hdr.GetBlock(skinInst->skinPartitionRef);
+						if (skinPart) {
+							bool triangulated = skinPart->ConvertStripsToTriangles();
+							if (triangulated)
+								result.shapesPartTriangulated.push_back(shapeName);
+
+							for (uint32_t partID = 0; partID < skinPart->numPartitions; partID++) {
+								NiSkinPartition::PartitionBlock& part = skinPart->partitions[partID];
+
+								part.GenerateMappedTrianglesFromTrueTrianglesAndVertexMap();
+							}
+							skinPart->bMappedIndices = true;
+						}
+					}
+				}
+			}
+			else
+				bsOptShape->SetVertices(false);
+
+			// Check if tangents were added
+			if (!hasTangents && bsOptShape->HasTangents())
+				result.shapesTangentsAdded.push_back(shapeName);
+
+			auto bsOptShapeObserver = bsOptShape.get();
+			hdr.ReplaceBlock(GetBlockID(shape), std::move(bsOptShape));
+			UpdateSkinPartitions(bsOptShapeObserver);
+		});
 		DeleteUnreferencedBlocks();
 		PrettySortBlocks();
-	}
-	else {
-		result.versionMismatch = true;
 	}
 
 	return result;
