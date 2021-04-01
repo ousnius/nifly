@@ -342,13 +342,13 @@ void TileShaderProperty::Sync(NiStreamReversible& stream) {
 
 BSShaderTextureSet::BSShaderTextureSet(NiVersion& version) {
 	if (version.User() == 12 && version.Stream() == 155)
-		textures.vec.resize(13);
+		textures.resize(13);
 	else if (version.User() == 12 && version.Stream() == 130)
-		textures.vec.resize(10);
+		textures.resize(10);
 	else if (version.User() == 12)
-		textures.vec.resize(9);
+		textures.resize(9);
 	else
-		textures.vec.resize(6);
+		textures.resize(6);
 }
 
 void BSShaderTextureSet::Sync(NiStreamReversible& stream) {
@@ -736,7 +736,7 @@ void BSShaderPPLightingProperty::GetChildIndices(std::vector<int>& indices) {
 	indices.push_back(textureSetRef.index);
 }
 
-bool BSShaderPPLightingProperty::IsSkinned() {
+bool BSShaderPPLightingProperty::IsSkinned() const {
 	return (shaderFlags1 & (1 << 1)) != 0;
 }
 
@@ -759,7 +759,7 @@ void BSShaderNoLightingProperty::Sync(NiStreamReversible& stream) {
 	}
 }
 
-bool BSShaderNoLightingProperty::IsSkinned() {
+bool BSShaderNoLightingProperty::IsSkinned() const {
 	return (shaderFlags1 & (1 << 1)) != 0;
 }
 
@@ -804,7 +804,7 @@ void NiMaterialProperty::SetSpecularColor(const Vector3& color) {
 	colorSpecular = color;
 }
 
-float NiMaterialProperty::GetGlossiness() {
+float NiMaterialProperty::GetGlossiness() const {
 	return glossiness;
 }
 
@@ -812,7 +812,7 @@ void NiMaterialProperty::SetGlossiness(const float gloss) {
 	glossiness = gloss;
 }
 
-Color4 NiMaterialProperty::GetEmissiveColor() {
+Color4 NiMaterialProperty::GetEmissiveColor() const {
 	Color4 color;
 	color.r = colorEmissive.x;
 	color.g = colorEmissive.y;
@@ -826,7 +826,7 @@ void NiMaterialProperty::SetEmissiveColor(const Color4& color) {
 	colorEmissive.z = color.b;
 }
 
-float NiMaterialProperty::GetEmissiveMultiple() {
+float NiMaterialProperty::GetEmissiveMultiple() const {
 	return emitMulti;
 }
 
@@ -834,7 +834,7 @@ void NiMaterialProperty::SetEmissiveMultiple(const float emissive) {
 	emitMulti = emissive;
 }
 
-float NiMaterialProperty::GetAlpha() {
+float NiMaterialProperty::GetAlpha() const {
 	return alpha;
 }
 

@@ -63,7 +63,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	std::vector<Vector4> GetSubtexOffsets() const;
-	void SetSubtexOffsets(const std::vector<Vector4> sto);
+	void SetSubtexOffsets(const std::vector<Vector4>& sto);
 };
 
 class NiAutoNormalParticlesData : public NiObjectCRTP<NiAutoNormalParticlesData, NiParticlesData> {
@@ -144,7 +144,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	std::vector<Key<uint8_t>> GetVisibilityKeys() const;
-	void SetVisibilityKeys(const std::vector<Key<uint8_t>> vk);
+	void SetVisibilityKeys(const std::vector<Key<uint8_t>>& vk);
 };
 
 class NiParticleSystem;

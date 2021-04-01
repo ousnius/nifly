@@ -97,14 +97,14 @@ public:
 
 	// Link NiGeometryData to NiGeometry
 	void LinkGeomData();
-	void RemoveInvalidTris();
+	void RemoveInvalidTris() const;
 
-	size_t GetVertexLimit() const;
+	static size_t GetVertexLimit();
 	size_t GetTriangleLimit() const;
 
 	NiNode* AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
 	void DeleteNode(const std::string& nodeName);
-	bool CanDeleteNode(NiNode* node) const;
+	static bool CanDeleteNode(NiNode* node) ;
 	bool CanDeleteNode(const std::string& nodeName) const;
 	std::string GetNodeName(const int blockID) const;
 	void SetNodeName(const int blockID, const std::string& newName);
@@ -113,8 +113,8 @@ public:
 
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);
-	void SetSortIndex(const NiRef& ref, std::vector<int>& newIndices, int& newIndex);
-	void SetSortIndex(const NiRef* ref, std::vector<int>& newIndices, int& newIndex);
+	static void SetSortIndex(const NiRef& ref, std::vector<int>& newIndices, int& newIndex);
+	static void SetSortIndex(const NiRef* ref, std::vector<int>& newIndices, int& newIndex);
 	void SortAVObject(NiAVObject* avobj, std::vector<int>& newIndices, int& newIndex);
 	void SortShape(NiShape* shape, std::vector<int>& newIndices, int& newIndex);
 	void SortGraph(NiNode* root, std::vector<int>& newIndices, int& newIndex);
@@ -153,7 +153,7 @@ public:
 
 	std::vector<std::string> GetShapeNames() const;
 	std::vector<NiShape*> GetShapes() const;
-	bool RenameShape(NiShape* shape, const std::string& newName);
+	static bool RenameShape(NiShape* shape, const std::string& newName);
 	bool RenameDuplicateShapes();
 	void TriangulateShape(NiShape* shape);
 
@@ -196,7 +196,7 @@ public:
 	// Looks up the shape's global-to-skin transform if it has it.
 	// Otherwise, try to calculate it using skin-to-bone and node-to-global
 	// transforms.  Returns false on failure.
-	bool CalcShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransforms);
+	bool CalcShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransforms) const;
 	// Returns false if no such transform exists in the file, in which
 	// case outTransform will not be changed.  Note that, even if this
 	// function returns false, you can not assume that the global-to-skin
@@ -230,11 +230,13 @@ public:
 	void SetShapeVertWeights(const std::string& shapeName,
 							 const int vertIndex,
 							 std::vector<uint8_t>& boneids,
-							 std::vector<float>& weights);
-	void ClearShapeVertWeights(const std::string& shapeName);
+							 std::vector<float>& weights) const;
+	void ClearShapeVertWeights(const std::string& shapeName) const;
 
-	bool GetShapeSegments(NiShape* shape, NifSegmentationInfo& inf, std::vector<int>& triParts) const;
-	void SetShapeSegments(NiShape* shape, const NifSegmentationInfo& inf, const std::vector<int>& triParts);
+	static bool GetShapeSegments(NiShape* shape, NifSegmentationInfo& inf, std::vector<int>& triParts);
+	static void SetShapeSegments(NiShape* shape,
+								 const NifSegmentationInfo& inf,
+								 const std::vector<int>& triParts);
 
 	bool GetShapePartitions(NiShape* shape,
 							std::vector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
@@ -248,13 +250,13 @@ public:
 	void DeletePartitions(NiShape* shape, std::vector<int>& partInds);
 
 	const std::vector<Vector3>* GetRawVertsForShape(NiShape* shape);
-	bool ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices);
+	static bool ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices);
 	const std::vector<Vector3>* GetNormalsForShape(NiShape* shape, bool transform = true);
 	const std::vector<Vector2>* GetUvsForShape(NiShape* shape);
 	const std::vector<Color4>* GetColorsForShape(const std::string& shapeName);
 	const std::vector<Vector3>* GetTangentsForShape(NiShape* shape, bool transform = true);
 	const std::vector<Vector3>* GetBitangentsForShape(NiShape* shape, bool transform = true);
-	std::vector<float>* GetEyeDataForShape(NiShape* shape);
+	static std::vector<float>* GetEyeDataForShape(NiShape* shape);
 	bool GetUvsForShape(NiShape* shape, std::vector<Vector2>& outUvs);
 	bool GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts);
 	void SetVertsForShape(NiShape* shape, const std::vector<Vector3>& verts);
@@ -262,7 +264,7 @@ public:
 	void SetColorsForShape(const std::string& shapeName, const std::vector<Color4>& colors);
 	void SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& in);
 	void SetBitangentsForShape(NiShape* shape, const std::vector<Vector3>& in);
-	void SetEyeDataForShape(NiShape* shape, const std::vector<float>& in);
+	static void SetEyeDataForShape(NiShape* shape, const std::vector<float>& in);
 	void InvertUVsForShape(NiShape* shape, bool invertX, bool invertY);
 	void MirrorShape(NiShape* shape, bool mirrorX, bool mirrorY, bool mirrorZ);
 	void SetNormalsForShape(NiShape* shape, const std::vector<Vector3>& norms);

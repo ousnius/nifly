@@ -603,8 +603,8 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	bool IsSkinned();
-	void SetSkinned(const bool enable);
+	bool IsSkinned() const override;
+	void SetSkinned(const bool enable) override;
 };
 
 class BSShaderPPLightingProperty
@@ -629,8 +629,8 @@ public:
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
 	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
 
-	bool IsSkinned();
-	void SetSkinned(const bool enable);
+	bool IsSkinned() const override;
+	void SetSkinned(const bool enable) override;
 };
 
 class Lighting30ShaderProperty : public NiObjectCRTP<Lighting30ShaderProperty, BSShaderPPLightingProperty> {
@@ -668,16 +668,16 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	bool IsEmissive();
+	static bool IsEmissive();
 	Vector3 GetSpecularColor();
 	void SetSpecularColor(const Vector3& color);
-	float GetGlossiness();
+	float GetGlossiness() const;
 	void SetGlossiness(const float gloss);
-	Color4 GetEmissiveColor();
+	Color4 GetEmissiveColor() const;
 	void SetEmissiveColor(const Color4& color);
-	float GetEmissiveMultiple();
+	float GetEmissiveMultiple() const;
 	void SetEmissiveMultiple(const float emissive);
-	float GetAlpha();
+	float GetAlpha() const;
 };
 
 enum StencilMasks {

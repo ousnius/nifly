@@ -47,7 +47,7 @@ std::vector<Vector4> NiParticlesData::GetSubtexOffsets() const {
 	return subtexOffsets;
 }
 
-void NiParticlesData::SetSubtexOffsets(const std::vector<Vector4> sto) {
+void NiParticlesData::SetSubtexOffsets(const std::vector<Vector4>& sto) {
 	numSubtexOffsets = sto.size();
 	subtexOffsets = sto;
 }
@@ -122,7 +122,7 @@ std::vector<Key<uint8_t>> NiPSysEmitterCtlrData::GetVisibilityKeys() const {
 	return visibilityKeys;
 }
 
-void NiPSysEmitterCtlrData::SetVisibilityKeys(const std::vector<Key<uint8_t>> vk) {
+void NiPSysEmitterCtlrData::SetVisibilityKeys(const std::vector<Key<uint8_t>>& vk) {
 	numVisibilityKeys = vk.size();
 	visibilityKeys = vk;
 }

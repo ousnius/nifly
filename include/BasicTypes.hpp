@@ -271,7 +271,7 @@ class NiObjectCRTP;
 template<typename Derived, typename Base>
 class NiObjectCRTP<Derived, Base, false> : public Base {
 public:
-	virtual ~NiObjectCRTP() = default;
+	virtual ~NiObjectCRTP() override = default;
 
 	std::unique_ptr<Derived> Clone() const {
 		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
@@ -381,38 +381,67 @@ public:
 	bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
 };
 
-template<typename ValueType, typename SizeType = uint32_t>
-class NiVector {
+// Helper to reduce duplication
+template<typename ValueType, typename SizeType>
+class NiVectorBase {
 private:
+	std::vector<ValueType> vec;
+
+protected:
 	static constexpr size_t NumSize = sizeof(SizeType);
 	static constexpr SizeType MaxIndex = std::numeric_limits<SizeType>::max() - 1;
 
 public:
-	std::vector<ValueType> vec;
+	NiVectorBase() = default;
+	NiVectorBase(const SizeType size) { resize(size); }
 
+	SizeType size() const { return vec.size(); }
+	bool empty() const { return vec.empty(); }
+
+	void clear() { vec.clear(); }
+
+	auto begin() { return vec.begin(); }
+	auto cbegin() const { return vec.begin(); }
+
+	auto end() { return vec.end(); }
+	auto cend() const { return vec.end(); }
+
+	void resize(SizeType size) { vec.resize(size); }
+
+	auto& operator[](SizeType i) { return vec[i]; }
+
+	auto erase(SizeType i) { return vec.erase(vec.begin() + i); }
+};
+
+template<typename ValueType, typename SizeType = uint32_t>
+class NiVector : public NiVectorBase<ValueType, SizeType> {
+	using Base = NiVectorBase<ValueType, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
+
+public:
 	NiVector() = default;
-	NiVector(const SizeType size) {
-		vec.resize(size);
-	}
+	NiVector(const SizeType size)
+		: Base(size) {}
 
 	void Read(NiIStream& stream) {
 		size_t sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
-		vec.resize(sz);
+		Base::resize(sz);
 
-		for (auto &e : vec)
+		for (auto& e : *this)
 			stream >> e;
 	}
 
 	void Write(NiOStream& stream) {
-		if (!vec.empty() && vec.size() - 1 > MaxIndex)
-			vec.resize(MaxIndex + 1);
+		if (!Base::empty() && Base::size() - 1 > MaxIndex)
+			Base::resize(MaxIndex + 1);
 
-		size_t sz = vec.size();
+		size_t sz = Base::size();
 		stream.write(reinterpret_cast<char*>(&sz), NumSize);
 
-		for (auto &e : vec)
+		for (auto& e : *this)
 			stream << e;
 	}
 
@@ -425,37 +454,34 @@ public:
 };
 
 template<typename SizeType = uint32_t, const int stringSize = 4>
-class NiStringVector {
+class NiStringVector : public NiVectorBase<NiString, SizeType> {
 private:
-	static constexpr size_t NumSize = sizeof(SizeType);
-	static constexpr SizeType MaxIndex = std::numeric_limits<SizeType>::max() - 1;
+	using Base = NiVectorBase<NiString, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
 
 public:
-	std::vector<NiString> vec;
-
 	NiStringVector() = default;
-	NiStringVector(const SizeType size) {
-		vec.resize(size);
-	}
+	NiStringVector(const SizeType size) { Base::resize(size); }
 
 	void Read(NiIStream& stream) {
 		size_t sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
-		vec.resize(sz);
+		Base::resize(sz);
 
-		for (auto &e : vec)
+		for (auto& e : *this)
 			e.Read(stream, stringSize);
 	}
 
 	void Write(NiOStream& stream) {
-		if (!vec.empty() && vec.size() - 1 > MaxIndex)
-			vec.resize(MaxIndex + 1);
+		if (!Base::empty() && Base::size() - 1 > MaxIndex)
+			Base::resize(MaxIndex + 1);
 
-		size_t sz = vec.size();
+		size_t sz = Base::size();
 		stream.write(reinterpret_cast<char*>(&sz), NumSize);
 
-		for (auto &e : vec)
+		for (auto& e : *this)
 			e.Write(stream, stringSize);
 	}
 
@@ -468,37 +494,34 @@ public:
 };
 
 template<typename SizeType = uint32_t>
-class NiStringRefVector {
+class NiStringRefVector : public NiVectorBase<NiStringRef, SizeType> {
 private:
-	static constexpr size_t NumSize = sizeof(SizeType);
-	static constexpr SizeType MaxIndex = std::numeric_limits<SizeType>::max() - 1;
+	using Base = NiVectorBase<NiStringRef, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
 
 public:
-	std::vector<NiStringRef> vec;
-
 	NiStringRefVector() = default;
-	NiStringRefVector(const SizeType size) {
-		vec.resize(size);
-	}
+	NiStringRefVector(const SizeType size) { resize(size); }
 
 	void Read(NiIStream& stream) {
 		size_t sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
-		vec.resize(sz);
+		Base::resize(sz);
 
-		for (auto &e : vec)
+		for (auto& e : *this)
 			e.Read(stream);
 	}
 
 	void Write(NiOStream& stream) {
-		if (!vec.empty() && vec.size() - 1 > MaxIndex)
-			vec.resize(MaxIndex + 1);
+		if (!Base::empty() && Base::size() - 1 > MaxIndex)
+			Base::resize(MaxIndex + 1);
 
-		size_t sz = vec.size();
+		size_t sz = Base::size();
 		stream.write(reinterpret_cast<char*>(&sz), NumSize);
 
-		for (auto &e : vec)
+		for (auto& e : *this)
 			e.Write(stream);
 	}
 
@@ -515,7 +538,7 @@ public:
 	int index = NIF_NPOS;
 
 	void Clear() { index = NIF_NPOS; }
-	const bool IsEmpty() const { return index == NIF_NPOS; }
+	bool IsEmpty() const { return index == NIF_NPOS; }
 
 	bool operator==(const NiRef& rhs) const { return index == rhs.index; }
 	bool operator!=(const NiRef& rhs) const { return !operator==(rhs); }

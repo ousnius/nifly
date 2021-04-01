@@ -1932,10 +1932,10 @@ void StripsInfo::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(hasPoints);
 	if (hasPoints) {
-		points.resize(stripLengths.vec.size());
-		for (uint32_t i = 0; i < stripLengths.vec.size(); i++) {
-			points[i].resize(stripLengths.vec[i]);
-			for (uint32_t j = 0; j < stripLengths.vec[i]; j++)
+		points.resize(stripLengths.size());
+		for (uint32_t i = 0; i < stripLengths.size(); i++) {
+			points[i].resize(stripLengths[i]);
+			for (uint32_t j = 0; j < stripLengths[i]; j++)
 				stream.Sync(points[i][j]);
 		}
 	}
@@ -1952,11 +1952,11 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
 
 	// This is not a healthy way to delete strip data. Probably need to restrip the shape.
-	for (uint32_t i = 0; i < stripsInfo.stripLengths.vec.size(); i++) {
-		for (uint32_t j = 0; j < stripsInfo.stripLengths.vec[i]; j++) {
+	for (uint32_t i = 0; i < stripsInfo.stripLengths.size(); i++) {
+		for (uint32_t j = 0; j < stripsInfo.stripLengths[i]; j++) {
 			if (indexCollapse[stripsInfo.points[i][j]] == -1) {
 				stripsInfo.points[i].erase(stripsInfo.points[i].begin() + j);
-				stripsInfo.stripLengths.vec[i]--;
+				stripsInfo.stripLengths[i]--;
 				--j;
 			}
 			else
@@ -1965,7 +1965,7 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	}
 
 	numTriangles = 0;
-	for (auto len : stripsInfo.stripLengths.vec)
+	for (auto len : stripsInfo.stripLengths)
 		if (len - 2 > 0)
 			numTriangles += len - 2;
 }

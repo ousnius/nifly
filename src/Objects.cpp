@@ -149,12 +149,12 @@ void NiPalette::Sync(NiStreamReversible& stream) {
 
 	if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
 		// Size can only be 16 or 256
-		auto numEntries = palette.vec.size();
+		auto numEntries = palette.size();
 		if (numEntries != 16 && numEntries != 256) {
 			if (numEntries >= 128)
-				palette.vec.resize(256);
+				palette.resize(256);
 			else
-				palette.vec.resize(16);
+				palette.resize(16);
 		}
 	}
 
@@ -170,11 +170,11 @@ void TextureRenderData::Sync(NiStreamReversible& stream) {
 	stream.Sync(flags);
 	stream.Sync(unkInt3);
 
-	for (uint32_t i = 0; i < 4; i++) {
-		stream.Sync(channels[i].type);
-		stream.Sync(channels[i].convention);
-		stream.Sync(channels[i].bitsPerChannel);
-		stream.Sync(channels[i].unkByte1);
+	for (auto& channel : channels) {
+		stream.Sync(channel.type);
+		stream.Sync(channel.convention);
+		stream.Sync(channel.bitsPerChannel);
+		stream.Sync(channel.unkByte1);
 	}
 
 	paletteRef.Sync(stream);
