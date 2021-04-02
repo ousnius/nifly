@@ -158,13 +158,8 @@ public:
 };
 
 struct BSPackedGeomObject {
-	uint32_t unkInt1 = 0;
-	uint32_t objectHash = 0;
-};
-
-struct BSPackedGeomDataLOD {
-	uint32_t triangleCount = 0;
-	uint32_t triangleOffset = 0;
+	uint32_t fileNameHash = 0;
+	uint32_t dataOffset = 0;
 };
 
 struct BSPackedGeomDataCombined {
@@ -176,19 +171,54 @@ struct BSPackedGeomDataCombined {
 };
 
 struct BSPackedGeomData {
-	uint32_t numVerts = 0;
-	NiVector<BSPackedGeomDataLOD> lod;
+	uint32_t numVertices = 0;
+	uint32_t lodLevels = 0;
+	uint32_t triCountLod0 = 0;
+	uint32_t triOffsetLod0 = 0;
+	uint32_t triCountLod1 = 0;
+	uint32_t triOffsetLod1 = 0;
+	uint32_t triCountLod2 = 0;
+	uint32_t triOffsetLod2 = 0;
 	NiVector<BSPackedGeomDataCombined> combined;
-	uint32_t unkInt1 = 0;
-	uint32_t unkInt2 = 0;
+	VertexDesc vertexDesc;
+	std::vector<BSVertexData> vertData;
+	std::vector<Triangle> triangles;
 
 	void Sync(NiStreamReversible& stream);
+
+	void SetVertices(const bool enable);
+	bool HasVertices() const { return vertexDesc.HasFlag(VF_VERTEX); }
+
+	void SetUVs(const bool enable);
+	bool HasUVs() const { return vertexDesc.HasFlag(VF_UV); }
+
+	void SetSecondUVs(const bool enable);
+	bool HasSecondUVs() { return vertexDesc.HasFlag(VF_UV_2); }
+
+	void SetNormals(const bool enable);
+	bool HasNormals() const { return vertexDesc.HasFlag(VF_NORMAL); }
+
+	void SetTangents(const bool enable);
+	bool HasTangents() const { return vertexDesc.HasFlag(VF_TANGENT); }
+
+	void SetVertexColors(const bool enable);
+	bool HasVertexColors() const { return vertexDesc.HasFlag(VF_COLORS); }
+
+	void SetSkinned(const bool enable);
+	bool IsSkinned() const { return vertexDesc.HasFlag(VF_SKINNED); }
+
+	void SetEyeData(const bool enable);
+	bool HasEyeData() const { return vertexDesc.HasFlag(VF_EYEDATA); }
+
+	void SetFullPrecision(const bool enable);
+	bool IsFullPrecision() const { return vertexDesc.HasFlag(VF_FULLPREC); }
+	bool CanChangePrecision() const { return (HasVertices()); }
 };
 
 class BSPackedCombinedSharedGeomDataExtra
 	: public NiObjectCRTP<BSPackedCombinedSharedGeomDataExtra, NiExtraData, true> {
 public:
-	VertexDesc vertDesc;
+	VertexDesc vertexDesc;
 	uint32_t numVertices = 0;
 	uint32_t numTriangles = 0;
 	uint32_t unkFlags1 = 0;
@@ -369,7 +399,7 @@ public:
 
 class BSConnectPointChildren : public NiObjectCRTP<BSConnectPointChildren, NiExtraData, true> {
 public:
-	uint8_t unkByte = 1;
+	bool skinned = true;
 	NiStringVector<> targets;
 
 	static constexpr const char* BlockName = "BSConnectPoint::Children";

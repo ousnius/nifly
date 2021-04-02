@@ -377,9 +377,7 @@ class BSTextureArray {
 public:
 	NiStringVector<> textureArray;
 
-	void Sync(NiStreamReversible& stream) {
-		textureArray.Sync(stream);
-	}
+	void Sync(NiStreamReversible& stream) { textureArray.Sync(stream); }
 };
 
 class BSLightingShaderProperty : public NiObjectCRTP<BSLightingShaderProperty, BSShaderProperty, true> {
@@ -399,7 +397,7 @@ public:
 	float rimlightPower = 2.0f; // User Version <= 12, User Version 2 < 130
 
 	float subsurfaceRolloff = 0.3f;		  // User Version == 12, User Version 2 >= 130
-	float unkFloat1 = 0.0f;				  // User Version == 12, User Version 2 >= 130
+	float rimlightPower2 = NiFloatMax;	  // User Version == 12, User Version 2 >= 130
 	float backlightPower = 0.0f;		  // User Version == 12, User Version 2 >= 130
 	float grayscaleToPaletteScale = 1.0f; // User Version == 12, User Version 2 >= 130
 	float fresnelPower = 5.0f;			  // User Version == 12, User Version 2 >= 130

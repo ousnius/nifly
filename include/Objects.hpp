@@ -128,23 +128,46 @@ enum PixelFormat : uint32_t {
 	PX_FMT_DXT5_ALT = 6,
 };
 
-enum ChannelType : uint32_t {
-	CHNL_RED,
-	CHNL_GREEN,
-	CHNL_BLUE,
-	CHNL_ALPHA,
-	CHNL_COMPRESSED,
-	CHNL_INDEX = 16,
-	CHNL_EMPTY = 19,
+enum PixelTiling : uint32_t { PX_TILE_NONE, PX_TILE_XENON, PX_TILE_WII, PX_TILE_NV_SWIZZLED };
+
+enum PixelComponent : uint32_t {
+	PX_COMP_RED,
+	PX_COMP_GREEN,
+	PX_COMP_BLUE,
+	PX_COMP_ALPHA,
+	PX_COMP_COMPRESSED,
+	PX_COMP_OFFSET_U,
+	PX_COMP_OFFSET_V,
+	PX_COMP_OFFSET_W,
+	PX_COMP_OFFSET_Q,
+	PX_COMP_LUMA,
+	PX_COMP_HEIGHT,
+	PX_COMP_VECTOR_X,
+	PX_COMP_VECTOR_Y,
+	PX_COMP_VECTOR_Z,
+	PX_COMP_PADDING,
+	PX_COMP_INTENSITY,
+	PX_COMP_INDEX,
+	PX_COMP_DEPTH,
+	PX_COMP_STENCIL,
+	PX_COMP_EMPTY
 };
 
-enum ChannelConvention : uint32_t { CC_FIXED, CC_INDEX = 3, CC_COMPRESSED = 4, CC_EMPTY = 5 };
+enum PixelRepresentation : uint32_t {
+	PX_REP_NORM_INT,
+	PX_REP_HALF,
+	PX_REP_FLOAT,
+	PX_REP_INDEX,
+	PX_REP_COMPRESSED,
+	PX_REP_UNKNOWN,
+	PX_REP_INT
+};
 
-struct ChannelData {
-	ChannelType type = CHNL_EMPTY;
-	ChannelConvention convention = CC_EMPTY;
+struct PixelFormatComponent {
+	PixelComponent type = PX_COMP_RED;
+	PixelRepresentation convention = PX_REP_NORM_INT;
 	uint8_t bitsPerChannel = 0;
-	uint8_t unkByte1 = 0;
+	bool isSigned = false;
 };
 
 struct MipMapInfo {
@@ -161,12 +184,12 @@ protected:
 public:
 	PixelFormat pixelFormat = PX_FMT_RGB8;
 	uint8_t bitsPerPixel = 0;
-	int unkInt1 = 0xFFFFFFFF;
-	uint32_t unkInt2 = 0;
+	uint32_t rendererHint = 0xFFFFFFFF;
+	uint32_t extraData = 0;
 	uint8_t flags = 0;
-	uint32_t unkInt3 = 0;
+	PixelTiling pixelTiling = PX_TILE_NONE;
 
-	ChannelData channels[4]{};
+	PixelFormatComponent channels[4]{};
 	NiBlockRef<NiPalette> paletteRef;
 
 	uint32_t bytesPerPixel = 0;
@@ -179,13 +202,15 @@ public:
 	void SetMipmaps(std::vector<MipMapInfo>& mm);
 };
 
+enum PlatformID : uint32_t { PLAT_ANY, PLAT_XENON, PLAT_PS3, PLAT_DX9, PLAT_WII, PLAT_D3D10 };
+
 class NiPersistentSrcTextureRendererData
 	: public NiObjectCRTP<NiPersistentSrcTextureRendererData, TextureRenderData, true> {
 public:
 	uint32_t numPixels = 0;
-	uint32_t unkInt4 = 0;
+	uint32_t padNumPixels = 0;
 	uint32_t numFaces = 0;
-	uint32_t unkInt5 = 0;
+	PlatformID platform = PLAT_ANY;
 
 	std::vector<std::vector<uint8_t>> pixelData;
 
@@ -209,13 +234,23 @@ public:
 };
 
 enum PixelLayout : uint32_t {
-	PIX_LAY_PALETTISED,
-	PIX_LAY_HIGH_COLOR_16,
-	PIX_LAY_TRUE_COLOR_32,
-	PIX_LAY_COMPRESSED,
-	PIX_LAY_BUMPMAP,
-	PIX_LAY_PALETTISED_4,
-	PIX_LAY_DEFAULT
+	PX_LAY_PALETTIZED_8,
+	PX_LAY_HIGH_COLOR_16,
+	PX_LAY_TRUE_COLOR_32,
+	PX_LAY_COMPRESSED,
+	PX_LAY_BUMPMAP,
+	PX_LAY_PALETTIZED_4,
+	PX_LAY_DEFAULT,
+	PX_LAY_SINGLE_COLOR_8,
+	PX_LAY_SINGLE_COLOR_16,
+	PX_LAY_SINGLE_COLOR_32,
+	PX_LAY_DOUBLE_COLOR_32,
+	PX_LAY_DOUBLE_COLOR_64,
+	PX_LAY_FLOAT_COLOR_32,
+	PX_LAY_FLOAT_COLOR_64,
+	PX_LAY_FLOAT_COLOR_128,
+	PX_LAY_SINGLE_COLOR_4,
+	PX_LAY_DEPTH_24_X8,
 };
 
 enum MipMapFormat : uint32_t { MIP_FMT_NO, MIP_FMT_YES, MIP_FMT_DEFAULT };
@@ -233,7 +268,7 @@ public:
 	// else NiPersistentSrcTextureRendererData
 	NiBlockRef<TextureRenderData> dataRef;
 
-	PixelLayout pixelLayout = PIX_LAY_PALETTISED_4;
+	PixelLayout pixelLayout = PX_LAY_PALETTIZED_4;
 	MipMapFormat mipMapFormat = MIP_FMT_DEFAULT;
 	AlphaFormat alphaFormat = ALPHA_DEFAULT;
 	bool isStatic = true;
@@ -300,8 +335,7 @@ public:
 	CoordGenType coordinateGenerationType = CG_SPHERE_MAP;
 	NiBlockRef<NiSourceTexture> sourceTexture;
 	uint8_t clippingPlane = 0;
-	Vector3 unkVector = Vector3(1.0f, 0.0f, 0.0f);
-	float unkFloat = 0.0f;
+	NiPlane plane;
 
 	static constexpr const char* BlockName = "NiTextureEffect";
 	const char* GetBlockName() override { return BlockName; }
@@ -347,9 +381,9 @@ public:
 
 class NiSpotLight : public NiObjectCRTP<NiSpotLight, NiPointLight, true> {
 public:
-	float cutoffAngle = 0.0f;
-	float unkFloat = 0.0f;
-	float exponent = 0.0f;
+	float outerSpotAngle = 0.0f;
+	float innerSpotAngle = 0.0f;
+	float exponent = 1.0f;
 
 	static constexpr const char* BlockName = "NiSpotLight";
 	const char* GetBlockName() override { return BlockName; }

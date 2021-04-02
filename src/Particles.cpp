@@ -187,8 +187,8 @@ void NiPSysAgeDeathModifier::GetChildIndices(std::vector<int>& indices) {
 void BSPSysLODModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(lodBeginDistance);
 	stream.Sync(lodEndDistance);
-	stream.Sync(unknownFadeFactor1);
-	stream.Sync(unknownFadeFactor2);
+	stream.Sync(endEmitScale);
+	stream.Sync(endSize);
 }
 
 
@@ -405,12 +405,12 @@ void NiPSysTurbulenceFieldModifier::Sync(NiStreamReversible& stream) {
 
 void NiPSysAirFieldModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(direction);
-	stream.Sync(unkFloat1);
-	stream.Sync(unkFloat2);
-	stream.Sync(unkBool1);
-	stream.Sync(unkBool2);
-	stream.Sync(unkBool3);
-	stream.Sync(unkFloat3);
+	stream.Sync(airFriction);
+	stream.Sync(inheritVelocity);
+	stream.Sync(inheritRotation);
+	stream.Sync(componentOnly);
+	stream.Sync(enableSpread);
+	stream.Sync(spread);
 }
 
 

@@ -79,7 +79,8 @@ public:
 		bool hasBoneIndices = false;
 		std::vector<BoneIndices> boneIndices;
 
-		uint16_t unkShort = 0; // User Version >= 12
+		uint8_t lodLevel = 0;  // User Version >= 12
+		bool globalVB = false; // User Version >= 12
 		VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 		// When trueTriangles is changed so it's no longer in sync with
 		// triParts, triParts should be cleared.

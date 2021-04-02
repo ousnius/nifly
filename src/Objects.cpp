@@ -165,16 +165,16 @@ void NiPalette::Sync(NiStreamReversible& stream) {
 void TextureRenderData::Sync(NiStreamReversible& stream) {
 	stream.Sync(pixelFormat);
 	stream.Sync(bitsPerPixel);
-	stream.Sync(unkInt1);
-	stream.Sync(unkInt2);
+	stream.Sync(rendererHint);
+	stream.Sync(extraData);
 	stream.Sync(flags);
-	stream.Sync(unkInt3);
+	stream.Sync(pixelTiling);
 
 	for (auto& channel : channels) {
 		stream.Sync(channel.type);
 		stream.Sync(channel.convention);
 		stream.Sync(channel.bitsPerChannel);
-		stream.Sync(channel.unkByte1);
+		stream.Sync(channel.isSigned);
 	}
 
 	paletteRef.Sync(stream);
@@ -210,9 +210,9 @@ void TextureRenderData::SetMipmaps(std::vector<MipMapInfo>& mm) {
 
 void NiPersistentSrcTextureRendererData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numPixels);
-	stream.Sync(unkInt4);
+	stream.Sync(padNumPixels);
 	stream.Sync(numFaces);
-	stream.Sync(unkInt5);
+	stream.Sync(platform);
 
 	pixelData.resize(numFaces);
 	for (uint32_t f = 0; f < numFaces; f++) {
@@ -293,8 +293,7 @@ void NiTextureEffect::Sync(NiStreamReversible& stream) {
 	stream.Sync(coordinateGenerationType);
 	sourceTexture.Sync(stream);
 	stream.Sync(clippingPlane);
-	stream.Sync(unkVector);
-	stream.Sync(unkFloat);
+	stream.Sync(plane);
 }
 
 void NiTextureEffect::GetChildRefs(std::set<NiRef*>& refs) {
@@ -326,7 +325,7 @@ void NiPointLight::Sync(NiStreamReversible& stream) {
 
 
 void NiSpotLight::Sync(NiStreamReversible& stream) {
-	stream.Sync(cutoffAngle);
-	stream.Sync(unkFloat);
+	stream.Sync(outerSpotAngle);
+	stream.Sync(innerSpotAngle);
 	stream.Sync(exponent);
 }

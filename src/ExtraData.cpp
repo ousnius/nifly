@@ -94,18 +94,171 @@ void BSEyeCenterExtraData::Sync(NiStreamReversible& stream) {
 
 
 void BSPackedGeomData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numVerts);
+	stream.Sync(numVertices);
 
-	lod.Sync(stream);
+	stream.Sync(lodLevels);
+	stream.Sync(triCountLod0);
+	stream.Sync(triOffsetLod0);
+	stream.Sync(triCountLod1);
+	stream.Sync(triOffsetLod1);
+	stream.Sync(triCountLod2);
+	stream.Sync(triOffsetLod2);
+
 	combined.Sync(stream);
 
-	stream.Sync(unkInt1);
-	stream.Sync(unkInt2);
+	stream.Sync(vertexDesc);
+
+	vertData.resize(numVertices);
+
+	for (uint32_t i = 0; i < numVertices; i++) {
+		auto& vertex = vertData[i];
+		if (HasVertices()) {
+			if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
+				// Full precision
+				stream.Sync(vertex.vert);
+				stream.Sync(vertex.bitangentX);
+			}
+			else {
+				// Half precision
+				stream.SyncHalf(vertex.vert.x);
+				stream.SyncHalf(vertex.vert.y);
+				stream.SyncHalf(vertex.vert.z);
+
+				stream.SyncHalf(vertex.bitangentX);
+			}
+		}
+
+		if (HasUVs()) {
+			stream.SyncHalf(vertex.uv.u);
+			stream.SyncHalf(vertex.uv.v);
+		}
+
+		if (HasNormals()) {
+			for (uint8_t& j : vertex.normal)
+				stream.Sync(j);
+
+			stream.Sync(vertex.bitangentY);
+
+			if (HasTangents()) {
+				for (uint8_t& j : vertex.tangent)
+					stream.Sync(j);
+
+				stream.Sync(vertex.bitangentZ);
+			}
+		}
+
+
+		if (HasVertexColors())
+			for (uint8_t& j : vertex.colorData)
+				stream.Sync(j);
+
+		if (IsSkinned()) {
+			for (float& weight : vertex.weights)
+				stream.SyncHalf(weight);
+
+			for (uint8_t& weightBone : vertex.weightBones)
+				stream.Sync(weightBone);
+		}
+
+		if (HasEyeData())
+			stream.Sync(vertex.eyeData);
+	}
+
+	triangles.resize(triCountLod0 + triCountLod1 + triCountLod2);
+	for (auto& t : triangles)
+		stream.Sync(t);
+}
+
+void BSPackedGeomData::SetVertices(const bool enable) {
+	if (enable) {
+		vertexDesc.SetFlag(VF_VERTEX);
+		vertData.resize(numVertices);
+	}
+	else {
+		vertexDesc.RemoveFlag(VF_VERTEX);
+		vertData.clear();
+		numVertices = 0;
+
+		SetUVs(false);
+		SetNormals(false);
+		SetTangents(false);
+		SetVertexColors(false);
+		SetSkinned(false);
+	}
+}
+
+void BSPackedGeomData::SetUVs(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_UV);
+	else
+		vertexDesc.RemoveFlag(VF_UV);
+}
+
+void BSPackedGeomData::SetSecondUVs(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_UV_2);
+	else
+		vertexDesc.RemoveFlag(VF_UV_2);
+}
+
+void BSPackedGeomData::SetNormals(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_NORMAL);
+	else
+		vertexDesc.RemoveFlag(VF_NORMAL);
+}
+
+void BSPackedGeomData::SetTangents(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_TANGENT);
+	else
+		vertexDesc.RemoveFlag(VF_TANGENT);
+}
+
+void BSPackedGeomData::SetVertexColors(const bool enable) {
+	if (enable) {
+		if (!vertexDesc.HasFlag(VF_COLORS)) {
+			for (auto& v : vertData) {
+				v.colorData[0] = 255;
+				v.colorData[1] = 255;
+				v.colorData[2] = 255;
+				v.colorData[3] = 255;
+			}
+		}
+
+		vertexDesc.SetFlag(VF_COLORS);
+	}
+	else
+		vertexDesc.RemoveFlag(VF_COLORS);
+}
+
+void BSPackedGeomData::SetSkinned(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_SKINNED);
+	else
+		vertexDesc.RemoveFlag(VF_SKINNED);
+}
+
+void BSPackedGeomData::SetEyeData(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_EYEDATA);
+	else
+		vertexDesc.RemoveFlag(VF_EYEDATA);
+}
+
+void BSPackedGeomData::SetFullPrecision(const bool enable) {
+	if (!CanChangePrecision())
+		return;
+
+	if (enable)
+		vertexDesc.SetFlag(VF_FULLPREC);
+	else
+		vertexDesc.RemoveFlag(VF_FULLPREC);
 }
 
 
 void BSPackedCombinedSharedGeomDataExtra::Sync(NiStreamReversible& stream) {
-	vertDesc.Sync(stream);
+	vertexDesc.Sync(stream);
 	stream.Sync(numVertices);
 	stream.Sync(numTriangles);
 	stream.Sync(unkFlags1);
@@ -293,7 +446,7 @@ void BSConnectPointParents::SetConnectPoints(const std::vector<BSConnectPoint>& 
 
 
 void BSConnectPointChildren::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkByte);
+	stream.Sync(skinned);
 	targets.Sync(stream);
 }
 

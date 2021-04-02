@@ -125,11 +125,14 @@ void bhkBlendController::Sync(NiStreamReversible& stream) {
 }
 
 
-void bhkPlaneShape::Sync(NiStreamReversible& stream) {
+void bhkHeightFieldShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(material);
+}
+
+
+void bhkPlaneShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(unkVec);
-	stream.Sync(direction);
-	stream.Sync(constant);
+	stream.Sync(plane);
 	stream.Sync(halfExtents);
 	stream.Sync(center);
 }
@@ -137,13 +140,16 @@ void bhkPlaneShape::Sync(NiStreamReversible& stream) {
 
 void bhkSphereRepShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(material);
+}
+
+
+void bhkConvexShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(radius);
 }
 
 
 void bhkMultiSphereShape::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkFloat1);
-	stream.Sync(unkFloat2);
+	stream.Sync(shapeProperty);
 	spheres.Sync(stream);
 }
 
@@ -155,8 +161,8 @@ void bhkConvexListShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(unkInt1);
 	stream.Sync(unkFloat1);
 	stream.Sync(childShapeProp);
-	stream.Sync(unkByte1);
-	stream.Sync(unkFloat2);
+	stream.Sync(useCachedAABB);
+	stream.Sync(closestPointMinDistance);
 }
 
 void bhkConvexListShape::GetChildRefs(std::set<NiRef*>& refs) {
@@ -291,7 +297,7 @@ void bhkListShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(childShapeProp);
 	stream.Sync(childFilterProp);
 
-	unkInts.Sync(stream);
+	filters.Sync(stream);
 }
 
 void bhkListShape::GetChildRefs(std::set<NiRef*>& refs) {
@@ -324,7 +330,7 @@ void hkPackedNiTriStripsData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numVerts);
 
 	if (stream.GetVersion().Stream() > 11)
-		stream.Sync(unkByte);
+		stream.Sync(compressed);
 
 	compressedVertData.resize(numVerts);
 	for (uint32_t i = 0; i < numVerts; i++)

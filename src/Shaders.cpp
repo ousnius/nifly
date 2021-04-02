@@ -360,8 +360,6 @@ BSLightingShaderProperty::BSLightingShaderProperty() {
 
 	shaderFlags1 = 0x80400203;
 	shaderFlags2 = 0x00000081;
-
-	unkFloat1 = std::numeric_limits<float>::max();
 }
 
 BSLightingShaderProperty::BSLightingShaderProperty(NiVersion& version)
@@ -407,8 +405,11 @@ void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130) {
 		stream.Sync(subsurfaceRolloff);
-		stream.Sync(unkFloat1);
-		stream.Sync(backlightPower);
+		stream.Sync(rimlightPower2);
+
+		if (rimlightPower2 == NiFloatMax)
+			stream.Sync(backlightPower);
+
 		stream.Sync(grayscaleToPaletteScale);
 		stream.Sync(fresnelPower);
 		stream.Sync(wetnessSpecScale);

@@ -2128,12 +2128,12 @@ void NiScreenElementsData::Sync(NiStreamReversible& stream) {
 	for (uint32_t i = 0; i < maxPolygons; i++)
 		stream.Sync(polygonIndices[i]);
 
-	stream.Sync(unkShort1);
+	stream.Sync(polygonGrowBy);
 	stream.Sync(numPolygons);
-	stream.Sync(usedVertices);
-	stream.Sync(unkShort2);
-	stream.Sync(usedTrianglePoints);
-	stream.Sync(unkShort3);
+	stream.Sync(maxVertices);
+	stream.Sync(verticesGrowBy);
+	stream.Sync(maxIndices);
+	stream.Sync(indicesGrowBy);
 }
 
 void NiScreenElementsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
@@ -2144,8 +2144,8 @@ void NiScreenElementsData::notifyVerticesDelete(const std::vector<uint16_t>& ver
 	polygons.clear();
 	polygonIndices.clear();
 	numPolygons = 0;
-	usedVertices = 0;
-	usedTrianglePoints = 0;
+	maxVertices = 0;
+	maxIndices = 0;
 }
 
 

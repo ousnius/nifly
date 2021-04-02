@@ -102,7 +102,7 @@ void NiTimeController::GetPtrs(std::set<NiPtr*>& ptrs) {
 
 
 void NiLookAtController::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkShort1);
+	stream.Sync(lookAtFlags);
 	lookAtNodePtr.Sync(stream);
 }
 
@@ -114,27 +114,27 @@ void NiLookAtController::GetPtrs(std::set<NiPtr*>& ptrs) {
 
 
 void NiPathController::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkShort1);
-	stream.Sync(unkInt1);
-	stream.Sync(unkFloat1);
-	stream.Sync(unkFloat2);
-	stream.Sync(unkShort2);
-	posDataRef.Sync(stream);
-	floatDataRef.Sync(stream);
+	stream.Sync(pathFlags);
+	stream.Sync(bankDir);
+	stream.Sync(maxBankAngle);
+	stream.Sync(smoothing);
+	stream.Sync(followAxis);
+	pathDataRef.Sync(stream);
+	percentDataRef.Sync(stream);
 }
 
 void NiPathController::GetChildRefs(std::set<NiRef*>& refs) {
 	NiTimeController::GetChildRefs(refs);
 
-	refs.insert(&posDataRef);
-	refs.insert(&floatDataRef);
+	refs.insert(&pathDataRef);
+	refs.insert(&percentDataRef);
 }
 
 void NiPathController::GetChildIndices(std::vector<int>& indices) {
 	NiTimeController::GetChildIndices(indices);
 
-	indices.push_back(posDataRef.index);
-	indices.push_back(floatDataRef.index);
+	indices.push_back(pathDataRef.index);
+	indices.push_back(percentDataRef.index);
 }
 
 
@@ -302,7 +302,7 @@ void NiMorphData::SetMorphs(const std::vector<Morph>& m) {
 
 
 void NiGeomMorpherController::Sync(NiStreamReversible& stream) {
-	stream.Sync(extraFlags);
+	stream.Sync(morpherFlags);
 	dataRef.Sync(stream);
 	stream.Sync(alwaysUpdate);
 
@@ -429,7 +429,7 @@ void NiFlipController::GetChildIndices(std::vector<int>& indices) {
 
 
 void NiTextureTransformController::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkByte1);
+	stream.Sync(shaderMap);
 	stream.Sync(textureSlot);
 	stream.Sync(operation);
 }
@@ -543,12 +543,14 @@ void NiBSplineCompFloatInterpolator::Sync(NiStreamReversible& stream) {
 
 
 void NiBSplinePoint3Interpolator::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkFloat1);
-	stream.Sync(unkFloat2);
-	stream.Sync(unkFloat3);
-	stream.Sync(unkFloat4);
-	stream.Sync(unkFloat5);
-	stream.Sync(unkFloat6);
+	stream.Sync(value);
+	stream.Sync(handle);
+}
+
+
+void NiBSplineCompPoint3Interpolator::Sync(NiStreamReversible& stream) {
+	stream.Sync(positionOffset);
+	stream.Sync(positionHalfRange);
 }
 
 
@@ -573,9 +575,34 @@ void NiBSplineCompTransformInterpolator::Sync(NiStreamReversible& stream) {
 }
 
 
+void InterpBlendItem::Sync(NiStreamReversible& stream) {
+	interpolatorRef.Sync(stream);
+	stream.Sync(weight);
+	stream.Sync(normalizedWeight);
+	stream.Sync(priority);
+	stream.Sync(easeSpinner);
+}
+
+
 void NiBlendInterpolator::Sync(NiStreamReversible& stream) {
 	stream.Sync(flags);
-	stream.Sync(unkInt);
+	stream.Sync(arraySize);
+	stream.Sync(weightThreshold);
+
+	if ((flags & INTERP_BLEND_MANAGER_CONTROLLED) == 0) {
+		stream.Sync(interpCount);
+		stream.Sync(singleIndex);
+		stream.Sync(highPriority);
+		stream.Sync(nextHighPriority);
+		stream.Sync(singleTime);
+		stream.Sync(highWeightsSum);
+		stream.Sync(nextHighWeightsSum);
+		stream.Sync(highEaseSpinner);
+
+		interpItems.resize(arraySize);
+		for (auto& item : interpItems)
+			item.Sync(stream);
+	}
 }
 
 
@@ -669,7 +696,7 @@ void NiPoint3Interpolator::GetChildIndices(std::vector<int>& indices) {
 
 
 void NiPathInterpolator::Sync(NiStreamReversible& stream) {
-	stream.Sync(flags);
+	stream.Sync(pathFlags);
 	stream.Sync(bankDir);
 	stream.Sync(maxBankAngle);
 	stream.Sync(smoothing);

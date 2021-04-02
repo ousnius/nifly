@@ -23,6 +23,19 @@ See the included GPLv3 LICENSE file
 namespace nifly {
 constexpr auto NIF_NPOS = static_cast<uint32_t>(-1);
 
+constexpr auto NiCharMin = std::numeric_limits<char>::min();
+constexpr auto NiCharMax = std::numeric_limits<char>::max();
+constexpr auto NiByteMin = std::numeric_limits<uint8_t>::min();
+constexpr auto NiByteMax = std::numeric_limits<uint8_t>::max();
+constexpr auto NiUShortMin = std::numeric_limits<uint16_t>::min();
+constexpr auto NiUShortMax = std::numeric_limits<uint16_t>::max();
+constexpr auto NiUIntMin = std::numeric_limits<uint32_t>::min();
+constexpr auto NiUIntMax = std::numeric_limits<uint32_t>::max();
+constexpr auto NiFloatMin = std::numeric_limits<float>::lowest();
+constexpr auto NiFloatMax = std::numeric_limits<float>::max();
+const auto NiVec3Min = Vector3(NiFloatMin, NiFloatMin, NiFloatMin);
+const auto NiVec4Min = Vector4(NiFloatMin, NiFloatMin, NiFloatMin, NiFloatMin);
+
 enum NiFileVersion : uint32_t {
 	V2_3 = 0x02030000,
 	V3_0 = 0x03000000,
@@ -347,9 +360,7 @@ private:
 
 public:
 	NiStringRef() = default;
-	NiStringRef(const std::string& s) {
-		str = s;
-	}
+	NiStringRef(const std::string& s) { str = s; }
 
 	std::string& get() { return str; }
 	const std::string& get() const { return str; }
@@ -379,6 +390,11 @@ public:
 
 	bool operator==(const std::string& rhs) const { return str == rhs; }
 	bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
+};
+
+struct NiPlane {
+	Vector3 normal;
+	float constant = 0.0f;
 };
 
 // Helper to reduce duplication

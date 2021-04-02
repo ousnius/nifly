@@ -206,8 +206,10 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 				stream.Sync(partition.boneIndices[i]);
 		}
 
-		if (stream.GetVersion().User() >= 12)
-			stream.Sync(partition.unkShort);
+		if (stream.GetVersion().User() >= 12) {
+			stream.Sync(partition.lodLevel);
+			stream.Sync(partition.globalVB);
+		}
 
 		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() == 100) {
 			partition.vertexDesc.Sync(stream);

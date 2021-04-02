@@ -246,14 +246,13 @@ struct BoxBV {
 struct CapsuleBV {
 	Vector3 center;
 	Vector3 origin;
-	float unkFloat1 = 0.0f;
-	float unkFloat2 = 0.0f;
+	float extent = 0.0f;
+	float radius = 0.0f;
 };
 
 struct HalfSpaceBV {
-	Vector3 normal;
+	NiPlane plane;
 	Vector3 center;
-	float unkFloat1 = 0.0f;
 };
 
 struct UnionBV;
@@ -410,16 +409,22 @@ public:
 	virtual void SetMaterial(HavokMaterial) {}
 };
 
-class bhkHeightFieldShape : public NiObjectCRTP<bhkHeightFieldShape, bhkShape> {};
-
-class bhkPlaneShape : public NiObjectCRTP<bhkPlaneShape, bhkHeightFieldShape, true> {
+class bhkHeightFieldShape : public NiObjectCRTP<bhkHeightFieldShape, bhkShape, true> {
 protected:
 	HavokMaterial material = 0;
 
 public:
+	void Sync(NiStreamReversible& stream);
+
+	HavokMaterial GetMaterial() const override { return material; }
+	void SetMaterial(HavokMaterial mat) override { material = mat; }
+};
+
+class bhkPlaneShape : public NiObjectCRTP<bhkPlaneShape, bhkHeightFieldShape, true> {
+protected:
+public:
 	Vector3 unkVec;
-	Vector3 direction;
-	float constant = 0.0f;
+	NiPlane plane;
 	Vector4 halfExtents;
 	Vector4 center;
 
@@ -427,9 +432,6 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	HavokMaterial GetMaterial() const override { return material; }
-	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
 class bhkSphereRepShape : public NiObjectCRTP<bhkSphereRepShape, bhkShape, true> {
@@ -437,18 +439,22 @@ protected:
 	HavokMaterial material = 0;
 
 public:
-	float radius = 0.0f;
-
 	void Sync(NiStreamReversible& stream);
 
 	HavokMaterial GetMaterial() const override { return material; }
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
+class bhkConvexShape : public NiObjectCRTP<bhkConvexShape, bhkSphereRepShape, true> {
+public:
+	float radius = 0.0f;
+
+	void Sync(NiStreamReversible& stream);
+};
+
 class bhkMultiSphereShape : public NiObjectCRTP<bhkMultiSphereShape, bhkSphereRepShape, true> {
 public:
-	float unkFloat1 = 0.0f;
-	float unkFloat2 = 0.0f;
+	hkWorldObjCInfoProperty shapeProperty;
 	NiVector<BoundingSphere> spheres;
 
 	static constexpr const char* BlockName = "bhkMultiSphereShape";
@@ -456,8 +462,6 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 };
-
-class bhkConvexShape : public NiObjectCRTP<bhkConvexShape, bhkSphereRepShape> {};
 
 class bhkConvexListShape : public NiObjectCRTP<bhkConvexListShape, bhkShape, true> {
 public:
@@ -467,8 +471,8 @@ public:
 	uint32_t unkInt1 = 0;
 	float unkFloat1 = 0.0f;
 	hkWorldObjCInfoProperty childShapeProp;
-	uint8_t unkByte1 = 0;
-	float unkFloat2 = 0.0f;
+	bool useCachedAABB = false;
+	float closestPointMinDistance = 0.0f;
 
 	static constexpr const char* BlockName = "bhkConvexListShape";
 	const char* GetBlockName() override { return BlockName; }
@@ -619,7 +623,7 @@ public:
 	NiBlockRefArray<bhkShape> subShapeRefs;
 	hkWorldObjCInfoProperty childShapeProp;
 	hkWorldObjCInfoProperty childFilterProp;
-	NiVector<uint32_t> unkInts;
+	NiVector<HavokFilter> filters;
 
 	static constexpr const char* BlockName = "bhkListShape";
 	const char* GetBlockName() override { return BlockName; }
@@ -656,7 +660,7 @@ public:
 	std::vector<hkTriangleNormalData> triNormData;
 
 	uint32_t numVerts = 0;
-	uint8_t unkByte = 0;
+	bool compressed = false;
 	std::vector<Vector3> compressedVertData;
 
 	NiVector<hkSubPartData, uint16_t> subPartData;
@@ -1042,9 +1046,7 @@ struct BoneMatrix {
 struct BonePose {
 	NiVector<BoneMatrix> matrices;
 
-	void Sync(NiStreamReversible& stream) {
-		matrices.Sync(stream);
-	}
+	void Sync(NiStreamReversible& stream) { matrices.Sync(stream); }
 };
 
 class bhkPoseArray : public NiObjectCRTP<bhkPoseArray, NiObject, true> {

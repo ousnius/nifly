@@ -124,22 +124,22 @@ public:
 class NiBSplinePoint3Interpolator
 	: public NiObjectCRTP<NiBSplinePoint3Interpolator, NiBSplineInterpolator, true> {
 public:
-	float unkFloat1 = 0.0f;
-	float unkFloat2 = 0.0f;
-	float unkFloat3 = 0.0f;
-	float unkFloat4 = 0.0f;
-	float unkFloat5 = 0.0f;
-	float unkFloat6 = 0.0f;
+	Vector3 value = NiVec3Min;
+	uint32_t handle = NiUShortMax;
 
 	void Sync(NiStreamReversible& stream);
 };
 
 class NiBSplineCompPoint3Interpolator
-	: public NiObjectCRTP<NiBSplineCompPoint3Interpolator, NiBSplinePoint3Interpolator> {
+	: public NiObjectCRTP<NiBSplineCompPoint3Interpolator, NiBSplinePoint3Interpolator, true> {
 public:
-	static constexpr const char* BlockName = "NiBSplineCompPoint3Interpolator";
+	float positionOffset = NiFloatMax;
+	float positionHalfRange = NiFloatMax;
 
+	static constexpr const char* BlockName = "NiBSplineCompPoint3Interpolator";
 	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiBSplineTransformInterpolator
@@ -175,10 +175,37 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
+enum InterpBlendFlags : uint8_t {
+	INTERP_BLEND_NONE = 0x00,
+	INTERP_BLEND_MANAGER_CONTROLLED = 0x01
+};
+
+class InterpBlendItem {
+public:
+	NiBlockRef<NiInterpolator> interpolatorRef;
+	float weight = 0.0f;
+	float normalizedWeight = 0.0f;
+	uint8_t priority = 0;
+	float easeSpinner = 0.0f;
+
+	void Sync(NiStreamReversible& stream);
+};
+
 class NiBlendInterpolator : public NiObjectCRTP<NiBlendInterpolator, NiInterpolator, true> {
 public:
-	uint16_t flags = 0;
-	uint32_t unkInt = 0;
+	InterpBlendFlags flags = INTERP_BLEND_MANAGER_CONTROLLED;
+	uint8_t arraySize = 0;
+	float weightThreshold = 0.0f;
+
+	uint8_t interpCount = 0;
+	uint8_t singleIndex = NiByteMax;
+	char highPriority = NiCharMin;
+	char nextHighPriority = NiCharMin;
+	float singleTime = NiFloatMin;
+	float highWeightsSum = NiFloatMin;
+	float nextHighWeightsSum = NiFloatMin;
+	float highEaseSpinner = NiFloatMin;
+	std::vector<InterpBlendItem> interpItems;
 
 	void Sync(NiStreamReversible& stream);
 };
@@ -289,10 +316,21 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
+enum PathFlags : uint16_t {
+	PATH_NONE = 0x0000,
+	PATH_CVDATANEEDSUPDATE = 0x0001,
+	PATH_CURVETYPEOPEN = 0x0002,
+	PATH_ALLOWFLIP = 0x0004,
+	PATH_BANK = 0x0008,
+	PATH_CONSTANTVELOCITY = 0x0016,
+	PATH_FOLLOW = 0x0032,
+	PATH_FLIP = 0x0064
+};
+
 class NiPathInterpolator : public NiObjectCRTP<NiPathInterpolator, NiKeyBasedInterpolator, true> {
 private:
-	uint16_t flags = 0;
-	uint32_t bankDir = 0;
+	PathFlags pathFlags = (PathFlags)(PATH_CVDATANEEDSUPDATE | PATH_CURVETYPEOPEN);
+	int bankDir = 1;
 	float maxBankAngle = 0.0f;
 	float smoothing = 0.0f;
 	uint16_t followAxis = 0;
@@ -388,8 +426,8 @@ public:
 	uint16_t flags = 0x000C;
 	float frequency = 1.0f;
 	float phase = 0.0f;
-	float startTime = 0.0f;
-	float stopTime = 0.0f;
+	float startTime = NiFloatMax;
+	float stopTime = NiFloatMin;
 	NiBlockPtr<NiObjectNET> targetRef;
 
 	void Sync(NiStreamReversible& stream);
@@ -400,7 +438,7 @@ public:
 
 class NiLookAtController : public NiObjectCRTP<NiLookAtController, NiTimeController, true> {
 public:
-	uint16_t unkShort1 = 0;
+	LookAtFlags lookAtFlags = LOOK_X_AXIS;
 	NiBlockPtr<NiNode> lookAtNodePtr;
 
 	static constexpr const char* BlockName = "NiLookAtController";
@@ -412,13 +450,13 @@ public:
 
 class NiPathController : public NiObjectCRTP<NiPathController, NiTimeController, true> {
 public:
-	uint16_t unkShort1 = 0;
-	uint32_t unkInt1 = 1;
-	float unkFloat1 = 0.0f;
-	float unkFloat2 = 0.0f;
-	uint16_t unkShort2 = 0;
-	NiBlockRef<NiPosData> posDataRef;
-	NiBlockRef<NiFloatData> floatDataRef;
+	PathFlags pathFlags = PATH_NONE;
+	int bankDir = 1;
+	float maxBankAngle = 0.0f;
+	float smoothing = 0.0f;
+	uint16_t followAxis = 0;
+	NiBlockRef<NiPosData> pathDataRef;
+	NiBlockRef<NiFloatData> percentDataRef;
 
 	static constexpr const char* BlockName = "NiPathController";
 	const char* GetBlockName() override { return BlockName; }
@@ -595,13 +633,18 @@ struct MorphWeight {
 	void GetChildIndices(std::vector<int>& indices) { indices.push_back(interpRef.index); }
 };
 
+enum GeomMorpherFlags : uint16_t {
+	GM_UPDATE_NORMALS_DISABLED,
+	GM_UPDATE_NORMALS_ENABLED
+};
+
 class NiGeomMorpherController : public NiObjectCRTP<NiGeomMorpherController, NiInterpController, true> {
 private:
 	uint32_t numTargets = 0;
 	std::vector<MorphWeight> interpWeights;
 
 public:
-	uint16_t extraFlags = 0;
+	GeomMorpherFlags morpherFlags = GM_UPDATE_NORMALS_DISABLED;
 	NiBlockRef<NiMorphData> dataRef;
 	bool alwaysUpdate = false;
 
@@ -704,7 +747,7 @@ enum TexType : uint32_t {
 	GLOW_MAP,
 	BUMP_MAP,
 	NORMAL_MAP,
-	UNKNOWN2_MAP,
+	PARALLAX_MAP,
 	DECAL_0_MAP,
 	DECAL_1_MAP,
 	DECAL_2_MAP,
@@ -740,7 +783,7 @@ enum TexTransformType : uint32_t { TT_TRANSLATE_U, TT_TRANSLATE_V, TT_ROTATE, TT
 class NiTextureTransformController
 	: public NiObjectCRTP<NiTextureTransformController, NiFloatInterpController, true> {
 public:
-	uint8_t unkByte1 = 0;
+	bool shaderMap = false;
 	TexType textureSlot = BASE_MAP;
 	TexTransformType operation = TT_TRANSLATE_U;
 

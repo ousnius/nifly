@@ -749,12 +749,12 @@ protected:
 	std::vector<PolygonInfo> polygons;
 	std::vector<uint16_t> polygonIndices;
 
-	uint16_t unkShort1 = 1;
+	uint16_t polygonGrowBy = 1;
 	uint16_t numPolygons = 0;
-	uint16_t usedVertices = 0;
-	uint16_t unkShort2 = 1;
-	uint16_t usedTrianglePoints = 0;
-	uint16_t unkShort3 = 1;
+	uint16_t maxVertices = 0;
+	uint16_t verticesGrowBy = 1;
+	uint16_t maxIndices = 0;
+	uint16_t indicesGrowBy = 1;
 
 public:
 	static constexpr const char* BlockName = "NiScreenElementsData";

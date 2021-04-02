@@ -203,10 +203,10 @@ public:
 
 class BSPSysLODModifier : public NiObjectCRTP<BSPSysLODModifier, NiPSysModifier, true> {
 public:
-	float lodBeginDistance = 0.0f;
-	float lodEndDistance = 0.0f;
-	float unknownFadeFactor1 = 0.0f;
-	float unknownFadeFactor2 = 0.0f;
+	float lodBeginDistance = 0.1f;
+	float lodEndDistance = 0.7f;
+	float endEmitScale = 0.2f;
+	float endSize = 1.0f;
 
 	static constexpr const char* BlockName = "BSPSysLODModifier";
 	const char* GetBlockName() override { return BlockName; }
@@ -470,12 +470,12 @@ public:
 class NiPSysAirFieldModifier : public NiObjectCRTP<NiPSysAirFieldModifier, NiPSysFieldModifier, true> {
 public:
 	Vector3 direction;
-	float unkFloat1 = 0.0f;
-	float unkFloat2 = 0.0f;
-	bool unkBool1 = false;
-	bool unkBool2 = false;
-	bool unkBool3 = false;
-	float unkFloat3 = 0.0f;
+	float airFriction = 0.0f;
+	float inheritVelocity = 0.0f;
+	bool inheritRotation = false;
+	bool componentOnly = false;
+	bool enableSpread = false;
+	float spread = 0.0f;
 
 	static constexpr const char* BlockName = "NiPSysAirFieldModifier";
 	const char* GetBlockName() override { return BlockName; }
