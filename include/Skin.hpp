@@ -34,7 +34,7 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
-class NiSkinData : public NiObjectCRTP<NiSkinData, NiObject, true> {
+class NiSkinData : public NiCloneableStreamable<NiSkinData, NiObject> {
 public:
 	struct BoneData {
 		// boneTransform transforms from skin CS to bone CS.
@@ -59,7 +59,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiSkinPartition : public NiObjectCRTP<NiSkinPartition, NiObject, true> {
+class NiSkinPartition : public NiCloneableStreamable<NiSkinPartition, NiObject> {
 public:
 	struct PartitionBlock {
 		uint16_t numVertices = 0;
@@ -162,12 +162,12 @@ public:
 
 class NiNode;
 
-class NiBoneContainer : public NiObjectCRTP<NiBoneContainer, NiObject> {
+class NiBoneContainer : public NiCloneable<NiBoneContainer, NiObject> {
 public:
 	NiBlockPtrArray<NiNode> boneRefs;
 };
 
-class NiSkinInstance : public NiObjectCRTP<NiSkinInstance, NiBoneContainer, true> {
+class NiSkinInstance : public NiCloneableStreamable<NiSkinInstance, NiBoneContainer> {
 public:
 	NiBlockRef<NiSkinData> dataRef;
 	NiBlockRef<NiSkinPartition> skinPartitionRef;
@@ -185,7 +185,7 @@ public:
 
 enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
-class BSDismemberSkinInstance : public NiObjectCRTP<BSDismemberSkinInstance, NiSkinInstance, true> {
+class BSDismemberSkinInstance : public NiCloneableStreamable<BSDismemberSkinInstance, NiSkinInstance> {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
@@ -217,7 +217,7 @@ public:
 	}
 };
 
-class BSSkinBoneData : public NiObjectCRTP<BSSkinBoneData, NiObject, true> {
+class BSSkinBoneData : public NiCloneableStreamable<BSSkinBoneData, NiObject> {
 public:
 	uint32_t nBones = 0;
 
@@ -242,7 +242,7 @@ public:
 
 class NiAVObject;
 
-class BSSkinInstance : public NiObjectCRTP<BSSkinInstance, NiBoneContainer, true> {
+class BSSkinInstance : public NiCloneableStreamable<BSSkinInstance, NiBoneContainer> {
 public:
 	NiBlockPtr<NiAVObject> targetRef;
 	NiBlockRef<BSSkinBoneData> dataRef;

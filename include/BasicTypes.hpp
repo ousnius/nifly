@@ -278,33 +278,31 @@ private:
 	Mode mode;
 };
 
-template<typename Derived, typename Base, bool GetPut = false>
-class NiObjectCRTP;
-
 template<typename Derived, typename Base>
-class NiObjectCRTP<Derived, Base, false> : public Base {
+class NiCloneable : public Base {
 public:
-	virtual ~NiObjectCRTP() override = default;
+	virtual ~NiCloneable() override = default;
 
 	std::unique_ptr<Derived> Clone() const {
 		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
 	}
 
 private:
-	virtual NiObjectCRTP* Clone_impl() const override { return new Derived(asDer()); }
+	virtual NiCloneable* Clone_impl() const override { return new Derived(asDer()); }
 
 	Derived& asDer() { return static_cast<Derived&>(*this); }
 	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
 };
 
 template<typename Derived, typename Base>
-class NiObjectCRTP<Derived, Base, true> : public NiObjectCRTP<Derived, Base, false> {
+class NiStreamable : public Base {
 public:
 	void Get(NiIStream& stream) override {
 		Base::Get(stream);
 		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
 		asDer().Sync(s);
 	}
+
 	void Put(NiOStream& stream) override {
 		Base::Put(stream);
 		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
@@ -312,6 +310,34 @@ public:
 	}
 
 private:
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
+};
+
+template<typename Derived, typename Base>
+class NiCloneableStreamable : public Base {
+public:
+	virtual ~NiCloneableStreamable() override = default;
+
+	std::unique_ptr<Derived> Clone() const {
+		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
+	}
+
+	void Get(NiIStream& stream) override {
+		Base::Get(stream);
+		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
+		asDer().Sync(s);
+	}
+
+	void Put(NiOStream& stream) override {
+		Base::Put(stream);
+		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
+		asDer().Sync(s);
+	}
+
+private:
+	virtual NiCloneableStreamable* Clone_impl() const override { return new Derived(asDer()); }
+
 	Derived& asDer() { return static_cast<Derived&>(*this); }
 	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
 };
@@ -755,7 +781,7 @@ private:
 	virtual NiObject* Clone_impl() const = 0;
 };
 
-class NiHeader : public NiObjectCRTP<NiHeader, NiObject> {
+class NiHeader : public NiCloneable<NiHeader, NiObject> {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -957,7 +983,7 @@ public:
 	void Put(NiOStream& stream) override;
 };
 
-class NiUnknown : public NiObjectCRTP<NiUnknown, NiObject, true> {
+class NiUnknown : public NiCloneableStreamable<NiUnknown, NiObject> {
 public:
 	std::vector<char> data;
 
