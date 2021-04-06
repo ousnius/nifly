@@ -67,6 +67,11 @@ public:
 
 	NifFile(std::istream& file, const NifLoadOptions& options = NifLoadOptions()) { Load(file, options); }
 
+	NifFile(const std::string& fileData, const NifLoadOptions& options = NifLoadOptions()) {
+		std::istringstream iss(fileData);
+		Load(iss, options);
+	}
+
 	NifFile(const NifFile& other) { CopyFrom(other); }
 
 	NifFile& operator=(const NifFile& other) {
