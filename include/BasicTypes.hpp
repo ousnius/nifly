@@ -634,16 +634,16 @@ protected:
 	}
 
 public:
-	typedef typename std::vector<NiBlockRef<T>>::iterator iterator;
-	typedef typename std::vector<NiBlockRef<T>>::const_iterator const_iterator;
+	using iterator = typename std::vector<NiBlockRef<T>>::iterator;
+	using const_iterator = typename std::vector<NiBlockRef<T>>::const_iterator;
 
-	typename iterator begin() { return refs.begin(); }
+	iterator begin() { return refs.begin(); }
 
-	typename iterator end() { return refs.end(); }
+	iterator end() { return refs.end(); }
 
-	typename const_iterator cbegin() const { return refs.cbegin(); }
+	const_iterator cbegin() const { return refs.cbegin(); }
 
-	typename const_iterator cend() const { return refs.cend(); }
+	const_iterator cend() const { return refs.cend(); }
 
 	const std::vector<NiBlockRef<T>>& GetRefs() const {
 		return refs;
