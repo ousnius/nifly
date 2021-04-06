@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 #include "ExtraData.hpp"
 
 namespace nifly {
-typedef uint32_t HavokMaterial;
+using HavokMaterial = uint32_t;
 
 struct HavokFilter {
 	uint8_t layer = 1;
