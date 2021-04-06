@@ -31,12 +31,22 @@ TEST_CASE("Load and save animated file", "[NifFile]") {
 	REQUIRE(nif.Save("TestNifFile_Animated_output.nif") == 0);
 }
 
-TEST_CASE("Load, optimize and save file", "[NifFile]") {
+TEST_CASE("Load, optimize (LE to SE) and save file", "[NifFile]") {
 	OptOptions options;
 	options.targetVersion = NiVersion::getSSE();
 
 	NifFile nif;
-	REQUIRE(nif.Load("TestNifFile_Optimize.nif") == 0);
+	REQUIRE(nif.Load("TestNifFile_Optimize_LE_to_SE.nif") == 0);
 	nif.OptimizeFor(options);
-	REQUIRE(nif.Save("TestNifFile_Optimize_output.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Optimize_LE_to_SE_output.nif") == 0);
+}
+
+TEST_CASE("Load, optimize (SE to LE) and save file", "[NifFile]") {
+	OptOptions options;
+	options.targetVersion = NiVersion::getSK();
+
+	NifFile nif;
+	REQUIRE(nif.Load("TestNifFile_Optimize_SE_to_LE.nif") == 0);
+	nif.OptimizeFor(options);
+	REQUIRE(nif.Save("TestNifFile_Optimize_SE_to_LE_output.nif") == 0);
 }

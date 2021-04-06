@@ -29,6 +29,24 @@ void NiAdditionalGeometryData::Sync(NiStreamReversible& stream) {
 		blocks[i].Sync(stream);
 }
 
+std::vector<AdditionalDataInfo> NiAdditionalGeometryData::GetBlockInfos() const {
+	return blockInfos;
+}
+
+void NiAdditionalGeometryData::SetBlockInfos(const std::vector<AdditionalDataInfo>& adi) {
+	numBlockInfos = adi.size();
+	blockInfos = adi;
+}
+
+std::vector<AdditionalDataBlock> NiAdditionalGeometryData::GetBlocks() const {
+	return blocks;
+}
+
+void NiAdditionalGeometryData::SetBlocks(const std::vector<AdditionalDataBlock>& adb) {
+	numBlocks = adb.size();
+	blocks = adb;
+}
+
 
 void BSPackedAdditionalGeometryData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numVertices);
@@ -42,6 +60,24 @@ void BSPackedAdditionalGeometryData::Sync(NiStreamReversible& stream) {
 	blocks.resize(numBlocks);
 	for (uint32_t i = 0; i < numBlocks; i++)
 		blocks[i].Sync(stream);
+}
+
+std::vector<AdditionalDataInfo> BSPackedAdditionalGeometryData::GetBlockInfos() const {
+	return blockInfos;
+}
+
+void BSPackedAdditionalGeometryData::SetBlockInfos(const std::vector<AdditionalDataInfo>& adi) {
+	numBlockInfos = adi.size();
+	blockInfos = adi;
+}
+
+std::vector<BSPackedAdditionalDataBlock> BSPackedAdditionalGeometryData::GetBlocks() const {
+	return blocks;
+}
+
+void BSPackedAdditionalGeometryData::SetBlocks(const std::vector<BSPackedAdditionalDataBlock>& adb) {
+	numBlocks = adb.size();
+	blocks = adb;
 }
 
 
@@ -109,7 +145,7 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 	additionalDataRef.Sync(stream);
 }
 
-void NiGeometryData::GetChildRefs(std::set<Ref*>& refs) {
+void NiGeometryData::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&additionalDataRef);
@@ -118,18 +154,10 @@ void NiGeometryData::GetChildRefs(std::set<Ref*>& refs) {
 void NiGeometryData::GetChildIndices(std::vector<int>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(additionalDataRef.GetIndex());
+	indices.push_back(additionalDataRef.index);
 }
 
-int NiGeometryData::GetAdditionalDataRef() {
-	return additionalDataRef.GetIndex();
-}
-
-void NiGeometryData::SetAdditionalDataRef(int dataRef) {
-	additionalDataRef.SetIndex(dataRef);
-}
-
-uint16_t NiGeometryData::GetNumVertices() {
+uint16_t NiGeometryData::GetNumVertices() const {
 	return numVertices;
 }
 
@@ -190,10 +218,10 @@ void NiGeometryData::SetTangents(const bool enable) {
 	}
 }
 
-uint32_t NiGeometryData::GetNumTriangles() {
+uint32_t NiGeometryData::GetNumTriangles() const {
 	return 0;
 }
-bool NiGeometryData::GetTriangles(std::vector<Triangle>&) {
+bool NiGeometryData::GetTriangles(std::vector<Triangle>&) const {
 	return false;
 }
 void NiGeometryData::SetTriangles(const std::vector<Triangle>&){};
@@ -272,32 +300,7 @@ void NiGeometryData::CalcTangentSpace() {
 }
 
 
-NiGeometryData* NiShape::GetGeomData() {
-	return nullptr;
-};
-void NiShape::SetGeomData(NiGeometryData*){};
-
-int NiShape::GetSkinInstanceRef() {
-	return NIF_NPOS;
-}
-void NiShape::SetSkinInstanceRef(int) {}
-
-int NiShape::GetShaderPropertyRef() {
-	return NIF_NPOS;
-}
-void NiShape::SetShaderPropertyRef(int) {}
-
-int NiShape::GetAlphaPropertyRef() {
-	return NIF_NPOS;
-}
-void NiShape::SetAlphaPropertyRef(int) {}
-
-int NiShape::GetDataRef() {
-	return NIF_NPOS;
-}
-void NiShape::SetDataRef(int) {}
-
-uint16_t NiShape::GetNumVertices() {
+uint16_t NiShape::GetNumVertices() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->GetNumVertices();
@@ -311,7 +314,7 @@ void NiShape::SetVertices(const bool enable) {
 		geomData->SetVertices(enable);
 };
 
-bool NiShape::HasVertices() {
+bool NiShape::HasVertices() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->HasVertices();
@@ -325,7 +328,7 @@ void NiShape::SetUVs(const bool enable) {
 		geomData->SetUVs(enable);
 };
 
-bool NiShape::HasUVs() {
+bool NiShape::HasUVs() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->HasUVs();
@@ -339,7 +342,7 @@ void NiShape::SetNormals(const bool enable) {
 		geomData->SetNormals(enable);
 };
 
-bool NiShape::HasNormals() {
+bool NiShape::HasNormals() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->HasNormals();
@@ -353,7 +356,7 @@ void NiShape::SetTangents(const bool enable) {
 		geomData->SetTangents(enable);
 };
 
-bool NiShape::HasTangents() {
+bool NiShape::HasTangents() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->HasTangents();
@@ -367,7 +370,7 @@ void NiShape::SetVertexColors(const bool enable) {
 		geomData->SetVertexColors(enable);
 };
 
-bool NiShape::HasVertexColors() {
+bool NiShape::HasVertexColors() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->HasVertexColors();
@@ -376,11 +379,11 @@ bool NiShape::HasVertexColors() {
 };
 
 void NiShape::SetSkinned(const bool){};
-bool NiShape::IsSkinned() {
+bool NiShape::IsSkinned() const {
 	return false;
 };
 
-uint32_t NiShape::GetNumTriangles() {
+uint32_t NiShape::GetNumTriangles() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->GetNumTriangles();
@@ -388,7 +391,7 @@ uint32_t NiShape::GetNumTriangles() {
 	return 0;
 }
 
-bool NiShape::GetTriangles(std::vector<Triangle>& tris) {
+bool NiShape::GetTriangles(std::vector<Triangle>& tris) const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->GetTriangles(tris);
@@ -408,7 +411,7 @@ void NiShape::SetBounds(const BoundingSphere& bounds) {
 		geomData->SetBounds(bounds);
 }
 
-BoundingSphere NiShape::GetBounds() {
+BoundingSphere NiShape::GetBounds() const {
 	auto geomData = GetGeomData();
 	if (geomData)
 		return geomData->GetBounds();
@@ -422,13 +425,13 @@ void NiShape::UpdateBounds() {
 		geomData->UpdateBounds();
 }
 
-int NiShape::GetBoneID(NiHeader& hdr, const std::string& boneName) {
-	auto boneCont = hdr.GetBlock<NiBoneContainer>(GetSkinInstanceRef());
+int NiShape::GetBoneID(const NiHeader& hdr, const std::string& boneName) const {
+	auto boneCont = hdr.GetBlock(SkinInstanceRef());
 	if (boneCont) {
 		int i = 0;
-		for (auto& bone : boneCont->GetBones()) {
-			auto node = hdr.GetBlock<NiNode>(bone.GetIndex());
-			if (node && node->GetName() == boneName)
+		for (auto& bone : boneCont->boneRefs) {
+			auto node = hdr.GetBlock(bone);
+			if (node && node->name == boneName)
 				return i;
 			++i;
 		}
@@ -632,7 +635,7 @@ void BSTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 	std::sort(deletedTris.begin(), deletedTris.end(), std::greater<>());
 }
 
-void BSTriShape::GetChildRefs(std::set<Ref*>& refs) {
+void BSTriShape::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
 	refs.insert(&skinInstanceRef);
@@ -643,33 +646,9 @@ void BSTriShape::GetChildRefs(std::set<Ref*>& refs) {
 void BSTriShape::GetChildIndices(std::vector<int>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
-	indices.push_back(skinInstanceRef.GetIndex());
-	indices.push_back(shaderPropertyRef.GetIndex());
-	indices.push_back(alphaPropertyRef.GetIndex());
-}
-
-int BSTriShape::GetSkinInstanceRef() {
-	return skinInstanceRef.GetIndex();
-}
-
-void BSTriShape::SetSkinInstanceRef(int skinInstRef) {
-	skinInstanceRef.SetIndex(skinInstRef);
-}
-
-int BSTriShape::GetShaderPropertyRef() {
-	return shaderPropertyRef.GetIndex();
-}
-
-void BSTriShape::SetShaderPropertyRef(int shaderPropRef) {
-	shaderPropertyRef.SetIndex(shaderPropRef);
-}
-
-int BSTriShape::GetAlphaPropertyRef() {
-	return alphaPropertyRef.GetIndex();
-}
-
-void BSTriShape::SetAlphaPropertyRef(int alphaPropRef) {
-	alphaPropertyRef.SetIndex(alphaPropRef);
+	indices.push_back(skinInstanceRef.index);
+	indices.push_back(shaderPropertyRef.index);
+	indices.push_back(alphaPropertyRef.index);
 }
 
 std::vector<Vector3>* BSTriShape::GetRawVerts() {
@@ -799,7 +778,7 @@ std::vector<float>* BSTriShape::GetEyeData() {
 	return &rawEyeData;
 }
 
-uint16_t BSTriShape::GetNumVertices() {
+uint16_t BSTriShape::GetNumVertices() const {
 	return numVertices;
 }
 
@@ -890,11 +869,11 @@ void BSTriShape::SetFullPrecision(const bool enable) {
 		vertexDesc.RemoveFlag(VF_FULLPREC);
 }
 
-uint32_t BSTriShape::GetNumTriangles() {
+uint32_t BSTriShape::GetNumTriangles() const {
 	return numTriangles;
 }
 
-bool BSTriShape::GetTriangles(std::vector<Triangle>& tris) {
+bool BSTriShape::GetTriangles(std::vector<Triangle>& tris) const {
 	tris = triangles;
 	return true;
 }
@@ -1377,7 +1356,7 @@ void BSSubIndexTriShape::SetDefaultSegments() {
 
 	segmentation.subSegmentData.arrayIndices.clear();
 	segmentation.subSegmentData.dataRecords.clear();
-	segmentation.subSegmentData.ssfFile.Clear();
+	segmentation.subSegmentData.ssfFile.clear();
 
 	segmentation.segments.resize(4);
 	for (uint32_t i = 0; i < 3; i++) {
@@ -1408,9 +1387,18 @@ void BSSubIndexTriShape::Create(NiVersion& version,
 	SetDefaultSegments();
 }
 
-void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts) {
+std::vector<BSGeometrySegmentData> BSSubIndexTriShape::GetSegments() const {
+	return segments;
+}
+
+void BSSubIndexTriShape::SetSegments(const std::vector<BSGeometrySegmentData>& sd) {
+	numSegments = sd.size();
+	segments = sd;
+}
+
+void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts) const {
 	inf.segs.clear();
-	inf.ssfFile = segmentation.subSegmentData.ssfFile.GetString();
+	inf.ssfFile = segmentation.subSegmentData.ssfFile.get();
 	inf.segs.resize(segmentation.segments.size());
 	triParts.clear();
 
@@ -1421,7 +1409,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 	int arrayIndex = 0;
 
 	for (size_t i = 0; i < segmentation.segments.size(); ++i) {
-		BSSITSSegment& seg = segmentation.segments[i];
+		const BSSITSSegment& seg = segmentation.segments[i];
 		uint32_t startIndex = seg.startIndex / 3;
 		uint32_t endIndex = std::min(numTris, startIndex + seg.numPrimitives);
 
@@ -1432,7 +1420,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 		inf.segs[i].subs.resize(seg.subSegments.size());
 
 		for (size_t j = 0; j < seg.subSegments.size(); ++j) {
-			BSSITSSubSegment& sub = seg.subSegments[j];
+			const BSSITSSubSegment& sub = seg.subSegments[j];
 			startIndex = sub.startIndex / 3;
 
 			endIndex = std::min(numTris, startIndex + sub.numPrimitives);
@@ -1442,7 +1430,7 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 			inf.segs[i].subs[j].partID = partID++;
 			arrayIndex++;
 
-			BSSITSSubSegmentDataRecord& rec = segmentation.subSegmentData.dataRecords[arrayIndex];
+			const BSSITSSubSegmentDataRecord& rec = segmentation.subSegmentData.dataRecords[arrayIndex];
 			inf.segs[i].subs[j].userSlotID = rec.userSlotID < 30 ? 0 : rec.userSlotID;
 			inf.segs[i].subs[j].material = rec.material;
 			inf.segs[i].subs[j].extraData = rec.extraData;
@@ -1564,7 +1552,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	segmentation.numTotalSegments = parentArrayIndex;
 	segmentation.subSegmentData.numSegments = segmentIndex;
 	segmentation.subSegmentData.numTotalSegments = parentArrayIndex;
-	segmentation.subSegmentData.ssfFile.SetString(inf.ssfFile);
+	segmentation.subSegmentData.ssfFile.get() = inf.ssfFile;
 }
 
 
@@ -1654,13 +1642,13 @@ void NiGeometry::Sync(NiStreamReversible& stream) {
 
 	if (stream.GetVersion().File() >= V20_2_0_5) {
 		stream.Sync(numMaterials);
-		materialNameRefs.resize(numMaterials);
 		materials.resize(numMaterials);
 
-		for (uint32_t i = 0; i < numMaterials; i++) {
-			materialNameRefs[i].Sync(stream);
-			stream.Sync(materials[i]);
-		}
+		for (uint32_t i = 0; i < numMaterials; i++)
+			materials[i].nameRef.Sync(stream);
+
+		for (uint32_t i = 0; i < numMaterials; i++)
+			stream.Sync(materials[i].extraData);
 
 		stream.Sync(activeMaterial);
 	}
@@ -1682,14 +1670,14 @@ void NiGeometry::Sync(NiStreamReversible& stream) {
 	}
 }
 
-void NiGeometry::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiGeometry::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiAVObject::GetStringRefs(refs);
 
-	for (auto& m : materialNameRefs)
-		refs.emplace_back(&m);
+	for (auto& m : materials)
+		refs.emplace_back(&m.nameRef);
 }
 
-void NiGeometry::GetChildRefs(std::set<Ref*>& refs) {
+void NiGeometry::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
@@ -1701,46 +1689,23 @@ void NiGeometry::GetChildRefs(std::set<Ref*>& refs) {
 void NiGeometry::GetChildIndices(std::vector<int>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
-	indices.push_back(skinInstanceRef.GetIndex());
-	indices.push_back(shaderPropertyRef.GetIndex());
-	indices.push_back(alphaPropertyRef.GetIndex());
+	indices.push_back(dataRef.index);
+	indices.push_back(skinInstanceRef.index);
+	indices.push_back(shaderPropertyRef.index);
+	indices.push_back(alphaPropertyRef.index);
 }
 
-bool NiGeometry::IsSkinned() {
-	return skinInstanceRef.GetIndex() != NIF_NPOS;
+bool NiGeometry::IsSkinned() const {
+	return !skinInstanceRef.IsEmpty();
 }
 
-int NiGeometry::GetDataRef() {
-	return dataRef.GetIndex();
+std::vector<MaterialInfo> NiGeometry::GetMaterials() const {
+	return materials;
 }
 
-void NiGeometry::SetDataRef(int datRef) {
-	dataRef.SetIndex(datRef);
-}
-
-int NiGeometry::GetSkinInstanceRef() {
-	return skinInstanceRef.GetIndex();
-}
-
-void NiGeometry::SetSkinInstanceRef(int skinInstRef) {
-	skinInstanceRef.SetIndex(skinInstRef);
-}
-
-int NiGeometry::GetShaderPropertyRef() {
-	return shaderPropertyRef.GetIndex();
-}
-
-void NiGeometry::SetShaderPropertyRef(int shaderPropRef) {
-	shaderPropertyRef.SetIndex(shaderPropRef);
-}
-
-int NiGeometry::GetAlphaPropertyRef() {
-	return alphaPropertyRef.GetIndex();
-}
-
-void NiGeometry::SetAlphaPropertyRef(int alphaPropRef) {
-	alphaPropertyRef.SetIndex(alphaPropRef);
+void NiGeometry::SetMaterials(const std::vector<MaterialInfo>& mi) {
+	numMaterials = mi.size();
+	materials = mi;
 }
 
 
@@ -1834,11 +1799,20 @@ void NiTriShapeData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndic
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
 }
 
-uint32_t NiTriShapeData::GetNumTriangles() {
+std::vector<MatchGroup> NiTriShapeData::GetMatchGroups() const {
+	return matchGroups;
+}
+
+void NiTriShapeData::SetMatchGroups(const std::vector<MatchGroup>& mg) {
+	numMatchGroups = mg.size();
+	matchGroups = mg;
+}
+
+uint32_t NiTriShapeData::GetNumTriangles() const {
 	return numTriangles;
 }
 
-bool NiTriShapeData::GetTriangles(std::vector<Triangle>& tris) {
+bool NiTriShapeData::GetTriangles(std::vector<Triangle>& tris) const {
 	tris = triangles;
 	return hasTriangles;
 }
@@ -1942,7 +1916,7 @@ void NiTriShapeData::CalcTangentSpace() {
 }
 
 
-NiGeometryData* NiTriShape::GetGeomData() {
+NiGeometryData* NiTriShape::GetGeomData() const {
 	return shapeData;
 };
 
@@ -1953,21 +1927,23 @@ void NiTriShape::SetGeomData(NiGeometryData* geomDataPtr) {
 }
 
 
-void NiTriStripsData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numStrips);
-	stripLengths.resize(numStrips);
-	for (uint32_t i = 0; i < numStrips; i++)
-		stream.Sync(stripLengths[i]);
+void StripsInfo::Sync(NiStreamReversible& stream) {
+	stripLengths.Sync(stream);
 
 	stream.Sync(hasPoints);
 	if (hasPoints) {
-		points.resize(numStrips);
-		for (uint32_t i = 0; i < numStrips; i++) {
+		points.resize(stripLengths.size());
+		for (uint32_t i = 0; i < stripLengths.size(); i++) {
 			points[i].resize(stripLengths[i]);
 			for (uint32_t j = 0; j < stripLengths[i]; j++)
 				stream.Sync(points[i][j]);
 		}
 	}
+}
+
+
+void NiTriStripsData::Sync(NiStreamReversible& stream) {
+	stripsInfo.Sync(stream);
 }
 
 void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
@@ -1976,39 +1952,39 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
 
 	// This is not a healthy way to delete strip data. Probably need to restrip the shape.
-	for (uint32_t i = 0; i < numStrips; i++) {
-		for (uint32_t j = 0; j < stripLengths[i]; j++) {
-			if (indexCollapse[points[i][j]] == -1) {
-				points[i].erase(points[i].begin() + j);
-				stripLengths[i]--;
+	for (uint32_t i = 0; i < stripsInfo.stripLengths.size(); i++) {
+		for (uint32_t j = 0; j < stripsInfo.stripLengths[i]; j++) {
+			if (indexCollapse[stripsInfo.points[i][j]] == -1) {
+				stripsInfo.points[i].erase(stripsInfo.points[i].begin() + j);
+				stripsInfo.stripLengths[i]--;
 				--j;
 			}
 			else
-				points[i][j] = indexCollapse[points[i][j]];
+				stripsInfo.points[i][j] = indexCollapse[stripsInfo.points[i][j]];
 		}
 	}
 
 	numTriangles = 0;
-	for (auto len : stripLengths)
+	for (auto len : stripsInfo.stripLengths)
 		if (len - 2 > 0)
 			numTriangles += len - 2;
 }
 
-uint32_t NiTriStripsData::GetNumTriangles() {
+uint32_t NiTriStripsData::GetNumTriangles() const {
 	return StripsToTris().size();
 }
 
-bool NiTriStripsData::GetTriangles(std::vector<Triangle>& tris) {
+bool NiTriStripsData::GetTriangles(std::vector<Triangle>& tris) const {
 	tris = StripsToTris();
-	return hasPoints;
+	return stripsInfo.hasPoints;
 }
 
 void NiTriStripsData::SetTriangles(const std::vector<Triangle>& /*tris*/) {
 	// Not implemented, stripify here
 }
 
-std::vector<Triangle> NiTriStripsData::StripsToTris() {
-	return GenerateTrianglesFromStrips(points);
+std::vector<Triangle> NiTriStripsData::StripsToTris() const {
+	return GenerateTrianglesFromStrips(stripsInfo.points);
 }
 
 void NiTriStripsData::RecalcNormals(const bool smooth, const float smoothThresh) {
@@ -2107,7 +2083,7 @@ void NiTriStripsData::CalcTangentSpace() {
 }
 
 
-NiGeometryData* NiTriStrips::GetGeomData() {
+NiGeometryData* NiTriStrips::GetGeomData() const {
 	return stripsData;
 };
 
@@ -2131,7 +2107,7 @@ void NiLinesData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices)
 }
 
 
-NiGeometryData* NiLines::GetGeomData() {
+NiGeometryData* NiLines::GetGeomData() const {
 	return linesData;
 }
 
@@ -2152,12 +2128,12 @@ void NiScreenElementsData::Sync(NiStreamReversible& stream) {
 	for (uint32_t i = 0; i < maxPolygons; i++)
 		stream.Sync(polygonIndices[i]);
 
-	stream.Sync(unkShort1);
+	stream.Sync(polygonGrowBy);
 	stream.Sync(numPolygons);
-	stream.Sync(usedVertices);
-	stream.Sync(unkShort2);
-	stream.Sync(usedTrianglePoints);
-	stream.Sync(unkShort3);
+	stream.Sync(maxVertices);
+	stream.Sync(verticesGrowBy);
+	stream.Sync(maxIndices);
+	stream.Sync(indicesGrowBy);
 }
 
 void NiScreenElementsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
@@ -2168,12 +2144,12 @@ void NiScreenElementsData::notifyVerticesDelete(const std::vector<uint16_t>& ver
 	polygons.clear();
 	polygonIndices.clear();
 	numPolygons = 0;
-	usedVertices = 0;
-	usedTrianglePoints = 0;
+	maxVertices = 0;
+	maxIndices = 0;
 }
 
 
-NiGeometryData* NiScreenElements::GetGeomData() {
+NiGeometryData* NiScreenElements::GetGeomData() const {
 	return elemData;
 }
 
@@ -2190,7 +2166,7 @@ void BSLODTriShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(level2);
 }
 
-NiGeometryData* BSLODTriShape::GetGeomData() {
+NiGeometryData* BSLODTriShape::GetGeomData() const {
 	return shapeData;
 }
 
@@ -2214,4 +2190,13 @@ void BSSegmentedTriShape::Sync(NiStreamReversible& stream) {
 
 	for (auto& segment : segments)
 		segment.Sync(stream);
+}
+
+std::vector<BSGeometrySegmentData> BSSegmentedTriShape::GetSegments() const {
+	return segments;
+}
+
+void BSSegmentedTriShape::SetSegments(const std::vector<BSGeometrySegmentData>& sd) {
+	numSegments = sd.size();
+	segments = sd;
 }

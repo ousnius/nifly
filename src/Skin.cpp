@@ -206,8 +206,10 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 				stream.Sync(partition.boneIndices[i]);
 		}
 
-		if (stream.GetVersion().User() >= 12)
-			stream.Sync(partition.unkShort);
+		if (stream.GetVersion().User() >= 12) {
+			stream.Sync(partition.lodLevel);
+			stream.Sync(partition.globalVB);
+		}
 
 		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() == 100) {
 			partition.vertexDesc.Sync(stream);
@@ -482,11 +484,6 @@ void NiSkinPartition::PrepareTriParts(const std::vector<Triangle>& shapeTris) {
 }
 
 
-BlockRefArray<NiNode>& NiBoneContainer::GetBones() {
-	return boneRefs;
-}
-
-
 void NiSkinInstance::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
 	skinPartitionRef.Sync(stream);
@@ -494,7 +491,7 @@ void NiSkinInstance::Sync(NiStreamReversible& stream) {
 	boneRefs.Sync(stream);
 }
 
-void NiSkinInstance::GetChildRefs(std::set<Ref*>& refs) {
+void NiSkinInstance::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
@@ -504,11 +501,11 @@ void NiSkinInstance::GetChildRefs(std::set<Ref*>& refs) {
 void NiSkinInstance::GetChildIndices(std::vector<int>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
-	indices.push_back(skinPartitionRef.GetIndex());
+	indices.push_back(dataRef.index);
+	indices.push_back(skinPartitionRef.index);
 }
 
-void NiSkinInstance::GetPtrs(std::set<Ref*>& ptrs) {
+void NiSkinInstance::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
 	ptrs.insert(&targetRef);
@@ -565,14 +562,10 @@ void BSSkinInstance::Sync(NiStreamReversible& stream) {
 	targetRef.Sync(stream);
 	dataRef.Sync(stream);
 	boneRefs.Sync(stream);
-
-	stream.Sync(numScales);
-	scales.resize(numScales);
-	for (uint32_t i = 0; i < numScales; i++)
-		stream.Sync(scales[i]);
+	scales.Sync(stream);
 }
 
-void BSSkinInstance::GetChildRefs(std::set<Ref*>& refs) {
+void BSSkinInstance::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
@@ -581,10 +574,10 @@ void BSSkinInstance::GetChildRefs(std::set<Ref*>& refs) {
 void BSSkinInstance::GetChildIndices(std::vector<int>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
+	indices.push_back(dataRef.index);
 }
 
-void BSSkinInstance::GetPtrs(std::set<Ref*>& ptrs) {
+void BSSkinInstance::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
 	ptrs.insert(&targetRef);

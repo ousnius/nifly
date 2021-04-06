@@ -58,13 +58,13 @@ public:
 		}
 	}
 
-	KeyType GetInterpolationType() { return interpolation; }
+	KeyType GetInterpolationType() const { return interpolation; }
 
 	void SetInterpolationType(const KeyType interp) { interpolation = interp; }
 
-	uint32_t GetNumKeys() { return numKeys; }
+	uint32_t GetNumKeys() const { return numKeys; }
 
-	Key<T> GetKey(const int id) { return keys[id]; }
+	Key<T> GetKey(const int id) const { return keys[id]; }
 
 	void SetKey(const int id, const Key<T>& key) { keys[id] = key; }
 
