@@ -104,7 +104,7 @@ public:
 
 	NiNode* AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
 	void DeleteNode(const std::string& nodeName);
-	static bool CanDeleteNode(NiNode* node) ;
+	static bool CanDeleteNode(NiNode* node);
 	bool CanDeleteNode(const std::string& nodeName) const;
 	std::string GetNodeName(const int blockID) const;
 	void SetNodeName(const int blockID, const std::string& newName);
@@ -151,6 +151,11 @@ public:
 	NiShape* CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
 	int CloneNamedNode(const std::string& nodeName, NifFile* srcNif = nullptr);
 
+	NiShape* CreateShapeFromData(const std::string& shapeName,
+								 const std::vector<Vector3>* v,
+								 const std::vector<Triangle>* t,
+								 const std::vector<Vector2>* uv,
+								 const std::vector<Vector3>* norms = nullptr);
 	std::vector<std::string> GetShapeNames() const;
 	std::vector<NiShape*> GetShapes() const;
 	static bool RenameShape(NiShape* shape, const std::string& newName);
