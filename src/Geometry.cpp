@@ -651,10 +651,10 @@ void BSTriShape::GetChildIndices(std::vector<int>& indices) {
 	indices.push_back(alphaPropertyRef.index);
 }
 
-const std::vector<Vector3>* BSTriShape::UpdateRawVertices() {
+std::vector<Vector3>& BSTriShape::UpdateRawVertices() {
 	if (!HasVertices()) {
 		rawVertices.clear();
-		return &rawVertices;
+		return rawVertices;
 	}
 
 	rawVertices.resize(numVertices);
@@ -662,13 +662,13 @@ const std::vector<Vector3>* BSTriShape::UpdateRawVertices() {
 	for (uint16_t i = 0; i < numVertices; i++)
 		rawVertices[i] = vertData[i].vert;
 
-	return &rawVertices;
+	return rawVertices;
 }
 
-const std::vector<Vector3>* BSTriShape::UpdateRawNormals() {
+std::vector<Vector3>& BSTriShape::UpdateRawNormals() {
 	if (!HasNormals()) {
 		rawNormals.clear();
-		return &rawNormals;
+		return rawNormals;
 	}
 
 	rawNormals.resize(numVertices);
@@ -679,13 +679,13 @@ const std::vector<Vector3>* BSTriShape::UpdateRawNormals() {
 		rawNormals[i].z = ((static_cast<float>(vertData[i].normal[2])) / 255.0f) * 2.0f - 1.0f;
 	}
 
-	return &rawNormals;
+	return rawNormals;
 }
 
-const std::vector<Vector3>* BSTriShape::UpdateRawTangents() {
+std::vector<Vector3>& BSTriShape::UpdateRawTangents() {
 	if (!HasTangents()) {
 		rawTangents.clear();
-		return &rawTangents;
+		return rawTangents;
 	}
 
 	rawTangents.resize(numVertices);
@@ -695,13 +695,13 @@ const std::vector<Vector3>* BSTriShape::UpdateRawTangents() {
 		rawTangents[i].z = ((static_cast<float>(vertData[i].tangent[2])) / 255.0f) * 2.0f - 1.0f;
 	}
 
-	return &rawTangents;
+	return rawTangents;
 }
 
-const std::vector<Vector3>* BSTriShape::UpdateRawBitangents() {
+std::vector<Vector3>& BSTriShape::UpdateRawBitangents() {
 	if (!HasTangents()) {
 		rawBitangents.clear();
-		return &rawBitangents;
+		return rawBitangents;
 	}
 
 	rawBitangents.resize(numVertices);
@@ -711,13 +711,13 @@ const std::vector<Vector3>* BSTriShape::UpdateRawBitangents() {
 		rawBitangents[i].z = ((static_cast<float>(vertData[i].bitangentZ)) / 255.0f) * 2.0f - 1.0f;
 	}
 
-	return &rawBitangents;
+	return rawBitangents;
 }
 
-const std::vector<Vector2>* BSTriShape::UpdateRawUvs() {
+std::vector<Vector2>& BSTriShape::UpdateRawUvs() {
 	if (!HasUVs()) {
 		rawUvs.clear();
-		return &rawUvs;
+		return rawUvs;
 	}
 
 	rawUvs.resize(numVertices);
@@ -725,13 +725,13 @@ const std::vector<Vector2>* BSTriShape::UpdateRawUvs() {
 	for (uint16_t i = 0; i < numVertices; i++)
 		rawUvs[i] = vertData[i].uv;
 
-	return &rawUvs;
+	return rawUvs;
 }
 
-const std::vector<Color4>* BSTriShape::UpdateRawColors() {
+std::vector<Color4>& BSTriShape::UpdateRawColors() {
 	if (!HasVertexColors()) {
 		rawColors.clear();
-		return &rawColors;
+		return rawColors;
 	}
 
 	rawColors.resize(numVertices);
@@ -743,13 +743,13 @@ const std::vector<Color4>* BSTriShape::UpdateRawColors() {
 		rawColors[i].a = vertData[i].colorData[3] / 255.0f;
 	}
 
-	return &rawColors;
+	return rawColors;
 }
 
-const std::vector<float>* BSTriShape::UpdateRawEyeData() {
+std::vector<float>& BSTriShape::UpdateRawEyeData() {
 	if (!HasEyeData()) {
 		rawEyeData.clear();
-		return &rawEyeData;
+		return rawEyeData;
 	}
 
 	rawEyeData.resize(numVertices);
@@ -757,7 +757,7 @@ const std::vector<float>* BSTriShape::UpdateRawEyeData() {
 	for (uint16_t i = 0; i < numVertices; ++i)
 		rawEyeData[i] = vertData[i].eyeData;
 
-	return &rawEyeData;
+	return rawEyeData;
 }
 
 uint16_t BSTriShape::GetNumVertices() const {

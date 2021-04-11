@@ -1231,11 +1231,12 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				continue;
 
 			bool removeVertexColors = true;
+			bool removeNormals = false;
 			bool hasTangents = bsTriShape->HasTangents();
-			const std::vector<Vector3>* vertices = bsTriShape->UpdateRawVertices();
-			const std::vector<Vector3>* normals = bsTriShape->UpdateRawNormals();
-			const std::vector<Color4>* colors = bsTriShape->UpdateRawColors();
-			const std::vector<Vector2>* uvs = bsTriShape->UpdateRawUvs();
+			const std::vector<Vector3>& vertices = bsTriShape->UpdateRawVertices();
+			const std::vector<Vector3>& normals = bsTriShape->UpdateRawNormals();
+			const std::vector<Color4>& colors = bsTriShape->UpdateRawColors();
+			const std::vector<Vector2>& uvs = bsTriShape->UpdateRawUvs();
 
 			std::vector<Triangle> triangles;
 			bsTriShape->GetTriangles(triangles);
@@ -1244,9 +1245,9 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				removeVertexColors = false;
 
 			// Only remove vertex colors if all are 0xFFFFFFFF
-			if (colors && removeVertexColors) {
+			if (bsTriShape->HasVertexColors() && removeVertexColors) {
 				Color4 white(1.0f, 1.0f, 1.0f, 1.0f);
-				for (auto& c : (*colors)) {
+				for (auto& c : colors) {
 					if (white != c) {
 						removeVertexColors = false;
 						break;
@@ -1260,10 +1261,10 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				if (bslsp) {
 					// No normals and tangents with model space maps
 					if (bslsp->IsModelSpace()) {
-						if (normals && !normals->empty())
+						if (!normals.empty())
 							result.shapesNormalsRemoved.push_back(shapeName);
 
-						normals = nullptr;
+						removeNormals = true;
 					}
 
 					// Check tree anim flag
@@ -1308,7 +1309,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				}
 			}
 
-			if (colors && !colors->empty() && removeVertexColors)
+			if (!colors.empty() && removeVertexColors)
 				result.shapesVColorsRemoved.push_back(shapeName);
 
 			std::unique_ptr<NiTriShape> bsOptShape = nullptr;
@@ -1322,7 +1323,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			int dataId = hdr.AddBlock(std::move(bsOptShapeDataS));
 			bsOptShape->DataRef()->index = dataId;
 			bsOptShape->SetGeomData(bsOptShapeData);
-			bsOptShapeData->Create(hdr.GetVersion(), vertices, &triangles, uvs, normals);
+			bsOptShapeData->Create(hdr.GetVersion(), &vertices, &triangles, &uvs, !removeNormals ? &normals : nullptr);
 
 			bsOptShape->name.get() = shape->name.get();
 
@@ -1355,10 +1356,10 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 			// Vertex Colors
 			if (bsOptShape->GetNumVertices() > 0) {
-				if (!removeVertexColors && colors && !colors->empty()) {
+				if (!removeVertexColors && !colors.empty()) {
 					bsOptShape->SetVertexColors(true);
 					for (uint16_t i = 0; i < bsOptShape->GetNumVertices(); i++)
-						bsOptShapeData->vertexColors[i] = (*colors)[i];
+						bsOptShapeData->vertexColors[i] = colors[i];
 				}
 
 				// Skinning and partitions
@@ -2504,7 +2505,7 @@ const std::vector<Vector3>* NifFile::GetVertsForShape(NiShape* shape) {
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->UpdateRawVertices();
+			return &bsTriShape->UpdateRawVertices();
 	}
 
 	return nullptr;
@@ -2522,7 +2523,7 @@ const std::vector<Vector3>* NifFile::GetNormalsForShape(NiShape* shape) {
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->UpdateRawNormals();
+			return &bsTriShape->UpdateRawNormals();
 	}
 
 	return nullptr;
@@ -2540,7 +2541,7 @@ const std::vector<Vector2>* NifFile::GetUvsForShape(NiShape* shape) {
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->UpdateRawUvs();
+			return &bsTriShape->UpdateRawUvs();
 	}
 
 	return nullptr;
@@ -2559,7 +2560,7 @@ const std::vector<Color4>* NifFile::GetColorsForShape(const std::string& shapeNa
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->UpdateRawColors();
+			return &bsTriShape->UpdateRawColors();
 	}
 
 	return nullptr;
@@ -2577,7 +2578,7 @@ const std::vector<Vector3>* NifFile::GetTangentsForShape(NiShape* shape) {
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->UpdateRawTangents();
+			return &bsTriShape->UpdateRawTangents();
 	}
 
 	return nullptr;
@@ -2595,7 +2596,7 @@ const std::vector<Vector3>* NifFile::GetBitangentsForShape(NiShape* shape) {
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->UpdateRawBitangents();
+			return &bsTriShape->UpdateRawBitangents();
 	}
 
 	return nullptr;
@@ -2607,7 +2608,7 @@ const std::vector<float>* NifFile::GetEyeDataForShape(NiShape* shape) {
 
 	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 	if (bsTriShape)
-		return bsTriShape->UpdateRawEyeData();
+		return &bsTriShape->UpdateRawEyeData();
 
 	return nullptr;
 }

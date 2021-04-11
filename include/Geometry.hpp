@@ -339,13 +339,13 @@ public:
 	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
 
-	const std::vector<Vector3>* UpdateRawVertices();
-	const std::vector<Vector3>* UpdateRawNormals();
-	const std::vector<Vector3>* UpdateRawTangents();
-	const std::vector<Vector3>* UpdateRawBitangents();
-	const std::vector<Vector2>* UpdateRawUvs();
-	const std::vector<Color4>* UpdateRawColors();
-	const std::vector<float>* UpdateRawEyeData();
+	std::vector<Vector3>& UpdateRawVertices();
+	std::vector<Vector3>& UpdateRawNormals();
+	std::vector<Vector3>& UpdateRawTangents();
+	std::vector<Vector3>& UpdateRawBitangents();
+	std::vector<Vector2>& UpdateRawUvs();
+	std::vector<Color4>& UpdateRawColors();
+	std::vector<float>& UpdateRawEyeData();
 
 	uint16_t GetNumVertices() const override;
 	void SetVertices(const bool enable) override;
