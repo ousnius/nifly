@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 
 namespace nifly {
 struct SkinWeight {
-	uint16_t index;
+	std::uint16_t index;
 	float weight;
 
 	SkinWeight(const uint16_t index = 0, const float weight = 0.0f) {
@@ -34,7 +34,7 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
-class NiSkinData : public Streamable<NiSkinData, NiObject> {
+class NiSkinData : public NiCloneableStreamable<NiSkinData, NiObject> {
 public:
 	struct BoneData {
 		// boneTransform transforms from skin CS to bone CS.
@@ -59,7 +59,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiSkinPartition : public Streamable<NiSkinPartition, NiObject> {
+class NiSkinPartition : public NiCloneableStreamable<NiSkinPartition, NiObject> {
 public:
 	struct PartitionBlock {
 		uint16_t numVertices = 0;
@@ -79,7 +79,8 @@ public:
 		bool hasBoneIndices = false;
 		std::vector<BoneIndices> boneIndices;
 
-		uint16_t unkShort = 0; // User Version >= 12
+		uint8_t lodLevel = 0;  // User Version >= 12
+		bool globalVB = false; // User Version >= 12
 		VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 		// When trueTriangles is changed so it's no longer in sync with
 		// triParts, triParts should be cleared.
@@ -114,14 +115,14 @@ public:
 	// be called to get them back in sync.
 	std::vector<int> triParts;
 
-	bool HasVertices() { return vertexDesc.HasFlag(VF_VERTEX); }
-	bool HasUVs() { return vertexDesc.HasFlag(VF_UV); }
-	bool HasNormals() { return vertexDesc.HasFlag(VF_NORMAL); }
-	bool HasTangents() { return vertexDesc.HasFlag(VF_TANGENT); }
-	bool HasVertexColors() { return vertexDesc.HasFlag(VF_COLORS); }
-	bool IsSkinned() { return vertexDesc.HasFlag(VF_SKINNED); }
-	bool HasEyeData() { return vertexDesc.HasFlag(VF_EYEDATA); }
-	bool IsFullPrecision() { return true; }
+	bool HasVertices() const { return vertexDesc.HasFlag(VF_VERTEX); }
+	bool HasUVs() const { return vertexDesc.HasFlag(VF_UV); }
+	bool HasNormals() const { return vertexDesc.HasFlag(VF_NORMAL); }
+	bool HasTangents() const { return vertexDesc.HasFlag(VF_TANGENT); }
+	bool HasVertexColors() const { return vertexDesc.HasFlag(VF_COLORS); }
+	bool IsSkinned() const { return vertexDesc.HasFlag(VF_SKINNED); }
+	bool HasEyeData() const { return vertexDesc.HasFlag(VF_EYEDATA); }
+	bool IsFullPrecision() const { return true; }
 
 	static constexpr const char* BlockName = "NiSkinPartition";
 	const char* GetBlockName() override { return BlockName; }
@@ -161,50 +162,37 @@ public:
 
 class NiNode;
 
-class NiBoneContainer : public Clonable<NiBoneContainer, NiObject> {
-protected:
-	BlockRefArray<NiNode> boneRefs;
-
+class NiBoneContainer : public NiCloneable<NiBoneContainer, NiObject> {
 public:
-	BlockRefArray<NiNode>& GetBones();
+	NiBlockPtrArray<NiNode> boneRefs;
 };
 
-class NiSkinInstance : public Streamable<NiSkinInstance, NiBoneContainer> {
-private:
-	BlockRef<NiSkinData> dataRef;
-	BlockRef<NiSkinPartition> skinPartitionRef;
-	BlockRef<NiNode> targetRef;
-
+class NiSkinInstance : public NiCloneableStreamable<NiSkinInstance, NiBoneContainer> {
 public:
+	NiBlockRef<NiSkinData> dataRef;
+	NiBlockRef<NiSkinPartition> skinPartitionRef;
+	NiBlockPtr<NiNode> targetRef;
+
 	static constexpr const char* BlockName = "NiSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	void GetPtrs(std::set<Ref*>& ptrs) override;
-
-	int GetDataRef() { return dataRef.GetIndex(); }
-	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
-
-	int GetSkinPartitionRef() { return skinPartitionRef.GetIndex(); }
-	void SetSkinPartitionRef(const int skinPartRef) { skinPartitionRef.SetIndex(skinPartRef); }
-
-	int GetSkeletonRootRef() { return targetRef.GetIndex(); }
-	void SetSkeletonRootRef(const int skelRootRef) { targetRef.SetIndex(skelRootRef); }
+	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 
 
 enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
-class BSDismemberSkinInstance : public Streamable<BSDismemberSkinInstance, NiSkinInstance> {
+class BSDismemberSkinInstance : public NiCloneableStreamable<BSDismemberSkinInstance, NiSkinInstance> {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
 		uint16_t partID = 0;
 	};
 
-private:
+protected:
 	int numPartitions = 0;
 	std::vector<PartitionInfo> partitions;
 
@@ -214,8 +202,8 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	int GetNumPartitions() { return numPartitions; }
-	std::vector<PartitionInfo> GetPartitions() { return partitions; }
+	int GetNumPartitions() const { return numPartitions; }
+	std::vector<PartitionInfo> GetPartitions() const { return partitions; }
 
 	void AddPartition(const PartitionInfo& partition);
 	void RemovePartition(const int id);
@@ -224,12 +212,12 @@ public:
 	void ClearPartitions();
 
 	void SetPartitions(const std::vector<PartitionInfo>& parts) {
-		this->partitions = parts;
-		this->numPartitions = parts.size();
+		partitions = parts;
+		numPartitions = parts.size();
 	}
 };
 
-class BSSkinBoneData : public Streamable<BSSkinBoneData, NiObject> {
+class BSSkinBoneData : public NiCloneableStreamable<BSSkinBoneData, NiObject> {
 public:
 	uint32_t nBones = 0;
 
@@ -254,27 +242,18 @@ public:
 
 class NiAVObject;
 
-class BSSkinInstance : public Streamable<BSSkinInstance, NiBoneContainer> {
-private:
-	BlockRef<NiAVObject> targetRef;
-	BlockRef<BSSkinBoneData> dataRef;
-
-	uint32_t numScales = 0;
-	std::vector<Vector3> scales;
-
+class BSSkinInstance : public NiCloneableStreamable<BSSkinInstance, NiBoneContainer> {
 public:
+	NiBlockPtr<NiAVObject> targetRef;
+	NiBlockRef<BSSkinBoneData> dataRef;
+	NiVector<Vector3> scales;
+
 	static constexpr const char* BlockName = "BSSkin::Instance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
-	void GetPtrs(std::set<Ref*>& ptrs) override;
-
-	int GetTargetRef() { return targetRef.GetIndex(); }
-	void SetTargetRef(const int targRef) { targetRef.SetIndex(targRef); }
-
-	int GetDataRef() { return dataRef.GetIndex(); }
-	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
+	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 } // namespace nifly

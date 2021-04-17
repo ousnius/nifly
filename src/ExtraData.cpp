@@ -15,35 +15,15 @@ void NiExtraData::Sync(NiStreamReversible& stream) {
 	name.Sync(stream);
 }
 
-void NiExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
 	refs.emplace_back(&name);
 }
 
-std::string NiExtraData::GetName() {
-	return name.GetString();
-}
-
-void NiExtraData::SetName(const std::string& extraDataName) {
-	name.SetString(extraDataName);
-}
-
 
 void NiBinaryExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(size);
-	data.resize(size);
-	for (uint32_t i = 0; i < size; i++)
-		stream.Sync(data[i]);
-}
-
-std::vector<uint8_t> NiBinaryExtraData::GetData() {
-	return data;
-}
-
-void NiBinaryExtraData::SetData(const std::vector<uint8_t>& dat) {
-	size = dat.size();
-	data = dat;
+	data.Sync(stream);
 }
 
 
@@ -51,46 +31,14 @@ void NiFloatExtraData::Sync(NiStreamReversible& stream) {
 	stream.Sync(floatData);
 }
 
-float NiFloatExtraData::GetFloatData() {
-	return floatData;
-}
-
-void NiFloatExtraData::SetFloatData(const float fltData) {
-	floatData = fltData;
-}
-
 
 void NiFloatsExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numFloats);
-	floatsData.resize(numFloats);
-	for (uint32_t i = 0; i < numFloats; i++)
-		stream.Sync(floatsData[i]);
-}
-
-std::vector<float> NiFloatsExtraData::GetFloatsData() {
-	return floatsData;
-}
-
-void NiFloatsExtraData::SetFloatsData(const std::vector<float>& fltsData) {
-	numFloats = fltsData.size();
-	floatsData = fltsData;
+	floatsData.Sync(stream);
 }
 
 
 void NiStringsExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numStrings);
-	stringsData.resize(numStrings);
-	for (uint32_t i = 0; i < numStrings; i++)
-		stringsData[i].Sync(stream, 4);
-}
-
-std::vector<NiString> NiStringsExtraData::GetStringsData() {
-	return stringsData;
-}
-
-void NiStringsExtraData::SetStringsData(const std::vector<NiString>& strsData) {
-	numStrings = strsData.size();
-	stringsData = strsData;
+	stringsData.Sync(stream);
 }
 
 
@@ -98,18 +46,10 @@ void NiStringExtraData::Sync(NiStreamReversible& stream) {
 	stringData.Sync(stream);
 }
 
-void NiStringExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiStringExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
 	refs.emplace_back(&stringData);
-}
-
-std::string NiStringExtraData::GetStringData() {
-	return stringData.GetString();
-}
-
-void NiStringExtraData::SetStringData(const std::string& str) {
-	stringData.SetString(str);
 }
 
 
@@ -117,42 +57,14 @@ void NiBooleanExtraData::Sync(NiStreamReversible& stream) {
 	stream.Sync(booleanData);
 }
 
-bool NiBooleanExtraData::GetBooleanData() {
-	return booleanData;
-}
-
-void NiBooleanExtraData::SetBooleanData(const bool boolData) {
-	booleanData = boolData;
-}
-
 
 void NiIntegerExtraData::Sync(NiStreamReversible& stream) {
 	stream.Sync(integerData);
 }
 
-uint32_t NiIntegerExtraData::GetIntegerData() {
-	return integerData;
-}
-
-void NiIntegerExtraData::SetIntegerData(const uint32_t intData) {
-	integerData = intData;
-}
-
 
 void NiIntegersExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numIntegers);
-	integersData.resize(numIntegers);
-	for (uint32_t i = 0; i < numIntegers; i++)
-		stream.Sync(integersData[i]);
-}
-
-std::vector<uint32_t> NiIntegersExtraData::GetIntegersData() {
-	return integersData;
-}
-
-void NiIntegersExtraData::SetIntegersData(const std::vector<uint32_t>& intData) {
-	numIntegers = intData.size();
-	integersData = intData;
+	integersData.Sync(stream);
 }
 
 
@@ -160,99 +72,198 @@ void NiVectorExtraData::Sync(NiStreamReversible& stream) {
 	stream.Sync(vectorData);
 }
 
-Vector4 NiVectorExtraData::GetVectorData() {
-	return vectorData;
-}
-
-void NiVectorExtraData::SetVectorData(const Vector4& vecData) {
-	vectorData = vecData;
-}
-
 
 void NiColorExtraData::Sync(NiStreamReversible& stream) {
 	stream.Sync(colorData);
 }
 
-Color4 NiColorExtraData::GetColorData() {
-	return colorData;
+std::vector<NiStringRef*> NiStringExtraData::GetStringRefList() {
+	std::vector<NiStringRef*> refs;
+	GetStringRefs(refs);
+	return refs;
 }
-
-void NiColorExtraData::SetColorData(const Color4& colData) {
-	colorData = colData;
-}
-
 
 void BSWArray::Sync(NiStreamReversible& stream) {
-	stream.Sync(numData);
-	data.resize(numData);
-	for (uint32_t i = 0; i < numData; i++)
-		stream.Sync(data[i]);
-}
-
-std::vector<uint32_t> BSWArray::GetData() {
-	return data;
-}
-
-void BSWArray::SetData(const std::vector<uint32_t>& dat) {
-	numData = dat.size();
-	data = dat;
+	data.Sync(stream);
 }
 
 
 void BSPositionData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numData);
-	data.resize(numData);
-	for (uint32_t i = 0; i < numData; i++)
-		stream.Sync(data[i]);
-}
-
-std::vector<half_float::half> BSPositionData::GetData() {
-	return data;
-}
-
-void BSPositionData::SetData(const std::vector<half_float::half>& dat) {
-	numData = dat.size();
-	data = dat;
+	data.Sync(stream);
 }
 
 
 void BSEyeCenterExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numData);
-	data.resize(numData);
-	for (uint32_t i = 0; i < numData; i++)
-		stream.Sync(data[i]);
-}
-
-std::vector<float> BSEyeCenterExtraData::GetData() {
-	return data;
-}
-
-void BSEyeCenterExtraData::SetData(const std::vector<float>& dat) {
-	numData = dat.size();
-	data = dat;
+	data.Sync(stream);
 }
 
 
 void BSPackedGeomData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numVerts);
+	stream.Sync(numVertices);
 
 	stream.Sync(lodLevels);
-	lod.resize(lodLevels);
-	for (uint32_t i = 0; i < lodLevels; i++)
-		stream.Sync(lod[i]);
+	stream.Sync(triCountLod0);
+	stream.Sync(triOffsetLod0);
+	stream.Sync(triCountLod1);
+	stream.Sync(triOffsetLod1);
+	stream.Sync(triCountLod2);
+	stream.Sync(triOffsetLod2);
 
-	stream.Sync(numCombined);
-	combined.resize(numCombined);
-	for (uint32_t i = 0; i < numCombined; i++)
-		stream.Sync(combined[i]);
+	combined.Sync(stream);
 
-	stream.Sync(unkInt1);
-	stream.Sync(unkInt2);
+	stream.Sync(vertexDesc);
+
+	vertData.resize(numVertices);
+
+	for (uint32_t i = 0; i < numVertices; i++) {
+		auto& vertex = vertData[i];
+		if (HasVertices()) {
+			if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
+				// Full precision
+				stream.Sync(vertex.vert);
+				stream.Sync(vertex.bitangentX);
+			}
+			else {
+				// Half precision
+				stream.SyncHalf(vertex.vert.x);
+				stream.SyncHalf(vertex.vert.y);
+				stream.SyncHalf(vertex.vert.z);
+
+				stream.SyncHalf(vertex.bitangentX);
+			}
+		}
+
+		if (HasUVs()) {
+			stream.SyncHalf(vertex.uv.u);
+			stream.SyncHalf(vertex.uv.v);
+		}
+
+		if (HasNormals()) {
+			for (uint8_t& j : vertex.normal)
+				stream.Sync(j);
+
+			stream.Sync(vertex.bitangentY);
+
+			if (HasTangents()) {
+				for (uint8_t& j : vertex.tangent)
+					stream.Sync(j);
+
+				stream.Sync(vertex.bitangentZ);
+			}
+		}
+
+
+		if (HasVertexColors())
+			for (uint8_t& j : vertex.colorData)
+				stream.Sync(j);
+
+		if (IsSkinned()) {
+			for (float& weight : vertex.weights)
+				stream.SyncHalf(weight);
+
+			for (uint8_t& weightBone : vertex.weightBones)
+				stream.Sync(weightBone);
+		}
+
+		if (HasEyeData())
+			stream.Sync(vertex.eyeData);
+	}
+
+	triangles.resize(triCountLod0 + triCountLod1 + triCountLod2);
+	for (auto& t : triangles)
+		stream.Sync(t);
+}
+
+void BSPackedGeomData::SetVertices(const bool enable) {
+	if (enable) {
+		vertexDesc.SetFlag(VF_VERTEX);
+		vertData.resize(numVertices);
+	}
+	else {
+		vertexDesc.RemoveFlag(VF_VERTEX);
+		vertData.clear();
+		numVertices = 0;
+
+		SetUVs(false);
+		SetNormals(false);
+		SetTangents(false);
+		SetVertexColors(false);
+		SetSkinned(false);
+	}
+}
+
+void BSPackedGeomData::SetUVs(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_UV);
+	else
+		vertexDesc.RemoveFlag(VF_UV);
+}
+
+void BSPackedGeomData::SetSecondUVs(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_UV_2);
+	else
+		vertexDesc.RemoveFlag(VF_UV_2);
+}
+
+void BSPackedGeomData::SetNormals(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_NORMAL);
+	else
+		vertexDesc.RemoveFlag(VF_NORMAL);
+}
+
+void BSPackedGeomData::SetTangents(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_TANGENT);
+	else
+		vertexDesc.RemoveFlag(VF_TANGENT);
+}
+
+void BSPackedGeomData::SetVertexColors(const bool enable) {
+	if (enable) {
+		if (!vertexDesc.HasFlag(VF_COLORS)) {
+			for (auto& v : vertData) {
+				v.colorData[0] = 255;
+				v.colorData[1] = 255;
+				v.colorData[2] = 255;
+				v.colorData[3] = 255;
+			}
+		}
+
+		vertexDesc.SetFlag(VF_COLORS);
+	}
+	else
+		vertexDesc.RemoveFlag(VF_COLORS);
+}
+
+void BSPackedGeomData::SetSkinned(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_SKINNED);
+	else
+		vertexDesc.RemoveFlag(VF_SKINNED);
+}
+
+void BSPackedGeomData::SetEyeData(const bool enable) {
+	if (enable)
+		vertexDesc.SetFlag(VF_EYEDATA);
+	else
+		vertexDesc.RemoveFlag(VF_EYEDATA);
+}
+
+void BSPackedGeomData::SetFullPrecision(const bool enable) {
+	if (!CanChangePrecision())
+		return;
+
+	if (enable)
+		vertexDesc.SetFlag(VF_FULLPREC);
+	else
+		vertexDesc.RemoveFlag(VF_FULLPREC);
 }
 
 
 void BSPackedCombinedSharedGeomDataExtra::Sync(NiStreamReversible& stream) {
-	vertDesc.Sync(stream);
+	vertexDesc.Sync(stream);
 	stream.Sync(numVertices);
 	stream.Sync(numTriangles);
 	stream.Sync(unkFlags1);
@@ -341,7 +352,7 @@ void BSBehaviorGraphExtraData::Sync(NiStreamReversible& stream) {
 	stream.Sync(controlsBaseSkel);
 }
 
-void BSBehaviorGraphExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
+void BSBehaviorGraphExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
 	refs.emplace_back(&behaviorGraphFile);
@@ -363,7 +374,7 @@ void BSBoneLODExtraData::Sync(NiStreamReversible& stream) {
 	}
 }
 
-void BSBoneLODExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
+void BSBoneLODExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
 	for (uint32_t i = 0; i < numBoneLODs; i++)
@@ -389,18 +400,18 @@ void NiTextKeyExtraData::Sync(NiStreamReversible& stream) {
 	}
 }
 
-void NiTextKeyExtraData::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiTextKeyExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
 	for (uint32_t i = 0; i < numTextKeys; i++)
 		refs.emplace_back(&textKeys[i].value);
 }
 
-std::vector<Key<StringRef>> NiTextKeyExtraData::GetTextKeys() {
+std::vector<Key<NiStringRef>> NiTextKeyExtraData::GetTextKeys() {
 	return textKeys;
 }
 
-void NiTextKeyExtraData::SetTextKeys(const std::vector<Key<StringRef>>& keys) {
+void NiTextKeyExtraData::SetTextKeys(const std::vector<Key<NiStringRef>>& keys) {
 	numTextKeys = keys.size();
 	textKeys = keys;
 }
@@ -440,21 +451,8 @@ void BSConnectPointParents::SetConnectPoints(const std::vector<BSConnectPoint>& 
 
 
 void BSConnectPointChildren::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkByte);
-	stream.Sync(numTargets);
-
-	targets.resize(numTargets);
-	for (uint32_t i = 0; i < numTargets; i++)
-		targets[i].Sync(stream, 4);
-}
-
-std::vector<NiString> BSConnectPointChildren::GetTargets() {
-	return targets;
-}
-
-void BSConnectPointChildren::SetTargets(const std::vector<NiString>& targ) {
-	numTargets = targ.size();
-	targets = targ;
+	stream.Sync(skinned);
+	targets.Sync(stream);
 }
 
 

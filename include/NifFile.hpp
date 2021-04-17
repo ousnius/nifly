@@ -55,9 +55,10 @@ private:
 	bool hasUnknown = false;
 	bool isTerrain = false;
 	bool preserveTexturePaths = false;
+	static constexpr const char* DefaultRootNodeName = "Scene Root";
 
 public:
-	NifFile() {}
+	NifFile() = default;
 
 	NifFile(const bool keepTexturePaths) : preserveTexturePaths(keepTexturePaths) {}
 
@@ -67,6 +68,11 @@ public:
 
 	NifFile(std::istream& file, const NifLoadOptions& options = NifLoadOptions()) { Load(file, options); }
 
+	NifFile(const std::string& fileData, const NifLoadOptions& options = NifLoadOptions()) {
+		std::istringstream iss(fileData);
+		Load(iss, options);
+	}
+
 	NifFile(const NifFile& other) { CopyFrom(other); }
 
 	NifFile& operator=(const NifFile& other) {
@@ -75,6 +81,7 @@ public:
 	}
 
 	NiHeader& GetHeader() { return hdr; }
+	const NiHeader& GetHeader() const { return hdr; }
 	void CopyFrom(const NifFile& other);
 
 	int Load(const std::filesystem::path& fileName, const NifLoadOptions& options = NifLoadOptions());
@@ -90,34 +97,49 @@ public:
 	void PrepareData();
 	void FinalizeData();
 
-	bool IsValid() { return isValid; }
-	bool HasUnknown() { return hasUnknown; }
-	bool IsTerrain() { return isTerrain; }
-	bool IsSSECompatible();
-	bool IsSSECompatible(NiShape* shape);
+	bool IsValid() const { return isValid; }
+	bool HasUnknown() const { return hasUnknown; }
+	bool IsTerrain() const { return isTerrain; }
+	bool IsSSECompatible() const;
+	bool IsSSECompatible(NiShape* shape) const;
 
 	void Create(const NiVersion& version);
+
+	template <typename NODETYPE>
+	void CreateNamed(const NiVersion& version, const std::string& rootName) {
+		Clear();
+		hdr.SetVersion(version);
+		hdr.SetBlockReference(&blocks);
+
+		auto rootNode = std::make_unique<NODETYPE>();
+		rootNode->name.get() = rootName.c_str();
+		hdr.AddBlock(rootNode.release());
+
+		isValid = true;
+	}
+
 	void Clear();
 
 	// Link NiGeometryData to NiGeometry
 	void LinkGeomData();
-	void RemoveInvalidTris();
+	void RemoveInvalidTris() const;
 
-	size_t GetVertexLimit();
-	size_t GetTriangleLimit();
+	static size_t GetVertexLimit();
+	size_t GetTriangleLimit() const;
 
-	NiNode *AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
+	NiNode* AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
 	void DeleteNode(const std::string& nodeName);
-	bool CanDeleteNode(NiNode* node);
-	bool CanDeleteNode(const std::string& nodeName);
-	std::string GetNodeName(const int blockID);
+	static bool CanDeleteNode(NiNode* node) ;
+	bool CanDeleteNode(const std::string& nodeName) const;
+	std::string GetNodeName(const int blockID) const;
 	void SetNodeName(const int blockID, const std::string& newName);
 
 	int AssignExtraData(NiAVObject* target, NiExtraData* extraData);
 
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);
-	void SetSortIndex(const int id, std::vector<int>& newIndices, int& newIndex);
+	static void SetSortIndex(const NiRef& ref, std::vector<int>& newIndices, int& newIndex);
+	static void SetSortIndex(const NiRef* ref, std::vector<int>& newIndices, int& newIndex);
 	void SortAVObject(NiAVObject* avobj, std::vector<int>& newIndices, int& newIndex);
 	void SortShape(NiShape* shape, std::vector<int>& newIndices, int& newIndex);
 	void SortGraph(NiNode* root, std::vector<int>& newIndices, int& newIndex);
@@ -136,17 +158,17 @@ public:
 	bool DeleteUnreferencedNodes(int* deletionCount = nullptr);
 
 	template<class T = NiObject>
-	T* FindBlockByName(const std::string& name);
-	int GetBlockID(NiObject* block);
-	NiNode* GetParentNode(NiObject* block);
+	T* FindBlockByName(const std::string& name) const;
+	int GetBlockID(NiObject* block) const;
+	NiNode* GetParentNode(NiObject* block) const;
 	void SetParentNode(NiObject* block, NiNode* parent);
-	std::vector<NiNode*> GetNodes();
+	std::vector<NiNode*> GetNodes() const;
 
-	NiShader* GetShader(NiShape* shape);
-	NiMaterialProperty* GetMaterialProperty(NiShape* shape);
-	NiStencilProperty* GetStencilProperty(NiShape* shape);
+	NiShader* GetShader(NiShape* shape) const;
+	NiMaterialProperty* GetMaterialProperty(NiShape* shape) const;
+	NiStencilProperty* GetStencilProperty(NiShape* shape) const;
 
-	int GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIndex = 0);
+	int GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIndex = 0) const;
 	void SetTextureSlot(NiShader* shader, std::string& inTexFile, int texIndex = 0);
 	void TrimTexturePaths();
 
@@ -154,29 +176,29 @@ public:
 	NiShape* CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
 	int CloneNamedNode(const std::string& nodeName, NifFile* srcNif = nullptr);
 
-	std::vector<std::string> GetShapeNames();
-	std::vector<NiShape*> GetShapes();
-	bool RenameShape(NiShape* shape, const std::string& newName);
+	std::vector<std::string> GetShapeNames() const;
+	std::vector<NiShape*> GetShapes() const;
+	static bool RenameShape(NiShape* shape, const std::string& newName);
 	bool RenameDuplicateShapes();
 	void TriangulateShape(NiShape* shape);
 
-	/// GetChildren of a node ... templatized to allow any particular type to be queried.   useful for walking a node tree
+	// GetChildren of a node ... templatized to allow any particular type to be queried.   useful for walking a node tree
 	template<class T>
-	std::vector<T*> GetChildren(NiNode* parent = nullptr, bool searchExtraData = false);
+	std::vector<T*> GetChildren(NiNode* parent = nullptr, bool searchExtraData = false) const;
 
-	NiNode* GetRootNode();
-	void GetTree(std::vector<NiObject*>& result, NiObject* parent = nullptr);
-	bool GetNodeTransformToParent(const std::string& nodeName, MatTransform& outTransform);
+	NiNode* GetRootNode() const;
+	void GetTree(std::vector<NiObject*>& result, NiObject* parent = nullptr) const;
+	bool GetNodeTransformToParent(const std::string& nodeName, MatTransform& outTransform) const;
 	// GetNodeTransform is deprecated.  Use GetNodeTransformToParent instead.
-	bool GetNodeTransform(const std::string& nodeName, MatTransform& outTransform) {
+	bool GetNodeTransform(const std::string& nodeName, MatTransform& outTransform) const {
 		return GetNodeTransformToParent(nodeName, outTransform);
 	}
 	// GetNodeTransformToGlobal calculates the transform from this node's
 	// CS to the global CS by composing transforms up the node tree to the
 	// root node.
-	bool GetNodeTransformToGlobal(const std::string& nodeName, MatTransform& outTransform);
+	bool GetNodeTransformToGlobal(const std::string& nodeName, MatTransform& outTransform) const;
 	// GetAbsoluteNodeTransform is deprecated.  Use GetNodeTransformToGlobal instead.
-	bool GetAbsoluteNodeTransform(const std::string& nodeName, MatTransform& outTransform) {
+	bool GetAbsoluteNodeTransform(const std::string& nodeName, MatTransform& outTransform) const {
 		return GetNodeTransformToGlobal(nodeName, outTransform);
 	}
 	bool SetNodeTransformToParent(const std::string& nodeName,
@@ -189,41 +211,43 @@ public:
 		return SetNodeTransformToParent(nodeName, inTransform, rootChildrenOnly);
 	}
 
-	int GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList);
-	int GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList);
+	int GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList) const;
+	int GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList) const;
 	void SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList);
 	int GetShapeBoneWeights(NiShape* shape,
 							const int boneIndex,
-							std::unordered_map<uint16_t, float>& outWeights);
+							std::unordered_map<uint16_t, float>& outWeights) const;
 
 	// Looks up the shape's global-to-skin transform if it has it.
 	// Otherwise, try to calculate it using skin-to-bone and node-to-global
 	// transforms.  Returns false on failure.
-	bool CalcShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransforms);
+	bool CalcShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransforms) const;
 	// Returns false if no such transform exists in the file, in which
 	// case outTransform will not be changed.  Note that, even if this
 	// function returns false, you can not assume that the global-to-skin
 	// transform is the identity; it almost never is.
-	bool GetShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransform);
+	bool GetShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransform) const;
 	// Does nothing if the shape has no such transform.
 	void SetShapeTransformGlobalToSkin(NiShape* shape, const MatTransform& inTransform);
-	bool GetShapeTransformSkinToBone(NiShape* shape, const std::string& boneName, MatTransform& outTransform);
-	bool GetShapeTransformSkinToBone(NiShape* shape, int boneIndex, MatTransform& outTransform);
+	bool GetShapeTransformSkinToBone(NiShape* shape,
+									 const std::string& boneName,
+									 MatTransform& outTransform) const;
+	bool GetShapeTransformSkinToBone(NiShape* shape, int boneIndex, MatTransform& outTransform) const;
 	void SetShapeTransformSkinToBone(NiShape* shape, int boneIndex, const MatTransform& inTransform);
 	// Empty std::string for the bone name returns the overall skin transform for the shape.
 	// GetShapeBoneTransform is deprecated.  Use GetShapeTransformGlobalToSkin
 	// or GetShapeTransfromSkinToBone instead.
-	bool GetShapeBoneTransform(NiShape* shape, const std::string& boneName, MatTransform& outTransform);
+	bool GetShapeBoneTransform(NiShape* shape, const std::string& boneName, MatTransform& outTransform) const;
 	// 0xFFFFFFFF on the bone index returns the overall skin transform for the shape.
 	// GetShapeBoneTransform is deprecated.  Use GetShapeTransformGlobalToSkin
 	// or GetShapeTransfromSkinToBone instead.
-	bool GetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& outTransform);
+	bool GetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& outTransform) const;
 	// 0xFFFFFFFF for the bone index sets the overall skin transform for the shape.
 	// SetShapeBoneTransform is deprecated.  Use SetShapeTransformGlobalToSkin
 	// or SetShapeTransfromSkinToBone instead.
 	bool SetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& inTransform);
 	bool SetShapeBoneBounds(const std::string& shapeName, const int boneIndex, BoundingSphere& inBounds);
-	bool GetShapeBoneBounds(NiShape* shape, const int boneIndex, BoundingSphere& outBounds);
+	bool GetShapeBoneBounds(NiShape* shape, const int boneIndex, BoundingSphere& outBounds) const;
 	void UpdateShapeBoneID(const std::string& shapeName, const int oldID, const int newID);
 	void SetShapeBoneWeights(const std::string& shapeName,
 							 const int boneIndex,
@@ -231,15 +255,17 @@ public:
 	void SetShapeVertWeights(const std::string& shapeName,
 							 const int vertIndex,
 							 std::vector<uint8_t>& boneids,
-							 std::vector<float>& weights);
-	void ClearShapeVertWeights(const std::string& shapeName);
+							 std::vector<float>& weights) const;
+	void ClearShapeVertWeights(const std::string& shapeName) const;
 
-	bool GetShapeSegments(NiShape* shape, NifSegmentationInfo& inf, std::vector<int>& triParts);
-	void SetShapeSegments(NiShape* shape, const NifSegmentationInfo& inf, const std::vector<int>& triParts);
+	static bool GetShapeSegments(NiShape* shape, NifSegmentationInfo& inf, std::vector<int>& triParts);
+	static void SetShapeSegments(NiShape* shape,
+								 const NifSegmentationInfo& inf,
+								 const std::vector<int>& triParts);
 
 	bool GetShapePartitions(NiShape* shape,
 							std::vector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
-							std::vector<int>& triParts);
+							std::vector<int>& triParts) const;
 	void SetShapePartitions(NiShape* shape,
 							const std::vector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
 							const std::vector<int>& triParts,
@@ -249,13 +275,13 @@ public:
 	void DeletePartitions(NiShape* shape, std::vector<int>& partInds);
 
 	const std::vector<Vector3>* GetRawVertsForShape(NiShape* shape);
-	bool ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices);
+	static bool ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices);
 	const std::vector<Vector3>* GetNormalsForShape(NiShape* shape, bool transform = true);
 	const std::vector<Vector2>* GetUvsForShape(NiShape* shape);
 	const std::vector<Color4>* GetColorsForShape(const std::string& shapeName);
 	const std::vector<Vector3>* GetTangentsForShape(NiShape* shape, bool transform = true);
 	const std::vector<Vector3>* GetBitangentsForShape(NiShape* shape, bool transform = true);
-	std::vector<float>* GetEyeDataForShape(NiShape* shape);
+	static std::vector<float>* GetEyeDataForShape(NiShape* shape);
 	bool GetUvsForShape(NiShape* shape, std::vector<Vector2>& outUvs);
 	bool GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts);
 	void SetVertsForShape(NiShape* shape, const std::vector<Vector3>& verts);
@@ -263,7 +289,7 @@ public:
 	void SetColorsForShape(const std::string& shapeName, const std::vector<Color4>& colors);
 	void SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& in);
 	void SetBitangentsForShape(NiShape* shape, const std::vector<Vector3>& in);
-	void SetEyeDataForShape(NiShape* shape, const std::vector<float>& in);
+	static void SetEyeDataForShape(NiShape* shape, const std::vector<float>& in);
 	void InvertUVsForShape(NiShape* shape, bool invertX, bool invertY);
 	void MirrorShape(NiShape* shape, bool mirrorX, bool mirrorY, bool mirrorZ);
 	void SetNormalsForShape(NiShape* shape, const std::vector<Vector3>& norms);
@@ -275,7 +301,7 @@ public:
 
 	int ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName);
 
-	void GetRootTranslation(Vector3& outVec);
+	void GetRootTranslation(Vector3& outVec) const;
 
 	void MoveVertex(NiShape* shape, const Vector3& pos, const int id);
 	void OffsetShape(NiShape* shape,
@@ -286,7 +312,7 @@ public:
 					 const Vector3& angle,
 					 std::unordered_map<uint16_t, float>* mask = nullptr);
 
-	NiAlphaProperty* GetAlphaProperty(NiShape* shape);
+	NiAlphaProperty* GetAlphaProperty(NiShape* shape) const;
 	int AssignAlphaProperty(
 		NiShape* shape,
 		NiAlphaProperty* alphaProp); // uint16_t flags = 4844, uint16_t threshold = 128
@@ -317,7 +343,7 @@ public:
 };
 
 template<class T>
-std::vector<T*> NifFile::GetChildren(NiNode* parent, bool searchExtraData) {
+std::vector<T*> NifFile::GetChildren(NiNode* parent, bool searchExtraData) const {
 	std::vector<T*> result;
 	T* n;
 
@@ -327,15 +353,15 @@ std::vector<T*> NifFile::GetChildren(NiNode* parent, bool searchExtraData) {
 			return result;
 	}
 
-	for (auto& child : parent->GetChildren()) {
-		n = hdr.GetBlock<T>(child.GetIndex());
+	for (auto& child : parent->childRefs) {
+		n = hdr.GetBlock<T>(child);
 		if (n)
 			result.push_back(n);
 	}
 
 	if (searchExtraData) {
-		for (auto& extraData : parent->GetExtraData()) {
-			n = hdr.GetBlock<T>(extraData.GetIndex());
+		for (auto& extraData : parent->extraDataRefs) {
+			n = hdr.GetBlock<T>(extraData);
 			if (n)
 				result.push_back(n);
 		}

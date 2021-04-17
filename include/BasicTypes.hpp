@@ -20,8 +20,38 @@ See the included GPLv3 LICENSE file
 #include <unordered_map>
 #include <unordered_set>
 
+#ifdef SWIG
+
+#define CLONEABLECLASSDEF(DERIVED, BASE) class DERIVED; \
+%template(DERIVED##BASE) NiCloneable<DERIVED, BASE>; \
+class DERIVED : public NiCloneable<DERIVED, BASE> 
+
+#define STREAMABLECLASSDEF(DERIVED, BASE) class DERIVED; \
+%template(DERIVED##BASE) NiCloneableStreamable<DERIVED, BASE>; \
+class DERIVED : public NiCloneableStreamable<DERIVED, BASE> 
+
+#else
+
+#define CLONEABLECLASSDEF(DERIVED, BASE) class DERIVED : public NiCloneable<DERIVED, BASE>
+#define STREAMABLECLASSDEF(DERIVED, BASE) class DERIVED : public NiCloneableStreamable<DERIVED, BASE> 
+
+#endif
+
 namespace nifly {
 constexpr uint32_t NIF_NPOS = static_cast<uint32_t>(-1);
+
+constexpr char NiCharMin = std::numeric_limits<char>::min();
+constexpr char NiCharMax = std::numeric_limits<char>::max();
+constexpr uint8_t NiByteMin = std::numeric_limits<uint8_t>::min();
+constexpr uint8_t NiByteMax = std::numeric_limits<uint8_t>::max();
+constexpr uint16_t NiUShortMin = std::numeric_limits<uint16_t>::min();
+constexpr uint16_t NiUShortMax = std::numeric_limits<uint16_t>::max();
+constexpr uint32_t NiUIntMin = std::numeric_limits<uint32_t>::min();
+constexpr uint32_t NiUIntMax = std::numeric_limits<uint32_t>::max();
+constexpr float NiFloatMin = std::numeric_limits<float>::lowest();
+constexpr float NiFloatMax = std::numeric_limits<float>::max();
+const Vector3 NiVec3Min = Vector3(NiFloatMin, NiFloatMin, NiFloatMin);
+const Vector4 NiVec4Min = Vector4(NiFloatMin, NiFloatMin, NiFloatMin, NiFloatMin);
 
 enum NiFileVersion : uint32_t {
 	V2_3 = 0x02030000,
@@ -91,33 +121,33 @@ public:
 		return {uint8_t(file >> 24), uint8_t(file >> 16), uint8_t(file >> 8), uint8_t(file)};
 	}
 
-	std::string GetVersionInfo();
-	std::string String() { return vstr; }
+	std::string GetVersionInfo() const;
+	std::string String() const { return vstr; }
 
-	NiFileVersion File() { return file; }
+	NiFileVersion File() const { return file; }
 	void SetFile(NiFileVersion fileVer);
 
-	uint32_t User() { return user; }
+	uint32_t User() const { return user; }
 	void SetUser(const uint32_t userVer) { user = userVer; }
 
-	uint32_t Stream() { return stream; }
+	uint32_t Stream() const { return stream; }
 	void SetStream(const uint32_t streamVer) { stream = streamVer; }
 
-	uint32_t NDS() { return nds; }
+	uint32_t NDS() const { return nds; }
 	void SetNDS(const uint32_t ndsVer) { nds = ndsVer; }
 
-	bool IsBethesda() { return (file == V20_2_0_7 && user >= 11) || IsOB(); }
+	bool IsBethesda() const { return (file == V20_2_0_7 && user >= 11) || IsOB(); }
 
-	bool IsOB() {
+	bool IsOB() const {
 		return ((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11)
 			   || (file == V20_0_0_4 && (user == 10 || user == 11)) || (file == V20_0_0_5 && user == 11);
 	}
 
-	bool IsFO3() { return file == V20_2_0_7 && stream > 11 && stream < 83; }
-	bool IsSK() { return file == V20_2_0_7 && stream == 83; }
-	bool IsSSE() { return file == V20_2_0_7 && stream == 100; }
-	bool IsFO4() { return file == V20_2_0_7 && stream == 130; }
-	bool IsFO76() { return file == V20_2_0_7 && stream == 155; }
+	bool IsFO3() const { return file == V20_2_0_7 && stream > 11 && stream < 83; }
+	bool IsSK() const { return file == V20_2_0_7 && stream == 83; }
+	bool IsSSE() const { return file == V20_2_0_7 && stream == 100; }
+	bool IsFO4() const { return file == V20_2_0_7 && stream == 130; }
+	bool IsFO76() const { return file == V20_2_0_7 && stream == 155; }
 
 	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 0); }
 	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 82); }
@@ -139,6 +169,7 @@ public:
 		: version(std::move(v)) {}
 
 	NiVersion& GetVersion() { return version; }
+	const NiVersion& GetVersion() const { return version; }
 };
 
 class NiIStream : public NiStreamBase {
@@ -207,7 +238,7 @@ public:
 		, mode(mode) {}
 
 	void SetMode(Mode m) { mode = m; }
-	Mode GetMode() { return mode; }
+	Mode GetMode() const { return mode; }
 
 	template<typename T>
 	void Sync(T& t) {
@@ -215,6 +246,13 @@ public:
 	}
 
 	NiVersion& GetVersion() {
+		if (mode == Mode::Reading)
+			return istream->GetVersion();
+		else
+			return ostream->GetVersion();
+	}
+
+	const NiVersion& GetVersion() const {
 		if (mode == Mode::Reading)
 			return istream->GetVersion();
 		else
@@ -258,16 +296,16 @@ private:
 };
 
 template<typename Derived, typename Base>
-class Clonable : public Base {
+class NiCloneable : public Base {
 public:
-	virtual ~Clonable() = default;
+	virtual ~NiCloneable() override = default;
 
 	Derived* Clone() const {
 		return static_cast<Derived*>(this->Clone_impl());
 	}
 
 private:
-	virtual Clonable* Clone_impl() const override { return new Derived(asDer()); }
+	virtual NiCloneable* Clone_impl() const override { return new Derived(asDer()); }
 
 	Derived& asDer() { return static_cast<Derived&>(*this); }
 	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
@@ -275,9 +313,9 @@ private:
 
 // this is a superset of Clonable that also supports streaming I/O
 template<typename Derived, typename Base>
-class Streamable : public Base {
+class NiCloneableStreamable : public Base {
 public:
-	virtual ~Streamable() = default;
+	virtual ~NiCloneableStreamable() override = default;
 
 	Derived* Clone() const {
 		return static_cast<Derived*>(this->Clone_impl());
@@ -288,6 +326,7 @@ public:
 		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
 		asDer().Sync(s);
 	}
+
 	void Put(NiOStream& stream) override {
 		Base::Put(stream);
 		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
@@ -295,7 +334,7 @@ public:
 	}
 
 private:
-	virtual Streamable* Clone_impl() const override { return new Derived(asDer()); }
+	virtual NiCloneableStreamable* Clone_impl() const override { return new Derived(asDer()); }
 
 	Derived& asDer() { return static_cast<Derived&>(*this); }
 	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
@@ -307,139 +346,323 @@ private:
 	bool nullOutput = false; // append a null byte when writing the string
 
 public:
-	NiString(){};
+	NiString() = default;
+	NiString(const std::string& s, const bool wantNullOutput = false) {
+		str = s;
+		nullOutput = wantNullOutput;
+	}
 
-	std::string GetString() { return str; }
-	void SetString(const std::string& s) { this->str = s; }
+	std::string& get() { return str; }
+	const std::string& get() const { return str; }
 
-	size_t GetLength() { return str.length(); }
+	size_t length() const { return str.length(); }
 
 	void SetNullOutput(const bool wantNullOutput = true) { nullOutput = wantNullOutput; }
-	void Clear() { str.clear(); }
+	void clear() { str.clear(); }
 
-	void Get(NiIStream& stream, const int szSize);
-	void Put(NiOStream& stream, const int szSize);
+	void Read(NiIStream& stream, const int szSize);
+	void Write(NiOStream& stream, const int szSize);
 
 	void Sync(NiStreamReversible& stream, const int szSize) {
 		if (auto istream = stream.asRead())
-			Get(*istream, szSize);
+			Read(*istream, szSize);
 		else if (auto ostream = stream.asWrite())
-			Put(*ostream, szSize);
+			Write(*ostream, szSize);
 	}
+
+	bool operator==(const NiString& rhs) const { return str == rhs.str; }
+	bool operator!=(const NiString& rhs) const { return !operator==(rhs); }
+
+	bool operator==(const std::string& rhs) const { return str == rhs; }
+	bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
 };
 
-class StringRef {
+class NiStringRef {
 private:
-	// Temporary index storage for load/save
-	int index = NIF_NPOS;
-	NiString str;
+	std::string str;
+	int index = NIF_NPOS; // Temporary index storage for load/save
 
 public:
-	std::string GetString() { return str.GetString(); }
+	NiStringRef() = default;
+	NiStringRef(const std::string& s) { str = s; }
 
-	void SetString(const std::string& s) { str.SetString(s); }
+	std::string& get() { return str; }
+	const std::string& get() const { return str; }
+	std::string copy() { return str; }
 
-	int GetIndex() { return index; }
+	size_t length() const { return str.length(); }
 
+	int GetIndex() const { return index; }
 	void SetIndex(const int id) { index = id; }
 
-	void Clear() {
+	void clear() {
 		index = NIF_NPOS;
-		str.Clear();
+		str.clear();
+	}
+
+	void Read(NiIStream& stream);
+	void Write(NiOStream& stream);
+
+	void Sync(NiStreamReversible& stream) {
+		if (auto istream = stream.asRead())
+			Read(*istream);
+		else if (auto ostream = stream.asWrite())
+			Write(*ostream);
+	}
+
+	bool operator==(const NiStringRef& rhs) const { return str == rhs.str; }
+	bool operator!=(const NiStringRef& rhs) const { return !operator==(rhs); }
+
+	bool operator==(const std::string& rhs) const { return str == rhs; }
+	bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
+};
+
+struct NiPlane {
+	Vector3 normal;
+	float constant = 0.0f;
+};
+
+// Helper to reduce duplication
+template<typename ValueType, typename SizeType>
+class NiVectorBase {
+private:
+	typedef std::vector<ValueType> Container;
+
+	Container vec;
+
+protected:
+	static constexpr size_t NumSize = sizeof(SizeType);
+	static constexpr SizeType MaxIndex = std::numeric_limits<SizeType>::max() - 1;
+
+public:
+	typedef typename Container::iterator iterator;
+	typedef typename Container::const_iterator const_iterator;
+
+	NiVectorBase() = default;
+	NiVectorBase(const SizeType size) { resize(size); }
+
+	SizeType size() const { return vec.size(); }
+	bool empty() const { return vec.empty(); }
+
+	void clear() { vec.clear(); }
+
+	iterator begin() { return vec.begin(); }
+	const_iterator cbegin() const { return vec.begin(); }
+
+	iterator end() { return vec.end(); }
+	const_iterator cend() const { return vec.end(); }
+
+	void resize(SizeType size) { vec.resize(size); }
+
+	ValueType& operator[](SizeType i) { return vec[i]; }
+
+	iterator erase(SizeType i) { return vec.erase(vec.begin() + i); }
+};
+
+template<typename ValueType, typename SizeType = uint32_t>
+class NiVector : public NiVectorBase<ValueType, SizeType> {
+	using Base = NiVectorBase<ValueType, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
+
+public:
+	NiVector() = default;
+	NiVector(const SizeType size)
+		: Base(size) {}
+
+	void Read(NiIStream& stream) {
+		size_t sz = 0;
+		stream.read(reinterpret_cast<char*>(&sz), NumSize);
+
+		Base::resize(sz);
+
+		for (auto& e : *this)
+			stream >> e;
+	}
+
+	void Write(NiOStream& stream) {
+		if (!Base::empty() && Base::size() - 1 > MaxIndex)
+			Base::resize(MaxIndex + 1);
+
+		size_t sz = Base::size();
+		stream.write(reinterpret_cast<char*>(&sz), NumSize);
+
+		for (auto& e : *this)
+			stream << e;
 	}
 
 	void Sync(NiStreamReversible& stream) {
-		if (stream.GetVersion().File() < V20_1_0_1)
-			str.Sync(stream, 4);
-		else
-			stream.Sync(index);
+		if (auto istream = stream.asRead())
+			Read(*istream);
+		else if (auto ostream = stream.asWrite())
+			Write(*ostream);
 	}
 };
 
-class Ref {
-protected:
-	int index = NIF_NPOS;
+template<typename SizeType = uint32_t, const int stringSize = 4>
+class NiStringVector : public NiVectorBase<NiString, SizeType> {
+private:
+	using Base = NiVectorBase<NiString, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
 
 public:
-	int GetIndex() { return index; }
+	NiStringVector() = default;
+	NiStringVector(const SizeType size) { Base::resize(size); }
 
-	void SetIndex(const int id) { index = id; }
+	void Read(NiIStream& stream) {
+		size_t sz = 0;
+		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
-	void Clear() { index = NIF_NPOS; }
+		Base::resize(sz);
+
+		for (auto& e : *this)
+			e.Read(stream, stringSize);
+	}
+
+	void Write(NiOStream& stream) {
+		if (!Base::empty() && Base::size() - 1 > MaxIndex)
+			Base::resize(MaxIndex + 1);
+
+		size_t sz = Base::size();
+		stream.write(reinterpret_cast<char*>(&sz), NumSize);
+
+		for (auto& e : *this)
+			e.Write(stream, stringSize);
+	}
+
+	void Sync(NiStreamReversible& stream) {
+		if (auto istream = stream.asRead())
+			Read(*istream);
+		else if (auto ostream = stream.asWrite())
+			Write(*ostream);
+	}
 };
 
-template<typename T>
-class BlockRef : public Ref {
-	using base = Ref;
+template<typename SizeType = uint32_t>
+class NiStringRefVector : public NiVectorBase<NiStringRef, SizeType> {
+private:
+	using Base = NiVectorBase<NiStringRef, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
 
 public:
-	BlockRef() {}
-	BlockRef(const int id) { Ref::index = id; }
+	NiStringRefVector() = default;
+	NiStringRefVector(const SizeType size) { resize(size); }
+
+	void Read(NiIStream& stream) {
+		size_t sz = 0;
+		stream.read(reinterpret_cast<char*>(&sz), NumSize);
+
+		Base::resize(sz);
+
+		for (auto& e : *this)
+			e.Read(stream);
+	}
+
+	void Write(NiOStream& stream) {
+		if (!Base::empty() && Base::size() - 1 > MaxIndex)
+			Base::resize(MaxIndex + 1);
+
+		size_t sz = Base::size();
+		stream.write(reinterpret_cast<char*>(&sz), NumSize);
+
+		for (auto& e : *this)
+			e.Write(stream);
+	}
+
+	void Sync(NiStreamReversible& stream) {
+		if (auto istream = stream.asRead())
+			Read(*istream);
+		else if (auto ostream = stream.asWrite())
+			Write(*ostream);
+	}
+};
+
+class NiRef {
+public:
+	int index = NIF_NPOS;
+
+	void Clear() { index = NIF_NPOS; }
+	bool IsEmpty() const { return index == NIF_NPOS; }
+
+	bool operator==(const NiRef& rhs) const { return index == rhs.index; }
+	bool operator!=(const NiRef& rhs) const { return !operator==(rhs); }
+
+	bool operator==(const int rhs) const { return index == rhs; }
+	bool operator!=(const int rhs) const { return !operator==(rhs); }
+};
+
+using NiPtr = NiRef;
+
+template<typename T>
+class NiBlockRef : public NiRef {
+	using base = NiRef;
+
+public:
+	NiBlockRef() {}
+	NiBlockRef(const int id) { NiRef::index = id; }
 
 	void Sync(NiStreamReversible& stream) { stream.Sync(base::index); }
 };
 
-class RefArray {
+template<typename T>
+using NiBlockPtr = NiBlockRef<T>;
+
+class NiRefArray {
 protected:
 	int arraySize = 0;
 	bool keepEmptyRefs = false;
 
 public:
-	virtual ~RefArray() {}
+	virtual ~NiRefArray() {}
 
-	int GetSize() { return arraySize; }
+	int GetSize() const { return arraySize; }
 
 	void SetKeepEmptyRefs(const bool keep = true) { keepEmptyRefs = keep; }
 
 	virtual void Sync(NiStreamReversible& stream) = 0;
 
 	virtual void AddBlockRef(const int id) = 0;
-	virtual int GetBlockRef(const int id) = 0;
+	virtual int GetBlockRef(const int id) const = 0;
 	virtual void SetBlockRef(const int id, const int index) = 0;
 	virtual void RemoveBlockRef(const int id) = 0;
 	virtual void GetIndices(std::vector<int>& indices) = 0;
-	virtual void GetIndexPtrs(std::set<Ref*>& indices) = 0;
+	virtual void GetIndexPtrs(std::set<NiRef*>& indices) = 0;
 	virtual void SetIndices(const std::vector<int>& indices) = 0;
 };
 
 template<typename T>
-class BlockRefArray : public RefArray {
+class NiBlockRefArray : public NiRefArray {
 protected:
-	using RefArray::arraySize;
-	using RefArray::keepEmptyRefs;
+	using NiRefArray::arraySize;
+	using NiRefArray::keepEmptyRefs;
 
-	std::vector<BlockRef<T>> refs;
+	std::vector<NiBlockRef<T>> refs;
 
 	void CleanInvalidRefs() {
 		if (keepEmptyRefs)
 			return;
 
-		refs.erase(std::remove_if(refs.begin(),
-								  refs.end(),
-								  [](BlockRef<T> r) {
-									  if (r.GetIndex() == NIF_NPOS)
-										  return true;
-									  else
-										  return false;
-								  }),
+		refs.erase(std::remove_if(refs.begin(), refs.end(), [](NiBlockRef<T> r) { return r.IsEmpty(); }),
 				   refs.end());
 
 		arraySize = refs.size();
 	}
 
 public:
-	typedef typename std::vector<BlockRef<T>>::iterator iterator;
-	typedef typename std::vector<BlockRef<T>>::const_iterator const_iterator;
+	using iterator = typename std::vector<NiBlockRef<T>>::iterator;
+	using const_iterator = typename std::vector<NiBlockRef<T>>::const_iterator;
 
-	typename iterator begin() { return refs.begin(); }
+	iterator begin() { return refs.begin(); }
 
-	typename iterator end() { return refs.end(); }
+	iterator end() { return refs.end(); }
 
-	typename const_iterator cbegin() const { return refs.cbegin(); }
+	const_iterator cbegin() const { return refs.cbegin(); }
 
-	typename const_iterator cend() const { return refs.cend(); }
+	const_iterator cend() const { return refs.cend(); }
 
-	const std::vector<BlockRef<T>>& GetRefs() const {
+	const std::vector<NiBlockRef<T>>& GetRefs() const {
 		return refs;
 	}
 
@@ -466,20 +689,20 @@ public:
 	}
 
 	void AddBlockRef(const int index) override {
-		refs.push_back(BlockRef<T>(index));
+		refs.push_back(NiBlockRef<T>(index));
 		arraySize++;
 	}
 
-	int GetBlockRef(const int id) override {
+	int GetBlockRef(const int id) const override {
 		if (id >= 0 && refs.size() > id)
-			return refs[id].GetIndex();
+			return refs[id].index;
 
 		return NIF_NPOS;
 	}
 
 	void SetBlockRef(const int id, const int index) override {
 		if (id >= 0 && refs.size() > id)
-			refs[id].SetIndex(index);
+			refs[id].index = index;
 	}
 
 	void RemoveBlockRef(const int id) override {
@@ -491,10 +714,10 @@ public:
 
 	void GetIndices(std::vector<int>& indices) override {
 		for (auto& r : refs)
-			indices.push_back(r.GetIndex());
+			indices.push_back(r.index);
 	}
 
-	void GetIndexPtrs(std::set<Ref*>& indices) override {
+	void GetIndexPtrs(std::set<NiRef*>& indices) override {
 		for (auto& r : refs)
 			indices.insert(&r);
 	}
@@ -504,14 +727,17 @@ public:
 		refs.resize(arraySize);
 
 		for (int i = 0; i < arraySize; i++)
-			refs[i].SetIndex(indices[i]);
+			refs[i].index = indices[i];
 	}
 };
 
 template<typename T>
-class BlockRefShortArray : public BlockRefArray<T> {
+using NiBlockPtrArray = NiBlockRefArray<T>;
+
+template<typename T>
+class NiBlockRefShortArray : public NiBlockRefArray<T> {
 public:
-	using base = BlockRefArray<T>;
+	using base = NiBlockRefArray<T>;
 	using base::arraySize;
 	using base::refs;
 
@@ -526,6 +752,9 @@ public:
 			r.Sync(stream);
 	}
 };
+
+template<typename T>
+using NiBlockPtrShortArray = NiBlockRefShortArray<T>;
 
 class NiObject {
 protected:
@@ -542,17 +771,17 @@ public:
 	virtual void Get(NiIStream&) {}
 	virtual void Put(NiOStream&) {}
 
-	virtual void GetStringRefs(std::vector<StringRef*>&) {}
-	virtual void GetChildRefs(std::set<Ref*>&) {}
+	virtual void GetStringRefs(std::vector<NiStringRef*>&) {}
+	virtual void GetChildRefs(std::set<NiRef*>&) {}
 	virtual void GetChildIndices(std::vector<int>&) {}
-	virtual void GetPtrs(std::set<Ref*>&) {}
+	virtual void GetPtrs(std::set<NiPtr*>&) {}
 
 	NiObject* Clone() const {
 		return static_cast<NiObject*>(this->Clone_impl());
 	}
 
 	template<typename T>
-	bool HasType() {
+	bool HasType() const {
 		return dynamic_cast<const T*>(this) != nullptr;
 	}
 
@@ -560,7 +789,7 @@ private:
 	virtual NiObject* Clone_impl() const = 0;
 };
 
-class NiHeader : public Clonable<NiHeader, NiObject> {
+CLONEABLECLASSDEF(NiHeader, NiObject) {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -616,24 +845,25 @@ public:
 
 	void Clear();
 
-	bool IsValid() { return valid; }
+	bool IsValid() const { return valid; }
 
-	NiVersion& GetVersion() { return version; };
+	NiVersion& GetVersion() { return version; }
+	const NiVersion& GetVersion() const { return version; }
 
 	void SetVersion(const NiVersion& ver) { version = ver; }
 
-	std::string GetCreatorInfo();
+	std::string GetCreatorInfo() const;
 	void SetCreatorInfo(const std::string& creatorInfo);
 
-	std::string GetExportInfo();
+	std::string GetExportInfo() const;
 	void SetExportInfo(const std::string& exportInfo);
 
-	void SetBlockReference(std::vector<std::unique_ptr<NiObject>>* blockRef) { blocks = blockRef; };
+	void SetBlockReference(std::vector<std::unique_ptr<NiObject>>* blockRef) { blocks = blockRef; }
 
-	uint32_t GetNumBlocks() { return numBlocks; }
+	uint32_t GetNumBlocks() const { return numBlocks; }
 
 	template<class T>
-	T* GetBlock(const int blockId) {
+	T* GetBlock(const int blockId) const {
 		if (blockId >= 0 && blockId < numBlocks)
 			return dynamic_cast<T*>((*blocks)[blockId].get());
 
@@ -641,16 +871,65 @@ public:
 	}
 
 	template<class T>
-	T* GetBlockUnsafe(const int blockId) {
+	T* GetBlock(const NiBlockRef<T>& blockRef) const {
+		return GetBlock<T>(blockRef.index);
+	}
+
+	template<class T>
+	T* GetBlock(const NiBlockRef<T>* blockRef) const {
+		if (blockRef)
+			return GetBlock<T>(blockRef->index);
+		return nullptr;
+	}
+
+	template<class T>
+	T* GetBlock(const NiRef& blockRef) const {
+		return GetBlock<T>(blockRef.index);
+	}
+
+	template<class T>
+	T* GetBlock(const NiRef* blockRef) const {
+		if (blockRef)
+			return GetBlock<T>(blockRef->index);
+		return nullptr;
+	}
+
+	template<class T>
+	T* GetBlockUnsafe(const int blockId) const {
 		if (blockId >= 0 && blockId < numBlocks)
 			return static_cast<T*>((*blocks)[blockId].get());
 
 		return nullptr;
 	}
 
-	int GetBlockID(NiObject* block);
+	template<class T>
+	T* GetBlockUnsafe(const NiBlockRef<T>& blockRef) const {
+		return GetBlockUnsafe<T>(blockRef.index);
+	}
+
+	template<class T>
+	T* GetBlockUnsafe(const NiBlockRef<T>* blockRef) const {
+		if (blockRef)
+			return GetBlockUnsafe<T>(blockRef->index);
+		return nullptr;
+	}
+
+	template<class T>
+	T* GetBlockUnsafe(const NiRef& blockRef) const {
+		return GetBlockUnsafe<T>(blockRef.index);
+	}
+
+	template<class T>
+	T* GetBlockUnsafe(const NiRef* blockRef) const {
+		if (blockRef)
+			return GetBlockUnsafe<T>(blockRef->index);
+		return nullptr;
+	}
+
+	int GetBlockID(NiObject* block) const;
 
 	void DeleteBlock(int blockId);
+	void DeleteBlock(const NiRef& blockRef);
 	void DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly = false);
 	int AddBlock(NiObject* newBlock);
 	int ReplaceBlock(int oldBlockId, NiObject* newBlock);
@@ -687,17 +966,17 @@ public:
 	}
 
 	uint16_t AddOrFindBlockTypeId(const std::string& blockTypeName);
-	std::string GetBlockTypeStringById(const int blockId);
-	uint16_t GetBlockTypeIndex(const int blockId);
+	std::string GetBlockTypeStringById(const int blockId) const;
+	uint16_t GetBlockTypeIndex(const int blockId) const;
 
-	uint32_t GetBlockSize(const uint32_t blockId);
-	std::streampos GetBlockSizeStreamPos();
+	uint32_t GetBlockSize(const uint32_t blockId) const;
+	std::streampos GetBlockSizeStreamPos() const;
 	void ResetBlockSizeStreamPos();
 
-	int GetStringCount();
-	int FindStringId(const std::string& str);
+	int GetStringCount() const;
+	int FindStringId(const std::string& str) const;
 	int AddOrFindStringId(const std::string& str, const bool addEmpty = false);
-	std::string GetStringById(const int id);
+	std::string GetStringById(const int id) const;
 	void SetStringById(const int id, const std::string& str);
 
 	void ClearStrings();
@@ -712,17 +991,15 @@ public:
 	void Put(NiOStream& stream) override;
 };
 
-class NiUnknown : public Streamable<NiUnknown, NiObject> {
-private:
+STREAMABLECLASSDEF(NiUnknown, NiObject) {
+public:
 	std::vector<char> data;
 
-public:
 	NiUnknown() {}
 	NiUnknown(NiIStream& stream, const uint32_t size);
 	NiUnknown(const uint32_t size);
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<char> GetData() { return data; }
 };
+
 } // namespace nifly
