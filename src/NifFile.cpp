@@ -1116,7 +1116,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			if (bsOptShape->GetNumVertices() > 0) {
 				if (!removeVertexColors && !colors.empty()) {
 					bsOptShape->SetVertexColors(true);
-					for (uint32_t i = 0; i < bsOptShape->GetNumVertices(); i++) {
+					for (uint16_t i = 0; i < bsOptShape->GetNumVertices(); i++) {
 						auto& vertex = bsOptShape->vertData[i];
 
 						float f = std::max(0.0f, std::min(1.0f, colors[i].r));
@@ -1235,11 +1235,12 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				continue;
 
 			bool removeVertexColors = true;
+			bool removeNormals = false;
 			bool hasTangents = bsTriShape->HasTangents();
-			std::vector<Vector3>* vertices = bsTriShape->GetRawVerts();
-			std::vector<Vector3>* normals = bsTriShape->GetNormalData(false);
-			std::vector<Color4>* colors = bsTriShape->GetColorData();
-			std::vector<Vector2>* uvs = bsTriShape->GetUVData();
+			const std::vector<Vector3>& vertices = bsTriShape->UpdateRawVertices();
+			const std::vector<Vector3>& normals = bsTriShape->UpdateRawNormals();
+			const std::vector<Color4>& colors = bsTriShape->UpdateRawColors();
+			const std::vector<Vector2>& uvs = bsTriShape->UpdateRawUvs();
 
 			std::vector<Triangle> triangles;
 			bsTriShape->GetTriangles(triangles);
@@ -1248,9 +1249,9 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				removeVertexColors = false;
 
 			// Only remove vertex colors if all are 0xFFFFFFFF
-			if (colors && removeVertexColors) {
+			if (bsTriShape->HasVertexColors() && removeVertexColors) {
 				Color4 white(1.0f, 1.0f, 1.0f, 1.0f);
-				for (auto& c : (*colors)) {
+				for (auto& c : colors) {
 					if (white != c) {
 						removeVertexColors = false;
 						break;
@@ -1264,10 +1265,10 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				if (bslsp) {
 					// No normals and tangents with model space maps
 					if (bslsp->IsModelSpace()) {
-						if (normals && !normals->empty())
+						if (!normals.empty())
 							result.shapesNormalsRemoved.push_back(shapeName);
 
-						normals = nullptr;
+						removeNormals = true;
 					}
 
 					// Check tree anim flag
@@ -1312,7 +1313,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				}
 			}
 
-			if (colors && !colors->empty() && removeVertexColors)
+			if (!colors.empty() && removeVertexColors)
 				result.shapesVColorsRemoved.push_back(shapeName);
 
 			std::unique_ptr<NiTriShape> bsOptShape = nullptr;
@@ -1326,7 +1327,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			int dataId = hdr.AddBlock(bsOptShapeDataS.release());
 			bsOptShape->DataRef()->index = dataId;
 			bsOptShape->SetGeomData(bsOptShapeData);
-			bsOptShapeData->Create(hdr.GetVersion(), vertices, &triangles, uvs, normals);
+			bsOptShapeData->Create(hdr.GetVersion(), &vertices, &triangles, &uvs, !removeNormals ? &normals : nullptr);
 
 			bsOptShape->name.get() = shape->name.get();
 
@@ -1359,10 +1360,10 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 			// Vertex Colors
 			if (bsOptShape->GetNumVertices() > 0) {
-				if (!removeVertexColors && colors && !colors->empty()) {
+				if (!removeVertexColors && !colors.empty()) {
 					bsOptShape->SetVertexColors(true);
-					for (uint32_t i = 0; i < bsOptShape->GetNumVertices(); i++)
-						bsOptShapeData->vertexColors[i] = (*colors)[i];
+					for (uint16_t i = 0; i < bsOptShape->GetNumVertices(); i++)
+						bsOptShapeData->vertexColors[i] = colors[i];
 				}
 
 				// Skinning and partitions
@@ -1439,7 +1440,7 @@ void NifFile::PrepareData() {
 
 			auto dynamicShape = dynamic_cast<BSDynamicTriShape*>(bsTriShape);
 			if (dynamicShape) {
-				for (uint32_t i = 0; i < dynamicShape->GetNumVertices(); i++) {
+				for (uint16_t i = 0; i < dynamicShape->GetNumVertices(); i++) {
 					dynamicShape->vertData[i].vert.x = dynamicShape->dynamicData[i].x;
 					dynamicShape->vertData[i].vert.y = dynamicShape->dynamicData[i].y;
 					dynamicShape->vertData[i].vert.z = dynamicShape->dynamicData[i].z;
@@ -1513,6 +1514,108 @@ bool NifFile::IsSSECompatible(NiShape* shape) const {
 	}
 
 	return true;
+}
+
+NiShape* NifFile::CreateShapeFromData(const std::string& shapeName,
+									  const std::vector<Vector3>* v,
+									  const std::vector<Triangle>* t,
+									  const std::vector<Vector2>* uv,
+									  const std::vector<Vector3>* norms) {
+	auto rootNode = GetRootNode();
+	if (!rootNode)
+		return nullptr;
+
+	const NiVersion& version = hdr.GetVersion();
+
+	NiShape* shapeResult = nullptr;
+	if (version.IsSSE()) {
+		auto triShape = std::make_unique<BSTriShape>();
+		triShape->Create(hdr.GetVersion(), v, t, uv, norms);
+		triShape->SetSkinned(false);
+
+		auto nifTexset = std::make_unique<BSShaderTextureSet>(hdr.GetVersion());
+
+		auto nifShader = std::make_unique<BSLightingShaderProperty>(hdr.GetVersion());
+		nifShader->TextureSetRef()->index = hdr.AddBlock(std::move(nifTexset));
+		nifShader->SetSkinned(false);
+
+		triShape->name.get() = shapeName;
+
+		int shaderID = hdr.AddBlock(std::move(nifShader));
+		triShape->ShaderPropertyRef()->index = shaderID;
+
+		shapeResult = triShape.get();
+
+		int shapeID = hdr.AddBlock(std::move(triShape));
+		rootNode->childRefs.AddBlockRef(shapeID);
+	}
+	else if (version.IsFO4() || version.IsFO76()) {
+		auto nifBSTriShape = std::make_unique<BSSubIndexTriShape>();
+		nifBSTriShape->Create(hdr.GetVersion(), v, t, uv, norms);
+		nifBSTriShape->SetSkinned(false);
+
+		auto nifTexset = std::make_unique<BSShaderTextureSet>(hdr.GetVersion());
+
+		auto nifShader = std::make_unique<BSLightingShaderProperty>(hdr.GetVersion());
+		nifShader->TextureSetRef()->index = hdr.AddBlock(std::move(nifTexset));
+
+		std::string wetShaderName = "template/OutfitTemplate_Wet.bgsm";
+		nifShader->SetWetMaterialName(wetShaderName);
+		nifShader->SetSkinned(false);
+
+		nifBSTriShape->name.get() = shapeName;
+
+		int shaderID = hdr.AddBlock(std::move(nifShader));
+		nifBSTriShape->ShaderPropertyRef()->index = shaderID;
+
+		shapeResult = nifBSTriShape.get();
+
+		int shapeID = hdr.AddBlock(std::move(nifBSTriShape));
+		rootNode->childRefs.AddBlockRef(shapeID);
+	}
+	else {
+		auto nifTexset = std::make_unique<BSShaderTextureSet>(hdr.GetVersion());
+
+		int shaderID;
+		std::unique_ptr<BSLightingShaderProperty> nifShader = nullptr;
+		std::unique_ptr<BSShaderPPLightingProperty> nifShaderPP = nullptr;
+
+		if (version.IsSK()) {
+			nifShader = std::make_unique<BSLightingShaderProperty>(hdr.GetVersion());
+			nifShader->TextureSetRef()->index = hdr.AddBlock(std::move(nifTexset));
+			nifShader->SetSkinned(false);
+			shaderID = hdr.AddBlock(std::move(nifShader));
+		}
+		else {
+			nifShaderPP = std::make_unique<BSShaderPPLightingProperty>();
+			nifShaderPP->TextureSetRef()->index = hdr.AddBlock(std::move(nifTexset));
+			nifShaderPP->SetSkinned(false);
+			shaderID = hdr.AddBlock(std::move(nifShaderPP));
+		}
+
+		auto nifTriShape = std::make_unique<NiTriShape>();
+		if (version.IsSK())
+			nifTriShape->ShaderPropertyRef()->index = shaderID;
+		else
+			nifTriShape->propertyRefs.AddBlockRef(shaderID);
+
+		nifTriShape->name.get() = shapeName;
+
+		auto nifShapeData = std::make_unique<NiTriShapeData>();
+		nifShapeData->Create(hdr.GetVersion(), v, t, uv, norms);
+		nifTriShape->SetGeomData(nifShapeData.get());
+
+		int dataID = hdr.AddBlock(std::move(nifShapeData));
+		nifTriShape->DataRef()->index = dataID;
+		nifTriShape->SetSkinned(false);
+
+		shapeResult = nifTriShape.get();
+
+		int shapeID = hdr.AddBlock(std::move(nifTriShape));
+		rootNode->childRefs.AddBlockRef(shapeID);
+	}
+
+	return shapeResult;
 }
 
 std::vector<std::string> NifFile::GetShapeNames() const {
@@ -1846,9 +1949,9 @@ int NifFile::GetShapeBoneWeights(NiShape* shape,
 	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 	if (bsTriShape) {
 		outWeights.reserve(bsTriShape->GetNumVertices());
-		for (int vid = 0; vid < bsTriShape->GetNumVertices(); vid++) {
+		for (uint16_t vid = 0; vid < bsTriShape->GetNumVertices(); vid++) {
 			auto& vertex = bsTriShape->vertData[vid];
-			for (uint32_t i = 0; i < 4; i++) {
+			for (size_t i = 0; i < 4; i++) {
 				if (vertex.weightBones[i] == boneIndex && vertex.weights[i] != 0.0f)
 					outWeights.emplace(vid, vertex.weights[i]);
 			}
@@ -2319,33 +2422,8 @@ void NifFile::SetDefaultPartition(NiShape* shape) {
 	std::vector<Triangle> tris;
 	shape->GetTriangles(tris);
 
-	std::vector<Vector3> verts;
-	bool bMappedIndices = true;
-	if (shape->HasType<NiTriShape>()) {
-		auto shapeData = hdr.GetBlock<NiTriShapeData>(shape->DataRef());
-		if (!shapeData)
-			return;
-
-		verts = shapeData->vertices;
-	}
-	else if (shape->HasType<NiTriStrips>()) {
-		auto stripsData = hdr.GetBlock<NiTriStripsData>(shape->DataRef());
-		if (!stripsData)
-			return;
-
-		verts = stripsData->vertices;
-	}
-	else if (shape->HasType<BSTriShape>()) {
-		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-		if (!bsTriShape)
-			return;
-
-		auto rawVerts = bsTriShape->GetRawVerts();
-		if (rawVerts)
-			verts = (*rawVerts);
-
-		bMappedIndices = false;
-	}
+	uint16_t numVertices = shape->GetNumVertices();
+	bool bMappedIndices = !shape->HasType<BSTriShape>();
 
 	auto bsdSkinInst = hdr.GetBlock<BSDismemberSkinInstance>(shape->SkinInstanceRef());
 	if (bsdSkinInst) {
@@ -2364,9 +2442,9 @@ void NifFile::SetDefaultPartition(NiShape* shape) {
 	auto skinPart = hdr.GetBlock(skinInst->skinPartitionRef);
 	if (skinPart) {
 		NiSkinPartition::PartitionBlock part;
-		if (!verts.empty()) {
+		if (numVertices > 0) {
 			part.hasVertexMap = true;
-			part.numVertices = verts.size();
+			part.numVertices = numVertices;
 
 			std::vector<uint16_t> vertIndices(part.numVertices);
 			for (size_t i = 0; i < vertIndices.size(); i++)
@@ -2411,7 +2489,17 @@ void NifFile::DeletePartitions(NiShape* shape, std::vector<int>& partInds) {
 	}
 }
 
-const std::vector<Vector3>* NifFile::GetRawVertsForShape(NiShape* shape) {
+bool NifFile::ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices) {
+	if (!shape)
+		return false;
+
+	if (shape->HasType<NiTriStrips>())
+		return false;
+
+	return shape->ReorderTriangles(triangleIndices);
+}
+
+const std::vector<Vector3>* NifFile::GetVertsForShape(NiShape* shape) {
 	if (!shape)
 		return nullptr;
 
@@ -2423,23 +2511,13 @@ const std::vector<Vector3>* NifFile::GetRawVertsForShape(NiShape* shape) {
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->GetRawVerts();
+			return &bsTriShape->UpdateRawVertices();
 	}
 
 	return nullptr;
 }
 
-bool NifFile::ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices) {
-	if (!shape)
-		return false;
-
-	if (shape->HasType<NiTriStrips>())
-		return false;
-
-	return shape->ReorderTriangles(triangleIndices);
-}
-
-const std::vector<Vector3>* NifFile::GetNormalsForShape(NiShape* shape, bool transform) {
+const std::vector<Vector3>* NifFile::GetNormalsForShape(NiShape* shape) {
 	if (!shape || !shape->HasNormals())
 		return nullptr;
 
@@ -2451,7 +2529,7 @@ const std::vector<Vector3>* NifFile::GetNormalsForShape(NiShape* shape, bool tra
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->GetNormalData(transform);
+			return &bsTriShape->UpdateRawNormals();
 	}
 
 	return nullptr;
@@ -2469,7 +2547,7 @@ const std::vector<Vector2>* NifFile::GetUvsForShape(NiShape* shape) {
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->GetUVData();
+			return &bsTriShape->UpdateRawUvs();
 	}
 
 	return nullptr;
@@ -2488,13 +2566,13 @@ const std::vector<Color4>* NifFile::GetColorsForShape(const std::string& shapeNa
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->GetColorData();
+			return &bsTriShape->UpdateRawColors();
 	}
 
 	return nullptr;
 }
 
-const std::vector<Vector3>* NifFile::GetTangentsForShape(NiShape* shape, bool transform) {
+const std::vector<Vector3>* NifFile::GetTangentsForShape(NiShape* shape) {
 	if (!shape || !shape->HasTangents())
 		return nullptr;
 
@@ -2506,13 +2584,13 @@ const std::vector<Vector3>* NifFile::GetTangentsForShape(NiShape* shape, bool tr
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->GetTangentData(transform);
+			return &bsTriShape->UpdateRawTangents();
 	}
 
 	return nullptr;
 }
 
-const std::vector<Vector3>* NifFile::GetBitangentsForShape(NiShape* shape, bool transform) {
+const std::vector<Vector3>* NifFile::GetBitangentsForShape(NiShape* shape) {
 	if (!shape || !shape->HasTangents())
 		return nullptr;
 
@@ -2524,34 +2602,24 @@ const std::vector<Vector3>* NifFile::GetBitangentsForShape(NiShape* shape, bool 
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			return bsTriShape->GetBitangentData(transform);
+			return &bsTriShape->UpdateRawBitangents();
 	}
 
 	return nullptr;
 }
 
-std::vector<float>* NifFile::GetEyeDataForShape(NiShape* shape) {
+const std::vector<float>* NifFile::GetEyeDataForShape(NiShape* shape) {
 	if (!shape)
 		return nullptr;
 
 	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 	if (bsTriShape)
-		return bsTriShape->GetEyeData();
+		return &bsTriShape->UpdateRawEyeData();
 
 	return nullptr;
 }
 
-bool NifFile::GetUvsForShape(NiShape* shape, std::vector<Vector2>& outUvs) {
-	const std::vector<Vector2>* uvData = GetUvsForShape(shape);
-	if (uvData) {
-		outUvs.assign(uvData->begin(), uvData->end());
-		return true;
-	}
-
-	return false;
-}
-
-bool NifFile::GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts) {
+bool NifFile::GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts) const {
 	if (!shape) {
 		outVerts.clear();
 		return false;
@@ -2559,17 +2627,17 @@ bool NifFile::GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts) {
 
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
-		if (geomData) {
+		if (geomData && geomData->HasVertices()) {
 			outVerts = geomData->vertices;
 			return true;
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-		if (bsTriShape) {
+		if (bsTriShape && bsTriShape->HasVertices()) {
 			outVerts.resize(bsTriShape->GetNumVertices());
 
-			for (uint32_t i = 0; i < bsTriShape->GetNumVertices(); i++)
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++)
 				outVerts[i] = bsTriShape->vertData[i].vert;
 
 			return true;
@@ -2580,6 +2648,127 @@ bool NifFile::GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts) {
 	return false;
 }
 
+bool NifFile::GetUvsForShape(NiShape* shape, std::vector<Vector2>& outUvs) const {
+	if (shape->HasType<NiTriBasedGeom>()) {
+		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
+		if (geomData && geomData->HasUVs() && !geomData->uvSets.empty()) {
+			outUvs = geomData->uvSets[0];
+			return true;
+		}
+	}
+	else if (shape->HasType<BSTriShape>()) {
+		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
+		if (bsTriShape && bsTriShape->HasUVs()) {
+			outUvs.resize(bsTriShape->GetNumVertices());
+
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++)
+				outUvs[i] = bsTriShape->vertData[i].uv;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NifFile::GetColorsForShape(NiShape* shape, std::vector<Color4>& outColors) const {
+	if (shape->HasType<NiTriBasedGeom>()) {
+		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
+		if (geomData && geomData->HasVertexColors()) {
+			outColors = geomData->vertexColors;
+			return true;
+		}
+	}
+	else if (shape->HasType<BSTriShape>()) {
+		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
+		if (bsTriShape && bsTriShape->HasVertexColors()) {
+			outColors.resize(bsTriShape->GetNumVertices());
+
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
+				outColors[i].r = bsTriShape->vertData[i].colorData[0] / 255.0f;
+				outColors[i].g = bsTriShape->vertData[i].colorData[1] / 255.0f;
+				outColors[i].b = bsTriShape->vertData[i].colorData[2] / 255.0f;
+				outColors[i].a = bsTriShape->vertData[i].colorData[3] / 255.0f;
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NifFile::GetTangentsForShape(NiShape* shape, std::vector<Vector3>& outTang) const {
+	if (shape->HasType<NiTriBasedGeom>()) {
+		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
+		if (geomData && geomData->HasTangents()) {
+			outTang = geomData->tangents;
+			return true;
+		}
+	}
+	else if (shape->HasType<BSTriShape>()) {
+		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
+		if (bsTriShape && bsTriShape->HasTangents()) {
+			outTang.resize(bsTriShape->GetNumVertices());
+
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
+				outTang[i].x = ((static_cast<float>(bsTriShape->vertData[i].tangent[0])) / 255.0f) * 2.0f
+							   - 1.0f;
+				outTang[i].y = ((static_cast<float>(bsTriShape->vertData[i].tangent[1])) / 255.0f) * 2.0f
+							   - 1.0f;
+				outTang[i].z = ((static_cast<float>(bsTriShape->vertData[i].tangent[2])) / 255.0f) * 2.0f
+							   - 1.0f;
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NifFile::GetBitangentsForShape(NiShape* shape, std::vector<Vector3>& outBitang) const {
+	if (shape->HasType<NiTriBasedGeom>()) {
+		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
+		if (geomData && geomData->HasTangents()) {
+			outBitang = geomData->tangents;
+			return true;
+		}
+	}
+	else if (shape->HasType<BSTriShape>()) {
+		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
+		if (bsTriShape && bsTriShape->HasTangents()) {
+			outBitang.resize(bsTriShape->GetNumVertices());
+
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
+				outBitang[i].x = bsTriShape->vertData[i].bitangentX;
+				outBitang[i].y = ((static_cast<float>(bsTriShape->vertData[i].bitangentY)) / 255.0f) * 2.0f
+								 - 1.0f;
+				outBitang[i].z = ((static_cast<float>(bsTriShape->vertData[i].bitangentZ)) / 255.0f) * 2.0f
+								 - 1.0f;
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NifFile::GetEyeDataForShape(NiShape* shape, std::vector<float>& outEyeData) {
+	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
+	if (bsTriShape && bsTriShape->HasEyeData()) {
+		outEyeData.resize(bsTriShape->GetNumVertices());
+
+		for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++)
+			outEyeData[i] = bsTriShape->vertData[i].eyeData;
+
+		return true;
+	}
+
+	return false;
+}
+
 void NifFile::SetVertsForShape(NiShape* shape, const std::vector<Vector3>& verts) {
 	if (!shape)
 		return;
@@ -2587,7 +2776,7 @@ void NifFile::SetVertsForShape(NiShape* shape, const std::vector<Vector3>& verts
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
 		if (geomData) {
-			if (verts.size() != geomData->vertices.size())
+			if (verts.size() != geomData->GetNumVertices())
 				geomData->Create(hdr.GetVersion(), &verts, nullptr, nullptr, nullptr);
 			else
 				geomData->vertices = verts;
@@ -2600,7 +2789,7 @@ void NifFile::SetVertsForShape(NiShape* shape, const std::vector<Vector3>& verts
 				bsTriShape->Create(hdr.GetVersion(), &verts, nullptr, nullptr, nullptr);
 			}
 			else {
-				for (uint32_t i = 0; i < bsTriShape->GetNumVertices(); i++)
+				for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++)
 					bsTriShape->vertData[i].vert = verts[i];
 			}
 		}
@@ -2613,23 +2802,17 @@ void NifFile::SetUvsForShape(NiShape* shape, const std::vector<Vector2>& uvs) {
 
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
-		if (geomData) {
-			if (uvs.size() != geomData->vertices.size())
-				return;
-
+		if (geomData && uvs.size() == geomData->GetNumVertices()) {
 			geomData->SetUVs(true);
 			geomData->uvSets[0] = uvs;
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-		if (bsTriShape) {
-			if (uvs.size() != bsTriShape->vertData.size())
-				return;
-
+		if (bsTriShape && uvs.size() == bsTriShape->GetNumVertices()) {
 			bsTriShape->SetUVs(true);
 
-			for (uint32_t i = 0; i < bsTriShape->GetNumVertices(); i++)
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++)
 				bsTriShape->vertData[i].uv = uvs[i];
 		}
 	}
@@ -2642,23 +2825,17 @@ void NifFile::SetColorsForShape(const std::string& shapeName, const std::vector<
 
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
-		if (geomData) {
-			if (colors.size() != geomData->vertices.size())
-				return;
-
+		if (geomData && colors.size() == geomData->GetNumVertices()) {
 			geomData->SetVertexColors(true);
 			geomData->vertexColors = colors;
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-		if (bsTriShape) {
-			if (colors.size() != bsTriShape->vertData.size())
-				return;
-
+		if (bsTriShape && colors.size() == bsTriShape->GetNumVertices()) {
 			bsTriShape->SetVertexColors(true);
 
-			for (uint32_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
 				auto& vertex = bsTriShape->vertData[i];
 
 				float f = std::max(0.0f, std::min(1.0f, colors[i].r));
@@ -2677,7 +2854,7 @@ void NifFile::SetColorsForShape(const std::string& shapeName, const std::vector<
 	}
 }
 
-void NifFile::SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& in) {
+void NifFile::SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& tangents) {
 	if (!shape)
 		return;
 
@@ -2685,17 +2862,17 @@ void NifFile::SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& in
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
 		if (geomData) {
 			geomData->SetTangents(true);
-			geomData->tangents = in;
+			geomData->tangents = tangents;
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-		if (bsTriShape)
-			bsTriShape->SetTangentData(in);
+		if (bsTriShape && tangents.size() == bsTriShape->GetNumVertices())
+			bsTriShape->SetTangentData(tangents);
 	}
 }
 
-void NifFile::SetBitangentsForShape(NiShape* shape, const std::vector<Vector3>& in) {
+void NifFile::SetBitangentsForShape(NiShape* shape, const std::vector<Vector3>& bitangents) {
 	if (!shape)
 		return;
 
@@ -2703,23 +2880,23 @@ void NifFile::SetBitangentsForShape(NiShape* shape, const std::vector<Vector3>& 
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
 		if (geomData) {
 			geomData->SetTangents(true);
-			geomData->bitangents = in;
+			geomData->bitangents = bitangents;
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-		if (bsTriShape)
-			bsTriShape->SetBitangentData(in);
+		if (bsTriShape && bitangents.size() == bsTriShape->GetNumVertices())
+			bsTriShape->SetBitangentData(bitangents);
 	}
 }
 
-void NifFile::SetEyeDataForShape(NiShape* shape, const std::vector<float>& in) {
+void NifFile::SetEyeDataForShape(NiShape* shape, const std::vector<float>& eyeData) {
 	if (!shape)
 		return;
 
 	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-	if (bsTriShape)
-		bsTriShape->SetEyeData(in);
+	if (bsTriShape && eyeData.size() == bsTriShape->GetNumVertices())
+		bsTriShape->SetEyeData(eyeData);
 }
 
 void NifFile::InvertUVsForShape(NiShape* shape, bool invertX, bool invertY) {
@@ -2796,12 +2973,13 @@ void NifFile::MirrorShape(NiShape* shape, bool mirrorX, bool mirrorY, bool mirro
 			for (auto& i : bsTriShape->vertData)
 				i.vert = mirrorMat * i.vert;
 
-			auto normals = bsTriShape->GetNormalData(false);
-			if (normals) {
-				for (auto& normal : *normals)
+			if (bsTriShape->HasNormals()) {
+				bsTriShape->UpdateRawNormals();
+
+				for (auto& normal : bsTriShape->rawNormals)
 					normal = mirrorMat * normal;
 
-				bsTriShape->SetNormals((*normals));
+				bsTriShape->SetNormals(bsTriShape->rawNormals);
 
 				if (bsTriShape->HasTangents())
 					bsTriShape->CalcTangentSpace();
@@ -2913,12 +3091,12 @@ int NifFile::ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName)
 		return -3;
 
 	// Get normals of target
-	auto norms = GetNormalsForShape(shape, false);
+	auto norms = GetNormalsForShape(shape);
 	if (!norms)
 		return -4;
 
 	// Get normals of source
-	auto srcNorms = srcNif.GetNormalsForShape(srcShape, false);
+	auto srcNorms = srcNif.GetNormalsForShape(srcShape);
 	if (!srcNorms)
 		return -5;
 
@@ -2977,7 +3155,7 @@ void NifFile::OffsetShape(NiShape* shape, const Vector3& offset, std::unordered_
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
 		if (geomData) {
-			for (size_t i = 0; i < geomData->vertices.size(); i++) {
+			for (uint16_t i = 0; i < geomData->GetNumVertices(); i++) {
 				if (mask) {
 					float maskFactor = 1.0f;
 					Vector3 diff = offset;
@@ -2995,7 +3173,7 @@ void NifFile::OffsetShape(NiShape* shape, const Vector3& offset, std::unordered_
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape) {
-			for (uint32_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
+			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
 				if (mask) {
 					float maskFactor = 1.0f;
 					Vector3 diff = offset;
@@ -3025,7 +3203,7 @@ void NifFile::ScaleShape(NiShape* shape, const Vector3& scale, std::unordered_ma
 			return;
 
 		std::unordered_map<uint16_t, Vector3> diff;
-		for (size_t i = 0; i < geomData->vertices.size(); i++) {
+		for (uint16_t i = 0; i < geomData->GetNumVertices(); i++) {
 			Vector3 target = geomData->vertices[i] - root;
 			target.x *= scale.x;
 			target.y *= scale.y;
@@ -3049,7 +3227,7 @@ void NifFile::ScaleShape(NiShape* shape, const Vector3& scale, std::unordered_ma
 			return;
 
 		std::unordered_map<uint16_t, Vector3> diff;
-		for (uint32_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
+		for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
 			Vector3 target = bsTriShape->vertData[i].vert - root;
 			target.x *= scale.x;
 			target.y *= scale.y;
@@ -3082,7 +3260,7 @@ void NifFile::RotateShape(NiShape* shape, const Vector3& angle, std::unordered_m
 			return;
 
 		std::unordered_map<uint16_t, Vector3> diff;
-		for (size_t i = 0; i < geomData->vertices.size(); i++) {
+		for (uint16_t i = 0; i < geomData->GetNumVertices(); i++) {
 			Vector3 target = geomData->vertices[i] - root;
 			Matrix4 mat;
 			mat.Rotate(angle.x * DEG2RAD, Vector3(1.0f, 0.0f, 0.0f));
@@ -3108,7 +3286,7 @@ void NifFile::RotateShape(NiShape* shape, const Vector3& angle, std::unordered_m
 			return;
 
 		std::unordered_map<uint16_t, Vector3> diff;
-		for (uint32_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
+		for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++) {
 			Vector3 target = bsTriShape->vertData[i].vert - root;
 			Matrix4 mat;
 			mat.Rotate(angle.x * DEG2RAD, Vector3(1.0f, 0.0f, 0.0f));
@@ -3356,7 +3534,7 @@ int NifFile::CalcShapeDiff(NiShape* shape,
 						   float scale) {
 	outDiffData.clear();
 
-	const std::vector<Vector3>* myData = GetRawVertsForShape(shape);
+	const std::vector<Vector3>* myData = GetVertsForShape(shape);
 	if (!myData)
 		return 1;
 

@@ -13,16 +13,28 @@ TEST_CASE("Load not existing file", "[NifFile]") {
 	REQUIRE(nif.Load("not_existing.nif") != 0);
 }
 
-TEST_CASE("Load and save static file", "[NifFile]") {
+TEST_CASE("Load and save static file (SE)", "[NifFile]") {
 	NifFile nif;
-	REQUIRE(nif.Load("TestNifFile_Static.nif") == 0);
-	REQUIRE(nif.Save("TestNifFile_Static_output.nif") == 0);
+	REQUIRE(nif.Load("TestNifFile_Static_SE.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Static_SE_output.nif") == 0);
 }
 
-TEST_CASE("Load and save skinned file", "[NifFile]") {
+TEST_CASE("Load and save static file (FO4)", "[NifFile]") {
 	NifFile nif;
-	REQUIRE(nif.Load("TestNifFile_Skinned.nif") == 0);
-	REQUIRE(nif.Save("TestNifFile_Skinned_output.nif") == 0);
+	REQUIRE(nif.Load("TestNifFile_Static_FO4.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Static_FO4_output.nif") == 0);
+}
+
+TEST_CASE("Load and save skinned file (SE)", "[NifFile]") {
+	NifFile nif;
+	REQUIRE(nif.Load("TestNifFile_Skinned_SE.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Skinned_SE_output.nif") == 0);
+}
+
+TEST_CASE("Load and save skinned file (FO4)", "[NifFile]") {
+	NifFile nif;
+	REQUIRE(nif.Load("TestNifFile_Skinned_FO4.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Skinned_FO4_output.nif") == 0);
 }
 
 TEST_CASE("Load and save animated file", "[NifFile]") {

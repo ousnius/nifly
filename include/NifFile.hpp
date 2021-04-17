@@ -129,7 +129,7 @@ public:
 
 	NiNode* AddNode(const std::string& nodeName, const MatTransform& xformToParent, NiNode* parent = nullptr);
 	void DeleteNode(const std::string& nodeName);
-	static bool CanDeleteNode(NiNode* node) ;
+	static bool CanDeleteNode(NiNode* node);
 	bool CanDeleteNode(const std::string& nodeName) const;
 	std::string GetNodeName(const int blockID) const;
 	void SetNodeName(const int blockID, const std::string& newName);
@@ -176,6 +176,11 @@ public:
 	NiShape* CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
 	int CloneNamedNode(const std::string& nodeName, NifFile* srcNif = nullptr);
 
+	NiShape* CreateShapeFromData(const std::string& shapeName,
+								 const std::vector<Vector3>* v,
+								 const std::vector<Triangle>* t,
+								 const std::vector<Vector2>* uv,
+								 const std::vector<Vector3>* norms = nullptr);
 	std::vector<std::string> GetShapeNames() const;
 	std::vector<NiShape*> GetShapes() const;
 	static bool RenameShape(NiShape* shape, const std::string& newName);
@@ -274,22 +279,26 @@ public:
 	// DeletePartitions: partInds must be in sorted ascending order.
 	void DeletePartitions(NiShape* shape, std::vector<int>& partInds);
 
-	const std::vector<Vector3>* GetRawVertsForShape(NiShape* shape);
 	static bool ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices);
-	const std::vector<Vector3>* GetNormalsForShape(NiShape* shape, bool transform = true);
+	const std::vector<Vector3>* GetVertsForShape(NiShape* shape);
+	const std::vector<Vector3>* GetNormalsForShape(NiShape* shape);
 	const std::vector<Vector2>* GetUvsForShape(NiShape* shape);
 	const std::vector<Color4>* GetColorsForShape(const std::string& shapeName);
-	const std::vector<Vector3>* GetTangentsForShape(NiShape* shape, bool transform = true);
-	const std::vector<Vector3>* GetBitangentsForShape(NiShape* shape, bool transform = true);
-	static std::vector<float>* GetEyeDataForShape(NiShape* shape);
-	bool GetUvsForShape(NiShape* shape, std::vector<Vector2>& outUvs);
-	bool GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts);
+	const std::vector<Vector3>* GetTangentsForShape(NiShape* shape);
+	const std::vector<Vector3>* GetBitangentsForShape(NiShape* shape);
+	const std::vector<float>* GetEyeDataForShape(NiShape* shape);
+	bool GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts) const;
+	bool GetUvsForShape(NiShape* shape, std::vector<Vector2>& outUvs) const;
+	bool GetColorsForShape(NiShape* shape, std::vector<Color4>& outColors) const;
+	bool GetTangentsForShape(NiShape* shape, std::vector<Vector3>& outTang) const;
+	bool GetBitangentsForShape(NiShape* shape, std::vector<Vector3>& outBitang) const;
+	static bool GetEyeDataForShape(NiShape* shape, std::vector<float>& outEyeData);
 	void SetVertsForShape(NiShape* shape, const std::vector<Vector3>& verts);
 	void SetUvsForShape(NiShape* shape, const std::vector<Vector2>& uvs);
 	void SetColorsForShape(const std::string& shapeName, const std::vector<Color4>& colors);
-	void SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& in);
-	void SetBitangentsForShape(NiShape* shape, const std::vector<Vector3>& in);
-	static void SetEyeDataForShape(NiShape* shape, const std::vector<float>& in);
+	void SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& tangents);
+	void SetBitangentsForShape(NiShape* shape, const std::vector<Vector3>& bitangents);
+	static void SetEyeDataForShape(NiShape* shape, const std::vector<float>& eyeData);
 	void InvertUVsForShape(NiShape* shape, bool invertX, bool invertY);
 	void MirrorShape(NiShape* shape, bool mirrorX, bool mirrorY, bool mirrorZ);
 	void SetNormalsForShape(NiShape* shape, const std::vector<Vector3>& norms);
