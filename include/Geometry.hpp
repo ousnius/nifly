@@ -228,7 +228,7 @@ public:
 	virtual void CalcTangentSpace();
 };
 
-class NiShape : public NiCloneable<NiShape, NiAVObject> {
+CLONEABLECLASSDEF(NiShape, NiAVObject) {
 public:
 	virtual NiGeometryData* GetGeomData() const { return nullptr; }
 	virtual void SetGeomData(NiGeometryData*) {}

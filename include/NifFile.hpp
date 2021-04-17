@@ -55,6 +55,7 @@ private:
 	bool hasUnknown = false;
 	bool isTerrain = false;
 	bool preserveTexturePaths = false;
+	static constexpr const char* DefaultRootNodeName = "Scene Root";
 
 public:
 	NifFile() = default;
@@ -103,6 +104,20 @@ public:
 	bool IsSSECompatible(NiShape* shape) const;
 
 	void Create(const NiVersion& version);
+
+	template <typename NODETYPE>
+	void CreateNamed(const NiVersion& version, const std::string& rootName) {
+		Clear();
+		hdr.SetVersion(version);
+		hdr.SetBlockReference(&blocks);
+
+		auto rootNode = std::make_unique<NODETYPE>();
+		rootNode->name.get() = rootName.c_str();
+		hdr.AddBlock(rootNode.release());
+
+		isValid = true;
+	}
+
 	void Clear();
 
 	// Link NiGeometryData to NiGeometry

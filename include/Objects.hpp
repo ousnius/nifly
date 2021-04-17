@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 #include "ExtraData.hpp"
 
 namespace nifly {
-class NiObjectNET : public NiCloneableStreamable<NiObjectNET, NiObject> {
+STREAMABLECLASSDEF(NiObjectNET, NiObject) {
 public:
 	NiStringRef name;
 
@@ -30,7 +30,7 @@ public:
 class NiProperty;
 class NiCollisionObject;
 
-class NiAVObject : public NiCloneableStreamable<NiAVObject, NiObjectNET> {
+STREAMABLECLASSDEF(NiAVObject, NiObjectNET) {
 public:
 	uint32_t flags = 524302;
 	/* "transform" is the coordinate system (CS) transform from this

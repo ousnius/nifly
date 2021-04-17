@@ -12,7 +12,7 @@ See the included GPLv3 LICENSE file
 #include "half.hpp"
 
 namespace nifly {
-class NiExtraData : public NiCloneableStreamable<NiExtraData, NiObject> {
+STREAMABLECLASSDEF(NiExtraData, NiObject) {
 public:
 	NiStringRef name;
 
@@ -50,7 +50,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiStringExtraData : public NiCloneableStreamable<NiStringExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiStringExtraData, NiExtraData) {
 public:
 	NiStringRef stringData;
 

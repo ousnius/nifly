@@ -20,6 +20,23 @@ See the included GPLv3 LICENSE file
 #include <unordered_map>
 #include <unordered_set>
 
+#ifdef SWIG
+
+#define CLONEABLECLASSDEF(DERIVED, BASE) class DERIVED; \
+%template(DERIVED##BASE) NiCloneable<DERIVED, BASE>; \
+class DERIVED : public NiCloneable<DERIVED, BASE> 
+
+#define STREAMABLECLASSDEF(DERIVED, BASE) class DERIVED; \
+%template(DERIVED##BASE) NiCloneableStreamable<DERIVED, BASE>; \
+class DERIVED : public NiCloneableStreamable<DERIVED, BASE> 
+
+#else
+
+#define CLONEABLECLASSDEF(DERIVED, BASE) class DERIVED : public NiCloneable<DERIVED, BASE>
+#define STREAMABLECLASSDEF(DERIVED, BASE) class DERIVED : public NiCloneableStreamable<DERIVED, BASE> 
+
+#endif
+
 namespace nifly {
 constexpr uint32_t NIF_NPOS = static_cast<uint32_t>(-1);
 
@@ -772,7 +789,7 @@ private:
 	virtual NiObject* Clone_impl() const = 0;
 };
 
-class NiHeader : public NiCloneable<NiHeader, NiObject> {
+CLONEABLECLASSDEF(NiHeader, NiObject) {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -974,7 +991,7 @@ public:
 	void Put(NiOStream& stream) override;
 };
 
-class NiUnknown : public NiCloneableStreamable<NiUnknown, NiObject> {
+STREAMABLECLASSDEF(NiUnknown, NiObject) {
 public:
 	std::vector<char> data;
 
@@ -984,4 +1001,5 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 };
+
 } // namespace nifly

@@ -10,7 +10,7 @@ See the included GPLv3 LICENSE file
 #include "Objects.hpp"
 
 namespace nifly {
-class NiNode : public NiCloneableStreamable<NiNode, NiAVObject> {
+STREAMABLECLASSDEF(NiNode, NiAVObject) {
 public:
 	NiBlockRefArray<NiAVObject> childRefs;
 	NiBlockRefArray<NiDynamicEffect> effectRefs;
@@ -27,7 +27,7 @@ public:
 	NiBlockRefArray<NiDynamicEffect>& GetEffects();
 };
 
-class BSFadeNode : public NiCloneable<BSFadeNode, NiNode> {
+CLONEABLECLASSDEF(BSFadeNode, NiNode) {
 public:
 	static constexpr const char* BlockName = "BSFadeNode";
 	const char* GetBlockName() override { return BlockName; }
