@@ -77,7 +77,8 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 	partitions.resize(numPartitions);
 
 	if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() == 100) {
-		bMappedIndices = false;
+		if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+			bMappedIndices = false;
 
 		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
 			dataSize = vertexSize * numVertices;

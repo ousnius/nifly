@@ -304,13 +304,13 @@ public:
 	std::vector<Vector3> particleNorms;
 	std::vector<Triangle> particleTris;
 
-	std::vector<Vector3> rawVertices;	// filled by GetRawVerts function and returned.
-	std::vector<Vector3> rawNormals;	// filled by GetNormalData function and returned.
-	std::vector<Vector3> rawTangents;	// filled by CalcTangentSpace function and returned.
-	std::vector<Vector3> rawBitangents; // filled in CalcTangentSpace
-	std::vector<Vector2> rawUvs;		// filled by GetUVData function and returned.
-	std::vector<Color4> rawColors;		// filled by GetColorData function and returned.
-	std::vector<float> rawEyeData;
+	std::vector<Vector3> rawVertices;	// temporary copy filled by UpdateRawVertices function
+	std::vector<Vector3> rawNormals;	// temporary copy filled by UpdateRawNormals function
+	std::vector<Vector3> rawTangents;	// temporary copy filled by UpdateRawTangents function
+	std::vector<Vector3> rawBitangents; // temporary copy filled by UpdateRawBitangents function
+	std::vector<Vector2> rawUvs;		// temporary copy filled by UpdateRawUvs function
+	std::vector<Color4> rawColors;		// temporary copy filled by UpdateRawColors function
+	std::vector<float> rawEyeData;		// temporary copy filled by UpdateRawEyeData function
 
 	std::vector<uint32_t> deletedTris; // temporary storage for BSSubIndexTriShape
 
@@ -339,13 +339,13 @@ public:
 	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
 
-	std::vector<Vector3>* GetRawVerts();
-	std::vector<Vector3>* GetNormalData(bool xform = true);
-	std::vector<Vector3>* GetTangentData(bool xform = true);
-	std::vector<Vector3>* GetBitangentData(bool xform = true);
-	std::vector<Vector2>* GetUVData();
-	std::vector<Color4>* GetColorData();
-	std::vector<float>* GetEyeData();
+	std::vector<Vector3>& UpdateRawVertices();
+	std::vector<Vector3>& UpdateRawNormals();
+	std::vector<Vector3>& UpdateRawTangents();
+	std::vector<Vector3>& UpdateRawBitangents();
+	std::vector<Vector2>& UpdateRawUvs();
+	std::vector<Color4>& UpdateRawColors();
+	std::vector<float>& UpdateRawEyeData();
 
 	uint16_t GetNumVertices() const override;
 	void SetVertices(const bool enable) override;
