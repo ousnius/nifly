@@ -75,7 +75,7 @@ void EraseVectorIndices(VectorType& v, const std::vector<IndexType>& indices) {
 // 'indices' must be in sorted ascending order beforehand.
 template<typename VectorType, typename IndexType>
 void InsertVectorIndices(VectorType& v, const std::vector<IndexType>& indices) {
-	if (indices.empty() || indices.back() >= v.size() + inds.size())
+	if (indices.empty() || indices.back() >= v.size() + indices.size())
 		return;
 
 	int indi = indices.size() - 1;
