@@ -41,7 +41,7 @@ public:
 		if (numKeys > 0) {
 			stream.Sync(interpolation);
 
-			for (int i = 0; i < numKeys; i++) {
+			for (uint32_t i = 0; i < numKeys; i++) {
 				auto& key = keys[i];
 				stream.Sync(key.time);
 				stream.Sync(key.value);

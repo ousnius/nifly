@@ -178,7 +178,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 
@@ -253,7 +253,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 } // namespace nifly

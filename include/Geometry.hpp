@@ -191,7 +191,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
@@ -325,7 +325,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
 	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
@@ -582,7 +582,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	bool IsSkinned() const override;
 

@@ -54,7 +54,7 @@ void bhkNiCollisionObject::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&bodyRef);
 }
 
-void bhkNiCollisionObject::GetChildIndices(std::vector<int>& indices) {
+void bhkNiCollisionObject::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiCollisionObject::GetChildIndices(indices);
 
 	indices.push_back(bodyRef.index);
@@ -171,7 +171,7 @@ void bhkConvexListShape::GetChildRefs(std::set<NiRef*>& refs) {
 	shapeRefs.GetIndexPtrs(refs);
 }
 
-void bhkConvexListShape::GetChildIndices(std::vector<int>& indices) {
+void bhkConvexListShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShape::GetChildIndices(indices);
 
 	shapeRefs.GetIndices(indices);
@@ -207,7 +207,7 @@ void bhkTransformShape::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&shapeRef);
 }
 
-void bhkTransformShape::GetChildIndices(std::vector<int>& indices) {
+void bhkTransformShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShape::GetChildIndices(indices);
 
 	indices.push_back(shapeRef.index);
@@ -246,7 +246,7 @@ void bhkMoppBvTreeShape::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&shapeRef);
 }
 
-void bhkMoppBvTreeShape::GetChildIndices(std::vector<int>& indices) {
+void bhkMoppBvTreeShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkBvTreeShape::GetChildIndices(indices);
 
 	indices.push_back(shapeRef.index);
@@ -283,7 +283,7 @@ void bhkNiTriStripsShape::GetChildRefs(std::set<NiRef*>& refs) {
 	partRefs.GetIndexPtrs(refs);
 }
 
-void bhkNiTriStripsShape::GetChildIndices(std::vector<int>& indices) {
+void bhkNiTriStripsShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShape::GetChildIndices(indices);
 
 	partRefs.GetIndices(indices);
@@ -306,7 +306,7 @@ void bhkListShape::GetChildRefs(std::set<NiRef*>& refs) {
 	subShapeRefs.GetIndexPtrs(refs);
 }
 
-void bhkListShape::GetChildIndices(std::vector<int>& indices) {
+void bhkListShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShapeCollection::GetChildIndices(indices);
 
 	subShapeRefs.GetIndices(indices);
@@ -361,7 +361,7 @@ void bhkPackedNiTriStripsShape::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&dataRef);
 }
 
-void bhkPackedNiTriStripsShape::GetChildIndices(std::vector<int>& indices) {
+void bhkPackedNiTriStripsShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShapeCollection::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
@@ -413,7 +413,7 @@ void bhkWorldObject::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&shapeRef);
 }
 
-void bhkWorldObject::GetChildIndices(std::vector<int>& indices) {
+void bhkWorldObject::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkSerializable::GetChildIndices(indices);
 
 	indices.push_back(shapeRef.index);
@@ -493,7 +493,7 @@ void bhkRigidBody::GetChildRefs(std::set<NiRef*>& refs) {
 	constraintRefs.GetIndexPtrs(refs);
 }
 
-void bhkRigidBody::GetChildIndices(std::vector<int>& indices) {
+void bhkRigidBody::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkEntity::GetChildIndices(indices);
 
 	constraintRefs.GetIndices(indices);
@@ -773,7 +773,7 @@ void bhkCompressedMeshShape::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&dataRef);
 }
 
-void bhkCompressedMeshShape::GetChildIndices(std::vector<int>& indices) {
+void bhkCompressedMeshShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShape::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
@@ -822,7 +822,7 @@ void bhkRagdollTemplate::GetChildRefs(std::set<NiRef*>& refs) {
 	boneRefs.GetIndexPtrs(refs);
 }
 
-void bhkRagdollTemplate::GetChildIndices(std::vector<int>& indices) {
+void bhkRagdollTemplate::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiExtraData::GetChildIndices(indices);
 
 	boneRefs.GetIndices(indices);

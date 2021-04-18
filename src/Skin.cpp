@@ -499,7 +499,7 @@ void NiSkinInstance::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&skinPartitionRef);
 }
 
-void NiSkinInstance::GetChildIndices(std::vector<int>& indices) {
+void NiSkinInstance::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
@@ -572,7 +572,7 @@ void BSSkinInstance::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&dataRef);
 }
 
-void BSSkinInstance::GetChildIndices(std::vector<int>& indices) {
+void BSSkinInstance::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);

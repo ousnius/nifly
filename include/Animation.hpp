@@ -102,7 +102,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiBSplineFloatInterpolator : public NiCloneable<NiBSplineFloatInterpolator, NiBSplineInterpolator> {};
@@ -257,7 +257,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiBoolTimelineInterpolator : public NiCloneable<NiBoolTimelineInterpolator, NiBoolInterpolator> {
@@ -276,7 +276,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiTransformInterpolator
@@ -292,7 +292,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSRotAccumTransfInterpolator
@@ -312,7 +312,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 enum PathFlags : uint16_t {
@@ -343,7 +343,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 enum LookAtFlags : uint16_t {
@@ -373,7 +373,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
@@ -411,7 +411,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	std::vector<BSTreadTransform> GetTreadTransforms() const;
 	void SetTreadTransforms(const std::vector<BSTreadTransform>& tt);
@@ -431,7 +431,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
@@ -462,7 +462,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiPSysResetOnLoopCtlr : public NiCloneable<NiPSysResetOnLoopCtlr, NiTimeController> {
@@ -494,7 +494,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSFrustumFOVController : public NiCloneableStreamable<BSFrustumFOVController, NiTimeController> {
@@ -506,7 +506,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSLagBoneController : public NiCloneableStreamable<BSLagBoneController, NiTimeController> {
@@ -556,7 +556,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiBoneLODController : public NiCloneableStreamable<NiBoneLODController, NiTimeController> {
@@ -629,7 +629,7 @@ struct MorphWeight {
 	}
 
 	void GetChildRefs(std::set<NiRef*>& refs) { refs.insert(&interpRef); }
-	void GetChildIndices(std::vector<int>& indices) { indices.push_back(interpRef.index); }
+	void GetChildIndices(std::vector<uint32_t>& indices) { indices.push_back(interpRef.index); }
 };
 
 enum GeomMorpherFlags : uint16_t { GM_UPDATE_NORMALS_DISABLED, GM_UPDATE_NORMALS_ENABLED };
@@ -649,7 +649,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	std::vector<MorphWeight> GetInterpWeights() const;
 	void SetInterpWeights(const std::vector<MorphWeight>& m);
@@ -661,7 +661,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiRollController : public NiCloneableStreamable<NiRollController, NiSingleInterpController> {
@@ -673,7 +673,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 enum TargetColor : uint16_t { TC_AMBIENT, TC_DIFFUSE, TC_SPECULAR, TC_SELF_ILLUM };
@@ -771,7 +771,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 enum TexTransformType : uint32_t { TT_TRANSLATE_U, TT_TRANSLATE_V, TT_ROTATE, TT_SCALE_U, TT_SCALE_V };
@@ -1059,7 +1059,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSMasterParticleSystem;
@@ -1115,7 +1115,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	std::vector<ControllerLink> GetControlledBlocks() const;
 	void SetControlledBlocks(const std::vector<ControllerLink>& cl);
@@ -1148,7 +1148,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiControllerManager;
@@ -1173,7 +1173,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
@@ -1190,6 +1190,6 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 } // namespace nifly

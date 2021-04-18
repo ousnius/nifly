@@ -32,7 +32,7 @@ void NiObjectNET::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&controllerRef);
 }
 
-void NiObjectNET::GetChildIndices(std::vector<int>& indices) {
+void NiObjectNET::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	extraDataRefs.GetIndices(indices);
@@ -73,7 +73,7 @@ void NiAVObject::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&collisionRef);
 }
 
-void NiAVObject::GetChildIndices(std::vector<int>& indices) {
+void NiAVObject::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObjectNET::GetChildIndices(indices);
 
 	propertyRefs.GetIndices(indices);
@@ -137,7 +137,7 @@ void NiCamera::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&sceneRef);
 }
 
-void NiCamera::GetChildIndices(std::vector<int>& indices) {
+void NiCamera::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
 	indices.push_back(sceneRef.index);
@@ -192,7 +192,7 @@ void TextureRenderData::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&paletteRef);
 }
 
-void TextureRenderData::GetChildIndices(std::vector<int>& indices) {
+void TextureRenderData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	indices.push_back(paletteRef.index);
@@ -263,7 +263,7 @@ void NiSourceTexture::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&dataRef);
 }
 
-void NiSourceTexture::GetChildIndices(std::vector<int>& indices) {
+void NiSourceTexture::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiTexture::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
@@ -302,7 +302,7 @@ void NiTextureEffect::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&sourceTexture);
 }
 
-void NiTextureEffect::GetChildIndices(std::vector<int>& indices) {
+void NiTextureEffect::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiDynamicEffect::GetChildIndices(indices);
 
 	indices.push_back(sourceTexture.index);

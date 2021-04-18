@@ -93,7 +93,7 @@ public:
 	}
 
 	void GetChildRefs(std::set<NiRef*>& refs) { refs.insert(&sourceRef); }
-	void GetChildIndices(std::vector<int>& indices) { indices.push_back(sourceRef.index); }
+	void GetChildIndices(std::vector<uint32_t>& indices) { indices.push_back(sourceRef.index); }
 };
 
 class ShaderTexDesc {
@@ -112,7 +112,7 @@ public:
 	}
 
 	void GetChildRefs(std::set<NiRef*>& refs) { data.GetChildRefs(refs); }
-	void GetChildIndices(std::vector<int>& indices) { data.GetChildIndices(indices); }
+	void GetChildIndices(std::vector<uint32_t>& indices) { data.GetChildIndices(indices); }
 };
 
 class NiTexturingProperty : public NiCloneableStreamable<NiTexturingProperty, NiProperty> {
@@ -169,7 +169,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	std::vector<ShaderTexDesc> GetShaderTex() const;
 	void SetShaderTex(const std::vector<ShaderTexDesc>& stdescs);
@@ -455,7 +455,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
@@ -621,7 +621,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }

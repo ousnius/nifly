@@ -382,7 +382,7 @@ public:
 class NiStringRef {
 private:
 	std::string str;
-	int index = NIF_NPOS; // Temporary index storage for load/save
+	uint32_t index = NIF_NPOS; // Temporary index storage for load/save
 
 public:
 	NiStringRef() = default;
@@ -393,8 +393,8 @@ public:
 
 	size_t length() const { return str.length(); }
 
-	int GetIndex() const { return index; }
-	void SetIndex(const int id) { index = id; }
+	uint32_t GetIndex() const { return index; }
+	void SetIndex(const uint32_t id) { index = id; }
 
 	void clear() {
 		index = NIF_NPOS;
@@ -577,7 +577,7 @@ public:
 
 class NiRef {
 public:
-	int index = NIF_NPOS;
+	uint32_t index = NIF_NPOS;
 
 	void Clear() { index = NIF_NPOS; }
 	bool IsEmpty() const { return index == NIF_NPOS; }
@@ -585,8 +585,8 @@ public:
 	bool operator==(const NiRef& rhs) const { return index == rhs.index; }
 	bool operator!=(const NiRef& rhs) const { return !operator==(rhs); }
 
-	bool operator==(const int rhs) const { return index == rhs; }
-	bool operator!=(const int rhs) const { return !operator==(rhs); }
+	bool operator==(const uint32_t rhs) const { return index == rhs; }
+	bool operator!=(const uint32_t rhs) const { return !operator==(rhs); }
 };
 
 using NiPtr = NiRef;
@@ -597,7 +597,7 @@ class NiBlockRef : public NiRef {
 
 public:
 	NiBlockRef() {}
-	NiBlockRef(const int id) { NiRef::index = id; }
+	NiBlockRef(const uint32_t id) { NiRef::index = id; }
 
 	void Sync(NiStreamReversible& stream) { stream.Sync(base::index); }
 };
@@ -607,25 +607,25 @@ using NiBlockPtr = NiBlockRef<T>;
 
 class NiRefArray {
 protected:
-	int arraySize = 0;
+	uint32_t arraySize = 0;
 	bool keepEmptyRefs = false;
 
 public:
 	virtual ~NiRefArray() {}
 
-	int GetSize() const { return arraySize; }
+	uint32_t GetSize() const { return arraySize; }
 
 	void SetKeepEmptyRefs(const bool keep = true) { keepEmptyRefs = keep; }
 
 	virtual void Sync(NiStreamReversible& stream) = 0;
 
-	virtual void AddBlockRef(const int id) = 0;
-	virtual int GetBlockRef(const int id) const = 0;
-	virtual void SetBlockRef(const int id, const int index) = 0;
-	virtual void RemoveBlockRef(const int id) = 0;
-	virtual void GetIndices(std::vector<int>& indices) = 0;
+	virtual void AddBlockRef(const uint32_t id) = 0;
+	virtual uint32_t GetBlockRef(const uint32_t id) const = 0;
+	virtual void SetBlockRef(const uint32_t id, const uint32_t index) = 0;
+	virtual void RemoveBlockRef(const uint32_t id) = 0;
+	virtual void GetIndices(std::vector<uint32_t>& indices) = 0;
 	virtual void GetIndexPtrs(std::set<NiRef*>& indices) = 0;
-	virtual void SetIndices(const std::vector<int>& indices) = 0;
+	virtual void SetIndices(const std::vector<uint32_t>& indices) = 0;
 };
 
 template<typename T>
@@ -664,7 +664,7 @@ public:
 		keepEmptyRefs = false;
 	}
 
-	void SetSize(const int size) {
+	void SetSize(const uint32_t size) {
 		arraySize = size;
 		refs.resize(arraySize);
 	}
@@ -680,31 +680,31 @@ public:
 			r.Sync(stream);
 	}
 
-	void AddBlockRef(const int index) override {
+	void AddBlockRef(const uint32_t index) override {
 		refs.push_back(NiBlockRef<T>(index));
 		arraySize++;
 	}
 
-	int GetBlockRef(const int id) const override {
+	uint32_t GetBlockRef(const uint32_t id) const override {
 		if (id >= 0 && refs.size() > id)
 			return refs[id].index;
 
 		return NIF_NPOS;
 	}
 
-	void SetBlockRef(const int id, const int index) override {
+	void SetBlockRef(const uint32_t id, const uint32_t index) override {
 		if (id >= 0 && refs.size() > id)
 			refs[id].index = index;
 	}
 
-	void RemoveBlockRef(const int id) override {
+	void RemoveBlockRef(const uint32_t id) override {
 		if (id >= 0 && refs.size() > id) {
 			refs.erase(refs.begin() + id);
 			arraySize--;
 		}
 	}
 
-	void GetIndices(std::vector<int>& indices) override {
+	void GetIndices(std::vector<uint32_t>& indices) override {
 		for (auto& r : refs)
 			indices.push_back(r.index);
 	}
@@ -714,11 +714,11 @@ public:
 			indices.insert(&r);
 	}
 
-	void SetIndices(const std::vector<int>& indices) override {
+	void SetIndices(const std::vector<uint32_t>& indices) override {
 		arraySize = indices.size();
 		refs.resize(arraySize);
 
-		for (int i = 0; i < arraySize; i++)
+		for (uint32_t i = 0; i < arraySize; i++)
 			refs[i].index = indices[i];
 	}
 };
@@ -765,7 +765,7 @@ public:
 
 	virtual void GetStringRefs(std::vector<NiStringRef*>&) {}
 	virtual void GetChildRefs(std::set<NiRef*>&) {}
-	virtual void GetChildIndices(std::vector<int>&) {}
+	virtual void GetChildIndices(std::vector<uint32_t>&) {}
 	virtual void GetPtrs(std::set<NiPtr*>&) {}
 
 	std::unique_ptr<NiObject> Clone() const {
@@ -855,7 +855,7 @@ public:
 	uint32_t GetNumBlocks() const { return numBlocks; }
 
 	template<class T>
-	T* GetBlock(const int blockId) const {
+	T* GetBlock(const uint32_t blockId) const {
 		if (blockId >= 0 && blockId < numBlocks)
 			return dynamic_cast<T*>((*blocks)[blockId].get());
 
@@ -887,7 +887,7 @@ public:
 	}
 
 	template<class T>
-	T* GetBlockUnsafe(const int blockId) const {
+	T* GetBlockUnsafe(const uint32_t blockId) const {
 		if (blockId >= 0 && blockId < numBlocks)
 			return static_cast<T*>((*blocks)[blockId].get());
 
@@ -918,27 +918,27 @@ public:
 		return nullptr;
 	}
 
-	int GetBlockID(NiObject* block) const;
+	uint32_t GetBlockID(NiObject* block) const;
 
-	void DeleteBlock(int blockId);
+	void DeleteBlock(const uint32_t blockId);
 	void DeleteBlock(const NiRef& blockRef);
 	void DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly = false);
-	int AddBlock(std::unique_ptr<NiObject> newBlock);
-	int ReplaceBlock(int oldBlockId, std::unique_ptr<NiObject> newBlock);
-	void SetBlockOrder(std::vector<int>& newOrder);
+	uint32_t AddBlock(std::unique_ptr<NiObject> newBlock);
+	uint32_t ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObject> newBlock);
+	void SetBlockOrder(std::vector<uint32_t>& newOrder);
 	void FixBlockAlignment(const std::vector<NiObject*>& currentTree);
 
 	// Swaps two blocks, updating references in other blocks that may refer to their old indices
-	void SwapBlocks(const int blockIndexLo, const int blockIndexHi);
-	bool IsBlockReferenced(const int blockId);
-	int GetBlockRefCount(const int blockId);
+	void SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndexHi);
+	bool IsBlockReferenced(const uint32_t blockId);
+	int GetBlockRefCount(const uint32_t blockId);
 
 	template<class T>
-	bool DeleteUnreferencedBlocks(const int rootId, int* deletionCount = nullptr) {
+	bool DeleteUnreferencedBlocks(const uint32_t rootId, uint32_t* deletionCount = nullptr) {
 		if (rootId == NIF_NPOS)
 			return false;
 
-		for (int i = 0; i < numBlocks; i++) {
+		for (uint32_t i = 0; i < numBlocks; i++) {
 			if (i != rootId) {
 				// Only check blocks of provided template type
 				auto block = GetBlock<T>(i);
@@ -958,26 +958,26 @@ public:
 	}
 
 	uint16_t AddOrFindBlockTypeId(const std::string& blockTypeName);
-	std::string GetBlockTypeStringById(const int blockId) const;
-	uint16_t GetBlockTypeIndex(const int blockId) const;
+	std::string GetBlockTypeStringById(const uint32_t blockId) const;
+	uint16_t GetBlockTypeIndex(const uint32_t blockId) const;
 
 	uint32_t GetBlockSize(const uint32_t blockId) const;
 	std::streampos GetBlockSizeStreamPos() const;
 	void ResetBlockSizeStreamPos();
 
-	int GetStringCount() const;
-	int FindStringId(const std::string& str) const;
-	int AddOrFindStringId(const std::string& str, const bool addEmpty = false);
-	std::string GetStringById(const int id) const;
-	void SetStringById(const int id, const std::string& str);
+	uint32_t GetStringCount() const;
+	uint32_t FindStringId(const std::string& str) const;
+	uint32_t AddOrFindStringId(const std::string& str, const bool addEmpty = false);
+	std::string GetStringById(const uint32_t id) const;
+	void SetStringById(const uint32_t id, const std::string& str);
 
 	void ClearStrings();
 	void UpdateMaxStringLength();
 	void FillStringRefs();
 	void UpdateHeaderStrings(const bool hasUnknown);
 
-	static void BlockDeleted(NiObject* o, int blockId);
-	static void BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi);
+	static void BlockDeleted(NiObject* o, const uint32_t blockId);
+	static void BlockSwapped(NiObject* o, const uint32_t blockIndexLo, const uint32_t blockIndexHi);
 
 	void Get(NiIStream& stream) override;
 	void Put(NiOStream& stream) override;

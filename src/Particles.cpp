@@ -63,7 +63,7 @@ void NiParticleMeshesData::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&dataRef);
 }
 
-void NiParticleMeshesData::GetChildIndices(std::vector<int>& indices) {
+void NiParticleMeshesData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiRotatingParticlesData::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
@@ -92,7 +92,7 @@ void NiMeshPSysData::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&nodeRef);
 }
 
-void NiMeshPSysData::GetChildIndices(std::vector<int>& indices) {
+void NiMeshPSysData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysData::GetChildIndices(indices);
 
 	indices.push_back(nodeRef.index);
@@ -177,7 +177,7 @@ void NiPSysAgeDeathModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&spawnModifierRef);
 }
 
-void NiPSysAgeDeathModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysAgeDeathModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	indices.push_back(spawnModifierRef.index);
@@ -326,7 +326,7 @@ void NiPSysColorModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&dataRef);
 }
 
-void NiPSysColorModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysColorModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
@@ -354,7 +354,7 @@ void NiPSysMeshUpdateModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	meshRefs.GetIndexPtrs(refs);
 }
 
-void NiPSysMeshUpdateModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysMeshUpdateModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	meshRefs.GetIndices(indices);
@@ -375,7 +375,7 @@ void NiPSysFieldModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&fieldObjectRef);
 }
 
-void NiPSysFieldModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysFieldModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	indices.push_back(fieldObjectRef.index);
@@ -449,7 +449,7 @@ void BSPSysHavokUpdateModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&modifierRef);
 }
 
-void BSPSysHavokUpdateModifier::GetChildIndices(std::vector<int>& indices) {
+void BSPSysHavokUpdateModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	nodeRefs.GetIndices(indices);
@@ -473,7 +473,7 @@ void BSMasterParticleSystem::GetChildRefs(std::set<NiRef*>& refs) {
 	particleSysRefs.GetIndexPtrs(refs);
 }
 
-void BSMasterParticleSystem::GetChildIndices(std::vector<int>& indices) {
+void BSMasterParticleSystem::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiNode::GetChildIndices(indices);
 
 	particleSysRefs.GetIndices(indices);
@@ -561,7 +561,7 @@ void NiParticleSystem::GetChildRefs(std::set<NiRef*>& refs) {
 	modifierRefs.GetIndexPtrs(refs);
 }
 
-void NiParticleSystem::GetChildIndices(std::vector<int>& indices) {
+void NiParticleSystem::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
@@ -599,7 +599,7 @@ void NiPSysCollider::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&nextColliderRef);
 }
 
-void NiPSysCollider::GetChildIndices(std::vector<int>& indices) {
+void NiPSysCollider::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	indices.push_back(spawnModifierRef.index);
@@ -637,7 +637,7 @@ void NiPSysColliderManager::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&colliderRef);
 }
 
-void NiPSysColliderManager::GetChildIndices(std::vector<int>& indices) {
+void NiPSysColliderManager::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	indices.push_back(colliderRef.index);

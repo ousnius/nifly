@@ -209,7 +209,7 @@ void NiHeader::SetExportInfo(const std::string& exportInfo) {
 	}
 }
 
-int NiHeader::GetBlockID(NiObject* block) const {
+uint32_t NiHeader::GetBlockID(NiObject* block) const {
 	auto it = find_if(*blocks, [&block](const auto& ptr) { return ptr.get() == block; });
 
 	if (it != blocks->end())
@@ -218,7 +218,7 @@ int NiHeader::GetBlockID(NiObject* block) const {
 	return NIF_NPOS;
 }
 
-void NiHeader::DeleteBlock(int blockId) {
+void NiHeader::DeleteBlock(const uint32_t blockId) {
 	if (blockId == NIF_NPOS)
 		return;
 
@@ -269,7 +269,7 @@ void NiHeader::DeleteBlockByType(const std::string& blockTypeStr, const bool orp
 			DeleteBlock(indices[j]);
 }
 
-int NiHeader::AddBlock(std::unique_ptr<NiObject> newBlock) {
+uint32_t NiHeader::AddBlock(std::unique_ptr<NiObject> newBlock) {
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices.push_back(btID);
 	blockSizes.push_back(0);
@@ -278,7 +278,7 @@ int NiHeader::AddBlock(std::unique_ptr<NiObject> newBlock) {
 	return numBlocks - 1;
 }
 
-int NiHeader::ReplaceBlock(int oldBlockId, std::unique_ptr<NiObject> newBlock) {
+uint32_t NiHeader::ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObject> newBlock) {
 	if (oldBlockId == NIF_NPOS)
 		return NIF_NPOS;
 
@@ -303,11 +303,11 @@ int NiHeader::ReplaceBlock(int oldBlockId, std::unique_ptr<NiObject> newBlock) {
 	return oldBlockId;
 }
 
-void NiHeader::SetBlockOrder(std::vector<int>& newOrder) {
+void NiHeader::SetBlockOrder(std::vector<uint32_t>& newOrder) {
 	if (newOrder.size() != numBlocks)
 		return;
 
-	for (int i = 0; i < numBlocks; i++)
+	for (uint32_t i = 0; i < numBlocks; i++)
 		SwapBlocks(i, newOrder[i]);
 }
 
@@ -356,7 +356,7 @@ void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
 	}
 }
 
-void NiHeader::SwapBlocks(const int blockIndexLo, const int blockIndexHi) {
+void NiHeader::SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndexHi) {
 	if (blockIndexLo == NIF_NPOS || blockIndexHi == NIF_NPOS || blockIndexLo >= numBlocks
 		|| blockIndexHi >= numBlocks || blockIndexLo == blockIndexHi)
 		return;
@@ -371,7 +371,7 @@ void NiHeader::SwapBlocks(const int blockIndexLo, const int blockIndexHi) {
 		BlockSwapped(b.get(), blockIndexLo, blockIndexHi);
 }
 
-bool NiHeader::IsBlockReferenced(const int blockId) {
+bool NiHeader::IsBlockReferenced(const uint32_t blockId) {
 	if (blockId == NIF_NPOS)
 		return false;
 
@@ -388,7 +388,7 @@ bool NiHeader::IsBlockReferenced(const int blockId) {
 	return false;
 }
 
-int NiHeader::GetBlockRefCount(const int blockId) {
+int NiHeader::GetBlockRefCount(const uint32_t blockId) {
 	if (blockId == NIF_NPOS)
 		return 0;
 
@@ -426,7 +426,7 @@ uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 	return typeId;
 }
 
-std::string NiHeader::GetBlockTypeStringById(const int blockId) const {
+std::string NiHeader::GetBlockTypeStringById(const uint32_t blockId) const {
 	if (blockId >= 0 && blockId < numBlocks) {
 		uint16_t typeIndex = blockTypeIndices[blockId];
 		if (typeIndex >= 0 && typeIndex < numBlockTypes)
@@ -436,7 +436,7 @@ std::string NiHeader::GetBlockTypeStringById(const int blockId) const {
 	return std::string();
 }
 
-uint16_t NiHeader::GetBlockTypeIndex(const int blockId) const {
+uint16_t NiHeader::GetBlockTypeIndex(const uint32_t blockId) const {
 	if (blockId >= 0 && blockId < numBlocks)
 		return blockTypeIndices[blockId];
 
@@ -458,11 +458,11 @@ void NiHeader::ResetBlockSizeStreamPos() {
 	blockSizePos = std::streampos();
 }
 
-int NiHeader::GetStringCount() const {
+uint32_t NiHeader::GetStringCount() const {
 	return strings.size();
 }
 
-int NiHeader::FindStringId(const std::string& str) const {
+uint32_t NiHeader::FindStringId(const std::string& str) const {
 	for (size_t i = 0; i < strings.size(); i++)
 		if (strings[i].get() == str)
 			return i;
@@ -470,7 +470,7 @@ int NiHeader::FindStringId(const std::string& str) const {
 	return NIF_NPOS;
 }
 
-int NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty) {
+uint32_t NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty) {
 	for (size_t i = 0; i < strings.size(); i++)
 		if (strings[i].get() == str)
 			return i;
@@ -487,14 +487,14 @@ int NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty) {
 	return r;
 }
 
-std::string NiHeader::GetStringById(const int id) const {
+std::string NiHeader::GetStringById(const uint32_t id) const {
 	if (id >= 0 && id < numStrings)
 		return strings[id].get();
 
 	return std::string();
 }
 
-void NiHeader::SetStringById(const int id, const std::string& str) {
+void NiHeader::SetStringById(const uint32_t id, const std::string& str) {
 	if (id >= 0 && id < numStrings)
 		strings[id].get() = str;
 }
@@ -521,7 +521,7 @@ void NiHeader::FillStringRefs() {
 		b->GetStringRefs(stringRefs);
 
 		for (auto& r : stringRefs) {
-			int stringId = r->GetIndex();
+			uint32_t stringId = r->GetIndex();
 
 			// Check if string index is overflowing
 			if (stringId != NIF_NPOS && stringId >= numStrings) {
@@ -556,7 +556,7 @@ void NiHeader::UpdateHeaderStrings(const bool hasUnknown) {
 	UpdateMaxStringLength();
 }
 
-void NiHeader::BlockDeleted(NiObject* o, int blockId) {
+void NiHeader::BlockDeleted(NiObject* o, const uint32_t blockId) {
 	std::set<NiRef*> refs;
 	o->GetChildRefs(refs);
 	o->GetPtrs(refs);
@@ -569,7 +569,7 @@ void NiHeader::BlockDeleted(NiObject* o, int blockId) {
 	}
 }
 
-void NiHeader::BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi) {
+void NiHeader::BlockSwapped(NiObject* o, const uint32_t blockIndexLo, const uint32_t blockIndexHi) {
 	std::set<NiRef*> refs;
 	o->GetChildRefs(refs);
 	o->GetPtrs(refs);

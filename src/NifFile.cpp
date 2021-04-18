@@ -26,7 +26,7 @@ T* NifFile::FindBlockByName(const std::string& name) const {
 	return nullptr;
 }
 
-int NifFile::GetBlockID(NiObject* block) const {
+uint32_t NifFile::GetBlockID(NiObject* block) const {
 	auto it = find_if(blocks, [&block](const auto& ptr) { return ptr.get() == block; });
 
 	if (it != blocks.end())
@@ -74,7 +74,7 @@ void NifFile::SetParentNode(NiObject* childBlock, NiNode* newParent) {
 			continue;
 
 		auto& children = node->childRefs;
-		for (int ci = 0; ci < children.GetSize(); ++ci) {
+		for (uint32_t ci = 0; ci < children.GetSize(); ++ci) {
 			if (childId != children.GetBlockRef(ci))
 				continue;
 
@@ -291,7 +291,7 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 	} while (hadoffset);
 }
 
-void NifFile::SetSortIndex(const NiRef& ref, std::vector<int>& newIndices, int& newIndex) {
+void NifFile::SetSortIndex(const NiRef& ref, std::vector<uint32_t>& newIndices, uint32_t& newIndex) {
 	if (ref.IsEmpty())
 		return;
 
@@ -300,12 +300,12 @@ void NifFile::SetSortIndex(const NiRef& ref, std::vector<int>& newIndices, int& 
 		newIndices[ref.index] = ++newIndex;
 }
 
-void NifFile::SetSortIndex(const NiRef* ref, std::vector<int>& newIndices, int& newIndex) {
+void NifFile::SetSortIndex(const NiRef* ref, std::vector<uint32_t>& newIndices, uint32_t& newIndex) {
 	if (ref)
 		SetSortIndex(*ref, newIndices, newIndex);
 }
 
-void NifFile::SortAVObject(NiAVObject* avobj, std::vector<int>& newIndices, int& newIndex) {
+void NifFile::SortAVObject(NiAVObject* avobj, std::vector<uint32_t>& newIndices, uint32_t& newIndex) {
 	for (auto& r : avobj->extraDataRefs)
 		SetSortIndex(r, newIndices, newIndex);
 
@@ -322,7 +322,7 @@ void NifFile::SortAVObject(NiAVObject* avobj, std::vector<int>& newIndices, int&
 	SetSortIndex(avobj->collisionRef, newIndices, newIndex);
 }
 
-void NifFile::SortShape(NiShape* shape, std::vector<int>& newIndices, int& newIndex) {
+void NifFile::SortShape(NiShape* shape, std::vector<uint32_t>& newIndices, uint32_t& newIndex) {
 	SetSortIndex(shape->DataRef(), newIndices, newIndex);
 	SetSortIndex(shape->SkinInstanceRef(), newIndices, newIndex);
 
@@ -345,9 +345,9 @@ void NifFile::SortShape(NiShape* shape, std::vector<int>& newIndices, int& newIn
 	SetSortIndex(shape->AlphaPropertyRef(), newIndices, newIndex);
 }
 
-void NifFile::SortGraph(NiNode* root, std::vector<int>& newIndices, int& newIndex) {
+void NifFile::SortGraph(NiNode* root, std::vector<uint32_t>& newIndices, uint32_t& newIndex) {
 	auto& children = root->childRefs;
-	std::vector<int> indices;
+	std::vector<uint32_t> indices;
 	children.GetIndices(indices);
 	children.Clear();
 
@@ -451,13 +451,13 @@ void NifFile::PrettySortBlocks() {
 	if (hasUnknown)
 		return;
 
-	std::vector<int> newOrder(hdr.GetNumBlocks());
+	std::vector<uint32_t> newOrder(hdr.GetNumBlocks());
 	for (size_t i = 0; i < newOrder.size(); i++)
 		newOrder[i] = i;
 
 	auto root = GetRootNode();
 	if (root) {
-		int newIndex = GetBlockID(root);
+		uint32_t newIndex = GetBlockID(root);
 		SortAVObject(root, newOrder, newIndex);
 		SortGraph(root, newOrder, newIndex);
 	}
@@ -540,7 +540,7 @@ bool NifFile::CanDeleteNode(const std::string& nodeName) const {
 	return CanDeleteNode(node);
 }
 
-std::string NifFile::GetNodeName(const int blockID) const {
+std::string NifFile::GetNodeName(const uint32_t blockID) const {
 	std::string name;
 
 	auto n = hdr.GetBlock<NiNode>(blockID);
@@ -553,7 +553,7 @@ std::string NifFile::GetNodeName(const int blockID) const {
 	return name;
 }
 
-void NifFile::SetNodeName(const int blockID, const std::string& newName) {
+void NifFile::SetNodeName(const uint32_t blockID, const std::string& newName) {
 	auto node = hdr.GetBlock<NiNode>(blockID);
 	if (!node)
 		return;
@@ -561,8 +561,8 @@ void NifFile::SetNodeName(const int blockID, const std::string& newName) {
 	node->name.get() = newName;
 }
 
-int NifFile::AssignExtraData(NiAVObject* target, std::unique_ptr<NiExtraData> extraData) {
-	int extraDataId = hdr.AddBlock(std::move(extraData));
+uint32_t NifFile::AssignExtraData(NiAVObject* target, std::unique_ptr<NiExtraData> extraData) {
+	uint32_t extraDataId = hdr.AddBlock(std::move(extraData));
 	target->extraDataRefs.AddBlockRef(extraDataId);
 	return extraDataId;
 }
@@ -601,7 +601,7 @@ NiStencilProperty* NifFile::GetStencilProperty(NiShape* shape) const {
 	return nullptr;
 }
 
-int NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIndex) const {
+uint32_t NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, const uint32_t texIndex) const {
 	outTexFile.clear();
 
 	auto textureSet = hdr.GetBlock(shader->TextureSetRef());
@@ -628,7 +628,7 @@ int NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIn
 	return 0;
 }
 
-void NifFile::SetTextureSlot(NiShader* shader, std::string& inTexFile, int texIndex) {
+void NifFile::SetTextureSlot(NiShader* shader, std::string& inTexFile, const uint32_t texIndex) {
 	auto textureSet = hdr.GetBlock(shader->TextureSetRef());
 	if (textureSet && texIndex + 1 <= textureSet->textures.size()) {
 		textureSet->textures[texIndex].get() = inTexFile;
@@ -869,7 +869,7 @@ NiShape* NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName
 	return destShape;
 }
 
-int NifFile::CloneNamedNode(const std::string& nodeName, NifFile* srcNif) {
+uint32_t NifFile::CloneNamedNode(const std::string& nodeName, NifFile* srcNif) {
 	if (!srcNif)
 		srcNif = this;
 
@@ -1323,7 +1323,11 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			int dataId = hdr.AddBlock(std::move(bsOptShapeDataS));
 			bsOptShape->DataRef()->index = dataId;
 			bsOptShape->SetGeomData(bsOptShapeData);
-			bsOptShapeData->Create(hdr.GetVersion(), &vertices, &triangles, &uvs, !removeNormals ? &normals : nullptr);
+			bsOptShapeData->Create(hdr.GetVersion(),
+								   &vertices,
+								   &triangles,
+								   &uvs,
+								   !removeNormals ? &normals : nullptr);
 
 			bsOptShape->name.get() = shape->name.get();
 
@@ -1726,7 +1730,7 @@ void NifFile::TriangulateShape(NiShape* shape) {
 
 NiNode* NifFile::GetRootNode() const {
 	// Check if block at index 0 is a node
-	auto root = hdr.GetBlock<NiNode>(0);
+	auto root = hdr.GetBlock<NiNode>((uint32_t) 0);
 	if (!root) {
 		// Not a node, look for first node block
 		for (auto& block : blocks) {
@@ -1749,7 +1753,7 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) const {
 
 	auto findResult = [&result](NiObject* obj) -> bool { return contains(result, obj); };
 
-	std::vector<int> indices;
+	std::vector<uint32_t> indices;
 	parent->GetChildIndices(indices);
 
 	auto constraint = dynamic_cast<bhkConstraint*>(parent);
@@ -1932,9 +1936,9 @@ void NifFile::SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList) {
 	}
 }
 
-int NifFile::GetShapeBoneWeights(NiShape* shape,
-								 const int boneIndex,
-								 std::unordered_map<uint16_t, float>& outWeights) const {
+uint32_t NifFile::GetShapeBoneWeights(NiShape* shape,
+									  const uint32_t boneIndex,
+									  std::unordered_map<uint16_t, float>& outWeights) const {
 	outWeights.clear();
 
 	if (!shape)
@@ -2045,7 +2049,7 @@ bool NifFile::GetShapeTransformSkinToBone(NiShape* shape,
 }
 
 bool NifFile::GetShapeTransformSkinToBone(NiShape* shape,
-										  const int boneIndex,
+										  const uint32_t boneIndex,
 										  MatTransform& outTransform) const {
 	if (!shape)
 		return false;
@@ -2079,7 +2083,7 @@ bool NifFile::GetShapeTransformSkinToBone(NiShape* shape,
 }
 
 void NifFile::SetShapeTransformSkinToBone(NiShape* shape,
-										  const int boneIndex,
+										  const uint32_t boneIndex,
 										  const MatTransform& inTransform) {
 	if (!shape)
 		return;
@@ -2119,14 +2123,16 @@ bool NifFile::GetShapeBoneTransform(NiShape* shape,
 	return GetShapeTransformSkinToBone(shape, boneName, outTransform);
 }
 
-bool NifFile::GetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& outTransform) const {
+bool NifFile::GetShapeBoneTransform(NiShape* shape,
+									const uint32_t boneIndex,
+									MatTransform& outTransform) const {
 	if (boneIndex == 0xFFFFFFFF)
 		return GetShapeTransformGlobalToSkin(shape, outTransform);
 
 	return GetShapeTransformSkinToBone(shape, boneIndex, outTransform);
 }
 
-bool NifFile::SetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& inTransform) {
+bool NifFile::SetShapeBoneTransform(NiShape* shape, const uint32_t boneIndex, MatTransform& inTransform) {
 	if (boneIndex == 0xFFFFFFFF)
 		SetShapeTransformGlobalToSkin(shape, inTransform);
 	else
@@ -2134,7 +2140,9 @@ bool NifFile::SetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTran
 	return true;
 }
 
-bool NifFile::SetShapeBoneBounds(const std::string& shapeName, const int boneIndex, BoundingSphere& inBounds) {
+bool NifFile::SetShapeBoneBounds(const std::string& shapeName,
+								 const uint32_t boneIndex,
+								 BoundingSphere& inBounds) {
 	auto shape = FindBlockByName<NiShape>(shapeName);
 	if (!shape)
 		return false;
@@ -2165,7 +2173,7 @@ bool NifFile::SetShapeBoneBounds(const std::string& shapeName, const int boneInd
 	return true;
 }
 
-bool NifFile::GetShapeBoneBounds(NiShape* shape, const int boneIndex, BoundingSphere& outBounds) const {
+bool NifFile::GetShapeBoneBounds(NiShape* shape, const uint32_t boneIndex, BoundingSphere& outBounds) const {
 	if (!shape)
 		return false;
 
@@ -2194,7 +2202,7 @@ bool NifFile::GetShapeBoneBounds(NiShape* shape, const int boneIndex, BoundingSp
 	return true;
 }
 
-void NifFile::UpdateShapeBoneID(const std::string& shapeName, const int oldID, const int newID) {
+void NifFile::UpdateShapeBoneID(const std::string& shapeName, const uint32_t oldID, const uint32_t newID) {
 	auto shape = FindBlockByName<NiShape>(shapeName);
 	if (!shape)
 		return;
@@ -2213,7 +2221,7 @@ void NifFile::UpdateShapeBoneID(const std::string& shapeName, const int oldID, c
 
 // Not implemented for BSTriShape, use SetShapeVertWeights instead
 void NifFile::SetShapeBoneWeights(const std::string& shapeName,
-								  const int boneIndex,
+								  const uint32_t boneIndex,
 								  std::unordered_map<uint16_t, float>& inWeights) {
 	auto shape = FindBlockByName<NiShape>(shapeName);
 	if (!shape)
@@ -3315,7 +3323,7 @@ NiAlphaProperty* NifFile::GetAlphaProperty(NiShape* shape) const {
 	return nullptr;
 }
 
-int NifFile::AssignAlphaProperty(NiShape* shape, std::unique_ptr<NiAlphaProperty> alphaProp) {
+uint32_t NifFile::AssignAlphaProperty(NiShape* shape, std::unique_ptr<NiAlphaProperty> alphaProp) {
 	RemoveAlphaProperty(shape);
 
 	NiShader* shader = GetShader(shape);
@@ -3339,7 +3347,7 @@ void NifFile::RemoveAlphaProperty(NiShape* shape) {
 		shape->AlphaPropertyRef()->Clear();
 	}
 
-	for (int i = 0; i < shape->propertyRefs.GetSize(); i++) {
+	for (uint32_t i = 0; i < shape->propertyRefs.GetSize(); i++) {
 		alpha = hdr.GetBlock<NiAlphaProperty>(shape->propertyRefs.GetBlockRef(i));
 		if (alpha) {
 			hdr.DeleteBlock(shape->propertyRefs.GetBlockRef(i));
@@ -3382,7 +3390,7 @@ void NifFile::DeleteShader(NiShape* shape) {
 
 	RemoveAlphaProperty(shape);
 
-	for (int i = 0; i < shape->propertyRefs.GetSize(); i++) {
+	for (uint32_t i = 0; i < shape->propertyRefs.GetSize(); i++) {
 		shader = hdr.GetBlock<NiShader>(shape->propertyRefs.GetBlockRef(i));
 		if (shader) {
 			if (shader->HasType<BSShaderPPLightingProperty>() || shader->HasType<NiMaterialProperty>()) {
@@ -3499,7 +3507,7 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 			auto integersData = integersExtraData->integersData;
 			std::sort(integersData.begin(), integersData.end());
 
-			int highestRemoved = indices.back();
+			uint16_t highestRemoved = indices.back();
 			std::vector<int> indexCollapse = GenerateIndexCollapseMap(indices, highestRemoved + 1);
 
 			for (int i = integersData.size() - 1; i >= 0; i--) {

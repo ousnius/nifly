@@ -106,26 +106,26 @@ public:
 	void DeleteNode(const std::string& nodeName);
 	static bool CanDeleteNode(NiNode* node);
 	bool CanDeleteNode(const std::string& nodeName) const;
-	std::string GetNodeName(const int blockID) const;
-	void SetNodeName(const int blockID, const std::string& newName);
+	std::string GetNodeName(const uint32_t blockID) const;
+	void SetNodeName(const uint32_t blockID, const std::string& newName);
 
-	int AssignExtraData(NiAVObject* target, std::unique_ptr<NiExtraData> extraData);
+	uint32_t AssignExtraData(NiAVObject* target, std::unique_ptr<NiExtraData> extraData);
 
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);
-	static void SetSortIndex(const NiRef& ref, std::vector<int>& newIndices, int& newIndex);
-	static void SetSortIndex(const NiRef* ref, std::vector<int>& newIndices, int& newIndex);
-	void SortAVObject(NiAVObject* avobj, std::vector<int>& newIndices, int& newIndex);
-	void SortShape(NiShape* shape, std::vector<int>& newIndices, int& newIndex);
-	void SortGraph(NiNode* root, std::vector<int>& newIndices, int& newIndex);
+	static void SetSortIndex(const NiRef& ref, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	static void SetSortIndex(const NiRef* ref, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	void SortAVObject(NiAVObject* avobj, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	void SortShape(NiShape* shape, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	void SortGraph(NiNode* root, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
 	void PrettySortBlocks();
 
 	template<class T = NiObject>
-	int DeleteUnreferencedBlocks() {
+	uint32_t DeleteUnreferencedBlocks() {
 		if (hasUnknown)
 			return 0;
 
-		int deletionCount = 0;
+		uint32_t deletionCount = 0;
 		hdr.DeleteUnreferencedBlocks<T>(GetBlockID(GetRootNode()), &deletionCount);
 		return deletionCount;
 	}
@@ -134,7 +134,7 @@ public:
 
 	template<class T = NiObject>
 	T* FindBlockByName(const std::string& name) const;
-	int GetBlockID(NiObject* block) const;
+	uint32_t GetBlockID(NiObject* block) const;
 	NiNode* GetParentNode(NiObject* block) const;
 	void SetParentNode(NiObject* block, NiNode* parent);
 	std::vector<NiNode*> GetNodes() const;
@@ -143,13 +143,13 @@ public:
 	NiMaterialProperty* GetMaterialProperty(NiShape* shape) const;
 	NiStencilProperty* GetStencilProperty(NiShape* shape) const;
 
-	int GetTextureSlot(NiShader* shader, std::string& outTexFile, int texIndex = 0) const;
-	void SetTextureSlot(NiShader* shader, std::string& inTexFile, int texIndex = 0);
+	uint32_t GetTextureSlot(NiShader* shader, std::string& outTexFile, const uint32_t texIndex = 0) const;
+	void SetTextureSlot(NiShader* shader, std::string& inTexFile, const uint32_t texIndex = 0);
 	void TrimTexturePaths();
 
 	void CloneChildren(NiObject* block, NifFile* srcNif = nullptr);
 	NiShape* CloneShape(NiShape* srcShape, const std::string& destShapeName, NifFile* srcNif = nullptr);
-	int CloneNamedNode(const std::string& nodeName, NifFile* srcNif = nullptr);
+	uint32_t CloneNamedNode(const std::string& nodeName, NifFile* srcNif = nullptr);
 
 	NiShape* CreateShapeFromData(const std::string& shapeName,
 								 const std::vector<Vector3>* v,
@@ -194,9 +194,9 @@ public:
 	int GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList) const;
 	int GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList) const;
 	void SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList);
-	int GetShapeBoneWeights(NiShape* shape,
-							const int boneIndex,
-							std::unordered_map<uint16_t, float>& outWeights) const;
+	uint32_t GetShapeBoneWeights(NiShape* shape,
+								 const uint32_t boneIndex,
+								 std::unordered_map<uint16_t, float>& outWeights) const;
 
 	// Looks up the shape's global-to-skin transform if it has it.
 	// Otherwise, try to calculate it using skin-to-bone and node-to-global
@@ -212,8 +212,12 @@ public:
 	bool GetShapeTransformSkinToBone(NiShape* shape,
 									 const std::string& boneName,
 									 MatTransform& outTransform) const;
-	bool GetShapeTransformSkinToBone(NiShape* shape, int boneIndex, MatTransform& outTransform) const;
-	void SetShapeTransformSkinToBone(NiShape* shape, int boneIndex, const MatTransform& inTransform);
+	bool GetShapeTransformSkinToBone(NiShape* shape,
+									 const uint32_t boneIndex,
+									 MatTransform& outTransform) const;
+	void SetShapeTransformSkinToBone(NiShape* shape,
+									 const uint32_t boneIndex,
+									 const MatTransform& inTransform);
 	// Empty std::string for the bone name returns the overall skin transform for the shape.
 	// GetShapeBoneTransform is deprecated.  Use GetShapeTransformGlobalToSkin
 	// or GetShapeTransfromSkinToBone instead.
@@ -221,16 +225,16 @@ public:
 	// 0xFFFFFFFF on the bone index returns the overall skin transform for the shape.
 	// GetShapeBoneTransform is deprecated.  Use GetShapeTransformGlobalToSkin
 	// or GetShapeTransfromSkinToBone instead.
-	bool GetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& outTransform) const;
+	bool GetShapeBoneTransform(NiShape* shape, const uint32_t boneIndex, MatTransform& outTransform) const;
 	// 0xFFFFFFFF for the bone index sets the overall skin transform for the shape.
 	// SetShapeBoneTransform is deprecated.  Use SetShapeTransformGlobalToSkin
 	// or SetShapeTransfromSkinToBone instead.
-	bool SetShapeBoneTransform(NiShape* shape, const int boneIndex, MatTransform& inTransform);
-	bool SetShapeBoneBounds(const std::string& shapeName, const int boneIndex, BoundingSphere& inBounds);
-	bool GetShapeBoneBounds(NiShape* shape, const int boneIndex, BoundingSphere& outBounds) const;
-	void UpdateShapeBoneID(const std::string& shapeName, const int oldID, const int newID);
+	bool SetShapeBoneTransform(NiShape* shape, const uint32_t boneIndex, MatTransform& inTransform);
+	bool SetShapeBoneBounds(const std::string& shapeName, const uint32_t boneIndex, BoundingSphere& inBounds);
+	bool GetShapeBoneBounds(NiShape* shape, const uint32_t boneIndex, BoundingSphere& outBounds) const;
+	void UpdateShapeBoneID(const std::string& shapeName, const uint32_t oldID, const uint32_t newID);
 	void SetShapeBoneWeights(const std::string& shapeName,
-							 const int boneIndex,
+							 const uint32_t boneIndex,
 							 std::unordered_map<uint16_t, float>& inWeights);
 	void SetShapeVertWeights(const std::string& shapeName,
 							 const int vertIndex,
@@ -297,7 +301,7 @@ public:
 					 std::unordered_map<uint16_t, float>* mask = nullptr);
 
 	NiAlphaProperty* GetAlphaProperty(NiShape* shape) const;
-	int AssignAlphaProperty(
+	uint32_t AssignAlphaProperty(
 		NiShape* shape,
 		std::unique_ptr<NiAlphaProperty> alphaProp); // uint16_t flags = 4844, uint16_t threshold = 128
 	void RemoveAlphaProperty(NiShape* shape);

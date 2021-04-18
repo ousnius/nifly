@@ -126,7 +126,7 @@ void NiTexturingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 		t.GetChildRefs(refs);
 }
 
-void NiTexturingProperty::GetChildIndices(std::vector<int>& indices) {
+void NiTexturingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiProperty::GetChildIndices(indices);
 
 	baseTex.GetChildIndices(indices);
@@ -511,7 +511,7 @@ void BSLightingShaderProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&textureSetRef);
 }
 
-void BSLightingShaderProperty::GetChildIndices(std::vector<int>& indices) {
+void BSLightingShaderProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	BSShaderProperty::GetChildIndices(indices);
 
 	indices.push_back(textureSetRef.index);
@@ -731,7 +731,7 @@ void BSShaderPPLightingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&textureSetRef);
 }
 
-void BSShaderPPLightingProperty::GetChildIndices(std::vector<int>& indices) {
+void BSShaderPPLightingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	BSShaderLightingProperty::GetChildIndices(indices);
 
 	indices.push_back(textureSetRef.index);

@@ -100,7 +100,7 @@ std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1>& indices
 	std::vector<int> map(mapSize);
 
 	int indi = 0;
-	for (int si = 0, di = 0; si < mapSize; ++si) {
+	for (IndexType2 si = 0, di = 0; si < mapSize; ++si) {
 		if (indi < indices.size() && si == indices[indi]) {
 			map[si] = -1;
 			++indi;

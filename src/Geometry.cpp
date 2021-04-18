@@ -151,7 +151,7 @@ void NiGeometryData::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&additionalDataRef);
 }
 
-void NiGeometryData::GetChildIndices(std::vector<int>& indices) {
+void NiGeometryData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	indices.push_back(additionalDataRef.index);
@@ -643,7 +643,7 @@ void BSTriShape::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&alphaPropertyRef);
 }
 
-void BSTriShape::GetChildIndices(std::vector<int>& indices) {
+void BSTriShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
 	indices.push_back(skinInstanceRef.index);
@@ -1662,7 +1662,7 @@ void NiGeometry::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&alphaPropertyRef);
 }
 
-void NiGeometry::GetChildIndices(std::vector<int>& indices) {
+void NiGeometry::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);

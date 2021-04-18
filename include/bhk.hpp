@@ -313,7 +313,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class bhkCollisionObject : public NiCloneable<bhkCollisionObject, bhkNiCollisionObject> {
@@ -479,7 +479,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class bhkConvexVerticesShape : public NiCloneableStreamable<bhkConvexVerticesShape, bhkConvexShape> {
@@ -531,7 +531,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class bhkConvexTransformShape : public NiCloneable<bhkConvexTransformShape, bhkTransformShape> {
@@ -577,7 +577,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	std::vector<uint8_t> GetData() const;
 	void SetData(const std::vector<uint8_t>& dat);
@@ -607,7 +607,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	HavokMaterial GetMaterial() const override { return material; }
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
@@ -630,7 +630,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	HavokMaterial GetMaterial() const override { return material; }
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
@@ -692,7 +692,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class bhkLiquidAction : public NiCloneableStreamable<bhkLiquidAction, bhkSerializable> {
@@ -743,7 +743,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class bhkPhantom : public NiCloneable<bhkPhantom, bhkWorldObject> {};
@@ -831,7 +831,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class bhkRigidBodyT : public NiCloneable<bhkRigidBodyT, bhkRigidBody> {
@@ -1034,7 +1034,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
@@ -1077,7 +1077,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class bhkRagdollTemplateData : public NiCloneableStreamable<bhkRagdollTemplateData, NiObject> {
