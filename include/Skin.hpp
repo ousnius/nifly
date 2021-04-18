@@ -130,8 +130,8 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
-	void DeletePartitions(const std::vector<int>& partInds);
-	int RemoveEmptyPartitions(std::vector<int>& outDeletedIndices);
+	void DeletePartitions(const std::vector<uint32_t>& partInds);
+	int RemoveEmptyPartitions(std::vector<uint32_t>& outDeletedIndices);
 	// ConvertStripsToTriangles returns true if any conversions were
 	// actually performed.  After calling this function, all of the
 	// strips will be empty.
@@ -193,7 +193,7 @@ public:
 	};
 
 protected:
-	int numPartitions = 0;
+	uint32_t numPartitions = 0;
 	std::vector<PartitionInfo> partitions;
 
 public:
@@ -202,18 +202,18 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	int GetNumPartitions() const { return numPartitions; }
+	uint32_t GetNumPartitions() const { return numPartitions; }
 	std::vector<PartitionInfo> GetPartitions() const { return partitions; }
 
 	void AddPartition(const PartitionInfo& partition);
-	void RemovePartition(const int id);
+	void RemovePartition(const uint32_t id);
 	// DeletePartitions: partInds must be in sorted ascending order.
-	void DeletePartitions(const std::vector<int>& partInds);
+	void DeletePartitions(const std::vector<uint32_t>& partInds);
 	void ClearPartitions();
 
 	void SetPartitions(const std::vector<PartitionInfo>& parts) {
-		partitions = parts;
 		numPartitions = parts.size();
+		partitions = parts;
 	}
 };
 

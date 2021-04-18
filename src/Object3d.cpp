@@ -4,7 +4,7 @@
 
 namespace nifly {
 float CalcMedianOfFloats(std::vector<float>& data) {
-	int n = data.size();
+	size_t n = data.size();
 	if (n <= 0)
 		return 0;
 
@@ -82,7 +82,7 @@ Vector3 RotMatToVec(const Matrix3& m) {
 }
 
 Matrix3 CalcAverageRotation(const std::vector<Matrix3>& rots) {
-	int n = rots.size();
+	size_t n = rots.size();
 	if (n <= 0)
 		return Matrix3();
 

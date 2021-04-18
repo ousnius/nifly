@@ -2368,7 +2368,7 @@ void NifFile::SetShapePartitions(NiShape* shape,
 	// Calculate new number of partitions.  This code assumes we might have
 	// misassigned or unassigned triangles, though it's unclear whether
 	// it's even possible to have misassigned or unassigned triangles.
-	int numParts = partitionInfo.size();
+	size_t numParts = partitionInfo.size();
 	bool hasUnassignedTris = false;
 	for (int pi : triParts) {
 		if (pi >= numParts)
@@ -2391,7 +2391,7 @@ void NifFile::SetShapePartitions(NiShape* shape,
 	// Resize NiSkinPartition partition list
 	skinPart->numPartitions = numParts;
 	skinPart->partitions.resize(numParts);
-	for (int i = 0; i < numParts; i++)
+	for (size_t i = 0; i < numParts; i++)
 		skinPart->partitions[i].hasVertexMap = true;
 
 	// Regenerate trueTriangles
@@ -2470,7 +2470,7 @@ void NifFile::SetDefaultPartition(NiShape* shape) {
 	}
 }
 
-void NifFile::DeletePartitions(NiShape* shape, std::vector<int>& partInds) {
+void NifFile::DeletePartitions(NiShape* shape, std::vector<uint32_t>& partInds) {
 	if (!shape)
 		return;
 
@@ -3443,7 +3443,7 @@ void NifFile::RemoveEmptyPartitions(NiShape* shape) {
 	if (skinInst) {
 		auto skinPartition = hdr.GetBlock(skinInst->skinPartitionRef);
 		if (skinPartition) {
-			std::vector<int> emptyIndices;
+			std::vector<uint32_t> emptyIndices;
 			if (skinPartition->RemoveEmptyPartitions(emptyIndices)) {
 				auto bsdSkinInst = dynamic_cast<BSDismemberSkinInstance*>(skinInst);
 				if (bsdSkinInst) {
@@ -3490,7 +3490,7 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 		if (skinPartition) {
 			skinPartition->notifyVerticesDelete(indices);
 
-			std::vector<int> emptyIndices;
+			std::vector<uint32_t> emptyIndices;
 			if (skinPartition->RemoveEmptyPartitions(emptyIndices)) {
 				auto bsdSkinInst = dynamic_cast<BSDismemberSkinInstance*>(skinInst);
 				if (bsdSkinInst) {

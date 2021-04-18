@@ -289,7 +289,7 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	}
 }
 
-void NiSkinPartition::DeletePartitions(const std::vector<int>& partInds) {
+void NiSkinPartition::DeletePartitions(const std::vector<uint32_t>& partInds) {
 	if (partInds.empty())
 		return;
 	if (!triParts.empty()) {
@@ -303,7 +303,7 @@ void NiSkinPartition::DeletePartitions(const std::vector<int>& partInds) {
 	numPartitions = partitions.size();
 }
 
-int NiSkinPartition::RemoveEmptyPartitions(std::vector<int>& outDeletedIndices) {
+int NiSkinPartition::RemoveEmptyPartitions(std::vector<uint32_t>& outDeletedIndices) {
 	outDeletedIndices.clear();
 	for (size_t i = 0; i < partitions.size(); ++i)
 		if (partitions[i].numTriangles == 0)
@@ -518,7 +518,7 @@ void BSDismemberSkinInstance::Sync(NiStreamReversible& stream) {
 	stream.Sync(numPartitions);
 	partitions.resize(numPartitions);
 
-	for (int i = 0; i < numPartitions; i++)
+	for (uint32_t i = 0; i < numPartitions; i++)
 		stream.Sync(partitions[i]);
 }
 
@@ -527,14 +527,15 @@ void BSDismemberSkinInstance::AddPartition(const BSDismemberSkinInstance::Partit
 	numPartitions++;
 }
 
-void BSDismemberSkinInstance::DeletePartitions(const std::vector<int>& partInds) {
+void BSDismemberSkinInstance::DeletePartitions(const std::vector<uint32_t>& partInds) {
 	if (partInds.empty())
 		return;
+
 	EraseVectorIndices(partitions, partInds);
 	numPartitions = partitions.size();
 }
 
-void BSDismemberSkinInstance::RemovePartition(const int id) {
+void BSDismemberSkinInstance::RemovePartition(const uint32_t id) {
 	if (id >= 0 && id < numPartitions) {
 		partitions.erase(partitions.begin() + id);
 		numPartitions--;

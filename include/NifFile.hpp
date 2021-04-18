@@ -256,7 +256,7 @@ public:
 							const bool convertSkinInstance = true);
 	void SetDefaultPartition(NiShape* shape);
 	// DeletePartitions: partInds must be in sorted ascending order.
-	void DeletePartitions(NiShape* shape, std::vector<int>& partInds);
+	void DeletePartitions(NiShape* shape, std::vector<uint32_t>& partInds);
 
 	static bool ReorderTriangles(NiShape* shape, const std::vector<uint32_t>& triangleIndices);
 	const std::vector<Vector3>* GetVertsForShape(NiShape* shape);
