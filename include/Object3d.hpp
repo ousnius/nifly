@@ -26,6 +26,7 @@ inline bool FloatsAreNearlyEqual(float a, float b) {
 
 float CalcMedianOfFloats(const std::vector<float>& data);
 
+// Vector with 2 float components (uv)
 struct Vector2 {
 	float u;
 	float v;
@@ -92,6 +93,7 @@ struct Vector2 {
 	}
 };
 
+// Vector with 3 float components (xyz)
 struct Vector3 {
 	float x;
 	float y;
@@ -109,6 +111,7 @@ struct Vector3 {
 
 	void Zero() { x = y = z = 0.0f; }
 
+	// With bUseEpsilon, uses nifly::EPSILON for a nearly zero comparison.
 	bool IsZero(bool bUseEpsilon = false) {
 		if (bUseEpsilon) {
 			if (std::fabs(x) < EPSILON && std::fabs(y) < EPSILON && std::fabs(z) < EPSILON)
@@ -293,6 +296,7 @@ inline Vector3 operator*(float f, const Vector3& v) {
 
 Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data);
 
+// Vector with 4 float components (xyzw)
 struct Vector4 {
 	float x;
 	float y;
@@ -308,6 +312,7 @@ struct Vector4 {
 	}
 };
 
+// Color with 3 float components (rgb)
 struct Color3 {
 	float r;
 	float g;
@@ -348,6 +353,7 @@ struct Color3 {
 	}
 };
 
+// Color with 4 float components (rgba)
 struct Color4 {
 	float r;
 	float g;
@@ -394,6 +400,7 @@ struct Color4 {
 	}
 };
 
+// Color with 3 byte components (rgb)
 struct ByteColor3 {
 	uint8_t r = 0;
 	uint8_t g = 0;
@@ -403,6 +410,7 @@ struct ByteColor3 {
 	bool operator!=(const ByteColor3& other) { return !(*this == other); }
 };
 
+// Color with 4 byte components (rgba)
 struct ByteColor4 {
 	uint8_t r = 0;
 	uint8_t g = 0;
@@ -888,6 +896,7 @@ struct BoundingSphere {
 };
 
 
+// Quaternion using float components (wxyz)
 struct Quaternion {
 	float w;
 	float x;
@@ -909,6 +918,7 @@ struct Quaternion {
 	}
 };
 
+// Quaternion using float components (xyzw)
 struct QuaternionXYZW {
 	float x;
 	float y;
@@ -1015,6 +1025,7 @@ MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts);
 MatTransform CalcMedianMatTransform(const std::vector<MatTransform>& ts);
 
 
+// Edge with uint16_t point indices
 struct Edge {
 	uint16_t p1;
 	uint16_t p2;
@@ -1028,6 +1039,7 @@ struct Edge {
 	bool CompareIndices(const Edge& o) { return (p1 == o.p1 && p2 == o.p2) || (p1 == o.p2 && p2 == o.p1); }
 };
 
+// Triangle with uint16_t point indices
 struct Triangle {
 	uint16_t p1;
 	uint16_t p2;
@@ -1278,6 +1290,7 @@ inline bool operator==(const Edge& t1, const Edge& t2) {
 	return ((t1.p1 == t2.p1) && (t1.p2 == t2.p2));
 }
 
+// Face with either 3 or 4 point and uv indices
 struct Face {
 	uint8_t nPoints = 0;
 	uint16_t p1 = 0;
@@ -1307,6 +1320,7 @@ struct Face {
 	}
 };
 
+// Rectangle with float components (x1, y1, x2, y2)
 struct Rect {
 	float x1 = 0.0f;
 	float y1 = 0.0f;
