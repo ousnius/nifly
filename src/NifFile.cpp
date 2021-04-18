@@ -566,6 +566,19 @@ int NifFile::AssignExtraData(NiAVObject* target, NiExtraData* extraData) {
 	return extraDataId;
 }
 
+void NifFile::AddStringExtraDataToNode(const int blockID, const std::string& edName, const std::string& edValue) {
+	std::unique_ptr<NiStringExtraData> extraData(new NiStringExtraData);
+
+	int nameId(hdr.AddOrFindStringId(edName));
+	extraData->name.SetIndex(nameId);
+	extraData->name.get() = edName;
+	int valueId(hdr.AddOrFindStringId(edValue));
+	extraData->stringData.SetIndex(nameId);
+	extraData->stringData.get() = edValue;
+
+	AssignExtraData(hdr.GetBlock<NiNode>(blockID), extraData.release());
+}
+
 NiShader* NifFile::GetShader(NiShape* shape) const {
 	auto shader = hdr.GetBlock<NiShader>(shape->ShaderPropertyRef());
 	if (shader)

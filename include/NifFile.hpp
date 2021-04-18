@@ -135,6 +135,7 @@ public:
 	void SetNodeName(const int blockID, const std::string& newName);
 
 	int AssignExtraData(NiAVObject* target, NiExtraData* extraData);
+	void AddStringExtraDataToNode(const int blockID, const std::string& edName, const std::string& edValue);
 
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);
