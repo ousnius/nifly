@@ -213,7 +213,7 @@ uint32_t NiHeader::GetBlockID(NiObject* block) const {
 	auto it = find_if(*blocks, [&block](const auto& ptr) { return ptr.get() == block; });
 
 	if (it != blocks->end())
-		return std::distance(blocks->begin(), it);
+		return static_cast<uint32_t>(std::distance(blocks->begin(), it));
 
 	return NIF_NPOS;
 }

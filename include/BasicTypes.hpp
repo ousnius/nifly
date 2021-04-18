@@ -181,7 +181,7 @@ public:
 class NiOStream : public NiStreamBase {
 private:
 	std::ostream* stream = nullptr;
-	int blockSize = 0;
+	std::streamsize blockSize = 0;
 
 public:
 	NiOStream(std::ostream* s, NiVersion v)
@@ -208,7 +208,7 @@ public:
 	}
 
 	void InitBlockSize() { blockSize = 0; }
-	int GetBlockSize() { return blockSize; }
+	std::streamsize GetBlockSize() { return blockSize; }
 };
 
 class NiStreamReversible {

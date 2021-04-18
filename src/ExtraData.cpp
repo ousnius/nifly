@@ -490,7 +490,7 @@ bool BSClothExtraData::FromHKX(const std::string& fileName) {
 	if (!file)
 		return false;
 
-	numBytes = file.tellg();
+	numBytes = static_cast<uint32_t>(file.tellg());
 	file.seekg(0, std::ios::beg);
 
 	data.resize(numBytes);

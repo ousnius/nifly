@@ -30,7 +30,7 @@ uint32_t NifFile::GetBlockID(NiObject* block) const {
 	auto it = find_if(blocks, [&block](const auto& ptr) { return ptr.get() == block; });
 
 	if (it != blocks.end())
-		return std::distance(blocks.begin(), it);
+		return static_cast<uint32_t>(std::distance(blocks.begin(), it));
 
 	return NIF_NPOS;
 }
@@ -910,7 +910,7 @@ int NifFile::Save(std::ostream& file, const NifSaveOptions& options) {
 		stream.InitBlockSize();
 
 		// Retrieve block sizes from NiStream while writing
-		std::vector<int> blockSizes(hdr.GetNumBlocks());
+		std::vector<std::streamsize> blockSizes(hdr.GetNumBlocks());
 		for (uint32_t i = 0; i < hdr.GetNumBlocks(); i++) {
 			blocks[i]->Put(stream);
 			blockSizes[i] = stream.GetBlockSize();
@@ -928,7 +928,7 @@ int NifFile::Save(std::ostream& file, const NifSaveOptions& options) {
 			file.seekp(blockSizePos);
 
 			for (uint32_t i = 0; i < hdr.GetNumBlocks(); i++)
-				stream << blockSizes[i];
+				stream << static_cast<uint32_t>(blockSizes[i]);
 
 			hdr.ResetBlockSizeStreamPos();
 		}
@@ -1178,10 +1178,14 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 										if (part.hasBoneIndices) {
 											auto& boneIndices = part.boneIndices[i];
-											vertex.weightBones[0] = part.bones[boneIndices.i1];
-											vertex.weightBones[1] = part.bones[boneIndices.i2];
-											vertex.weightBones[2] = part.bones[boneIndices.i3];
-											vertex.weightBones[3] = part.bones[boneIndices.i4];
+											vertex.weightBones[0] = static_cast<uint8_t>(
+												part.bones[boneIndices.i1]);
+											vertex.weightBones[1] = static_cast<uint8_t>(
+												part.bones[boneIndices.i2]);
+											vertex.weightBones[2] = static_cast<uint8_t>(
+												part.bones[boneIndices.i3]);
+											vertex.weightBones[3] = static_cast<uint8_t>(
+												part.bones[boneIndices.i4]);
 										}
 									}
 								}

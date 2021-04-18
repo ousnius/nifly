@@ -11,7 +11,7 @@ See the included GPLv3 LICENSE file
 #include <cstring>
 #include <vector>
 
-#pragma warning(disable : 4244 4267)
+#pragma warning(disable : 4267)
 
 namespace nifly {
 const double EPSILON = 0.0001;
@@ -1045,7 +1045,7 @@ struct Triangle {
 	uint16_t p2;
 	uint16_t p3;
 
-	Triangle() { p1 = p2 = p3 = 0.0f; }
+	Triangle() { p1 = p2 = p3 = 0; }
 	Triangle(uint16_t P1, uint16_t P2, uint16_t P3) {
 		p1 = P1;
 		p2 = P2;
@@ -1302,7 +1302,7 @@ struct Face {
 	uint16_t p4 = 0;
 	uint16_t uv4 = 0;
 
-	Face(int npts = 0, int* points = nullptr, int* tc = nullptr) {
+	Face(const uint8_t npts = 0, const uint16_t* points = nullptr, const uint16_t* tc = nullptr) {
 		nPoints = npts;
 		if (npts < 3)
 			return;
