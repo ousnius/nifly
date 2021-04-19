@@ -34,7 +34,7 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
-class NiSkinData : public NiCloneableStreamable<NiSkinData, NiObject> {
+STREAMABLECLASSDEF(NiSkinData, NiObject) {
 public:
 	struct BoneData {
 		// boneTransform transforms from skin CS to bone CS.
@@ -59,7 +59,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiSkinPartition : public NiCloneableStreamable<NiSkinPartition, NiObject> {
+STREAMABLECLASSDEF(NiSkinPartition, NiObject) {
 public:
 	struct PartitionBlock {
 		uint16_t numVertices = 0;
@@ -162,12 +162,12 @@ public:
 
 class NiNode;
 
-class NiBoneContainer : public NiCloneable<NiBoneContainer, NiObject> {
+CLONEABLECLASSDEF(NiBoneContainer, NiObject) {
 public:
 	NiBlockPtrArray<NiNode> boneRefs;
 };
 
-class NiSkinInstance : public NiCloneableStreamable<NiSkinInstance, NiBoneContainer> {
+STREAMABLECLASSDEF(NiSkinInstance, NiBoneContainer) {
 public:
 	NiBlockRef<NiSkinData> dataRef;
 	NiBlockRef<NiSkinPartition> skinPartitionRef;
@@ -185,7 +185,7 @@ public:
 
 enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
-class BSDismemberSkinInstance : public NiCloneableStreamable<BSDismemberSkinInstance, NiSkinInstance> {
+STREAMABLECLASSDEF(BSDismemberSkinInstance, NiSkinInstance) {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
@@ -217,7 +217,7 @@ public:
 	}
 };
 
-class BSSkinBoneData : public NiCloneableStreamable<BSSkinBoneData, NiObject> {
+STREAMABLECLASSDEF(BSSkinBoneData, NiObject) {
 public:
 	uint32_t nBones = 0;
 
@@ -242,7 +242,7 @@ public:
 
 class NiAVObject;
 
-class BSSkinInstance : public NiCloneableStreamable<BSSkinInstance, NiBoneContainer> {
+STREAMABLECLASSDEF(BSSkinInstance, NiBoneContainer) {
 public:
 	NiBlockPtr<NiAVObject> targetRef;
 	NiBlockRef<BSSkinBoneData> dataRef;

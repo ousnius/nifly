@@ -54,9 +54,9 @@ struct AVObject {
 	NiBlockPtr<NiAVObject> objectRef;
 };
 
-class NiAVObjectPalette : public NiCloneable<NiAVObjectPalette, NiObject> {};
+CLONEABLECLASSDEF(NiAVObjectPalette, NiObject) {};
 
-class NiDefaultAVObjectPalette : public NiCloneableStreamable<NiDefaultAVObjectPalette, NiAVObjectPalette> {
+STREAMABLECLASSDEF(NiDefaultAVObjectPalette, NiAVObjectPalette) {
 protected:
 	uint32_t numObjects = 0;
 	std::vector<AVObject> objects;
@@ -74,7 +74,7 @@ public:
 	void SetAVObjects(std::vector<AVObject>& avo);
 };
 
-class NiCamera : public NiCloneableStreamable<NiCamera, NiAVObject> {
+STREAMABLECLASSDEF(NiCamera, NiAVObject) {
 public:
 	uint16_t obsoleteFlags = 0;
 	float frustumLeft = 0.0f;
@@ -102,13 +102,13 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiSequenceStreamHelper : public NiCloneable<NiSequenceStreamHelper, NiObjectNET> {
+CLONEABLECLASSDEF(NiSequenceStreamHelper, NiObjectNET) {
 public:
 	static constexpr const char* BlockName = "NiSequenceStreamHelper";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPalette : public NiCloneableStreamable<NiPalette, NiObject> {
+STREAMABLECLASSDEF(NiPalette, NiObject) {
 public:
 	bool hasAlpha = false;
 	NiVector<ByteColor4> palette = NiVector<ByteColor4>(256);
@@ -176,7 +176,7 @@ struct MipMapInfo {
 	uint32_t offset = 0;
 };
 
-class TextureRenderData : public NiCloneableStreamable<TextureRenderData, NiObject> {
+STREAMABLECLASSDEF(TextureRenderData, NiObject) {
 protected:
 	uint32_t numMipmaps = 0;
 	std::vector<MipMapInfo> mipmaps;
@@ -204,8 +204,7 @@ public:
 
 enum PlatformID : uint32_t { PLAT_ANY, PLAT_XENON, PLAT_PS3, PLAT_DX9, PLAT_WII, PLAT_D3D10 };
 
-class NiPersistentSrcTextureRendererData
-	: public NiCloneableStreamable<NiPersistentSrcTextureRendererData, TextureRenderData> {
+STREAMABLECLASSDEF(NiPersistentSrcTextureRendererData, TextureRenderData) {
 public:
 	uint32_t numPixels = 0;
 	uint32_t padNumPixels = 0;
@@ -220,7 +219,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiPixelData : public NiCloneableStreamable<NiPixelData, TextureRenderData> {
+STREAMABLECLASSDEF(NiPixelData, TextureRenderData) {
 public:
 	uint32_t numPixels = 0;
 	uint32_t numFaces = 0;
@@ -257,9 +256,9 @@ enum MipMapFormat : uint32_t { MIP_FMT_NO, MIP_FMT_YES, MIP_FMT_DEFAULT };
 
 enum AlphaFormat : uint32_t { ALPHA_NONE, ALPHA_BINARY, ALPHA_SMOOTH, ALPHA_DEFAULT };
 
-class NiTexture : public NiCloneable<NiTexture, NiObjectNET> {};
+CLONEABLECLASSDEF(NiTexture, NiObjectNET) {};
 
-class NiSourceTexture : public NiCloneableStreamable<NiSourceTexture, NiTexture> {
+STREAMABLECLASSDEF(NiSourceTexture, NiTexture) {
 public:
 	bool useExternal = true;
 	NiStringRef fileName;
@@ -284,7 +283,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiSourceCubeMap : public NiCloneable<NiSourceCubeMap, NiSourceTexture> {
+CLONEABLECLASSDEF(NiSourceCubeMap, NiSourceTexture) {
 public:
 	static constexpr const char* BlockName = "NiSourceCubeMap";
 	const char* GetBlockName() override { return BlockName; }
@@ -316,7 +315,7 @@ enum CoordGenType : uint32_t {
 	CG_DIFFUSE_CUBE_MAP
 };
 
-class NiDynamicEffect : public NiCloneableStreamable<NiDynamicEffect, NiAVObject> {
+STREAMABLECLASSDEF(NiDynamicEffect, NiAVObject) {
 public:
 	bool switchState = false;
 	NiBlockPtrArray<NiNode> affectedNodes;
@@ -325,7 +324,7 @@ public:
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
-class NiTextureEffect : public NiCloneableStreamable<NiTextureEffect, NiDynamicEffect> {
+STREAMABLECLASSDEF(NiTextureEffect, NiDynamicEffect) {
 public:
 	Matrix3 modelProjectionMatrix;
 	Vector3 modelProjectionTranslation;
@@ -345,7 +344,7 @@ public:
 	void GetChildIndices(std::vector<int>& indices) override;
 };
 
-class NiLight : public NiCloneableStreamable<NiLight, NiDynamicEffect> {
+STREAMABLECLASSDEF(NiLight, NiDynamicEffect) {
 public:
 	float dimmer = 0.0f;
 	Color3 ambientColor;
@@ -355,19 +354,19 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiAmbientLight : public NiCloneable<NiAmbientLight, NiLight> {
+CLONEABLECLASSDEF(NiAmbientLight, NiLight) {
 public:
 	static constexpr const char* BlockName = "NiAmbientLight";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiDirectionalLight : public NiCloneable<NiDirectionalLight, NiLight> {
+CLONEABLECLASSDEF(NiDirectionalLight, NiLight) {
 public:
 	static constexpr const char* BlockName = "NiDirectionalLight";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiPointLight : public NiCloneableStreamable<NiPointLight, NiLight> {
+STREAMABLECLASSDEF(NiPointLight, NiLight) {
 public:
 	float constantAttenuation = 0.0f;
 	float linearAttenuation = 0.0f;
@@ -379,7 +378,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiSpotLight : public NiCloneableStreamable<NiSpotLight, NiPointLight> {
+STREAMABLECLASSDEF(NiSpotLight, NiPointLight) {
 public:
 	float outerSpotAngle = 0.0f;
 	float innerSpotAngle = 0.0f;

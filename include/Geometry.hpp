@@ -72,9 +72,9 @@ struct AdditionalDataBlock {
 	}
 };
 
-class AdditionalGeomData : public NiCloneable<AdditionalGeomData, NiObject> {};
+CLONEABLECLASSDEF(AdditionalGeomData, NiObject) {};
 
-class NiAdditionalGeometryData : public NiCloneableStreamable<NiAdditionalGeometryData, AdditionalGeomData> {
+STREAMABLECLASSDEF(NiAdditionalGeometryData, AdditionalGeomData) {
 protected:
 	uint32_t numBlockInfos = 0;
 	std::vector<AdditionalDataInfo> blockInfos;
@@ -137,8 +137,7 @@ struct BSPackedAdditionalDataBlock {
 	}
 };
 
-class BSPackedAdditionalGeometryData
-	: public NiCloneableStreamable<BSPackedAdditionalGeometryData, AdditionalGeomData> {
+STREAMABLECLASSDEF(BSPackedAdditionalGeometryData, AdditionalGeomData) {
 protected:
 	uint32_t numBlockInfos = 0;
 	std::vector<AdditionalDataInfo> blockInfos;
@@ -161,7 +160,7 @@ public:
 	void SetBlocks(const std::vector<BSPackedAdditionalDataBlock>& adb);
 };
 
-class NiGeometryData : public NiCloneableStreamable<NiGeometryData, NiObject> {
+STREAMABLECLASSDEF(NiGeometryData, NiObject) {
 protected:
 	bool isPSys = false;
 
@@ -281,7 +280,7 @@ public:
 };
 
 
-class BSTriShape : public NiCloneableStreamable<BSTriShape, NiShape> {
+STREAMABLECLASSDEF(BSTriShape, NiShape) {
 protected:
 	NiBlockRef<NiBoneContainer> skinInstanceRef;
 	NiBlockRef<NiShader> shaderPropertyRef;
@@ -446,7 +445,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSSubIndexTriShape : public NiCloneableStreamable<BSSubIndexTriShape, BSTriShape> {
+STREAMABLECLASSDEF(BSSubIndexTriShape, BSTriShape) {
 public:
 	class BSSITSSubSegment {
 	public:
@@ -520,7 +519,7 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
-class BSMeshLODTriShape : public NiCloneableStreamable<BSMeshLODTriShape, BSTriShape> {
+STREAMABLECLASSDEF(BSMeshLODTriShape, BSTriShape) {
 public:
 	uint32_t lodSize0 = 0;
 	uint32_t lodSize1 = 0;
@@ -533,7 +532,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class BSDynamicTriShape : public NiCloneableStreamable<BSDynamicTriShape, BSTriShape> {
+STREAMABLECLASSDEF(BSDynamicTriShape, BSTriShape) {
 public:
 	uint32_t dynamicDataSize;
 	std::vector<Vector4> dynamicData;
@@ -561,7 +560,7 @@ struct MaterialInfo {
 
 class NiSkinInstance;
 
-class NiGeometry : public NiCloneableStreamable<NiGeometry, NiShape> {
+STREAMABLECLASSDEF(NiGeometry, NiShape) {
 protected:
 	NiBlockRef<NiGeometryData> dataRef;
 	NiBlockRef<NiBoneContainer> skinInstanceRef;
@@ -606,9 +605,9 @@ public:
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
 };
 
-class NiTriBasedGeom : public NiCloneable<NiTriBasedGeom, NiGeometry> {};
+CLONEABLECLASSDEF(NiTriBasedGeom, NiGeometry) {};
 
-class NiTriBasedGeomData : public NiCloneableStreamable<NiTriBasedGeomData, NiGeometryData> {
+STREAMABLECLASSDEF(NiTriBasedGeomData, NiGeometryData) {
 protected:
 	uint16_t numTriangles = 0;
 
@@ -627,7 +626,7 @@ struct MatchGroup {
 	std::vector<uint16_t> matches;
 };
 
-class NiTriShapeData : public NiCloneableStreamable<NiTriShapeData, NiTriBasedGeomData> {
+STREAMABLECLASSDEF(NiTriShapeData, NiTriBasedGeomData) {
 protected:
 	uint32_t numTrianglePoints = 0;
 	bool hasTriangles = false;
@@ -659,7 +658,7 @@ public:
 	void CalcTangentSpace() override;
 };
 
-class NiTriShape : public NiCloneable<NiTriShape, NiTriBasedGeom> {
+CLONEABLECLASSDEF(NiTriShape, NiTriBasedGeom) {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -680,7 +679,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiTriStripsData : public NiCloneableStreamable<NiTriStripsData, NiTriBasedGeomData> {
+STREAMABLECLASSDEF(NiTriStripsData, NiTriBasedGeomData) {
 public:
 	StripsInfo stripsInfo;
 
@@ -699,7 +698,7 @@ public:
 	void CalcTangentSpace() override;
 };
 
-class NiTriStrips : public NiCloneable<NiTriStrips, NiTriBasedGeom> {
+CLONEABLECLASSDEF(NiTriStrips, NiTriBasedGeom) {
 protected:
 	NiTriStripsData* stripsData = nullptr;
 
@@ -713,7 +712,7 @@ public:
 	bool ReorderTriangles(const std::vector<uint32_t>&) override { return false; }
 };
 
-class NiLinesData : public NiCloneableStreamable<NiLinesData, NiGeometryData> {
+STREAMABLECLASSDEF(NiLinesData, NiGeometryData) {
 public:
 	std::deque<bool> lineFlags;
 
@@ -724,7 +723,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiLines : public NiCloneable<NiLines, NiTriBasedGeom> {
+CLONEABLECLASSDEF(NiLines, NiTriBasedGeom) {
 protected:
 	NiLinesData* linesData = nullptr;
 
@@ -743,7 +742,7 @@ struct PolygonInfo {
 	uint16_t triangleOffset = 0;
 };
 
-class NiScreenElementsData : public NiCloneableStreamable<NiScreenElementsData, NiTriShapeData> {
+STREAMABLECLASSDEF(NiScreenElementsData, NiTriShapeData) {
 protected:
 	uint16_t maxPolygons = 0;
 	std::vector<PolygonInfo> polygons;
@@ -764,7 +763,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiScreenElements : public NiCloneable<NiScreenElements, NiTriShape> {
+CLONEABLECLASSDEF(NiScreenElements, NiTriShape) {
 protected:
 	NiScreenElementsData* elemData = nullptr;
 
@@ -776,7 +775,7 @@ public:
 	void SetGeomData(NiGeometryData* geomDataPtr) override;
 };
 
-class BSLODTriShape : public NiCloneableStreamable<BSLODTriShape, NiTriBasedGeom> {
+STREAMABLECLASSDEF(BSLODTriShape, NiTriBasedGeom) {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -794,7 +793,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSSegmentedTriShape : public NiCloneableStreamable<BSSegmentedTriShape, NiTriShape> {
+STREAMABLECLASSDEF(BSSegmentedTriShape, NiTriShape) {
 protected:
 	uint32_t numSegments = 0;
 	std::vector<BSGeometrySegmentData> segments;

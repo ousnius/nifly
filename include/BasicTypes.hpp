@@ -773,6 +773,11 @@ public:
 
 	virtual void GetStringRefs(std::vector<NiStringRef*>&) {}
 	virtual void GetChildRefs(std::set<NiRef*>&) {}
+	std::set<NiRef*> CopyChildRefs() {
+		std::set<NiRef*> refs;
+		GetChildRefs(refs);
+		return refs;
+	}
 	virtual void GetChildIndices(std::vector<int>&) {}
 	virtual void GetPtrs(std::set<NiPtr*>&) {}
 
@@ -870,6 +875,17 @@ public:
 		return nullptr;
 	}
 
+	template<class T>
+	T* GetBlockPrecise(const int blockId) const {
+		if (blockId >= 0 && blockId < numBlocks)
+		{
+			T* result(dynamic_cast<T*>((*blocks)[blockId].get()));
+			if (result && std::string(result->BlockName) == std::string(T::BlockName))
+				return result;
+		}
+
+		return nullptr;
+	}
 	template<class T>
 	T* GetBlock(const NiBlockRef<T>& blockRef) const {
 		return GetBlock<T>(blockRef.index);
