@@ -867,6 +867,12 @@ public:
 
 	uint32_t GetNumBlocks() const { return numBlocks; }
 
+	NiObject* GetBlockById(const int blockId) {
+		if (blockId >= 0 && blockId < numBlocks)
+			return (*blocks)[blockId].get();
+		return nullptr;
+	}
+
 	template<class T>
 	T* GetBlock(const int blockId) const {
 		if (blockId >= 0 && blockId < numBlocks)
