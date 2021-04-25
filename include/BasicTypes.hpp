@@ -686,19 +686,19 @@ public:
 	}
 
 	uint32_t GetBlockRef(const uint32_t id) const override {
-		if (id >= 0 && refs.size() > id)
+		if (id != NIF_NPOS && refs.size() > id)
 			return refs[id].index;
 
 		return NIF_NPOS;
 	}
 
 	void SetBlockRef(const uint32_t id, const uint32_t index) override {
-		if (id >= 0 && refs.size() > id)
+		if (id != NIF_NPOS && refs.size() > id)
 			refs[id].index = index;
 	}
 
 	void RemoveBlockRef(const uint32_t id) override {
-		if (id >= 0 && refs.size() > id) {
+		if (id != NIF_NPOS && refs.size() > id) {
 			refs.erase(refs.begin() + id);
 			arraySize--;
 		}
@@ -856,7 +856,7 @@ public:
 
 	template<class T>
 	T* GetBlock(const uint32_t blockId) const {
-		if (blockId >= 0 && blockId < numBlocks)
+		if (blockId != NIF_NPOS && blockId < numBlocks)
 			return dynamic_cast<T*>((*blocks)[blockId].get());
 
 		return nullptr;
@@ -888,7 +888,7 @@ public:
 
 	template<class T>
 	T* GetBlockUnsafe(const uint32_t blockId) const {
-		if (blockId >= 0 && blockId < numBlocks)
+		if (blockId != NIF_NPOS && blockId < numBlocks)
 			return static_cast<T*>((*blocks)[blockId].get());
 
 		return nullptr;

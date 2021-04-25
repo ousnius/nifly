@@ -427,9 +427,9 @@ uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 }
 
 std::string NiHeader::GetBlockTypeStringById(const uint32_t blockId) const {
-	if (blockId >= 0 && blockId < numBlocks) {
+	if (blockId != NIF_NPOS && blockId < numBlocks) {
 		uint16_t typeIndex = blockTypeIndices[blockId];
-		if (typeIndex >= 0 && typeIndex < numBlockTypes)
+		if (typeIndex != NIF_NPOS && typeIndex < numBlockTypes)
 			return blockTypes[typeIndex].get();
 	}
 
@@ -437,14 +437,14 @@ std::string NiHeader::GetBlockTypeStringById(const uint32_t blockId) const {
 }
 
 uint16_t NiHeader::GetBlockTypeIndex(const uint32_t blockId) const {
-	if (blockId >= 0 && blockId < numBlocks)
+	if (blockId != NIF_NPOS && blockId < numBlocks)
 		return blockTypeIndices[blockId];
 
 	return 0xFFFF;
 }
 
 uint32_t NiHeader::GetBlockSize(const uint32_t blockId) const {
-	if (blockId >= 0 && blockId < numBlocks)
+	if (blockId != NIF_NPOS && blockId < numBlocks)
 		return blockSizes[blockId];
 
 	return NIF_NPOS;
@@ -488,14 +488,14 @@ uint32_t NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty
 }
 
 std::string NiHeader::GetStringById(const uint32_t id) const {
-	if (id >= 0 && id < numStrings)
+	if (id != NIF_NPOS && id < numStrings)
 		return strings[id].get();
 
 	return std::string();
 }
 
 void NiHeader::SetStringById(const uint32_t id, const std::string& str) {
-	if (id >= 0 && id < numStrings)
+	if (id != NIF_NPOS && id < numStrings)
 		strings[id].get() = str;
 }
 
