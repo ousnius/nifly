@@ -562,10 +562,12 @@ void NiHeader::BlockDeleted(NiObject* o, const uint32_t blockId) {
 	o->GetPtrs(refs);
 
 	for (auto& r : refs) {
-		if (r->index == blockId)
-			r->Clear();
-		else if (r->index > blockId)
-			r->index--;
+		if (!r->IsEmpty()) {
+			if (r->index == blockId)
+				r->Clear();
+			else if (r->index > blockId)
+				r->index--;
+		}
 	}
 }
 
@@ -575,10 +577,12 @@ void NiHeader::BlockSwapped(NiObject* o, const uint32_t blockIndexLo, const uint
 	o->GetPtrs(refs);
 
 	for (auto& r : refs) {
-		if (r->index == blockIndexLo)
-			r->index = blockIndexHi;
-		else if (r->index == blockIndexHi)
-			r->index = blockIndexLo;
+		if (!r->IsEmpty()) {
+			if (r->index == blockIndexLo)
+				r->index = blockIndexHi;
+			else if (r->index == blockIndexHi)
+				r->index = blockIndexLo;
+		}
 	}
 }
 
