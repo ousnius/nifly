@@ -574,7 +574,7 @@ public:
 	uint8_t vertFlags8 = 8;
 
 	BoundingSphere bounds;
-	float boundMinMax[6]{};
+	std::array<float, 6> boundMinMax{};
 
 	uint16_t farBegin = 0;
 	uint16_t farEnd = 0;

@@ -68,8 +68,9 @@ public:
 
 	NifFile(std::istream& file, const NifLoadOptions& options = NifLoadOptions()) { Load(file, options); }
 
-	NifFile(const std::string& fileData, const NifLoadOptions& options = NifLoadOptions()) {
-		std::istringstream iss(fileData);
+	NifFile(const std::vector<unsigned char>& fileData, const NifLoadOptions& options = NifLoadOptions()) {
+		std::stringstream iss;
+		iss.write((const char *)&fileData.front(), fileData.size());
 		Load(iss, options);
 	}
 

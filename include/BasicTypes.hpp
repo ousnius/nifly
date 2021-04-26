@@ -9,6 +9,7 @@ See the included GPLv3 LICENSE file
 #include "Object3d.hpp"
 #include "half.hpp"
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -388,7 +389,6 @@ public:
 
 	std::string& get() { return str; }
 	const std::string& get() const { return str; }
-	std::string copy() { return str; }
 
 	size_t length() const { return str.length(); }
 
@@ -425,9 +425,10 @@ struct NiPlane {
 // Helper to reduce duplication
 template<typename ValueType, typename SizeType>
 class NiVectorBase {
-private:
+public:
 	typedef std::vector<ValueType> Container;
 
+private:
 	Container vec;
 
 protected:
@@ -457,6 +458,9 @@ public:
 	ValueType& operator[](SizeType i) { return vec[i]; }
 
 	iterator erase(SizeType i) { return vec.erase(vec.begin() + i); }
+
+	// for SWIG, to avoid duplicating std_vector.i to handle iteration
+	Container items() const { return vec; }
 };
 
 template<typename ValueType, typename SizeType = uint32_t>
@@ -714,12 +718,14 @@ public:
 
 	void GetIndices(std::vector<int>& indices) override {
 		for (auto& r : refs)
-			indices.push_back(r.index);
+			if (!r.IsEmpty())
+				indices.push_back(r.index);
 	}
 
 	void GetIndexPtrs(std::set<NiRef*>& indices) override {
 		for (auto& r : refs)
-			indices.insert(&r);
+			if (!r.IsEmpty())
+				indices.insert(&r);
 	}
 
 	void SetIndices(const std::vector<int>& indices) override {
@@ -738,9 +744,10 @@ template<typename T>
 class NiBlockRefShortArray : public NiBlockRefArray<T> {
 public:
 	using base = NiBlockRefArray<T>;
-	using base::arraySize;
+protected:
 	using base::refs;
-
+public:
+	using base::arraySize;
 	void Sync(NiStreamReversible& stream) override {
 		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
 			base::CleanInvalidRefs();
@@ -881,17 +888,6 @@ public:
 		return nullptr;
 	}
 
-	template<class T>
-	T* GetBlockPrecise(const int blockId) const {
-		if (blockId >= 0 && blockId < numBlocks)
-		{
-			T* result(dynamic_cast<T*>((*blocks)[blockId].get()));
-			if (result && std::string(result->BlockName) == std::string(T::BlockName))
-				return result;
-		}
-
-		return nullptr;
-	}
 	template<class T>
 	T* GetBlock(const NiBlockRef<T>& blockRef) const {
 		return GetBlock<T>(blockRef.index);

@@ -7,6 +7,7 @@ See the included GPLv3 LICENSE file
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstring>
 #include <vector>
@@ -25,6 +26,24 @@ inline bool FloatsAreNearlyEqual(float a, float b) {
 }
 
 float CalcMedianOfFloats(std::vector<float>& data);
+
+template<class T>
+static T Round(T a)
+{
+	static_assert(std::is_floating_point<T>::value, "Round<T>: T must be floating point");
+
+	return (a > 0) ? ::floor(a + static_cast<T>(0.5)) : ::ceil(a - static_cast<T>(0.5));
+}
+
+template<class T>
+static T Round(T a, int places)
+{
+	static_assert(std::is_floating_point<T>::value, "Round<T>: T must be floating point");
+
+	const T shift = pow(static_cast<T>(10.0), places);
+
+	return Round(a * shift) / shift;
+}
 
 struct Vector2 {
 	float u;
@@ -130,6 +149,12 @@ struct Vector3 {
 		x /= d;
 		y /= d;
 		z /= d;
+	}
+
+	void SetPrecision(unsigned int prec) {
+		x = Round(x, prec);
+		y = Round(y, prec);
+		z = Round(z, prec);
 	}
 
 	uint32_t hash() {
@@ -416,7 +441,7 @@ struct ByteColor4 {
 };
 
 class Matrix3 {
-	Vector3 rows[3] = {Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f)};
+	std::array<Vector3, 3> rows = {Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f)};
 
 public:
 	Vector3& operator[](int index) { return rows[index]; }
@@ -514,6 +539,12 @@ public:
 		return res;
 	}
 
+	void Zero() {
+		for (auto& row : rows) {
+			row.Zero();
+		}
+	}
+
 	float Determinant() const;
 
 	// Invert attempts to invert this matrix, returning the result in
@@ -552,6 +583,12 @@ public:
 		return rows[0].IsNearlyEqualTo(other.rows[0]) && rows[1].IsNearlyEqualTo(other.rows[1])
 			   && rows[2].IsNearlyEqualTo(other.rows[2]);
 	}
+
+	void SetPrecision(unsigned int prec) {
+		for (auto& row : rows) {
+			row.SetPrecision(prec);
+		}
+	}
 };
 
 // RotVecToMat: converts a rotation vector to a rotation matrix.
@@ -571,14 +608,14 @@ Matrix3 CalcMedianRotation(const std::vector<Matrix3>& rots);
 
 // 4D Matrix class for calculating and applying transformations.
 class Matrix4 {
-	float m[16]{};
+	std::array<float, 16> m{};
 
 public:
 	Matrix4() { Identity(); }
 
 	Matrix4(const std::vector<Vector3>& mat33) { Set(mat33); }
 
-	void Set(Vector3 mat33[3]) {
+	void Set(std::array<Vector3, 3> mat33) {
 		m[0] = mat33[0].x;
 		m[1] = mat33[0].y;
 		m[2] = mat33[0].z;
@@ -624,12 +661,12 @@ public:
 
 	float& operator[](int index) { return m[index]; }
 
-	bool operator==(const Matrix4& other) { return (std::equal(m, m + sizeof m / sizeof *m, other.m)); }
+	bool operator==(const Matrix4& other) { return m == other.m; }
 
 	bool IsIdentity() { return *this == Matrix4(); }
 
 	Matrix4& Identity() {
-		std::memset(m, 0, sizeof(float) * 16);
+		std::memset(&m, 0, sizeof(float) * 16);
 		m[0] = m[5] = m[10] = m[15] = 1.0f;
 		return *this;
 	}

@@ -58,7 +58,7 @@ public:
 	bool HasFlag(VertexFlags flag) const { return ((desc >> 44) & flag) != 0; }
 
 	// Sets the vertex size
-	void SetSize(uint32_t size) {
+	void SetSize(uint32_t  size) {
 		desc &= DESC_MASK_VERT;
 		desc |= (uint64_t) size >> 2;
 	}
@@ -96,15 +96,15 @@ struct BSVertexData {
 
 	Vector2 uv;
 
-	uint8_t normal[3]{};
+	std::array<uint8_t, 3> normal{};
 	uint8_t bitangentY = 0;
-	uint8_t tangent[3]{};
+	std::array<uint8_t, 3> tangent{};
 	uint8_t bitangentZ = 0;
 
-	uint8_t colorData[4]{};
+	std::array<uint8_t, 4> colorData{};
 
-	float weights[4]{};
-	uint8_t weightBones[4]{};
+	std::array<float, 4> weights{};
+	std::array<uint8_t, 4> weightBones{};
 
 	float eyeData = 0.0f;
 };

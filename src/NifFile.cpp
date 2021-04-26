@@ -2274,8 +2274,8 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 		return;
 
 	auto& vertex = bsTriShape->vertData[vertIndex];
-	std::memset(vertex.weights, 0, sizeof(float) * 4);
-	std::memset(vertex.weightBones, 0, sizeof(uint8_t) * 4);
+	std::memset(&vertex.weights, 0, sizeof(float) * 4);
+	std::memset(&vertex.weightBones, 0, sizeof(uint8_t) * 4);
 
 	// Sum weights to normalize values
 	float sum = 0.0f;
@@ -2300,8 +2300,8 @@ void NifFile::ClearShapeVertWeights(const std::string& shapeName) const {
 		return;
 
 	for (auto& vertex : bsTriShape->vertData) {
-		std::memset(vertex.weights, 0, sizeof(float) * 4);
-		std::memset(vertex.weightBones, 0, sizeof(uint8_t) * 4);
+		std::memset(&vertex.weights, 0, sizeof(float) * 4);
+		std::memset(&vertex.weightBones, 0, sizeof(uint8_t) * 4);
 	}
 }
 

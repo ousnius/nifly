@@ -734,7 +734,7 @@ public:
 	HavokFilter collisionFilter;
 	int unkInt1 = 0;
 	uint8_t broadPhaseType = 0;
-	uint8_t unkBytes[3]{};
+	std::array<uint8_t, 3> unkBytes{};
 	hkWorldObjCInfoProperty prop;
 
 	void Sync(NiStreamReversible& stream);
@@ -789,12 +789,12 @@ public:
 	uint16_t processContactCallbackDelay = 0xFFFF;
 	uint32_t unkInt1 = 0;
 	HavokFilter collisionFilterCopy;
-	uint16_t unkShorts2[6]{};
+	std::array<uint16_t, 6> unkShorts2{};
 	Vector4 translation;
 	QuaternionXYZW rotation;
 	Vector4 linearVelocity;
 	Vector4 angularVelocity;
-	float inertiaMatrix[12]{};
+	std::array<float, 12> inertiaMatrix{};
 	Vector4 center;
 	float mass = 1.0f;
 	float linearDamping = 0.1f;

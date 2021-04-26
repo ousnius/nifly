@@ -245,6 +245,7 @@ public:
 	virtual bool HasTextureSet() const { return false; }
 	virtual NiBlockRef<BSShaderTextureSet>* TextureSetRef() { return nullptr; }
 	virtual const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const { return nullptr; }
+	virtual void SetTextureSetRef(const int textureId) {  }
 
 	virtual bool IsSkinTinted() const { return false; }
 	virtual bool IsFaceTinted() const { return false; }
@@ -261,6 +262,7 @@ public:
 	virtual bool HasBacklight() const { return false; }
 	virtual bool HasRimlight() const { return false; }
 	virtual bool HasSoftlight() const { return false; }
+	virtual bool HasWeaponBlood() const { return false; }
 	virtual bool HasGlowmap() const { return false; }
 	virtual bool HasGreyscaleColor() const { return false; }
 	virtual bool HasEnvironmentMapping() const { return false; }
@@ -325,6 +327,7 @@ public:
 	bool HasBacklight() const override;
 	bool HasRimlight() const override;
 	bool HasSoftlight() const override;
+	bool HasWeaponBlood() const override;
 	bool HasGlowmap() const override;
 	bool HasGreyscaleColor() const override;
 	bool HasEnvironmentMapping() const override;
@@ -460,6 +463,7 @@ public:
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
 	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
+	void SetTextureSetRef(const int textureId) override { textureSetRef.index = textureId; }
 
 	bool IsSkinTinted() const override;
 	bool IsFaceTinted() const override;
@@ -624,6 +628,7 @@ public:
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
 	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
+	void SetTextureSetRef(const int textureId) override { textureSetRef.index = textureId; }
 
 	bool IsSkinned() const override;
 	void SetSkinned(const bool enable) override;

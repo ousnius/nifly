@@ -60,13 +60,15 @@ void NiParticleMeshesData::Sync(NiStreamReversible& stream) {
 void NiParticleMeshesData::GetChildRefs(std::set<NiRef*>& refs) {
 	NiRotatingParticlesData::GetChildRefs(refs);
 
-	refs.insert(&dataRef);
+	if (!dataRef.IsEmpty())
+		refs.insert(&dataRef);
 }
 
 void NiParticleMeshesData::GetChildIndices(std::vector<int>& indices) {
 	NiRotatingParticlesData::GetChildIndices(indices);
 
-	indices.push_back(dataRef.index);
+	if (!dataRef.IsEmpty())
+		indices.push_back(dataRef.index);
 }
 
 
@@ -89,13 +91,15 @@ void NiMeshPSysData::Sync(NiStreamReversible& stream) {
 void NiMeshPSysData::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysData::GetChildRefs(refs);
 
-	refs.insert(&nodeRef);
+	if (!nodeRef.IsEmpty())
+		refs.insert(&nodeRef);
 }
 
 void NiMeshPSysData::GetChildIndices(std::vector<int>& indices) {
 	NiPSysData::GetChildIndices(indices);
 
-	indices.push_back(nodeRef.index);
+	if (!nodeRef.IsEmpty())
+		indices.push_back(nodeRef.index);
 }
 
 
@@ -145,7 +149,8 @@ void NiPSysModifier::GetStringRefs(std::vector<NiStringRef*>& refs) {
 void NiPSysModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
-	ptrs.insert(&targetRef);
+	if (!targetRef.IsEmpty())
+		ptrs.insert(&targetRef);
 }
 
 
@@ -174,13 +179,15 @@ void NiPSysAgeDeathModifier::Sync(NiStreamReversible& stream) {
 void NiPSysAgeDeathModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
-	refs.insert(&spawnModifierRef);
+	if (!spawnModifierRef.IsEmpty())
+		refs.insert(&spawnModifierRef);
 }
 
 void NiPSysAgeDeathModifier::GetChildIndices(std::vector<int>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(spawnModifierRef.index);
+	if (!spawnModifierRef.IsEmpty())
+		indices.push_back(spawnModifierRef.index);
 }
 
 
@@ -246,7 +253,8 @@ void NiPSysGravityModifier::Sync(NiStreamReversible& stream) {
 void NiPSysGravityModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
-	ptrs.insert(&gravityObjRef);
+	if (!gravityObjRef.IsEmpty())
+		ptrs.insert(&gravityObjRef);
 }
 
 
@@ -266,7 +274,8 @@ void NiPSysDragModifier::Sync(NiStreamReversible& stream) {
 void NiPSysDragModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
-	ptrs.insert(&parentRef);
+	if (!parentRef.IsEmpty())
+		ptrs.insert(&parentRef);
 }
 
 
@@ -280,7 +289,8 @@ void BSPSysInheritVelocityModifier::Sync(NiStreamReversible& stream) {
 void BSPSysInheritVelocityModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
-	ptrs.insert(&targetNodeRef);
+	if (!targetNodeRef.IsEmpty())
+		ptrs.insert(&targetNodeRef);
 }
 
 
@@ -307,7 +317,8 @@ void NiPSysBombModifier::Sync(NiStreamReversible& stream) {
 void NiPSysBombModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
-	ptrs.insert(&bombNodeRef);
+	if (!bombNodeRef.IsEmpty())
+		ptrs.insert(&bombNodeRef);
 }
 
 
@@ -323,13 +334,15 @@ void NiPSysColorModifier::Sync(NiStreamReversible& stream) {
 void NiPSysColorModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
-	refs.insert(&dataRef);
+	if (!dataRef.IsEmpty())
+		refs.insert(&dataRef);
 }
 
 void NiPSysColorModifier::GetChildIndices(std::vector<int>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(dataRef.index);
+	if (!dataRef.IsEmpty())
+		indices.push_back(dataRef.index);
 }
 
 
@@ -372,13 +385,15 @@ void NiPSysFieldModifier::Sync(NiStreamReversible& stream) {
 void NiPSysFieldModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
-	refs.insert(&fieldObjectRef);
+	if (!fieldObjectRef.IsEmpty())
+		refs.insert(&fieldObjectRef);
 }
 
 void NiPSysFieldModifier::GetChildIndices(std::vector<int>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(fieldObjectRef.index);
+	if (!fieldObjectRef.IsEmpty())
+		indices.push_back(fieldObjectRef.index);
 }
 
 
@@ -433,7 +448,8 @@ void BSPSysRecycleBoundModifier::Sync(NiStreamReversible& stream) {
 void BSPSysRecycleBoundModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
-	ptrs.insert(&targetNodeRef);
+	if (!targetNodeRef.IsEmpty())
+		ptrs.insert(&targetNodeRef);
 }
 
 
@@ -446,14 +462,16 @@ void BSPSysHavokUpdateModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
 	nodeRefs.GetIndexPtrs(refs);
-	refs.insert(&modifierRef);
+	if (!modifierRef.IsEmpty())
+		refs.insert(&modifierRef);
 }
 
 void BSPSysHavokUpdateModifier::GetChildIndices(std::vector<int>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	nodeRefs.GetIndices(indices);
-	indices.push_back(modifierRef.index);
+	if (!modifierRef.IsEmpty())
+		indices.push_back(modifierRef.index);
 }
 
 
@@ -553,22 +571,32 @@ void NiParticleSystem::GetStringRefs(std::vector<NiStringRef*>& refs) {
 void NiParticleSystem::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
-	refs.insert(&dataRef);
-	refs.insert(&skinInstanceRef);
-	refs.insert(&shaderPropertyRef);
-	refs.insert(&alphaPropertyRef);
-	refs.insert(&psysDataRef);
+	if (!dataRef.IsEmpty())
+		refs.insert(&dataRef);
+	if (!skinInstanceRef.IsEmpty())
+		refs.insert(&skinInstanceRef);
+	if (!shaderPropertyRef.IsEmpty())
+		refs.insert(&shaderPropertyRef);
+	if (!alphaPropertyRef.IsEmpty())
+		refs.insert(&alphaPropertyRef);
+	if (!psysDataRef.IsEmpty())
+		refs.insert(&psysDataRef);
 	modifierRefs.GetIndexPtrs(refs);
 }
 
 void NiParticleSystem::GetChildIndices(std::vector<int>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.index);
-	indices.push_back(skinInstanceRef.index);
-	indices.push_back(shaderPropertyRef.index);
-	indices.push_back(alphaPropertyRef.index);
-	indices.push_back(psysDataRef.index);
+	if (!dataRef.IsEmpty())
+		indices.push_back(dataRef.index);
+	if (!skinInstanceRef.IsEmpty())
+		indices.push_back(skinInstanceRef.index);
+	if (!shaderPropertyRef.IsEmpty())
+		indices.push_back(shaderPropertyRef.index);
+	if (!alphaPropertyRef.IsEmpty())
+		indices.push_back(alphaPropertyRef.index);
+	if (!psysDataRef.IsEmpty())
+		indices.push_back(psysDataRef.index);
 	modifierRefs.GetIndices(indices);
 }
 
@@ -595,22 +623,28 @@ void NiPSysCollider::Sync(NiStreamReversible& stream) {
 void NiPSysCollider::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
-	refs.insert(&spawnModifierRef);
-	refs.insert(&nextColliderRef);
+	if (!spawnModifierRef.IsEmpty())
+		refs.insert(&spawnModifierRef);
+	if (!nextColliderRef.IsEmpty())
+		refs.insert(&nextColliderRef);
 }
 
 void NiPSysCollider::GetChildIndices(std::vector<int>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(spawnModifierRef.index);
-	indices.push_back(nextColliderRef.index);
+	if (!spawnModifierRef.IsEmpty())
+		indices.push_back(spawnModifierRef.index);
+	if (!nextColliderRef.IsEmpty())
+		indices.push_back(nextColliderRef.index);
 }
 
 void NiPSysCollider::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
-	ptrs.insert(&managerRef);
-	ptrs.insert(&colliderNodeRef);
+	if (!managerRef.IsEmpty())
+		ptrs.insert(&managerRef);
+	if (!colliderNodeRef.IsEmpty())
+		ptrs.insert(&colliderNodeRef);
 }
 
 
@@ -634,13 +668,15 @@ void NiPSysColliderManager::Sync(NiStreamReversible& stream) {
 void NiPSysColliderManager::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
-	refs.insert(&colliderRef);
+	if (!colliderRef.IsEmpty())
+		refs.insert(&colliderRef);
 }
 
 void NiPSysColliderManager::GetChildIndices(std::vector<int>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(colliderRef.index);
+	if (!colliderRef.IsEmpty())
+		indices.push_back(colliderRef.index);
 }
 
 
@@ -666,7 +702,8 @@ void NiPSysVolumeEmitter::Sync(NiStreamReversible& stream) {
 void NiPSysVolumeEmitter::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysEmitter::GetPtrs(ptrs);
 
-	ptrs.insert(&emitterNodeRef);
+	if (!emitterNodeRef.IsEmpty())
+		ptrs.insert(&emitterNodeRef);
 }
 
 
