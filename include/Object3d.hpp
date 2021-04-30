@@ -123,6 +123,12 @@ struct Vector3 {
 		z = Z;
 	}
 
+	Vector3(const Vector3& rhs) {
+		x = rhs.x;
+		y = rhs.y;
+		z = rhs.z;
+	}
+
 	float& operator[](int ind) { return ind ? (ind == 2 ? z : y) : x; }
 	const float& operator[](int ind) const { return ind ? (ind == 2 ? z : y) : x; }
 

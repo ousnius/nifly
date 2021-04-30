@@ -212,6 +212,7 @@ public:
 
 	virtual uint32_t GetNumTriangles() const;
 	virtual bool GetTriangles(std::vector<Triangle>& tris) const;
+	std::vector<Triangle> Triangles() const;
 	virtual void SetTriangles(const std::vector<Triangle>& tris);
 
 	void SetBounds(const BoundingSphere& newBounds) { this->bounds = newBounds; }

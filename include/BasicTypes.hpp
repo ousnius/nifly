@@ -461,6 +461,7 @@ public:
 
 	// for SWIG, to avoid duplicating std_vector.i to handle iteration
 	Container items() const { return vec; }
+	void SetItems(const Container& newItems) { vec = newItems; }
 };
 
 template<typename ValueType, typename SizeType = uint32_t>

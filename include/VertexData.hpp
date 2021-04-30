@@ -90,6 +90,20 @@ public:
 };
 
 struct BSVertexData {
+	BSVertexData() {}
+	BSVertexData(const BSVertexData& rhs) {
+		vert = rhs.vert;
+		bitangentX = rhs.bitangentX;
+		uv = rhs.uv;
+		normal = rhs.normal;
+		bitangentY = rhs.bitangentY;
+		tangent = rhs.tangent;
+		bitangentZ = rhs.bitangentZ;
+		colorData = rhs.colorData;
+		weights = rhs.weights;
+		weightBones = rhs.weightBones;
+		eyeData = rhs.eyeData;
+	}
 	// Single- or half-precision depending on IsFullPrecision() being true
 	Vector3 vert;
 	float bitangentX = 0.0f; // Maybe the dot product of the vert normal and the z-axis?

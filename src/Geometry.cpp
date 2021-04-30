@@ -226,6 +226,14 @@ uint32_t NiGeometryData::GetNumTriangles() const {
 bool NiGeometryData::GetTriangles(std::vector<Triangle>&) const {
 	return false;
 }
+std::vector<Triangle> NiGeometryData::Triangles() const {
+	std::vector<Triangle> tris;
+	if (!GetTriangles(tris)) {
+		return std::vector<Triangle>();
+	}
+	return tris;
+}
+
 void NiGeometryData::SetTriangles(const std::vector<Triangle>&){};
 
 void NiGeometryData::UpdateBounds() {
