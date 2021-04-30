@@ -248,10 +248,10 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, maxVertInd + 1);
 
 	for (auto& p : partitions) {
-		int oldNumVertices = p.vertexMap.size();
+		const size_t oldNumVertices = p.vertexMap.size();
 
 		// Make list of deleted vertexMap indices
-		std::vector<int> vertexMapDelList;
+		std::vector<uint32_t> vertexMapDelList;
 		for (size_t i = 0; i < p.vertexMap.size(); i++)
 			if (indexCollapse[p.vertexMap[i]] == -1)
 				vertexMapDelList.push_back(i);
@@ -292,13 +292,16 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 void NiSkinPartition::DeletePartitions(const std::vector<uint32_t>& partInds) {
 	if (partInds.empty())
 		return;
+
 	if (!triParts.empty()) {
 		std::vector<int> piMap = GenerateIndexCollapseMap(partInds, numPartitions);
-		for (int& pi : triParts) {
-			if (pi >= 0 && pi < piMap.size())
+		const auto piMapSize = static_cast<int>(piMap.size());
+		for (auto& pi : triParts) {
+			if (pi >= 0 && pi < piMapSize)
 				pi = piMap[pi];
 		}
 	}
+
 	EraseVectorIndices(partitions, partInds);
 	numPartitions = partitions.size();
 }
@@ -457,6 +460,7 @@ void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triang
 void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triangle>& shapeTris) {
 	if (shapeTris.size() != triParts.size())
 		return;
+
 	for (PartitionBlock& p : partitions) {
 		p.trueTriangles.clear();
 		p.triangles.clear();
@@ -468,11 +472,14 @@ void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triang
 		p.vertexWeights.clear();
 		p.boneIndices.clear();
 	}
+
 	for (size_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
-		int partInd = triParts[triInd];
-		if (partInd >= 0 && partInd < partitions.size())
+		const auto partitionsSize = static_cast<int>(partitions.size());
+		const int partInd = triParts[triInd];
+		if (partInd >= 0 && partInd < partitionsSize)
 			partitions[partInd].trueTriangles.push_back(shapeTris[triInd]);
 	}
+
 	for (PartitionBlock& p : partitions)
 		p.numTriangles = p.trueTriangles.size();
 }

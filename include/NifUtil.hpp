@@ -59,9 +59,9 @@ void EraseVectorIndices(VectorType& v, const std::vector<IndexType>& indices) {
 	if (indices.empty() || indices[0] >= v.size())
 		return;
 
-	int indi = 1;
-	int di = indices[0];
-	int si = di + 1;
+	IndexType indi = 1;
+	IndexType di = indices[0];
+	IndexType si = di + 1;
 	for (; si < v.size(); ++si) {
 		if (indi < indices.size() && si == indices[indi])
 			++indi;
@@ -78,9 +78,9 @@ void InsertVectorIndices(VectorType& v, const std::vector<IndexType>& indices) {
 	if (indices.empty() || indices.back() >= v.size() + indices.size())
 		return;
 
-	int indi = indices.size() - 1;
-	int di = v.size() + indices.size() - 1;
-	int si = v.size() - 1;
+	IndexType indi = indices.size() - 1;
+	IndexType di = v.size() + indices.size() - 1;
+	IndexType si = v.size() - 1;
 	v.resize(di + 1);
 
 	while (true) {
@@ -99,7 +99,7 @@ template<typename IndexType1, typename IndexType2>
 std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1>& indices, IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 
-	int indi = 0;
+	size_t indi = 0;
 	for (IndexType2 si = 0, di = 0; si < mapSize; ++si) {
 		if (indi < indices.size() && si == indices[indi]) {
 			map[si] = -1;
@@ -117,8 +117,8 @@ template<typename IndexType1, typename IndexType2>
 std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1>& indices, IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 
-	int indi = 0;
-	for (int si = 0, di = 0; si < mapSize; ++si, ++di) {
+	size_t indi = 0;
+	for (IndexType2 si = 0, di = 0; si < mapSize; ++si, ++di) {
 		while (indi < indices.size() && di == indices[indi])
 			++di, ++indi;
 
@@ -156,7 +156,7 @@ std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<
 
 		uint16_t a = strip[0];
 		uint16_t b = strip[1];
-		for (int i = 2; i < strip.size(); ++i) {
+		for (size_t i = 2; i < strip.size(); ++i) {
 			uint16_t c = strip[i];
 			if (a != b && b != c && c != a) {
 				if ((i & 1) == 0)

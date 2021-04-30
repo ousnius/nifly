@@ -2252,7 +2252,7 @@ void NifFile::SetShapeBoneWeights(const std::string& shapeName,
 }
 
 void NifFile::SetShapeVertWeights(const std::string& shapeName,
-								  const int vertIndex,
+								  const uint16_t vertIndex,
 								  std::vector<uint8_t>& boneids,
 								  std::vector<float>& weights) const {
 	auto shape = FindBlockByName<NiShape>(shapeName);
@@ -2374,8 +2374,8 @@ void NifFile::SetShapePartitions(NiShape* shape,
 	// it's even possible to have misassigned or unassigned triangles.
 	size_t numParts = partitionInfo.size();
 	bool hasUnassignedTris = false;
-	for (int pi : triParts) {
-		if (pi >= numParts)
+	for (auto pi : triParts) {
+		if (pi >= static_cast<int>(numParts))
 			numParts = pi + 1;
 		if (pi < 0)
 			hasUnassignedTris = true;
@@ -3639,7 +3639,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 		sort(bw.second.begin(), bw.second.end(), BoneWeightsSort());
 
 	// Enforce maximum vertex bone weight count
-	int maxBonesPerVertex = 4;
+	const uint16_t maxBonesPerVertex = 4;
 
 	for (auto& bw : vertBoneWeights)
 		if (bw.second.size() > maxBonesPerVertex)
@@ -3648,7 +3648,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 	skinPart->PrepareTriParts(tris);
 	std::vector<int>& triParts = skinPart->triParts;
 
-	int maxBonesPerPartition = std::numeric_limits<int>::max();
+	uint16_t maxBonesPerPartition = std::numeric_limits<uint16_t>::max();
 	if (hdr.GetVersion().IsFO3())
 		maxBonesPerPartition = 18;
 	else if (hdr.GetVersion().IsSSE())
@@ -3671,12 +3671,13 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 				triBones.insert(tb.index);
 
 		// How many new bones are in the tri's bone list?
-		int newBoneCount = 0;
+		uint16_t newBoneCount = 0;
 		for (auto& tb : triBones)
 			if (partBones[partInd].find(tb) == partBones[partInd].end())
 				newBoneCount++;
 
-		if (partBones[partInd].size() + newBoneCount > maxBonesPerPartition) {
+		const auto partBonesSize = static_cast<uint16_t>(partBones[partInd].size());
+		if (partBonesSize + newBoneCount > maxBonesPerPartition) {
 			// Too many bones for this partition, make a new partition starting with this triangle
 			for (size_t j = 0; j < tris.size(); ++j)
 				if (triParts[j] > partInd || (j >= triIndex && triParts[j] >= partInd))

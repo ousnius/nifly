@@ -1424,12 +1424,14 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	size_t newPartID = 0;
 	std::vector<int> oldToNewPartIDs;
 	for (const NifSegmentInfo& seg : inf.segs) {
-		if (seg.partID >= oldToNewPartIDs.size())
+		auto oldToNewSize = static_cast<int>(oldToNewPartIDs.size());
+		if (seg.partID >= oldToNewSize)
 			oldToNewPartIDs.resize(seg.partID + 1);
 
 		oldToNewPartIDs[seg.partID] = newPartID++;
 		for (const NifSubSegmentInfo& sub : seg.subs) {
-			if (sub.partID >= oldToNewPartIDs.size())
+			oldToNewSize = static_cast<int>(oldToNewPartIDs.size());
+			if (sub.partID >= oldToNewSize)
 				oldToNewPartIDs.resize(sub.partID + 1);
 			oldToNewPartIDs[sub.partID] = newPartID++;
 		}
@@ -1453,8 +1455,9 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	// Note that triPart's indexing no longer matches triangle indexing.
 
 	// Find first triangle of each partition
+	int j = 0;
 	std::vector<int> partTriInds(newPartID + 1);
-	for (size_t i = 0, j = 0; i < triInds.size(); ++i)
+	for (size_t i = 0; i < triInds.size(); ++i)
 		while (triParts[triInds[i]] >= j)
 			partTriInds[j++] = i;
 

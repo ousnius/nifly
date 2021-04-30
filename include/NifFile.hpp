@@ -237,7 +237,7 @@ public:
 							 const uint32_t boneIndex,
 							 std::unordered_map<uint16_t, float>& inWeights);
 	void SetShapeVertWeights(const std::string& shapeName,
-							 const int vertIndex,
+							 const uint16_t vertIndex,
 							 std::vector<uint8_t>& boneids,
 							 std::vector<float>& weights) const;
 	void ClearShapeVertWeights(const std::string& shapeName) const;
