@@ -73,50 +73,20 @@ void bhkBlendCollisionObject::Sync(NiStreamReversible& stream) {
 
 
 bhkPhysicsSystem::bhkPhysicsSystem(const uint32_t size) {
-	numBytes = size;
 	data.resize(size);
 }
 
 void bhkPhysicsSystem::Sync(NiStreamReversible& stream) {
-	stream.Sync(numBytes);
-	data.resize(numBytes);
-	if (data.empty())
-		return;
-
-	stream.Sync(&data[0], numBytes);
-}
-
-std::vector<char> bhkPhysicsSystem::GetData() const {
-	return data;
-}
-
-void bhkPhysicsSystem::SetData(const std::vector<char>& dat) {
-	numBytes = dat.size();
-	data = dat;
+	data.SyncByteArray(stream);
 }
 
 
 bhkRagdollSystem::bhkRagdollSystem(const uint32_t size) {
-	numBytes = size;
 	data.resize(size);
 }
 
 void bhkRagdollSystem::Sync(NiStreamReversible& stream) {
-	stream.Sync(numBytes);
-	data.resize(numBytes);
-	if (data.empty())
-		return;
-
-	stream.Sync(&data[0], numBytes);
-}
-
-std::vector<char> bhkRagdollSystem::GetData() const {
-	return data;
-}
-
-void bhkRagdollSystem::SetData(const std::vector<char>& dat) {
-	numBytes = dat.size();
-	data = dat;
+	data.SyncByteArray(stream);
 }
 
 
@@ -229,15 +199,13 @@ void bhkMoppBvTreeShape::Sync(NiStreamReversible& stream) {
 	stream.Sync(shapeCollection);
 	stream.Sync(code);
 	stream.Sync(scale);
-	stream.Sync(dataSize);
+	uint32_t sz = data.SyncSize(stream);
 	stream.Sync(offset);
 
 	if (stream.GetVersion().User() >= 12)
 		stream.Sync(buildType);
 
-	data.resize(dataSize);
-	for (uint32_t i = 0; i < dataSize; i++)
-		stream.Sync(data[i]);
+	data.SyncData(stream, sz);
 }
 
 void bhkMoppBvTreeShape::GetChildRefs(std::set<NiRef*>& refs) {
@@ -250,15 +218,6 @@ void bhkMoppBvTreeShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkBvTreeShape::GetChildIndices(indices);
 
 	indices.push_back(shapeRef.index);
-}
-
-std::vector<uint8_t> bhkMoppBvTreeShape::GetData() const {
-	return data;
-}
-
-void bhkMoppBvTreeShape::SetData(const std::vector<uint8_t>& dat) {
-	dataSize = dat.size();
-	data = dat;
 }
 
 
@@ -700,59 +659,10 @@ void bhkCompressedMeshShapeData::Sync(NiStreamReversible& stream) {
 	transforms.Sync(stream);
 	bigVerts.Sync(stream);
 
-	stream.Sync(numBigTris);
-	bigTris.resize(numBigTris);
-	for (uint32_t i = 0; i < numBigTris; i++)
-		stream.Sync(reinterpret_cast<char*>(&bigTris[i]), 12);
-
-	stream.Sync(numChunks);
-	chunks.resize(numChunks);
-	for (uint32_t i = 0; i < numChunks; i++) {
-		stream.Sync(chunks[i].translation);
-		stream.Sync(chunks[i].matIndex);
-		stream.Sync(chunks[i].reference);
-		stream.Sync(chunks[i].transformIndex);
-
-		stream.Sync(chunks[i].numVerts);
-		chunks[i].verts.resize(chunks[i].numVerts);
-		for (uint32_t j = 0; j < chunks[i].numVerts; j++)
-			stream.Sync(chunks[i].verts[j]);
-
-		stream.Sync(chunks[i].numIndices);
-		chunks[i].indices.resize(chunks[i].numIndices);
-		for (uint32_t j = 0; j < chunks[i].numIndices; j++)
-			stream.Sync(chunks[i].indices[j]);
-
-		stream.Sync(chunks[i].numStrips);
-		chunks[i].strips.resize(chunks[i].numStrips);
-		for (uint32_t j = 0; j < chunks[i].numStrips; j++)
-			stream.Sync(chunks[i].strips[j]);
-
-		stream.Sync(chunks[i].numWeldingInfo);
-		chunks[i].weldingInfo.resize(chunks[i].numWeldingInfo);
-		for (uint32_t j = 0; j < chunks[i].numWeldingInfo; j++)
-			stream.Sync(chunks[i].weldingInfo[j]);
-	}
+	bigTris.Sync(stream);
+	chunks.Sync(stream);
 
 	stream.Sync(numConvexPieceA);
-}
-
-std::vector<bhkCMSDBigTris> bhkCompressedMeshShapeData::GetBigTris() const {
-	return bigTris;
-}
-
-void bhkCompressedMeshShapeData::SetBigTris(const std::vector<bhkCMSDBigTris>& bt) {
-	numBigTris = bt.size();
-	bigTris = bt;
-}
-
-std::vector<bhkCMSDChunk> bhkCompressedMeshShapeData::GetChunks() const {
-	return chunks;
-}
-
-void bhkCompressedMeshShapeData::SetChunks(const std::vector<bhkCMSDChunk>& bt) {
-	numChunks = bt.size();
-	chunks = bt;
 }
 
 
@@ -788,11 +698,7 @@ void bhkCompressedMeshShape::GetPtrs(std::set<NiPtr*>& ptrs) {
 
 void bhkPoseArray::Sync(NiStreamReversible& stream) {
 	bones.Sync(stream);
-
-	stream.Sync(numPoses);
-	poses.resize(numPoses);
-	for (uint32_t i = 0; i < numPoses; i++)
-		poses[i].Sync(stream);
+	poses.Sync(stream);
 }
 
 void bhkPoseArray::GetStringRefs(std::vector<NiStringRef*>& refs) {
@@ -800,15 +706,6 @@ void bhkPoseArray::GetStringRefs(std::vector<NiStringRef*>& refs) {
 
 	for (auto& b : bones)
 		refs.emplace_back(&b);
-}
-
-std::vector<BonePose> bhkPoseArray::GetPoses() const {
-	return poses;
-}
-
-void bhkPoseArray::SetPoses(const std::vector<BonePose>& po) {
-	numPoses = po.size();
-	poses = po;
 }
 
 
@@ -836,24 +733,11 @@ void bhkRagdollTemplateData::Sync(NiStreamReversible& stream) {
 	stream.Sync(friction);
 	stream.Sync(radius);
 	stream.Sync(material);
-
-	stream.Sync(numConstraints);
-	constraints.resize(numConstraints);
-	for (uint32_t i = 0; i < numConstraints; i++)
-		constraints[i].Sync(stream);
+	constraints.Sync(stream);
 }
 
 void bhkRagdollTemplateData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
 	refs.emplace_back(&name);
-}
-
-std::vector<ConstraintData> bhkRagdollTemplateData::GetConstraints() const {
-	return constraints;
-}
-
-void bhkRagdollTemplateData::SetConstraints(const std::vector<ConstraintData>& cs) {
-	numConstraints = cs.size();
-	constraints = cs;
 }

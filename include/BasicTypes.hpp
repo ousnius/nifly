@@ -423,6 +423,22 @@ struct NiPlane {
 	float constant = 0.0f;
 };
 
+class NiRef {
+public:
+	uint32_t index = NIF_NPOS;
+
+	void Clear() { index = NIF_NPOS; }
+	bool IsEmpty() const { return index == NIF_NPOS; }
+
+	bool operator==(const NiRef& rhs) const { return index == rhs.index; }
+	bool operator!=(const NiRef& rhs) const { return !operator==(rhs); }
+
+	bool operator==(const uint32_t rhs) const { return index == rhs; }
+	bool operator!=(const uint32_t rhs) const { return !operator==(rhs); }
+};
+
+using NiPtr = NiRef;
+
 // Helper to reduce duplication
 template<typename ValueType, typename SizeType>
 class NiVectorBase {
@@ -437,7 +453,7 @@ public:
 	NiVectorBase() = default;
 	NiVectorBase(const SizeType size) { resize(size); }
 
-	SizeType size() const { return vec.size(); }
+	SizeType size() const { return static_cast<SizeType>(vec.size()); }
 	bool empty() const { return vec.empty(); }
 
 	void clear() { vec.clear(); }
@@ -450,7 +466,13 @@ public:
 
 	void resize(SizeType size) { vec.resize(size); }
 
+	void push_back(ValueType& val) { vec.push_back(val); }
+	auto insert(SizeType index, ValueType& val) { vec.insert(vec.begin() + index, val); }
+
 	auto& operator[](SizeType i) { return vec[i]; }
+
+	ValueType* data() { return vec.data(); }
+	const ValueType* data() const { return vec.data(); }
 
 	auto erase(SizeType i) { return vec.erase(vec.begin() + i); }
 };
@@ -466,32 +488,99 @@ public:
 	NiVector(const SizeType size)
 		: Base(size) {}
 
-	void Read(NiIStream& stream) {
-		size_t sz = 0;
-		stream.read(reinterpret_cast<char*>(&sz), NumSize);
+	SizeType Sync(NiStreamReversible& stream) {
+		SizeType sz = SyncSize(stream);
+		SyncData(stream, sz);
+		return sz;
+	}
 
+	SizeType SyncSize(NiStreamReversible& stream) {
+		SizeType sz = 0;
+
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
+			if (!Base::empty() && Base::size() - 1 > MaxIndex)
+				Base::resize(MaxIndex + 1);
+		}
+
+		sz = Base::size();
+
+		stream.Sync(reinterpret_cast<char*>(&sz), NumSize);
+		return sz;
+	}
+
+
+	void SyncData(NiStreamReversible& stream, const SizeType size) {
+		Base::resize(size);
+
+		for (auto& e : *this)
+			stream.Sync(e);
+	}
+
+	void SyncByteArray(NiStreamReversible& stream) {
+		SizeType sz = SyncSize(stream);
 		Base::resize(sz);
 
-		for (auto& e : *this)
-			stream >> e;
+		if (sz > 0)
+			stream.Sync(reinterpret_cast<char*>(Base::data()), sz);
+	}
+};
+
+template<typename ValueType, typename SizeType = uint32_t>
+class NiSyncVector : public NiVectorBase<ValueType, SizeType> {
+	using Base = NiVectorBase<ValueType, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
+
+public:
+	NiSyncVector() = default;
+	NiSyncVector(const SizeType size)
+		: Base(size) {}
+
+	SizeType Sync(NiStreamReversible& stream) {
+		SizeType sz = SyncSize(stream);
+		SyncData(stream, sz);
+		return sz;
 	}
 
-	void Write(NiOStream& stream) {
-		if (!Base::empty() && Base::size() - 1 > MaxIndex)
-			Base::resize(MaxIndex + 1);
+	SizeType SyncSize(NiStreamReversible& stream) {
+		SizeType sz = 0;
 
-		size_t sz = Base::size();
-		stream.write(reinterpret_cast<char*>(&sz), NumSize);
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
+			if (!Base::empty() && Base::size() - 1 > MaxIndex)
+				Base::resize(MaxIndex + 1);
+		}
 
-		for (auto& e : *this)
-			stream << e;
+		sz = Base::size();
+
+		stream.Sync(reinterpret_cast<char*>(&sz), NumSize);
+		return sz;
 	}
 
-	void Sync(NiStreamReversible& stream) {
-		if (auto istream = stream.asRead())
-			Read(*istream);
-		else if (auto ostream = stream.asWrite())
-			Write(*ostream);
+	void SyncData(NiStreamReversible& stream, const SizeType size) {
+		Base::resize(size);
+
+		for (auto& e : *this)
+			e.Sync(stream);
+	}
+
+	void GetStringRefs(std::vector<NiStringRef*>& refs) {
+		for (auto& e : *this)
+			e.GetStringRefs(refs);
+	}
+
+	void GetChildRefs(std::set<NiRef*>& refs) {
+		for (auto& e : *this)
+			e.GetChildRefs(refs);
+	}
+
+	void GetChildIndices(std::vector<uint32_t>& indices) {
+		for (auto& e : *this)
+			e.GetChildIndices(indices);
+	}
+
+	void GetPtrs(std::set<NiPtr*>& ptrs) {
+		for (auto& e : *this)
+			e.GetPtrs(ptrs);
 	}
 };
 
@@ -507,7 +596,7 @@ public:
 	NiStringVector(const SizeType size) { Base::resize(size); }
 
 	void Read(NiIStream& stream) {
-		size_t sz = 0;
+		SizeType sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
 		Base::resize(sz);
@@ -520,7 +609,7 @@ public:
 		if (!Base::empty() && Base::size() - 1 > MaxIndex)
 			Base::resize(MaxIndex + 1);
 
-		size_t sz = Base::size();
+		SizeType sz = Base::size();
 		stream.write(reinterpret_cast<char*>(&sz), NumSize);
 
 		for (auto& e : *this)
@@ -547,7 +636,7 @@ public:
 	NiStringRefVector(const SizeType size) { resize(size); }
 
 	void Read(NiIStream& stream) {
-		size_t sz = 0;
+		SizeType sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
 		Base::resize(sz);
@@ -560,7 +649,7 @@ public:
 		if (!Base::empty() && Base::size() - 1 > MaxIndex)
 			Base::resize(MaxIndex + 1);
 
-		size_t sz = Base::size();
+		SizeType sz = Base::size();
 		stream.write(reinterpret_cast<char*>(&sz), NumSize);
 
 		for (auto& e : *this)
@@ -574,22 +663,6 @@ public:
 			Write(*ostream);
 	}
 };
-
-class NiRef {
-public:
-	uint32_t index = NIF_NPOS;
-
-	void Clear() { index = NIF_NPOS; }
-	bool IsEmpty() const { return index == NIF_NPOS; }
-
-	bool operator==(const NiRef& rhs) const { return index == rhs.index; }
-	bool operator!=(const NiRef& rhs) const { return !operator==(rhs); }
-
-	bool operator==(const uint32_t rhs) const { return index == rhs; }
-	bool operator!=(const uint32_t rhs) const { return !operator==(rhs); }
-};
-
-using NiPtr = NiRef;
 
 template<typename T>
 class NiBlockRef : public NiRef {
@@ -643,7 +716,7 @@ protected:
 		refs.erase(std::remove_if(refs.begin(), refs.end(), [](NiBlockRef<T> r) { return r.IsEmpty(); }),
 				   refs.end());
 
-		arraySize = refs.size();
+		arraySize = static_cast<uint32_t>(refs.size());
 	}
 
 public:
@@ -715,7 +788,7 @@ public:
 	}
 
 	void SetIndices(const std::vector<uint32_t>& indices) override {
-		arraySize = indices.size();
+		arraySize = static_cast<uint32_t>(indices.size());
 		refs.resize(arraySize);
 
 		for (uint32_t i = 0; i < arraySize; i++)

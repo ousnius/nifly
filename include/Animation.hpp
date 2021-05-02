@@ -12,25 +12,19 @@ See the included GPLv3 LICENSE file
 
 namespace nifly {
 class NiKeyframeData : public NiCloneableStreamable<NiKeyframeData, NiObject> {
-private:
-	uint32_t numRotationKeys = 0;
-	std::vector<Key<Quaternion>> quaternionKeys;
-
 public:
-	KeyType rotationType = NO_INTERP;
-	KeyGroup<float> xRotations;
-	KeyGroup<float> yRotations;
-	KeyGroup<float> zRotations;
-	KeyGroup<Vector3> translations;
-	KeyGroup<float> scales;
+	NiKeyType rotationType = NO_INTERP;
+	std::vector<NiAnimationKey<Quaternion>> quaternionKeys;
+	NiAnimationKeyGroup<float> xRotations;
+	NiAnimationKeyGroup<float> yRotations;
+	NiAnimationKeyGroup<float> zRotations;
+	NiAnimationKeyGroup<Vector3> translations;
+	NiAnimationKeyGroup<float> scales;
 
 	static constexpr const char* BlockName = "NiKeyframeData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<Key<Quaternion>> GetQuaternionKeys() const;
-	void SetQuaternionKeys(const std::vector<Key<Quaternion>>& qk);
 };
 
 class NiTransformData : public NiCloneable<NiTransformData, NiKeyframeData> {
@@ -42,7 +36,7 @@ public:
 
 class NiPosData : public NiCloneableStreamable<NiPosData, NiObject> {
 public:
-	KeyGroup<Vector3> data;
+	NiAnimationKeyGroup<Vector3> data;
 
 	static constexpr const char* BlockName = "NiPosData";
 	const char* GetBlockName() override { return BlockName; }
@@ -52,7 +46,7 @@ public:
 
 class NiBoolData : public NiCloneableStreamable<NiBoolData, NiObject> {
 public:
-	KeyGroup<uint8_t> data;
+	NiAnimationKeyGroup<uint8_t> data;
 
 	static constexpr const char* BlockName = "NiBoolData";
 	const char* GetBlockName() override { return BlockName; }
@@ -62,7 +56,7 @@ public:
 
 class NiFloatData : public NiCloneableStreamable<NiFloatData, NiObject> {
 public:
-	KeyGroup<float> data;
+	NiAnimationKeyGroup<float> data;
 
 	static constexpr const char* BlockName = "NiFloatData";
 	const char* GetBlockName() override { return BlockName; }
@@ -328,7 +322,7 @@ enum PathFlags : uint16_t {
 
 class NiPathInterpolator : public NiCloneableStreamable<NiPathInterpolator, NiKeyBasedInterpolator> {
 private:
-	PathFlags pathFlags = (PathFlags)(PATH_CVDATANEEDSUPDATE | PATH_CURVETYPEOPEN);
+	PathFlags pathFlags = (PathFlags) (PATH_CVDATANEEDSUPDATE | PATH_CURVETYPEOPEN);
 	int bankDir = 1;
 	float maxBankAngle = 0.0f;
 	float smoothing = 0.0f;
@@ -398,11 +392,8 @@ struct BSTreadTransform {
 };
 
 class BSTreadTransfInterpolator : public NiCloneableStreamable<BSTreadTransfInterpolator, NiInterpolator> {
-private:
-	uint32_t numTreadTransforms = 0;
-	std::vector<BSTreadTransform> treadTransforms;
-
 public:
+	NiSyncVector<BSTreadTransform> treadTransforms;
 	NiBlockRef<NiFloatData> dataRef;
 
 	static constexpr const char* BlockName = "BSTreadTransfInterpolator";
@@ -412,9 +403,6 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
-
-	std::vector<BSTreadTransform> GetTreadTransforms() const;
-	void SetTreadTransforms(const std::vector<BSTreadTransform>& tt);
 };
 
 class NiObjectNET;
@@ -473,10 +461,10 @@ public:
 
 class NiUVData : public NiCloneableStreamable<NiUVData, NiObject> {
 public:
-	KeyGroup<float> uTrans;
-	KeyGroup<float> vTrans;
-	KeyGroup<float> uScale;
-	KeyGroup<float> vScale;
+	NiAnimationKeyGroup<float> uTrans;
+	NiAnimationKeyGroup<float> vTrans;
+	NiAnimationKeyGroup<float> uScale;
+	NiAnimationKeyGroup<float> vScale;
 
 	static constexpr const char* BlockName = "NiUVData";
 	const char* GetBlockName() override { return BlockName; }
@@ -560,22 +548,16 @@ public:
 };
 
 class NiBoneLODController : public NiCloneableStreamable<NiBoneLODController, NiTimeController> {
-private:
-	uint32_t boneArraysSize = 0;
-	std::vector<NiBlockPtrArray<NiNode>> boneArrays;
-
 public:
 	uint32_t lod = 0;
 	uint32_t numLODs = 0;
+	NiSyncVector<NiBlockPtrArray<NiNode>> boneArrays;
 
 	static constexpr const char* BlockName = "NiBoneLODController";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
-
-	std::vector<NiBlockPtrArray<NiNode>> GetBoneArrays() const;
-	void SetBoneArrays(const std::vector<NiBlockPtrArray<NiNode>>& ba);
 };
 
 class NiBSBoneLODController : public NiCloneable<NiBSBoneLODController, NiBoneLODController> {
@@ -614,12 +596,13 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 
 	std::vector<Morph> GetMorphs() const;
-	void SetMorphs(const std::vector<Morph>& m);
+	void SetMorphs(const uint32_t numVerts, const std::vector<Morph>& m);
 };
 
 class NiInterpController : public NiCloneable<NiInterpController, NiTimeController> {};
 
-struct MorphWeight {
+class MorphWeight {
+public:
 	NiBlockRef<NiInterpolator> interpRef;
 	float weight = 0.0f;
 
@@ -635,14 +618,11 @@ struct MorphWeight {
 enum GeomMorpherFlags : uint16_t { GM_UPDATE_NORMALS_DISABLED, GM_UPDATE_NORMALS_ENABLED };
 
 class NiGeomMorpherController : public NiCloneableStreamable<NiGeomMorpherController, NiInterpController> {
-private:
-	uint32_t numTargets = 0;
-	std::vector<MorphWeight> interpWeights;
-
 public:
 	GeomMorpherFlags morpherFlags = GM_UPDATE_NORMALS_DISABLED;
 	NiBlockRef<NiMorphData> dataRef;
 	bool alwaysUpdate = false;
+	NiSyncVector<MorphWeight> interpWeights;
 
 	static constexpr const char* BlockName = "NiGeomMorpherController";
 	const char* GetBlockName() override { return BlockName; }
@@ -650,9 +630,6 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
-
-	std::vector<MorphWeight> GetInterpWeights() const;
-	void SetInterpWeights(const std::vector<MorphWeight>& m);
 };
 
 class NiSingleInterpController : public NiCloneableStreamable<NiSingleInterpController, NiInterpController> {
@@ -713,18 +690,13 @@ public:
 };
 
 class NiVisData : public NiCloneableStreamable<NiVisData, NiObject> {
-private:
-	uint32_t numKeys = 0;
-	std::vector<Key<uint8_t>> keys;
-
 public:
+	NiSyncVector<NiAnimationKey<uint8_t>> keys;
+
 	static constexpr const char* BlockName = "NiVisData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<Key<uint8_t>> GetKeys() const;
-	void SetKeys(const std::vector<Key<uint8_t>>& k);
 };
 
 class NiBoolInterpController : public NiSingleInterpController {};
@@ -1088,7 +1060,8 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-struct ControllerLink {
+class ControllerLink {
+public:
 	NiBlockRef<NiInterpolator> interpolatorRef;
 	NiBlockRef<NiTimeController> controllerRef;
 	uint8_t priority = 0;
@@ -1098,16 +1071,44 @@ struct ControllerLink {
 	NiStringRef ctrlType;
 	NiStringRef ctrlID;
 	NiStringRef interpID;
+
+	void Sync(NiStreamReversible& stream) {
+		interpolatorRef.Sync(stream);
+		controllerRef.Sync(stream);
+		stream.Sync(priority);
+
+		nodeName.Sync(stream);
+		propType.Sync(stream);
+		ctrlType.Sync(stream);
+		ctrlID.Sync(stream);
+		interpID.Sync(stream);
+	}
+
+	void GetStringRefs(std::vector<NiStringRef*>& refs) {
+		refs.emplace_back(&nodeName);
+		refs.emplace_back(&propType);
+		refs.emplace_back(&ctrlType);
+		refs.emplace_back(&ctrlID);
+		refs.emplace_back(&interpID);
+	}
+
+	void GetChildRefs(std::set<NiRef*>& refs) {
+		refs.insert(&interpolatorRef);
+		refs.insert(&controllerRef);
+	}
+
+	void GetChildIndices(std::vector<uint32_t>& indices) {
+		indices.push_back(interpolatorRef.index);
+		indices.push_back(controllerRef.index);
+	}
 };
 
 class NiSequence : public NiCloneableStreamable<NiSequence, NiObject> {
-private:
-	uint32_t numControlledBlocks = 0;
-	std::vector<ControllerLink> controlledBlocks;
-
 public:
 	NiStringRef name;
 	uint32_t arrayGrowBy = 0;
+
+	NiSyncVector<ControllerLink> controlledBlocks;
 
 	static constexpr const char* BlockName = "NiSequence";
 	const char* GetBlockName() override { return BlockName; }
@@ -1116,9 +1117,6 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
-
-	std::vector<ControllerLink> GetControlledBlocks() const;
-	void SetControlledBlocks(const std::vector<ControllerLink>& cl);
 };
 
 enum CycleType : uint32_t { CYCLE_LOOP, CYCLE_REVERSE, CYCLE_CLAMP };

@@ -116,10 +116,6 @@ public:
 };
 
 class NiTexturingProperty : public NiCloneableStreamable<NiTexturingProperty, NiProperty> {
-protected:
-	uint32_t numShaderTex = 0;
-	std::vector<ShaderTexDesc> shaderTex;
-
 public:
 	uint16_t flags = 0;
 	uint32_t textureCount = 0;
@@ -164,15 +160,14 @@ public:
 	bool hasDecalTex3 = false;
 	TexDesc decalTex3;
 
+	NiSyncVector<ShaderTexDesc> shaderTex;
+
 	static constexpr const char* BlockName = "NiTexturingProperty";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
-
-	std::vector<ShaderTexDesc> GetShaderTex() const;
-	void SetShaderTex(const std::vector<ShaderTexDesc>& stdescs);
 };
 
 class NiVertexColorProperty : public NiCloneableStreamable<NiVertexColorProperty, NiProperty> {

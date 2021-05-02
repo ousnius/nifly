@@ -75,26 +75,15 @@ struct AdditionalDataBlock {
 class AdditionalGeomData : public NiCloneable<AdditionalGeomData, NiObject> {};
 
 class NiAdditionalGeometryData : public NiCloneableStreamable<NiAdditionalGeometryData, AdditionalGeomData> {
-protected:
-	uint32_t numBlockInfos = 0;
-	std::vector<AdditionalDataInfo> blockInfos;
-
-	uint32_t numBlocks = 0;
-	std::vector<AdditionalDataBlock> blocks;
-
 public:
 	uint16_t numVertices = 0;
+	NiSyncVector<AdditionalDataInfo> blockInfos;
+	NiSyncVector<AdditionalDataBlock> blocks;
 
 	static constexpr const char* BlockName = "NiAdditionalGeometryData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<AdditionalDataInfo> GetBlockInfos() const;
-	void SetBlockInfos(const std::vector<AdditionalDataInfo>& adi);
-
-	std::vector<AdditionalDataBlock> GetBlocks() const;
-	void SetBlocks(const std::vector<AdditionalDataBlock>& adb);
 };
 
 struct BSPackedAdditionalDataBlock {
@@ -139,26 +128,15 @@ struct BSPackedAdditionalDataBlock {
 
 class BSPackedAdditionalGeometryData
 	: public NiCloneableStreamable<BSPackedAdditionalGeometryData, AdditionalGeomData> {
-protected:
-	uint32_t numBlockInfos = 0;
-	std::vector<AdditionalDataInfo> blockInfos;
-
-	uint32_t numBlocks = 0;
-	std::vector<BSPackedAdditionalDataBlock> blocks;
-
 public:
 	uint16_t numVertices = 0;
+	NiSyncVector<AdditionalDataInfo> blockInfos;
+	NiSyncVector<BSPackedAdditionalDataBlock> blocks;
 
 	static constexpr const char* BlockName = "BSPackedAdditionalGeometryData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<AdditionalDataInfo> GetBlockInfos() const;
-	void SetBlockInfos(const std::vector<AdditionalDataInfo>& adi);
-
-	std::vector<BSPackedAdditionalDataBlock> GetBlocks() const;
-	void SetBlocks(const std::vector<BSPackedAdditionalDataBlock>& adb);
 };
 
 class NiGeometryData : public NiCloneableStreamable<NiGeometryData, NiObject> {
@@ -554,11 +532,6 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
-struct MaterialInfo {
-	NiStringRef nameRef;
-	uint32_t extraData;
-};
-
 class NiSkinInstance;
 
 class NiGeometry : public NiCloneableStreamable<NiGeometry, NiShape> {
@@ -568,10 +541,10 @@ protected:
 	NiBlockRef<NiShader> shaderPropertyRef;
 	NiBlockRef<NiAlphaProperty> alphaPropertyRef;
 
-	uint32_t numMaterials = 0;
-	std::vector<MaterialInfo> materials;
-
 public:
+	NiSyncVector<NiStringRef> materialNames;
+	NiVector<uint32_t> materialExtraData;
+
 	int activeMaterial = 0;
 	uint8_t defaultMatNeedsUpdateFlag = 0;
 
@@ -585,9 +558,6 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	bool IsSkinned() const override;
-
-	std::vector<MaterialInfo> GetMaterials() const;
-	void SetMaterials(const std::vector<MaterialInfo>& mi);
 
 	bool HasData() const override { return !dataRef.IsEmpty(); }
 	NiBlockRef<NiGeometryData>* DataRef() override { return &dataRef; }

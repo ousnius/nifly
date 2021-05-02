@@ -21,18 +21,18 @@ void NiParticlesData::Sync(NiStreamReversible& stream) {
 	stream.Sync(hasRotationAxes);
 	stream.Sync(hasTextureIndices);
 
+	uint32_t sz = 0;
+
 	if (stream.GetVersion().User() >= 12) {
-		stream.Sync(numSubtexOffsets);
+		sz = subtexOffsets.SyncSize(stream);
 	}
 	else {
-		uint8_t numOffsets = numSubtexOffsets > 255 ? 255 : numSubtexOffsets;
+		uint8_t numOffsets = subtexOffsets.size() > 255 ? 255 : static_cast<uint8_t>(subtexOffsets.size());
 		stream.Sync(numOffsets);
-		numSubtexOffsets = numOffsets;
+		sz = numOffsets;
 	}
 
-	subtexOffsets.resize(numSubtexOffsets);
-	for (uint32_t i = 0; i < numSubtexOffsets; i++)
-		stream.Sync(subtexOffsets[i]);
+	subtexOffsets.SyncData(stream, sz);
 
 	if (stream.GetVersion().User() >= 12) {
 		stream.Sync(aspectRatio);
@@ -41,15 +41,6 @@ void NiParticlesData::Sync(NiStreamReversible& stream) {
 		stream.Sync(speedToAspectSpeed1);
 		stream.Sync(speedToAspectSpeed2);
 	}
-}
-
-std::vector<Vector4> NiParticlesData::GetSubtexOffsets() const {
-	return subtexOffsets;
-}
-
-void NiParticlesData::SetSubtexOffsets(const std::vector<Vector4>& sto) {
-	numSubtexOffsets = sto.size();
-	subtexOffsets = sto;
 }
 
 
@@ -109,22 +100,7 @@ void BSStripPSysData::Sync(NiStreamReversible& stream) {
 
 void NiPSysEmitterCtlrData::Sync(NiStreamReversible& stream) {
 	floatKeys.Sync(stream);
-
-	stream.Sync(numVisibilityKeys);
-	visibilityKeys.resize(numVisibilityKeys);
-	for (uint32_t i = 0; i < numVisibilityKeys; i++) {
-		stream.Sync(visibilityKeys[i].time);
-		stream.Sync(visibilityKeys[i].value);
-	}
-}
-
-std::vector<Key<uint8_t>> NiPSysEmitterCtlrData::GetVisibilityKeys() const {
-	return visibilityKeys;
-}
-
-void NiPSysEmitterCtlrData::SetVisibilityKeys(const std::vector<Key<uint8_t>>& vk) {
-	numVisibilityKeys = vk.size();
-	visibilityKeys = vk;
+	visibilityKeys.Sync(stream);
 }
 
 
@@ -505,18 +481,8 @@ void NiParticleSystem::Sync(NiStreamReversible& stream) {
 		psysDataRef.index = dataRef.index;
 		skinInstanceRef.Sync(stream);
 
-		stream.Sync(numMaterials);
-		materials.resize(numMaterials);
-
-		for (uint32_t i = 0; i < numMaterials; i++)
-			materials[i].nameRef.Sync(stream);
-
-		for (uint32_t i = 0; i < numMaterials; i++)
-			stream.Sync(materials[i].extraData);
-
-		materials.resize(numMaterials);
-		for (uint32_t i = 0; i < numMaterials; i++)
-			stream.Sync(materials[i]);
+		uint32_t numMaterials = materialNames.Sync(stream);
+		materialExtraData.SyncData(stream, numMaterials);
 
 		stream.Sync(activeMaterial);
 		stream.Sync(defaultMatNeedsUpdate);
@@ -546,8 +512,8 @@ void NiParticleSystem::Sync(NiStreamReversible& stream) {
 void NiParticleSystem::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiAVObject::GetStringRefs(refs);
 
-	for (auto& m : materials)
-		refs.emplace_back(&m.nameRef);
+	for (auto& mn : materialNames)
+		refs.emplace_back(&mn);
 }
 
 void NiParticleSystem::GetChildRefs(std::set<NiRef*>& refs) {
@@ -570,15 +536,6 @@ void NiParticleSystem::GetChildIndices(std::vector<uint32_t>& indices) {
 	indices.push_back(alphaPropertyRef.index);
 	indices.push_back(psysDataRef.index);
 	modifierRefs.GetIndices(indices);
-}
-
-std::vector<MaterialInfo> NiParticleSystem::GetMaterials() const {
-	return materials;
-}
-
-void NiParticleSystem::SetMaterials(const std::vector<MaterialInfo>& mi) {
-	numMaterials = mi.size();
-	materials = mi;
 }
 
 

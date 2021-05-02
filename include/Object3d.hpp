@@ -11,8 +11,6 @@ See the included GPLv3 LICENSE file
 #include <cstring>
 #include <vector>
 
-#pragma warning(disable : 4267)
-
 namespace nifly {
 const double EPSILON = 0.0001;
 

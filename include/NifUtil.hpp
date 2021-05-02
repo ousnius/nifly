@@ -20,7 +20,7 @@ void ApplyMapToTriangles(std::vector<Triangle>& tris,
 						 std::vector<IndexType2>* deletedTris = nullptr) {
 	const size_t mapsz = map.size();
 	int di = 0;
-	for (size_t si = 0; si < tris.size(); ++si) {
+	for (IndexType2 si = 0; si < static_cast<IndexType2>(tris.size()); ++si) {
 		const Triangle& stri = tris[si];
 		// Triangle's indices are unsigned, but IndexType might be signed.
 		if (stri.p1 >= mapsz || stri.p2 >= mapsz || stri.p3 >= mapsz || map[stri.p1] < 0 || map[stri.p2] < 0
@@ -99,14 +99,14 @@ template<typename IndexType1, typename IndexType2>
 std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1>& indices, IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 
-	size_t indi = 0;
+	IndexType2 indi = 0;
 	for (IndexType2 si = 0, di = 0; si < mapSize; ++si) {
 		if (indi < indices.size() && si == indices[indi]) {
 			map[si] = -1;
 			++indi;
 		}
 		else
-			map[si] = di++;
+			map[si] = static_cast<int>(di++);
 	}
 
 	return map;
@@ -117,7 +117,7 @@ template<typename IndexType1, typename IndexType2>
 std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1>& indices, IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 
-	size_t indi = 0;
+	IndexType2 indi = 0;
 	for (IndexType2 si = 0, di = 0; si < mapSize; ++si, ++di) {
 		while (indi < indices.size() && di == indices[indi])
 			++di, ++indi;

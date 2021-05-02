@@ -18,66 +18,16 @@ using namespace nifly;
 void NiAdditionalGeometryData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numVertices);
 
-	stream.Sync(numBlockInfos);
-	blockInfos.resize(numBlockInfos);
-	for (uint32_t i = 0; i < numBlockInfos; i++)
-		blockInfos[i].Sync(stream);
-
-	stream.Sync(numBlocks);
-	blocks.resize(numBlocks);
-	for (uint32_t i = 0; i < numBlocks; i++)
-		blocks[i].Sync(stream);
-}
-
-std::vector<AdditionalDataInfo> NiAdditionalGeometryData::GetBlockInfos() const {
-	return blockInfos;
-}
-
-void NiAdditionalGeometryData::SetBlockInfos(const std::vector<AdditionalDataInfo>& adi) {
-	numBlockInfos = adi.size();
-	blockInfos = adi;
-}
-
-std::vector<AdditionalDataBlock> NiAdditionalGeometryData::GetBlocks() const {
-	return blocks;
-}
-
-void NiAdditionalGeometryData::SetBlocks(const std::vector<AdditionalDataBlock>& adb) {
-	numBlocks = adb.size();
-	blocks = adb;
+	blockInfos.Sync(stream);
+	blocks.Sync(stream);
 }
 
 
 void BSPackedAdditionalGeometryData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numVertices);
 
-	stream.Sync(numBlockInfos);
-	blockInfos.resize(numBlockInfos);
-	for (uint32_t i = 0; i < numBlockInfos; i++)
-		blockInfos[i].Sync(stream);
-
-	stream.Sync(numBlocks);
-	blocks.resize(numBlocks);
-	for (uint32_t i = 0; i < numBlocks; i++)
-		blocks[i].Sync(stream);
-}
-
-std::vector<AdditionalDataInfo> BSPackedAdditionalGeometryData::GetBlockInfos() const {
-	return blockInfos;
-}
-
-void BSPackedAdditionalGeometryData::SetBlockInfos(const std::vector<AdditionalDataInfo>& adi) {
-	numBlockInfos = adi.size();
-	blockInfos = adi;
-}
-
-std::vector<BSPackedAdditionalDataBlock> BSPackedAdditionalGeometryData::GetBlocks() const {
-	return blocks;
-}
-
-void BSPackedAdditionalGeometryData::SetBlocks(const std::vector<BSPackedAdditionalDataBlock>& adb) {
-	numBlocks = adb.size();
-	blocks = adb;
+	blockInfos.Sync(stream);
+	blocks.Sync(stream);
 }
 
 
@@ -278,7 +228,7 @@ void NiGeometryData::Create(NiVersion&,
 
 void NiGeometryData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	EraseVectorIndices(vertices, vertIndices);
-	numVertices = vertices.size();
+	numVertices = static_cast<uint16_t>(vertices.size());
 	if (!normals.empty())
 		EraseVectorIndices(normals, vertIndices);
 	if (!tangents.empty())
@@ -627,10 +577,10 @@ void BSTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, vertData.size());
 
 	EraseVectorIndices(vertData, vertIndices);
-	numVertices = vertData.size();
+	numVertices = static_cast<uint16_t>(vertData.size());
 
 	ApplyMapToTriangles(triangles, indexCollapse, &deletedTris);
-	numTriangles = triangles.size();
+	numTriangles = static_cast<uint32_t>(triangles.size());
 
 	std::sort(deletedTris.begin(), deletedTris.end(), std::greater<>());
 }
@@ -862,7 +812,7 @@ bool BSTriShape::GetTriangles(std::vector<Triangle>& tris) const {
 
 void BSTriShape::SetTriangles(const std::vector<Triangle>& tris) {
 	triangles = tris;
-	numTriangles = triangles.size();
+	numTriangles = static_cast<uint32_t>(triangles.size());
 }
 
 void BSTriShape::UpdateBounds() {
@@ -872,7 +822,7 @@ void BSTriShape::UpdateBounds() {
 
 void BSTriShape::SetVertexData(const std::vector<BSVertexData>& bsVertData) {
 	vertData = bsVertData;
-	numVertices = vertData.size();
+	numVertices = static_cast<uint16_t>(vertData.size());
 }
 
 void BSTriShape::SetNormals(const std::vector<Vector3>& inNorms) {
@@ -939,7 +889,7 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 	if (smooth) {
 		smoothThresh *= DEG2RAD;
 		std::vector<Vector3> seamNorms;
-		SortingMatcher matcher(verts.data(), verts.size());
+		SortingMatcher matcher(verts.data(), static_cast<int>(verts.size()));
 		for (const std::vector<int>& matchset : matcher.matches) {
 			seamNorms.resize(matchset.size());
 			for (size_t j = 0; j < matchset.size(); ++j) {
@@ -1260,7 +1210,7 @@ void BSSubIndexTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertI
 	BSTriShape::notifyVerticesDelete(vertIndices);
 
 	//Remove triangles from segments and re-fit lists
-	segmentation.numPrimitives -= deletedTris.size();
+	segmentation.numPrimitives -= static_cast<uint32_t>(deletedTris.size());
 	for (auto& segment : segmentation.segments) {
 		// Delete primitives
 		for (auto& id : deletedTris)
@@ -1368,8 +1318,8 @@ std::vector<BSGeometrySegmentData> BSSubIndexTriShape::GetSegments() const {
 }
 
 void BSSubIndexTriShape::SetSegments(const std::vector<BSGeometrySegmentData>& sd) {
-	numSegments = sd.size();
 	segments = sd;
+	numSegments = static_cast<uint32_t>(segments.size());
 }
 
 void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<int>& triParts) const {
@@ -1421,7 +1371,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 		return;
 
 	// Renumber partitions so that the partition IDs are increasing.
-	size_t newPartID = 0;
+	int newPartID = 0;
 	std::vector<int> oldToNewPartIDs;
 	for (const NifSegmentInfo& seg : inf.segs) {
 		auto oldToNewSize = static_cast<int>(oldToNewPartIDs.size());
@@ -1457,7 +1407,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	// Find first triangle of each partition
 	int j = 0;
 	std::vector<int> partTriInds(newPartID + 1);
-	for (size_t i = 0; i < triInds.size(); ++i)
+	for (int i = 0; i < static_cast<int>(triInds.size()); ++i)
 		while (triParts[triInds[i]] >= j)
 			partTriInds[j++] = i;
 
@@ -1476,7 +1426,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 		}
 	}
 
-	partTriInds.back() = triInds.size();
+	partTriInds.back() = static_cast<int>(triInds.size());
 
 	segmentation = BSSITSSegmentation();
 	uint32_t parentArrayIndex = 0;
@@ -1487,7 +1437,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 		// Create new segment
 		segmentation.segments.emplace_back();
 		BSSITSSegment& segment = segmentation.segments.back();
-		int childCount = seg.subs.size();
+		uint32_t childCount = static_cast<uint32_t>(seg.subs.size());
 		segment.numPrimitives = partTriInds[partID + childCount + 1] - partTriInds[partID];
 		segment.startIndex = partTriInds[partID] * 3;
 		segment.numSubSegments = childCount;
@@ -1517,7 +1467,7 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 				subSegmentDataRecord.userSlotID = sub.userSlotID;
 
 			subSegmentDataRecord.material = sub.material;
-			subSegmentDataRecord.numData = sub.extraData.size();
+			subSegmentDataRecord.numData = static_cast<uint32_t>(sub.extraData.size());
 			subSegmentDataRecord.extraData = sub.extraData;
 			segmentation.subSegmentData.dataRecords.push_back(subSegmentDataRecord);
 		}
@@ -1570,7 +1520,7 @@ void BSDynamicTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIn
 	BSTriShape::notifyVerticesDelete(vertIndices);
 
 	EraseVectorIndices(dynamicData, vertIndices);
-	dynamicDataSize = dynamicData.size();
+	dynamicDataSize = static_cast<uint32_t>(dynamicData.size());
 }
 
 void BSDynamicTriShape::CalcDynamicData() {
@@ -1620,14 +1570,8 @@ void NiGeometry::Sync(NiStreamReversible& stream) {
 	skinInstanceRef.Sync(stream);
 
 	if (stream.GetVersion().File() >= V20_2_0_5) {
-		stream.Sync(numMaterials);
-		materials.resize(numMaterials);
-
-		for (uint32_t i = 0; i < numMaterials; i++)
-			materials[i].nameRef.Sync(stream);
-
-		for (uint32_t i = 0; i < numMaterials; i++)
-			stream.Sync(materials[i].extraData);
+		uint32_t numMaterials = materialNames.Sync(stream);
+		materialExtraData.SyncData(stream, numMaterials);
 
 		stream.Sync(activeMaterial);
 	}
@@ -1652,8 +1596,8 @@ void NiGeometry::Sync(NiStreamReversible& stream) {
 void NiGeometry::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiAVObject::GetStringRefs(refs);
 
-	for (auto& m : materials)
-		refs.emplace_back(&m.nameRef);
+	for (auto& mn : materialNames)
+		refs.emplace_back(&mn);
 }
 
 void NiGeometry::GetChildRefs(std::set<NiRef*>& refs) {
@@ -1676,15 +1620,6 @@ void NiGeometry::GetChildIndices(std::vector<uint32_t>& indices) {
 
 bool NiGeometry::IsSkinned() const {
 	return !skinInstanceRef.IsEmpty();
-}
-
-std::vector<MaterialInfo> NiGeometry::GetMaterials() const {
-	return materials;
-}
-
-void NiGeometry::SetMaterials(const std::vector<MaterialInfo>& mi) {
-	numMaterials = mi.size();
-	materials = mi;
 }
 
 
@@ -1772,7 +1707,7 @@ void NiTriShapeData::Create(NiVersion& version,
 void NiTriShapeData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, vertices.size());
 	ApplyMapToTriangles(triangles, indexCollapse);
-	numTriangles = triangles.size();
+	numTriangles = static_cast<uint16_t>(triangles.size());
 	numTrianglePoints = 3 * numTriangles;
 
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
@@ -1783,8 +1718,8 @@ std::vector<MatchGroup> NiTriShapeData::GetMatchGroups() const {
 }
 
 void NiTriShapeData::SetMatchGroups(const std::vector<MatchGroup>& mg) {
-	numMatchGroups = mg.size();
 	matchGroups = mg;
+	numMatchGroups = static_cast<uint16_t>(matchGroups.size());
 }
 
 uint32_t NiTriShapeData::GetNumTriangles() const {
@@ -1799,7 +1734,7 @@ bool NiTriShapeData::GetTriangles(std::vector<Triangle>& tris) const {
 void NiTriShapeData::SetTriangles(const std::vector<Triangle>& tris) {
 	hasTriangles = true;
 	triangles = tris;
-	numTriangles = triangles.size();
+	numTriangles = static_cast<uint16_t>(triangles.size());
 	numTrianglePoints = numTriangles * 3;
 }
 
@@ -1950,7 +1885,7 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 }
 
 uint32_t NiTriStripsData::GetNumTriangles() const {
-	return StripsToTris().size();
+	return static_cast<uint32_t>(StripsToTris().size());
 }
 
 bool NiTriStripsData::GetTriangles(std::vector<Triangle>& tris) const {
@@ -2176,6 +2111,6 @@ std::vector<BSGeometrySegmentData> BSSegmentedTriShape::GetSegments() const {
 }
 
 void BSSegmentedTriShape::SetSegments(const std::vector<BSGeometrySegmentData>& sd) {
-	numSegments = sd.size();
 	segments = sd;
+	numSegments = static_cast<uint32_t>(segments.size());
 }

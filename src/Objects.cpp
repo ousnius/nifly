@@ -83,31 +83,14 @@ void NiAVObject::GetChildIndices(std::vector<uint32_t>& indices) {
 
 void NiDefaultAVObjectPalette::Sync(NiStreamReversible& stream) {
 	sceneRef.Sync(stream);
-
-	stream.Sync(numObjects);
-	objects.resize(numObjects);
-	for (uint32_t i = 0; i < numObjects; i++) {
-		objects[i].name.Sync(stream, 4);
-		objects[i].objectRef.Sync(stream);
-	}
+	objects.Sync(stream);
 }
 
 void NiDefaultAVObjectPalette::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiAVObjectPalette::GetPtrs(ptrs);
 
 	ptrs.insert(&sceneRef);
-
-	for (uint32_t i = 0; i < numObjects; i++)
-		ptrs.insert(&objects[i].objectRef);
-}
-
-std::vector<AVObject> NiDefaultAVObjectPalette::GetAVObjects() const {
-	return objects;
-}
-
-void NiDefaultAVObjectPalette::SetAVObjects(std::vector<AVObject>& avo) {
-	numObjects = avo.size();
-	objects = avo;
+	objects.GetPtrs(ptrs);
 }
 
 
@@ -179,11 +162,10 @@ void TextureRenderData::Sync(NiStreamReversible& stream) {
 
 	paletteRef.Sync(stream);
 
-	stream.Sync(numMipmaps);
+	uint32_t sz = mipmaps.SyncSize(stream);
 	stream.Sync(bytesPerPixel);
-	mipmaps.resize(numMipmaps);
-	for (uint32_t i = 0; i < numMipmaps; i++)
-		stream.Sync(mipmaps[i]);
+
+	mipmaps.SyncData(stream, sz);
 }
 
 void TextureRenderData::GetChildRefs(std::set<NiRef*>& refs) {
@@ -196,15 +178,6 @@ void TextureRenderData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
 	indices.push_back(paletteRef.index);
-}
-
-std::vector<MipMapInfo> TextureRenderData::GetMipmaps() const {
-	return mipmaps;
-}
-
-void TextureRenderData::SetMipmaps(std::vector<MipMapInfo>& mm) {
-	numMipmaps = mm.size();
-	mipmaps = mm;
 }
 
 

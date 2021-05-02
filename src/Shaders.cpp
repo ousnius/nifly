@@ -100,10 +100,7 @@ void NiTexturingProperty::Sync(NiStreamReversible& stream) {
 			decalTex3.Sync(stream);
 	}
 
-	stream.Sync(numShaderTex);
-	shaderTex.resize(numShaderTex);
-	for (uint32_t i = 0; i < numShaderTex; i++)
-		shaderTex[i].Sync(stream);
+	shaderTex.Sync(stream);
 }
 
 void NiTexturingProperty::GetChildRefs(std::set<NiRef*>& refs) {
@@ -121,9 +118,7 @@ void NiTexturingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	decalTex1.GetChildRefs(refs);
 	decalTex2.GetChildRefs(refs);
 	decalTex3.GetChildRefs(refs);
-
-	for (auto& t : shaderTex)
-		t.GetChildRefs(refs);
+	shaderTex.GetChildRefs(refs);
 }
 
 void NiTexturingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
@@ -141,18 +136,7 @@ void NiTexturingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	decalTex1.GetChildIndices(indices);
 	decalTex2.GetChildIndices(indices);
 	decalTex3.GetChildIndices(indices);
-
-	for (auto& t : shaderTex)
-		t.GetChildIndices(indices);
-}
-
-std::vector<ShaderTexDesc> NiTexturingProperty::GetShaderTex() const {
-	return shaderTex;
-}
-
-void NiTexturingProperty::SetShaderTex(const std::vector<ShaderTexDesc>& stdescs) {
-	numShaderTex = stdescs.size();
-	shaderTex = stdescs;
+	shaderTex.GetChildIndices(indices);
 }
 
 

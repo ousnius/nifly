@@ -173,12 +173,21 @@ struct bhkCMSDMaterial {
 	HavokFilter layer;
 };
 
-struct bhkCMSDBigTris {
+class bhkCMSDBigTris {
+public:
 	uint16_t triangle1 = 0;
 	uint16_t triangle2 = 0;
 	uint16_t triangle3 = 0;
 	HavokMaterial material = 0;
 	uint16_t weldingInfo = 0;
+
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(triangle1);
+		stream.Sync(triangle2);
+		stream.Sync(triangle3);
+		stream.Sync(material);
+		stream.Sync(weldingInfo);
+	}
 };
 
 struct bhkCMSDTransform {
@@ -186,20 +195,29 @@ struct bhkCMSDTransform {
 	QuaternionXYZW rotation;
 };
 
-struct bhkCMSDChunk {
+class bhkCMSDChunk {
+public:
 	Vector4 translation;
 	uint32_t matIndex = 0;
 	uint16_t reference = 0;
 	uint16_t transformIndex = 0;
 
-	uint32_t numVerts = 0;
-	std::vector<uint16_t> verts;
-	uint32_t numIndices = 0;
-	std::vector<uint16_t> indices;
-	uint32_t numStrips = 0;
-	std::vector<uint16_t> strips;
-	uint32_t numWeldingInfo = 0;
-	std::vector<uint16_t> weldingInfo;
+	NiVector<uint16_t> verts;
+	NiVector<uint16_t> indices;
+	NiVector<uint16_t> strips;
+	NiVector<uint16_t> weldingInfo;
+
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(translation);
+		stream.Sync(matIndex);
+		stream.Sync(reference);
+		stream.Sync(transformIndex);
+
+		verts.Sync(stream);
+		indices.Sync(stream);
+		strips.Sync(stream);
+		weldingInfo.Sync(stream);
+	}
 };
 
 class NiAVObject;
@@ -356,37 +374,27 @@ public:
 };
 
 class bhkPhysicsSystem : public NiCloneableStreamable<bhkPhysicsSystem, BSExtraData> {
-protected:
-	uint32_t numBytes = 0;
-	std::vector<char> data;
-
 public:
+	NiVector<char> data;
+
 	bhkPhysicsSystem(const uint32_t size = 0);
 
 	static constexpr const char* BlockName = "bhkPhysicsSystem";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<char> GetData() const;
-	void SetData(const std::vector<char>& dat);
 };
 
 class bhkRagdollSystem : public NiCloneableStreamable<bhkRagdollSystem, BSExtraData> {
-protected:
-	uint32_t numBytes = 0;
-	std::vector<char> data;
-
 public:
+	NiVector<char> data;
+
 	bhkRagdollSystem(const uint32_t size = 0);
 
 	static constexpr const char* BlockName = "bhkRagdollSystem";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<char> GetData() const;
-	void SetData(const std::vector<char>& dat);
 };
 
 class bhkBlendController : public NiCloneableStreamable<bhkBlendController, NiTimeController> {
@@ -559,16 +567,13 @@ public:
 class bhkBvTreeShape : public NiCloneable<bhkBvTreeShape, bhkShape> {};
 
 class bhkMoppBvTreeShape : public NiCloneableStreamable<bhkMoppBvTreeShape, bhkBvTreeShape> {
-protected:
-	uint32_t dataSize = 0;
-	std::vector<uint8_t> data;
-
 public:
 	NiBlockRef<bhkShape> shapeRef;
 	uint32_t userData = 0;
 	uint32_t shapeCollection = 0;
 	uint32_t code = 0;
 	float scale = 0.0f;
+	NiVector<uint8_t> data;
 	Vector4 offset;
 	uint8_t buildType = 2; // User Version >= 12
 
@@ -578,9 +583,6 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
-
-	std::vector<uint8_t> GetData() const;
-	void SetData(const std::vector<uint8_t>& dat);
 };
 
 class NiTriStripsData;
@@ -975,13 +977,6 @@ public:
 };
 
 class bhkCompressedMeshShapeData : public NiCloneableStreamable<bhkCompressedMeshShapeData, bhkRefObject> {
-protected:
-	uint32_t numBigTris = 0;
-	std::vector<bhkCMSDBigTris> bigTris;
-
-	uint32_t numChunks = 0;
-	std::vector<bhkCMSDChunk> chunks;
-
 public:
 	uint32_t bitsPerIndex = 0;
 	uint32_t bitsPerWIndex = 0;
@@ -1004,18 +999,15 @@ public:
 	NiVector<bhkCMSDTransform> transforms;
 	NiVector<Vector4> bigVerts;
 
+	NiSyncVector<bhkCMSDBigTris> bigTris;
+	NiSyncVector<bhkCMSDChunk> chunks;
+
 	uint32_t numConvexPieceA = 0;
 
 	static constexpr const char* BlockName = "bhkCompressedMeshShapeData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<bhkCMSDBigTris> GetBigTris() const;
-	void SetBigTris(const std::vector<bhkCMSDBigTris>& bt);
-
-	std::vector<bhkCMSDChunk> GetChunks() const;
-	void SetChunks(const std::vector<bhkCMSDChunk>& bt);
 };
 
 class bhkCompressedMeshShape : public NiCloneableStreamable<bhkCompressedMeshShape, bhkShape> {
@@ -1044,28 +1036,23 @@ struct BoneMatrix {
 	Vector3 scale;
 };
 
-struct BonePose {
+class BonePose {
+public:
 	NiVector<BoneMatrix> matrices;
 
 	void Sync(NiStreamReversible& stream) { matrices.Sync(stream); }
 };
 
 class bhkPoseArray : public NiCloneableStreamable<bhkPoseArray, NiObject> {
-protected:
-	uint32_t numPoses = 0;
-	std::vector<BonePose> poses;
-
 public:
 	NiStringRefVector<> bones;
+	NiSyncVector<BonePose> poses;
 
 	static constexpr const char* BlockName = "bhkPoseArray";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
-
-	std::vector<BonePose> GetPoses() const;
-	void SetPoses(const std::vector<BonePose>& po);
 };
 
 class bhkRagdollTemplate : public NiCloneableStreamable<bhkRagdollTemplate, NiExtraData> {
@@ -1081,10 +1068,6 @@ public:
 };
 
 class bhkRagdollTemplateData : public NiCloneableStreamable<bhkRagdollTemplateData, NiObject> {
-protected:
-	uint32_t numConstraints = 0;
-	std::vector<ConstraintData> constraints;
-
 public:
 	NiStringRef name;
 	float mass = 9.0f;
@@ -1092,14 +1075,12 @@ public:
 	float friction = 0.3f;
 	float radius = 1.0f;
 	HavokMaterial material = 7;
+	NiSyncVector<ConstraintData> constraints;
 
 	static constexpr const char* BlockName = "bhkRagdollTemplateData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
-
-	std::vector<ConstraintData> GetConstraints() const;
-	void SetConstraints(const std::vector<ConstraintData>& cs);
 };
 } // namespace nifly

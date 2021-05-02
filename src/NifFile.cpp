@@ -244,7 +244,7 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 	if (hasUnknown)
 		return;
 
-	std::vector<int> delta;
+	std::vector<int64_t> delta;
 	bool hadoffset = false;
 
 	// Have to do this in multiple passes
@@ -278,8 +278,8 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 				continue;
 
 			hadoffset = true;
-			int c = 0 - delta[i];
-			int p = i;
+			int64_t c = 0 - delta[i];
+			size_t p = i;
 			while (c > 0) {
 				hdr.SwapBlocks(oldOrderIds[p], oldOrderIds[p - 1]);
 				p--;
@@ -452,7 +452,7 @@ void NifFile::PrettySortBlocks() {
 		return;
 
 	std::vector<uint32_t> newOrder(hdr.GetNumBlocks());
-	for (size_t i = 0; i < newOrder.size(); i++)
+	for (uint32_t i = 0; i < static_cast<uint32_t>(newOrder.size()); i++)
 		newOrder[i] = i;
 
 	auto root = GetRootNode();
@@ -1135,7 +1135,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 					if (stringData) {
 						if (stringData->stringData.get().find("NiOptimizeKeep") != std::string::npos) {
 							bsOptShape->particleDataSize = bsOptShape->GetNumVertices() * 6
-														   + triangles.size() * 3;
+														   + static_cast<uint32_t>(triangles.size()) * 3;
 							bsOptShape->particleVerts = *vertices;
 
 							bsOptShape->particleNorms.resize(vertices->size(), Vector3(1.0f, 0.0f, 0.0f));
@@ -1432,7 +1432,7 @@ void NifFile::PrepareData() {
 			bsTriShape->SetVertexData(skinPart->vertData);
 
 			std::vector<Triangle> tris;
-			for (size_t pi = 0; pi < skinPart->partitions.size(); ++pi)
+			for (int pi = 0; pi < static_cast<int>(skinPart->partitions.size()); ++pi)
 				for (auto& tri : skinPart->partitions[pi].trueTriangles) {
 					tris.push_back(tri);
 					skinPart->triParts.push_back(pi);
@@ -1850,7 +1850,7 @@ bool NifFile::SetNodeTransformToParent(const std::string& nodeName,
 	return false;
 }
 
-int NifFile::GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList) const {
+uint32_t NifFile::GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList) const {
 	outList.clear();
 
 	if (!shape)
@@ -1866,10 +1866,10 @@ int NifFile::GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList)
 			outList.push_back(node->name.get());
 	}
 
-	return outList.size();
+	return static_cast<uint32_t>(outList.size());
 }
 
-int NifFile::GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList) const {
+uint32_t NifFile::GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList) const {
 	outList.clear();
 
 	if (!shape)
@@ -1883,7 +1883,7 @@ int NifFile::GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList) const
 		if (!bone.IsEmpty())
 			outList.push_back(bone.index);
 
-	return outList.size();
+	return static_cast<uint32_t>(outList.size());
 }
 
 void NifFile::SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList) {
@@ -1934,7 +1934,7 @@ void NifFile::SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList) {
 
 			if (feedBoneData) {
 				skinData->bones.resize(inList.size());
-				skinData->numBones = skinData->bones.size();
+				skinData->numBones = static_cast<uint32_t>(skinData->bones.size());
 			}
 		}
 	}
@@ -1959,7 +1959,7 @@ uint32_t NifFile::GetShapeBoneWeights(NiShape* shape,
 			}
 		}
 
-		return outWeights.size();
+		return static_cast<uint32_t>(outWeights.size());
 	}
 
 	auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
@@ -1975,7 +1975,7 @@ uint32_t NifFile::GetShapeBoneWeights(NiShape* shape,
 		if (sw.weight >= EPSILON)
 			outWeights.emplace(sw.index, sw.weight);
 
-	return outWeights.size();
+	return static_cast<uint32_t>(outWeights.size());
 }
 
 bool NifFile::CalcShapeTransformGlobalToSkin(NiShape* shape, MatTransform& outTransform) const {
@@ -2275,9 +2275,9 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 	for (auto weight : weights)
 		sum += weight;
 
-	int num = (weights.size() < 4 ? weights.size() : 4);
+	uint32_t num = (weights.size() < 4 ? static_cast<uint32_t>(weights.size()) : 4);
 
-	for (int i = 0; i < num; i++) {
+	for (uint32_t i = 0; i < num; i++) {
 		vertex.weightBones[i] = boneids[i];
 		vertex.weights[i] = weights[i] / sum;
 	}
@@ -2318,14 +2318,14 @@ void NifFile::SetShapeSegments(NiShape* shape,
 }
 
 bool NifFile::GetShapePartitions(NiShape* shape,
-								 std::vector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
+								 NiVector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
 								 std::vector<int>& triParts) const {
 	if (!shape)
 		return false;
 
 	auto bsdSkinInst = hdr.GetBlock<BSDismemberSkinInstance>(shape->SkinInstanceRef());
 	if (bsdSkinInst)
-		partitionInfo = bsdSkinInst->GetPartitions();
+		partitionInfo = bsdSkinInst->partitions;
 	else
 		partitionInfo.clear();
 
@@ -2355,7 +2355,7 @@ bool NifFile::GetShapePartitions(NiShape* shape,
 }
 
 void NifFile::SetShapePartitions(NiShape* shape,
-								 const std::vector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
+								 const NiVector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
 								 const std::vector<int>& triParts,
 								 const bool convertSkinInstance) {
 	if (!shape)
@@ -2372,7 +2372,7 @@ void NifFile::SetShapePartitions(NiShape* shape,
 	// Calculate new number of partitions.  This code assumes we might have
 	// misassigned or unassigned triangles, though it's unclear whether
 	// it's even possible to have misassigned or unassigned triangles.
-	size_t numParts = partitionInfo.size();
+	uint32_t numParts = static_cast<uint32_t>(partitionInfo.size());
 	bool hasUnassignedTris = false;
 	for (auto pi : triParts) {
 		if (pi >= static_cast<int>(numParts))
@@ -2388,14 +2388,14 @@ void NifFile::SetShapePartitions(NiShape* shape,
 	if (hasUnassignedTris) {
 		for (int& pi : skinPart->triParts) {
 			if (pi < 0)
-				pi = numParts - 1;
+				pi = static_cast<int>(numParts) - 1;
 		}
 	}
 
 	// Resize NiSkinPartition partition list
 	skinPart->numPartitions = numParts;
 	skinPart->partitions.resize(numParts);
-	for (size_t i = 0; i < numParts; i++)
+	for (uint32_t i = 0; i < numParts; i++)
 		skinPart->partitions[i].hasVertexMap = true;
 
 	// Regenerate trueTriangles
@@ -2414,12 +2414,12 @@ void NifFile::SetShapePartitions(NiShape* shape,
 	}
 
 	if (bsdSkinInst) {
-		bsdSkinInst->SetPartitions(partitionInfo);
-		while (bsdSkinInst->GetNumPartitions() < numParts) {
+		bsdSkinInst->partitions = partitionInfo;
+		while (bsdSkinInst->partitions.size() < numParts) {
 			BSDismemberSkinInstance::PartitionInfo pi;
 			pi.flags = PF_EDITOR_VISIBLE;
 			pi.partID = hdr.GetVersion().User() >= 12 ? 32 : 0;
-			bsdSkinInst->AddPartition(pi);
+			bsdSkinInst->partitions.push_back(pi);
 		}
 	}
 }
@@ -2437,8 +2437,8 @@ void NifFile::SetDefaultPartition(NiShape* shape) {
 		partInfo.flags = PF_EDITOR_VISIBLE;
 		partInfo.partID = hdr.GetVersion().User() >= 12 ? 32 : 0;
 
-		bsdSkinInst->ClearPartitions();
-		bsdSkinInst->AddPartition(partInfo);
+		bsdSkinInst->partitions.clear();
+		bsdSkinInst->partitions.push_back(partInfo);
 	}
 
 	auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
@@ -2453,14 +2453,14 @@ void NifFile::SetDefaultPartition(NiShape* shape) {
 			part.numVertices = numVertices;
 
 			std::vector<uint16_t> vertIndices(part.numVertices);
-			for (size_t i = 0; i < vertIndices.size(); i++)
+			for (uint16_t i = 0; i < static_cast<uint16_t>(vertIndices.size()); i++)
 				vertIndices[i] = i;
 
 			part.vertexMap = vertIndices;
 		}
 
 		if (!tris.empty()) {
-			part.numTriangles = tris.size();
+			part.numTriangles = static_cast<uint16_t>(tris.size());
 			part.trueTriangles = tris;
 			if (!bMappedIndices)
 				part.triangles = part.trueTriangles;
@@ -3512,12 +3512,13 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 			std::sort(integersData.begin(), integersData.end());
 
 			uint16_t highestRemoved = indices.back();
-			std::vector<int> indexCollapse = GenerateIndexCollapseMap(indices, highestRemoved + 1);
+			uint16_t mapSize = highestRemoved + 1;
+			std::vector<int> indexCollapse = GenerateIndexCollapseMap(indices, mapSize);
 
 			for (int i = integersData.size() - 1; i >= 0; i--) {
 				auto& val = integersData[i];
 				if (val > highestRemoved) {
-					val -= indices.size();
+					val -= static_cast<uint32_t>(indices.size());
 				}
 				else if (indexCollapse[val] == -1) {
 					integersData.erase(i);
@@ -3686,14 +3687,10 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 			partBones.insert(partBones.begin() + partInd + 1, std::set<int>());
 
 			if (bsdSkinInst) {
-				auto partInfo = bsdSkinInst->GetPartitions();
-
 				BSDismemberSkinInstance::PartitionInfo info;
 				info.flags = PF_EDITOR_VISIBLE;
-				info.partID = partInfo[partInd].partID;
-				partInfo.insert(partInfo.begin() + partInd + 1, info);
-
-				bsdSkinInst->SetPartitions(partInfo);
+				info.partID = bsdSkinInst->partitions[partInd].partID;
+				bsdSkinInst->partitions.insert(partInd + 1, info);
 			}
 
 			++partInd;
@@ -3712,7 +3709,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 		part.hasVertexWeights = true;
 		part.numWeightsPerVertex = maxBonesPerVertex;
 	}
-	skinPart->numPartitions = partitions.size();
+	skinPart->numPartitions = static_cast<uint32_t>(partitions.size());
 	skinPart->partitions = std::move(partitions);
 
 	// Re-create trueTriangles, vertexMap, and triangles for each partition
@@ -3726,14 +3723,14 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 		if (bsTriShape)
 			part.vertexDesc = bsTriShape->vertexDesc;
 
-		std::unordered_map<int, int> boneLookup;
+		std::unordered_map<int, uint8_t> boneLookup;
 		boneLookup.reserve(partBones[partInd].size());
-		part.numBones = partBones[partInd].size();
+		part.numBones = static_cast<uint16_t>(partBones[partInd].size());
 		part.bones.reserve(part.numBones);
 
 		for (auto& b : partBones[partInd]) {
 			part.bones.push_back(b);
-			boneLookup[b] = part.bones.size() - 1;
+			boneLookup[b] = static_cast<uint8_t>(part.bones.size() - 1);
 		}
 
 		for (auto& v : part.vertexMap) {
@@ -3782,13 +3779,12 @@ void NifFile::UpdatePartitionFlags(NiShape* shape) {
 	if (!skinPart)
 		return;
 
-	auto partInfo = bsdSkinInst->GetPartitions();
-	for (size_t i = 0; i < partInfo.size(); i++) {
+	for (uint32_t i = 0; i < bsdSkinInst->partitions.size(); i++) {
 		PartitionFlags flags = PF_NONE;
 
 		if (hdr.GetVersion().IsFO3()) {
 			// Don't make FO3/NV meat caps visible
-			if (partInfo[i].partID < 100 || partInfo[i].partID >= 1000)
+			if (bsdSkinInst->partitions[i].partID < 100 || bsdSkinInst->partitions[i].partID >= 1000)
 				flags = PartitionFlags(flags | PF_EDITOR_VISIBLE);
 		}
 		else
@@ -3802,10 +3798,8 @@ void NifFile::UpdatePartitionFlags(NiShape* shape) {
 		else
 			flags = PartitionFlags(flags | PF_START_NET_BONESET);
 
-		partInfo[i].flags = flags;
+		bsdSkinInst->partitions[i].flags = flags;
 	}
-
-	bsdSkinInst->SetPartitions(partInfo);
 }
 
 void NifFile::CreateSkinning(NiShape* shape) {

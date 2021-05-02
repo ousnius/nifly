@@ -131,7 +131,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
 	void DeletePartitions(const std::vector<uint32_t>& partInds);
-	int RemoveEmptyPartitions(std::vector<uint32_t>& outDeletedIndices);
+	uint32_t RemoveEmptyPartitions(std::vector<uint32_t>& outDeletedIndices);
 	// ConvertStripsToTriangles returns true if any conversions were
 	// actually performed.  After calling this function, all of the
 	// strips will be empty.
@@ -192,29 +192,15 @@ public:
 		uint16_t partID = 0;
 	};
 
-protected:
-	uint32_t numPartitions = 0;
-	std::vector<PartitionInfo> partitions;
+	NiVector<PartitionInfo> partitions;
 
-public:
 	static constexpr const char* BlockName = "BSDismemberSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 
-	uint32_t GetNumPartitions() const { return numPartitions; }
-	std::vector<PartitionInfo> GetPartitions() const { return partitions; }
-
-	void AddPartition(const PartitionInfo& partition);
-	void RemovePartition(const uint32_t id);
 	// DeletePartitions: partInds must be in sorted ascending order.
 	void DeletePartitions(const std::vector<uint32_t>& partInds);
-	void ClearPartitions();
-
-	void SetPartitions(const std::vector<PartitionInfo>& parts) {
-		numPartitions = parts.size();
-		partitions = parts;
-	}
 };
 
 class BSSkinBoneData : public NiCloneableStreamable<BSSkinBoneData, NiObject> {

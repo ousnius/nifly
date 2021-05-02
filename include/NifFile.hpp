@@ -191,8 +191,8 @@ public:
 		return SetNodeTransformToParent(nodeName, inTransform, rootChildrenOnly);
 	}
 
-	int GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList) const;
-	int GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList) const;
+	uint32_t GetShapeBoneList(NiShape* shape, std::vector<std::string>& outList) const;
+	uint32_t GetShapeBoneIDList(NiShape* shape, std::vector<int>& outList) const;
 	void SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList);
 	uint32_t GetShapeBoneWeights(NiShape* shape,
 								 const uint32_t boneIndex,
@@ -248,10 +248,10 @@ public:
 								 const std::vector<int>& triParts);
 
 	bool GetShapePartitions(NiShape* shape,
-							std::vector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
+							NiVector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
 							std::vector<int>& triParts) const;
 	void SetShapePartitions(NiShape* shape,
-							const std::vector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
+							const NiVector<BSDismemberSkinInstance::PartitionInfo>& partitionInfo,
 							const std::vector<int>& triParts,
 							const bool convertSkinInstance = true);
 	void SetDefaultPartition(NiShape* shape);

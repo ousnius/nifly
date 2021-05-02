@@ -276,7 +276,7 @@ public:
 		root->find_closest(querypoint, queryResult, radius, mindist);
 		std::sort(queryResult.begin(), queryResult.end());
 
-		return queryResult.size();
+		return static_cast<int>(queryResult.size());
 	}
 };
 } // namespace nifly

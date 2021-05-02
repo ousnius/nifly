@@ -68,7 +68,7 @@ void NiString::Read(NiIStream& stream, const int szSize) {
 		if (medSize < buf.size())
 			stream.read(buf.data(), medSize);
 		else
-			medSize = buf.size() - 1;
+			medSize = static_cast<uint16_t>(buf.size() - 1);
 
 		buf[medSize] = 0;
 	}
@@ -78,7 +78,7 @@ void NiString::Read(NiIStream& stream, const int szSize) {
 		if (bigSize < buf.size())
 			stream.read(buf.data(), bigSize);
 		else
-			bigSize = buf.size() - 1;
+			bigSize = static_cast<uint32_t>(buf.size() - 1);
 
 		buf[bigSize] = 0;
 	}
@@ -133,7 +133,7 @@ void NiStringRef::Read(NiIStream& stream) {
 		if (sz < buf.size())
 			stream.read(buf.data(), sz);
 		else
-			sz = buf.size() - 1;
+			sz = static_cast<uint32_t>(buf.size() - 1);
 
 		buf[sz] = 0;
 		str = buf.data();
@@ -264,7 +264,7 @@ void NiHeader::DeleteBlockByType(const std::string& blockTypeStr, const bool orp
 		if (blockTypeIndices[i] == blockTypeId)
 			indices.push_back(i);
 
-	for (int j = indices.size() - 1; j >= 0; j--)
+	for (size_t j = indices.size() - 1; j >= 0; j--)
 		if (!orphanedOnly || !IsBlockReferenced(indices[j]))
 			DeleteBlock(indices[j]);
 }
@@ -274,7 +274,7 @@ uint32_t NiHeader::AddBlock(std::unique_ptr<NiObject> newBlock) {
 	blockTypeIndices.push_back(btID);
 	blockSizes.push_back(0);
 	blocks->emplace_back(std::move(newBlock));
-	numBlocks = blocks->size();
+	numBlocks++;
 	return numBlocks - 1;
 }
 
@@ -410,7 +410,7 @@ int NiHeader::GetBlockRefCount(const uint32_t blockId) {
 uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 	NiString niStr;
 	auto typeId = static_cast<uint16_t>(blockTypes.size());
-	for (size_t i = 0; i < blockTypes.size(); i++) {
+	for (uint16_t i = 0; i < typeId; i++) {
 		if (blockTypes[i].get() == blockTypeName) {
 			typeId = i;
 			break;
@@ -459,11 +459,11 @@ void NiHeader::ResetBlockSizeStreamPos() {
 }
 
 uint32_t NiHeader::GetStringCount() const {
-	return strings.size();
+	return static_cast<uint32_t>(strings.size());
 }
 
 uint32_t NiHeader::FindStringId(const std::string& str) const {
-	for (size_t i = 0; i < strings.size(); i++)
+	for (uint32_t i = 0; i < numStrings; i++)
 		if (strings[i].get() == str)
 			return i;
 
@@ -471,20 +471,22 @@ uint32_t NiHeader::FindStringId(const std::string& str) const {
 }
 
 uint32_t NiHeader::AddOrFindStringId(const std::string& str, const bool addEmpty) {
-	for (size_t i = 0; i < strings.size(); i++)
+	for (uint32_t i = 0; i < numStrings; i++)
 		if (strings[i].get() == str)
 			return i;
 
 	if (!addEmpty && str.empty())
 		return NIF_NPOS;
 
-	int r = strings.size();
+	constexpr auto maxStringCount = std::numeric_limits<uint32_t>::max();
+	if (strings.size() >= static_cast<size_t>(maxStringCount))
+		return NIF_NPOS;
 
 	NiString niStr(str);
 	strings.push_back(std::move(niStr));
 	numStrings++;
 
-	return r;
+	return numStrings - 1;
 }
 
 std::string NiHeader::GetStringById(const uint32_t id) const {
@@ -507,9 +509,11 @@ void NiHeader::ClearStrings() {
 
 void NiHeader::UpdateMaxStringLength() {
 	maxStringLen = 0;
-	for (auto& s : strings)
-		if (maxStringLen < s.length())
-			maxStringLen = s.length();
+	for (auto& s : strings) {
+		uint32_t len = static_cast<uint32_t>(s.length());
+		if (maxStringLen < len)
+			maxStringLen = len;
+	}
 }
 
 void NiHeader::FillStringRefs() {

@@ -49,29 +49,31 @@ public:
 	void SetTransformToParent(const MatTransform& t) { transform = t; }
 };
 
-struct AVObject {
+class AVObject {
+public:
 	NiString name;
 	NiBlockPtr<NiAVObject> objectRef;
+
+	void Sync(NiStreamReversible& stream) {
+		name.Sync(stream, 4);
+		objectRef.Sync(stream);
+	}
+
+	void GetPtrs(std::set<NiPtr*>& ptrs) { ptrs.insert(&objectRef); }
 };
 
 class NiAVObjectPalette : public NiCloneable<NiAVObjectPalette, NiObject> {};
 
 class NiDefaultAVObjectPalette : public NiCloneableStreamable<NiDefaultAVObjectPalette, NiAVObjectPalette> {
-protected:
-	uint32_t numObjects = 0;
-	std::vector<AVObject> objects;
-
 public:
 	NiBlockPtr<NiAVObject> sceneRef;
+	NiSyncVector<AVObject> objects;
 
 	static constexpr const char* BlockName = "NiDefaultAVObjectPalette";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
-
-	std::vector<AVObject> GetAVObjects() const;
-	void SetAVObjects(std::vector<AVObject>& avo);
 };
 
 class NiCamera : public NiCloneableStreamable<NiCamera, NiAVObject> {
@@ -177,10 +179,6 @@ struct MipMapInfo {
 };
 
 class TextureRenderData : public NiCloneableStreamable<TextureRenderData, NiObject> {
-protected:
-	uint32_t numMipmaps = 0;
-	std::vector<MipMapInfo> mipmaps;
-
 public:
 	PixelFormat pixelFormat = PX_FMT_RGB8;
 	uint8_t bitsPerPixel = 0;
@@ -192,14 +190,12 @@ public:
 	PixelFormatComponent channels[4]{};
 	NiBlockRef<NiPalette> paletteRef;
 
+	NiVector<MipMapInfo> mipmaps;
 	uint32_t bytesPerPixel = 0;
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
-
-	std::vector<MipMapInfo> GetMipmaps() const;
-	void SetMipmaps(std::vector<MipMapInfo>& mm);
 };
 
 enum PlatformID : uint32_t { PLAT_ANY, PLAT_XENON, PLAT_PS3, PLAT_DX9, PLAT_WII, PLAT_D3D10 };

@@ -284,11 +284,27 @@ void BSInvMarker::Sync(NiStreamReversible& stream) {
 }
 
 
-void BSFurnitureMarker::Sync(NiStreamReversible& stream) {
-	stream.Sync(numPositions);
-	positions.resize(numPositions);
+void FurniturePosition::Sync(NiStreamReversible& stream) {
+	stream.Sync(offset);
 
-	for (uint32_t i = 0; i < numPositions; i++) {
+	if (stream.GetVersion().User() <= 11) {
+		stream.Sync(orientation);
+		stream.Sync(posRef1);
+		stream.Sync(posRef2);
+	}
+
+	if (stream.GetVersion().User() >= 12) {
+		stream.Sync(heading);
+		stream.Sync(animationType);
+		stream.Sync(entryPoints);
+	}
+}
+
+
+void BSFurnitureMarker::Sync(NiStreamReversible& stream) {
+	positions.Sync(stream);
+
+	for (uint32_t i = 0; i < positions.size(); i++) {
 		stream.Sync(positions[i].offset);
 
 		if (stream.GetVersion().User() <= 11) {
@@ -305,40 +321,14 @@ void BSFurnitureMarker::Sync(NiStreamReversible& stream) {
 	}
 }
 
-std::vector<FurniturePosition> BSFurnitureMarker::GetPositions() {
-	return positions;
-}
-
-void BSFurnitureMarker::SetPositions(const std::vector<FurniturePosition>& pos) {
-	numPositions = pos.size();
-	positions = pos;
+void DecalVectorBlock::Sync(NiStreamReversible& stream) {
+	points.Sync(stream);
+	normals.SyncData(stream, points.size());
 }
 
 
 void BSDecalPlacementVectorExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numVectorBlocks);
-	decalVectorBlocks.resize(numVectorBlocks);
-
-	for (uint32_t i = 0; i < numVectorBlocks; i++) {
-		stream.Sync(decalVectorBlocks[i].numVectors);
-
-		decalVectorBlocks[i].points.resize(decalVectorBlocks[i].numVectors);
-		for (int j = 0; j < decalVectorBlocks[i].numVectors; j++)
-			stream.Sync(decalVectorBlocks[i].points[j]);
-
-		decalVectorBlocks[i].normals.resize(decalVectorBlocks[i].numVectors);
-		for (int j = 0; j < decalVectorBlocks[i].numVectors; j++)
-			stream.Sync(decalVectorBlocks[i].normals[j]);
-	}
-}
-
-std::vector<DecalVectorBlock> BSDecalPlacementVectorExtraData::GetDecalVectorBlocks() {
-	return decalVectorBlocks;
-}
-
-void BSDecalPlacementVectorExtraData::SetDecalVectorBlocks(const std::vector<DecalVectorBlock>& vectorBlocks) {
-	numVectorBlocks = vectorBlocks.size();
-	decalVectorBlocks = vectorBlocks;
+	decalVectorBlocks.Sync(stream);
 }
 
 
@@ -360,55 +350,35 @@ void BSBound::Sync(NiStreamReversible& stream) {
 }
 
 
+void BoneLOD::Sync(NiStreamReversible& stream) {
+	stream.Sync(distance);
+	boneName.Sync(stream);
+}
+
+void BoneLOD::GetStringRefs(std::vector<NiStringRef*>& refs) {
+	refs.emplace_back(&boneName);
+}
+
+
 void BSBoneLODExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numBoneLODs);
-	boneLODs.resize(numBoneLODs);
-	for (uint32_t i = 0; i < numBoneLODs; i++) {
-		stream.Sync(boneLODs[i].distance);
-		boneLODs[i].boneName.Sync(stream);
-	}
+	boneLODs.Sync(stream);
 }
 
 void BSBoneLODExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
-	for (uint32_t i = 0; i < numBoneLODs; i++)
-		refs.emplace_back(&boneLODs[i].boneName);
-}
-
-std::vector<BoneLOD> BSBoneLODExtraData::GetBoneLODs() {
-	return boneLODs;
-}
-
-void BSBoneLODExtraData::SetBoneLODs(const std::vector<BoneLOD>& lods) {
-	numBoneLODs = lods.size();
-	boneLODs = lods;
+	boneLODs.GetStringRefs(refs);
 }
 
 
 void NiTextKeyExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numTextKeys);
-	textKeys.resize(numTextKeys);
-	for (uint32_t i = 0; i < numTextKeys; i++) {
-		stream.Sync(textKeys[i].time);
-		textKeys[i].value.Sync(stream);
-	}
+	textKeys.Sync(stream);
 }
 
 void NiTextKeyExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
-	for (uint32_t i = 0; i < numTextKeys; i++)
-		refs.emplace_back(&textKeys[i].value);
-}
-
-std::vector<Key<NiStringRef>> NiTextKeyExtraData::GetTextKeys() {
-	return textKeys;
-}
-
-void NiTextKeyExtraData::SetTextKeys(const std::vector<Key<NiStringRef>>& keys) {
-	numTextKeys = keys.size();
-	textKeys = keys;
+	textKeys.GetStringRefs(refs);
 }
 
 
@@ -428,20 +398,7 @@ void BSConnectPoint::Sync(NiStreamReversible& stream) {
 
 
 void BSConnectPointParents::Sync(NiStreamReversible& stream) {
-	stream.Sync(numConnectPoints);
-	connectPoints.resize(numConnectPoints);
-
-	for (uint32_t i = 0; i < numConnectPoints; i++)
-		connectPoints[i].Sync(stream);
-}
-
-std::vector<BSConnectPoint> BSConnectPointParents::GetConnectPoints() {
-	return connectPoints;
-}
-
-void BSConnectPointParents::SetConnectPoints(const std::vector<BSConnectPoint>& cps) {
-	numConnectPoints = cps.size();
-	connectPoints = cps;
+	connectPoints.Sync(stream);
 }
 
 
@@ -452,27 +409,11 @@ void BSConnectPointChildren::Sync(NiStreamReversible& stream) {
 
 
 BSClothExtraData::BSClothExtraData(const uint32_t size) {
-	numBytes = size;
 	data.resize(size);
 }
 
 void BSClothExtraData::Sync(NiStreamReversible& stream) {
-	stream.Sync(numBytes);
-
-	data.resize(numBytes);
-	if (data.empty())
-		return;
-
-	stream.Sync(&data[0], numBytes);
-}
-
-std::vector<char> BSClothExtraData::GetData() {
-	return data;
-}
-
-void BSClothExtraData::SetData(const std::vector<char>& dat) {
-	numBytes = dat.size();
-	data = dat;
+	data.SyncByteArray(stream);
 }
 
 
@@ -481,7 +422,7 @@ bool BSClothExtraData::ToHKX(const std::string& fileName) {
 	if (!file)
 		return false;
 
-	file.write(data.data(), numBytes);
+	file.write(data.data(), data.size());
 	return true;
 }
 
@@ -490,7 +431,7 @@ bool BSClothExtraData::FromHKX(const std::string& fileName) {
 	if (!file)
 		return false;
 
-	numBytes = static_cast<uint32_t>(file.tellg());
+	auto numBytes = static_cast<uint32_t>(file.tellg());
 	file.seekg(0, std::ios::beg);
 
 	data.resize(numBytes);
