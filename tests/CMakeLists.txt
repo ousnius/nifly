@@ -1,48 +1,25 @@
-cmake_minimum_required(VERSION 3.10)
+find_package(Catch2 REQUIRED)
 
-project(nifly-tests)
+set(SOURCES
+    TestNifFile
+    )
 
-find_package( Catch2 REQUIRED )
+foreach(name ${SOURCES})
+    add_executable(${name} ${NIFLY_TESTS_DIR}/${name}.cpp)
+    target_link_libraries(${name} PRIVATE nifly Catch2::Catch2)
+    set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
-set( SOURCES_SINGLE_FILE
-	TestNifFile.cpp
-)
+    # Add warnings. -Werror disabled for now
+    target_compile_options(${name} PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+        #-Werror
+        -Wall -Wextra -Wconversion -Wsign-conversion -Wno-c++98-compat -Wno-c++98-compat-pedantic>
+        $<$<CXX_COMPILER_ID:MSVC>:
+        #/WX
+        /W4 /w44265>
+        )
 
-string( REPLACE ".cpp" "" BASENAMES_SINGLE_FILE "${SOURCES_SINGLE_FILE}" )
-
-set( TARGETS_SINGLE_FILE ${BASENAMES_SINGLE_FILE} )
-
-set( TARGETS_ALL
-	${TARGETS_SINGLE_FILE}
-)
-
-enable_testing()
-include( CTest )
-include( Catch )
-
-foreach( name ${TARGETS_SINGLE_FILE} )
-	add_executable( ${name} ${TESTS_DIR}/${name}.cpp )
-endforeach()
-
-foreach( name ${TARGETS_ALL} )
-	target_include_directories( ${name} PRIVATE ${NIFLY_DIR}/include ${NIFLY_DIR}/external )
-	target_link_libraries( ${name} PRIVATE nifly Catch2::Catch2 )
-
-	set_property(TARGET ${name} PROPERTY CXX_STANDARD 17)
-	set_property(TARGET ${name} PROPERTY CXX_EXTENSIONS OFF)
-
-	# Add desired warnings
-	if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
-		target_compile_options( ${name}  PRIVATE -Wall -Wextra -Wunreachable-code )
-	endif()
-	# Clang specific warning go here
-    if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-        # Actually keep these
-        target_compile_options( ${name}  PRIVATE -Werror -Wall -Wno-c++-98-compat -Wno-c++-98-compat-pedantic)
-	endif()
-	if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-		target_compile_options( ${name}  PRIVATE /W4 /w44265 /WX )
-	endif()
-
-	catch_discover_tests( ${name} WORKING_DIRECTORY "${TESTS_DIR}" )
+    add_test(NAME ${name} COMMAND "${name}"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
 endforeach()
