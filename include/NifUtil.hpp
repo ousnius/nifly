@@ -133,15 +133,16 @@ std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1>& indices, 
 // If k is not in indexMap, defaultOffset is added to it.
 template<typename MapType>
 void ApplyIndexMapToMapKeys(MapType& keyMap, const std::vector<int> indexMap, const int defaultOffset) {
+	using KeyType = typename MapType::key_type;
 	MapType copy;
 
 	for (auto& d : keyMap) {
 		if (d.first >= indexMap.size()) {
-			auto keyVal = static_cast<MapType::key_type>(d.first + defaultOffset);
+			auto keyVal = static_cast<KeyType>(d.first + defaultOffset);
 			copy[keyVal] = std::move(d.second);
 		}
 		else if (indexMap[d.first] >= 0) {
-			auto keyVal = static_cast<MapType::key_type>(indexMap[d.first]);
+			auto keyVal = static_cast<KeyType>(indexMap[d.first]);
 			copy[keyVal] = std::move(d.second);
 		}
 	}
