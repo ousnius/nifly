@@ -67,7 +67,7 @@ void NifFile::SetParentNode(NiObject* childBlock, NiNode* newParent) {
 	if (childBlock == newParent)
 		return;
 
-	int childId = GetBlockID(childBlock);
+	uint32_t childId = GetBlockID(childBlock);
 	for (auto& block : blocks) {
 		auto node = dynamic_cast<NiNode*>(block.get());
 		if (!node)
@@ -709,8 +709,8 @@ void NifFile::CloneChildren(NiObject* block, NifFile* srcNif) {
 		srcNif = this;
 
 	// Assign new refs and strings, rebind ptrs where possible
-	std::function<void(NiObject*, int, int)> cloneBlock =
-		[&](NiObject* b, int parentOldId, int parentNewId) -> void {
+	std::function<void(NiObject*, uint32_t, uint32_t)> cloneBlock =
+		[&](NiObject* b, uint32_t parentOldId, uint32_t parentNewId) -> void {
 		std::set<NiRef*> refs;
 		b->GetChildRefs(refs);
 
@@ -719,7 +719,7 @@ void NifFile::CloneChildren(NiObject* block, NifFile* srcNif) {
 			if (srcChild) {
 				auto destChildS = srcChild->Clone();
 				auto destChild = destChildS.get();
-				int destId = hdr.AddBlock(std::move(destChildS));
+				uint32_t destId = hdr.AddBlock(std::move(destChildS));
 				r->index = destId;
 
 				std::vector<NiStringRef*> strRefs;
@@ -818,7 +818,7 @@ NiShape* NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName
 			}
 
 			auto node = FindBlockByName<NiNode>(boneName);
-			int boneID = GetBlockID(node);
+			uint32_t boneID = GetBlockID(node);
 			if (!node) {
 				// Clone missing node into the right parent
 				boneID = CloneNamedNode(boneName, srcNif);
@@ -3550,7 +3550,7 @@ int NifFile::CalcShapeDiff(NiShape* shape,
 	if (myData->size() != targetData->size())
 		return 3;
 
-	for (uint32_t i = 0; i < myData->size(); i++) {
+	for (uint16_t i = 0; i < static_cast<uint16_t>(myData->size()); i++) {
 		auto& target = targetData->at(i);
 		auto& src = myData->at(i);
 
@@ -3584,7 +3584,7 @@ int NifFile::CalcUVDiff(NiShape* shape,
 	if (myData->size() != targetData->size())
 		return 3;
 
-	for (uint32_t i = 0; i < myData->size(); i++) {
+	for (uint16_t i = 0; i < static_cast<uint16_t>(myData->size()); i++) {
 		Vector3 v;
 		v.x = (targetData->at(i).u - myData->at(i).u) * scale;
 		v.y = (targetData->at(i).v - myData->at(i).v) * scale;
@@ -3627,7 +3627,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 
 	// Make maps of vertices to bones and weights
 	std::unordered_map<uint16_t, std::vector<SkinWeight>> vertBoneWeights;
-	int boneIndex = 0;
+	uint16_t boneIndex = 0;
 	for (auto& bone : skinData->bones) {
 		for (auto& bw : bone.vertexWeights)
 			vertBoneWeights[bw.index].push_back(SkinWeight(boneIndex, bw.weight));

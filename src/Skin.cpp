@@ -67,7 +67,7 @@ void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 				b.numVertices--;
 			}
 			else
-				b.vertexWeights[i].index = indexCollapse[ival];
+				b.vertexWeights[i].index = static_cast<uint16_t>(indexCollapse[ival]);
 		}
 	}
 }
@@ -269,7 +269,7 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 
 		// Compose vertexMap with indexCollapse to get new vertexMap
 		for (uint16_t& i : p.vertexMap)
-			i = indexCollapse[i];
+			i = static_cast<uint16_t>(indexCollapse[i]);
 
 		if (!bMappedIndices) {
 			// Apply shape vertex index collapse map to true triangles
@@ -374,7 +374,7 @@ void NiSkinPartition::PartitionBlock::GenerateMappedTrianglesFromTrueTrianglesAn
 	}
 
 	std::vector<uint16_t> invmap(vertexMap.back() + 1);
-	for (unsigned int mi = 0; mi < vertexMap.size(); ++mi) {
+	for (uint16_t mi = 0; mi < static_cast<uint16_t>(vertexMap.size()); ++mi) {
 		if (vertexMap[mi] >= invmap.size())
 			invmap.resize(vertexMap[mi] + 1);
 
@@ -403,7 +403,7 @@ void NiSkinPartition::PartitionBlock::GenerateVertexMapFromTrueTriangles() {
 
 	vertexMap.clear();
 
-	for (unsigned int i = 0; i < vertUsed.size(); ++i) {
+	for (uint16_t i = 0; i < static_cast<uint16_t>(vertUsed.size()); ++i) {
 		if (vertUsed[i])
 			vertexMap.push_back(i);
 	}

@@ -315,7 +315,7 @@ void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
 	if (currentTree.size() != numBlocks)
 		return;
 
-	std::map<int, int> indices;
+	std::map<uint32_t, uint32_t> indices;
 	for (uint32_t i = 0; i < numBlocks; i++)
 		indices[i] = GetBlockID(currentTree[i]);
 
@@ -612,9 +612,9 @@ void NiHeader::Get(NiIStream& stream) {
 		std::smatch matches;
 
 		std::array<uint8_t, 4> v{};
-		size_t m = 0;
+		int m = 0;
 		while (std::regex_search(verStr, matches, reg) && m < 4) {
-			v[m] = std::stoi(matches[0]);
+			v[m] = static_cast<uint8_t>(std::stoi(matches[0]));
 			verStr = matches.suffix();
 			m++;
 		}

@@ -194,6 +194,7 @@ struct Vector3 {
 		tmp /= other;
 		return tmp;
 	}
+
 	Vector3& operator*=(float val) {
 		x *= val;
 		y *= val;
@@ -217,6 +218,52 @@ struct Vector3 {
 		return tmp;
 	}
 
+	Vector3& operator*=(int val) {
+		x *= val;
+		y *= val;
+		z *= val;
+		return (*this);
+	}
+	Vector3 operator*(int val) const {
+		Vector3 tmp = (*this);
+		tmp *= val;
+		return tmp;
+	}
+	Vector3& operator/=(int val) {
+		x /= val;
+		y /= val;
+		z /= val;
+		return (*this);
+	}
+	Vector3 operator/(int val) const {
+		Vector3 tmp = (*this);
+		tmp /= val;
+		return tmp;
+	}
+
+	Vector3& operator*=(uint32_t val) {
+		x *= val;
+		y *= val;
+		z *= val;
+		return (*this);
+	}
+	Vector3 operator*(uint32_t val) const {
+		Vector3 tmp = (*this);
+		tmp *= val;
+		return tmp;
+	}
+	Vector3& operator/=(uint32_t val) {
+		x /= val;
+		y /= val;
+		z /= val;
+		return (*this);
+	}
+	Vector3 operator/(uint32_t val) const {
+		Vector3 tmp = (*this);
+		tmp /= val;
+		return tmp;
+	}
+
 	Vector3 cross(const Vector3& other) const {
 		Vector3 tmp;
 		tmp.x = y * other.z - z * other.y;
@@ -227,7 +274,7 @@ struct Vector3 {
 
 	float dot(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
 
-	float DistanceTo(const Vector3& target) {
+	float DistanceTo(const Vector3& target) const {
 		float dx = target.x - x;
 		float dy = target.y - y;
 		float dz = target.z - z;

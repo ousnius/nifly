@@ -32,9 +32,9 @@ void ApplyMapToTriangles(std::vector<Triangle>& tris,
 		}
 
 		Triangle& dtri = tris[di];
-		dtri.p1 = map[stri.p1];
-		dtri.p2 = map[stri.p2];
-		dtri.p3 = map[stri.p3];
+		dtri.p1 = static_cast<uint16_t>(map[stri.p1]);
+		dtri.p2 = static_cast<uint16_t>(map[stri.p2]);
+		dtri.p3 = static_cast<uint16_t>(map[stri.p3]);
 		++di;
 	}
 
@@ -59,7 +59,7 @@ void EraseVectorIndices(VectorType& v, const std::vector<IndexType>& indices) {
 	if (indices.empty() || indices[0] >= v.size())
 		return;
 
-	IndexType indi = 1;
+	size_t indi = 1;
 	IndexType di = indices[0];
 	IndexType si = di + 1;
 	for (; si < v.size(); ++si) {
@@ -78,7 +78,7 @@ void InsertVectorIndices(VectorType& v, const std::vector<IndexType>& indices) {
 	if (indices.empty() || indices.back() >= v.size() + indices.size())
 		return;
 
-	IndexType indi = indices.size() - 1;
+	int64_t indi = static_cast<int64_t>(indices.size() - 1);
 	IndexType di = v.size() + indices.size() - 1;
 	IndexType si = v.size() - 1;
 	v.resize(di + 1);
@@ -96,10 +96,10 @@ void InsertVectorIndices(VectorType& v, const std::vector<IndexType>& indices) {
 
 // 'indices' must be in sorted ascending order beforehand.
 template<typename IndexType1, typename IndexType2>
-std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1>& indices, IndexType2 mapSize) {
+std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1>& indices, const IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 
-	IndexType2 indi = 0;
+	size_t indi = 0;
 	for (IndexType2 si = 0, di = 0; si < mapSize; ++si) {
 		if (indi < indices.size() && si == indices[indi]) {
 			map[si] = -1;
@@ -114,15 +114,15 @@ std::vector<int> GenerateIndexCollapseMap(const std::vector<IndexType1>& indices
 
 // 'indices' must be in sorted ascending order beforehand.
 template<typename IndexType1, typename IndexType2>
-std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1>& indices, IndexType2 mapSize) {
+std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1>& indices, const IndexType2 mapSize) {
 	std::vector<int> map(mapSize);
 
-	IndexType2 indi = 0;
+	size_t indi = 0;
 	for (IndexType2 si = 0, di = 0; si < mapSize; ++si, ++di) {
 		while (indi < indices.size() && di == indices[indi])
 			++di, ++indi;
 
-		map[si] = di;
+		map[si] = static_cast<int>(di);
 	}
 	return map;
 }
@@ -132,14 +132,18 @@ std::vector<int> GenerateIndexExpandMap(const std::vector<IndexType1>& indices, 
 // is negative, or changed to indexMap[k] otherwise.
 // If k is not in indexMap, defaultOffset is added to it.
 template<typename MapType>
-void ApplyIndexMapToMapKeys(MapType& keyMap, const std::vector<int> indexMap, int defaultOffset) {
+void ApplyIndexMapToMapKeys(MapType& keyMap, const std::vector<int> indexMap, const int defaultOffset) {
 	MapType copy;
 
 	for (auto& d : keyMap) {
-		if (d.first >= indexMap.size())
-			copy[d.first + defaultOffset] = std::move(d.second);
-		else if (indexMap[d.first] >= 0)
-			copy[indexMap[d.first]] = std::move(d.second);
+		if (d.first >= indexMap.size()) {
+			auto keyVal = static_cast<MapType::key_type>(d.first + defaultOffset);
+			copy[keyVal] = std::move(d.second);
+		}
+		else if (indexMap[d.first] >= 0) {
+			auto keyVal = static_cast<MapType::key_type>(indexMap[d.first]);
+			copy[keyVal] = std::move(d.second);
+		}
 	}
 
 	keyMap = std::move(copy);

@@ -889,8 +889,8 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 	if (smooth) {
 		smoothThresh *= DEG2RAD;
 		std::vector<Vector3> seamNorms;
-		SortingMatcher matcher(verts.data(), static_cast<int>(verts.size()));
-		for (const std::vector<int>& matchset : matcher.matches) {
+		SortingMatcher matcher(verts.data(), static_cast<uint16_t>(verts.size()));
+		for (const auto& matchset : matcher.matches) {
 			seamNorms.resize(matchset.size());
 			for (size_t j = 0; j < matchset.size(); ++j) {
 				const Vector3& n = norms[matchset[j]];
@@ -1847,9 +1847,9 @@ void StripsInfo::Sync(NiStreamReversible& stream) {
 	stream.Sync(hasPoints);
 	if (hasPoints) {
 		points.resize(stripLengths.size());
-		for (uint32_t i = 0; i < stripLengths.size(); i++) {
+		for (uint16_t i = 0; i < stripLengths.size(); i++) {
 			points[i].resize(stripLengths[i]);
-			for (uint32_t j = 0; j < stripLengths[i]; j++)
+			for (uint16_t j = 0; j < stripLengths[i]; j++)
 				stream.Sync(points[i][j]);
 		}
 	}
@@ -1866,15 +1866,15 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
 
 	// This is not a healthy way to delete strip data. Probably need to restrip the shape.
-	for (uint32_t i = 0; i < stripsInfo.stripLengths.size(); i++) {
-		for (uint32_t j = 0; j < stripsInfo.stripLengths[i]; j++) {
+	for (uint16_t i = 0; i < stripsInfo.stripLengths.size(); i++) {
+		for (uint16_t j = 0; j < stripsInfo.stripLengths[i]; j++) {
 			if (indexCollapse[stripsInfo.points[i][j]] == -1) {
 				stripsInfo.points[i].erase(stripsInfo.points[i].begin() + j);
 				stripsInfo.stripLengths[i]--;
 				--j;
 			}
 			else
-				stripsInfo.points[i][j] = indexCollapse[stripsInfo.points[i][j]];
+				stripsInfo.points[i][j] = static_cast<uint16_t>(indexCollapse[stripsInfo.points[i][j]]);
 		}
 	}
 
