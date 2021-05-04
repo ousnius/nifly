@@ -12,8 +12,8 @@ foreach(name ${SOURCES})
     # Add warnings. -Werror disabled for now
     target_compile_options(${name} PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-        -Werror
-        -Wall -Wextra -Wconversion -Wsign-conversion -Wno-shadow-field -Wno-c++98-compat -Wno-c++98-compat-pedantic>
+        -Wall -Wextra -Wconversion -Wsign-conversion
+        $<$<CXX_COMPILER_ID:Clang>: -Werror -Wno-shadow-field -Wno-c++98-compat -Wno-c++98-compat-pedantic>
         $<$<CXX_COMPILER_ID:MSVC>:
         /WX
         /W4 /w44265>
