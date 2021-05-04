@@ -44,14 +44,47 @@ add_library(nifly STATIC
     ${sources}
     )
 
-target_include_directories(nifly
-    PUBLIC ${NIFLY_INCLUDE_DIR}
-    SYSTEM ${NIFLY_EXTERNAL_DIR}
+target_include_directories(nifly PUBLIC
+    $<BUILD_INTERFACE:${NIFLY_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include>
+    )
+
+target_include_directories(nifly SYSTEM PUBLIC
+    $<BUILD_INTERFACE:${NIFLY_EXTERNAL_DIR}>
+    $<INSTALL_INTERFACE:external>
     )
 
 target_compile_features(nifly PUBLIC cxx_std_17)
 
-
 if(MSVC)
     target_compile_options(nifly PUBLIC "/EHsc" "/bigobj")
 endif()
+
+install(DIRECTORY ${NIFLY_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${NIFLY_EXTERNAL_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+  ${PROJECT_BINARY_DIR}/cmake/nifly-config-version.cmake
+  VERSION ${NIFLY_VERSION}
+  COMPATIBILITY AnyNewerVersion)
+
+install(TARGETS nifly
+  EXPORT nifly-targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+
+configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/nifly-config.cmake.in
+  ${PROJECT_BINARY_DIR}/cmake/nifly-config.cmake
+  INSTALL_DESTINATION cmake/})
+
+install(EXPORT nifly-targets
+  FILE nifly-targets.cmake
+  DESTINATION cmake/)
+
+install(FILES
+    ${PROJECT_BINARY_DIR}/cmake/nifly-config.cmake
+    ${PROJECT_BINARY_DIR}/cmake/nifly-config-version.cmake
+  DESTINATION cmake/)
