@@ -299,7 +299,7 @@ struct Vector3 {
 		else if (dot == 0.0f)
 			return PI / 2.0f;
 
-		return acos(dot);
+		return std::acos(dot);
 	}
 
 	void clampEpsilon() {
@@ -318,7 +318,7 @@ struct Vector3 {
 
 	float length2() const { return x * x + y * y + z * z; }
 
-	float length() const { return sqrt(x * x + y * y + z * z); }
+	float length() const { return std::sqrt(x * x + y * y + z * z); }
 
 	float DistanceToSegment(const Vector3& p1, const Vector3& p2) const {
 		Vector3 segvec(p2 - p1);
