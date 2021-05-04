@@ -91,7 +91,7 @@ struct MotorDesc {
 			case MOTOR_POSITION: motorPosition.Sync(stream); break;
 			case MOTOR_VELOCITY: motorVelocity.Sync(stream); break;
 			case MOTOR_SPRING: motorSpringDamper.Sync(stream); break;
-			default: break;
+			case MOTOR_NONE: break;
 		}
 	}
 };

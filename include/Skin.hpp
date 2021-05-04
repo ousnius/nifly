@@ -14,10 +14,9 @@ struct SkinWeight {
 	uint16_t index;
 	float weight;
 
-	SkinWeight(const uint16_t index = 0, const float weight = 0.0f) {
-		this->index = index;
-		this->weight = weight;
-	}
+	SkinWeight(const uint16_t index_ = 0, const float weight_ = 0.0f)
+		: index(index_)
+		, weight(weight_) {}
 };
 
 struct VertexWeight {

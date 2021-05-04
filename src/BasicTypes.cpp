@@ -429,7 +429,7 @@ uint16_t NiHeader::AddOrFindBlockTypeId(const std::string& blockTypeName) {
 std::string NiHeader::GetBlockTypeStringById(const uint32_t blockId) const {
 	if (blockId != NIF_NPOS && blockId < numBlocks) {
 		uint16_t typeIndex = blockTypeIndices[blockId];
-		if (typeIndex != NIF_NPOS && typeIndex < numBlockTypes)
+		if (typeIndex < numBlockTypes)
 			return blockTypes[typeIndex].get();
 	}
 
@@ -510,7 +510,7 @@ void NiHeader::ClearStrings() {
 void NiHeader::UpdateMaxStringLength() {
 	maxStringLen = 0;
 	for (auto& s : strings) {
-		uint32_t len = static_cast<uint32_t>(s.length());
+		auto len = static_cast<uint32_t>(s.length());
 		if (maxStringLen < len)
 			maxStringLen = len;
 	}
