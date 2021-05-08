@@ -303,22 +303,6 @@ void FurniturePosition::Sync(NiStreamReversible& stream) {
 
 void BSFurnitureMarker::Sync(NiStreamReversible& stream) {
 	positions.Sync(stream);
-
-	for (uint32_t i = 0; i < positions.size(); i++) {
-		stream.Sync(positions[i].offset);
-
-		if (stream.GetVersion().User() <= 11) {
-			stream.Sync(positions[i].orientation);
-			stream.Sync(positions[i].posRef1);
-			stream.Sync(positions[i].posRef2);
-		}
-
-		if (stream.GetVersion().User() >= 12) {
-			stream.Sync(positions[i].heading);
-			stream.Sync(positions[i].animationType);
-			stream.Sync(positions[i].entryPoints);
-		}
-	}
 }
 
 void DecalVectorBlock::Sync(NiStreamReversible& stream) {

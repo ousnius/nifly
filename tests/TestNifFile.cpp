@@ -37,10 +37,16 @@ TEST_CASE("Load and save skinned file (FO4)", "[NifFile]") {
 	REQUIRE(nif.Save("TestNifFile_Skinned_FO4_output.nif") == 0);
 }
 
-TEST_CASE("Load and save animated file", "[NifFile]") {
+TEST_CASE("Load and save furniture file (SE)", "[NifFile]") {
 	NifFile nif;
-	REQUIRE(nif.Load("TestNifFile_Animated.nif") == 0);
-	REQUIRE(nif.Save("TestNifFile_Animated_output.nif") == 0);
+	REQUIRE(nif.Load("TestNifFile_Furniture_Col_SE.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Furniture_Col_SE_output.nif") == 0);
+}
+
+TEST_CASE("Load and save animated file (LE)", "[NifFile]") {
+	NifFile nif;
+	REQUIRE(nif.Load("TestNifFile_Animated_LE.nif") == 0);
+	REQUIRE(nif.Save("TestNifFile_Animated_LE_output.nif") == 0);
 }
 
 TEST_CASE("Load, optimize (LE to SE) and save file", "[NifFile]") {
