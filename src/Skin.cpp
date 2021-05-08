@@ -6,7 +6,6 @@ See the included GPLv3 LICENSE file
 
 #include "Skin.hpp"
 #include "NifUtil.hpp"
-#include "half.hpp"
 
 #include <unordered_map>
 

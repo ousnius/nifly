@@ -303,11 +303,11 @@ struct Vector3 {
 	}
 
 	void clampEpsilon() {
-		if (fabs(x) < EPSILON)
+		if (std::fabs(x) < EPSILON)
 			x = 0.0f;
-		if (fabs(y) < EPSILON)
+		if (std::fabs(y) < EPSILON)
 			y = 0.0f;
-		if (fabs(z) < EPSILON)
+		if (std::fabs(z) < EPSILON)
 			z = 0.0f;
 	}
 

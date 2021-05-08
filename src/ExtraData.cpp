@@ -5,7 +5,6 @@ See the included GPLv3 LICENSE file
 */
 
 #include "ExtraData.hpp"
-#include "half.hpp"
 
 #include <fstream>
 

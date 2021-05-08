@@ -60,7 +60,7 @@ public:
 	// Sets the vertex size
 	void SetSize(uint32_t size) {
 		desc &= DESC_MASK_VERT;
-		desc |= static_cast<uint64_t>(size >> 2);
+		desc |= static_cast<uint64_t>(size) >> 2;
 	}
 
 	// Sets the dynamic vertex size
