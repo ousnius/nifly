@@ -24,10 +24,12 @@ class NiFactory {
 public:
 	virtual std::unique_ptr<NiObject> Create() = 0;
 	virtual std::unique_ptr<NiObject> Load(NiIStream& stream) = 0;
+
+	virtual ~NiFactory() = default;
 };
 
 template<typename T>
-class NiFactoryType : public NiFactory {
+class NiFactoryType final : public NiFactory {
 public:
 	// Create new NiObject
 	std::unique_ptr<NiObject> Create() override { return std::make_unique<T>(); }

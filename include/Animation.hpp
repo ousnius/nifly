@@ -322,7 +322,7 @@ enum PathFlags : uint16_t {
 
 class NiPathInterpolator : public NiCloneableStreamable<NiPathInterpolator, NiKeyBasedInterpolator> {
 private:
-	PathFlags pathFlags = (PathFlags) (PATH_CVDATANEEDSUPDATE | PATH_CURVETYPEOPEN);
+	PathFlags pathFlags = static_cast<PathFlags>(PATH_CVDATANEEDSUPDATE | PATH_CURVETYPEOPEN);
 	int bankDir = 1;
 	float maxBankAngle = 0.0f;
 	float smoothing = 0.0f;

@@ -6,7 +6,6 @@ See the included GPLv3 LICENSE file
 
 #include "Skin.hpp"
 #include "NifUtil.hpp"
-#include "half.hpp"
 
 #include <unordered_map>
 
@@ -94,7 +93,6 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 
 			vertData.resize(numVertices);
 
-			half_float::half halfData;
 			for (uint32_t i = 0; i < numVertices; i++) {
 				auto& vertex = vertData[i];
 				if (HasVertices()) {

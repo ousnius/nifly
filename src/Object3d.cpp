@@ -231,7 +231,7 @@ BoundingSphere::BoundingSphere(const std::vector<Vector3>& vertices) {
 	center.y = pCenter[1];
 	center.z = pCenter[2];
 
-	radius = sqrt(mb.squared_radius());
+	radius = std::sqrt(mb.squared_radius());
 }
 
 float Matrix3::Determinant() const {
@@ -293,19 +293,19 @@ bool Matrix3::ToEulerAngles(float& y, float& p, float& r) const {
 
 	if (rows[0].z < 1.0f) {
 		if (rows[0].z > -1.0f) {
-			y = atan2(-rows[1].z, rows[2].z);
-			p = asin(rows[0].z);
-			r = atan2(-rows[0].y, rows[0].x);
+			y = std::atan2(-rows[1].z, rows[2].z);
+			p = std::asin(rows[0].z);
+			r = std::atan2(-rows[0].y, rows[0].x);
 			canRot = true;
 		}
 		else {
-			y = -atan2(-rows[1].x, rows[1].y);
+			y = -std::atan2(-rows[1].x, rows[1].y);
 			p = -PI / 2.0f;
 			r = 0.0f;
 		}
 	}
 	else {
-		y = atan2(rows[1].x, rows[1].y);
+		y = std::atan2(rows[1].x, rows[1].y);
 		p = PI / 2.0f;
 		r = 0.0f;
 	}

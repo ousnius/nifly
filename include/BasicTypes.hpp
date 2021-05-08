@@ -33,8 +33,8 @@ constexpr auto NiUIntMin = std::numeric_limits<uint32_t>::min();
 constexpr auto NiUIntMax = std::numeric_limits<uint32_t>::max();
 constexpr auto NiFloatMin = std::numeric_limits<float>::lowest();
 constexpr auto NiFloatMax = std::numeric_limits<float>::max();
-const auto NiVec3Min = Vector3(NiFloatMin, NiFloatMin, NiFloatMin);
-const auto NiVec4Min = Vector4(NiFloatMin, NiFloatMin, NiFloatMin, NiFloatMin);
+constexpr auto NiVec3Min = Vector3(NiFloatMin, NiFloatMin, NiFloatMin);
+constexpr auto NiVec4Min = Vector4(NiFloatMin, NiFloatMin, NiFloatMin, NiFloatMin);
 
 enum NiFileVersion : uint32_t {
 	V2_3 = 0x02030000,
@@ -215,10 +215,10 @@ class NiStreamReversible {
 public:
 	enum class Mode { Reading, Writing };
 
-	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode)
+	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode_)
 		: istream(is)
 		, ostream(os)
-		, mode(mode) {}
+		, mode(mode_) {}
 
 	void SetMode(Mode m) { mode = m; }
 	Mode GetMode() const { return mode; }
@@ -903,8 +903,6 @@ private:
 	std::vector<uint32_t> groupSizes;
 
 public:
-	NiHeader(){};
-
 	static constexpr const char* BlockName = "NiHeader";
 	const char* GetBlockName() override { return BlockName; }
 

@@ -31,9 +31,6 @@ struct OptResult {
 // Sort bone weights with indices
 struct BoneWeightsSort {
 	bool operator()(const SkinWeight& lhs, const SkinWeight& rhs) {
-		if (lhs.weight == rhs.weight)
-			return false;
-
 		return rhs.weight < lhs.weight;
 	}
 };

@@ -1578,7 +1578,7 @@ NiShape* NifFile::CreateShapeFromData(const std::string& shapeName,
 	else {
 		auto nifTexset = std::make_unique<BSShaderTextureSet>(hdr.GetVersion());
 
-		int shaderID;
+		int shaderID{};
 		std::unique_ptr<BSLightingShaderProperty> nifShader = nullptr;
 		std::unique_ptr<BSShaderPPLightingProperty> nifShaderPP = nullptr;
 
@@ -1734,7 +1734,7 @@ void NifFile::TriangulateShape(NiShape* shape) {
 
 NiNode* NifFile::GetRootNode() const {
 	// Check if block at index 0 is a node
-	auto root = hdr.GetBlock<NiNode>((uint32_t) 0);
+	auto root = hdr.GetBlock<NiNode>(0u);
 	if (!root) {
 		// Not a node, look for first node block
 		for (auto& block : blocks) {
