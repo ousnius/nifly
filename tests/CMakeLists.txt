@@ -18,7 +18,6 @@ foreach(name ${SOURCES})
         $<$<CXX_COMPILER_ID:MSVC>: /WX /W4 /w44265>
         )
 
-    add_test(NAME ${name} COMMAND "${name}"
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        )
+    include(Catch)
+    catch_discover_tests(${name} WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 endforeach()
