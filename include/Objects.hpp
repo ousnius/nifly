@@ -25,6 +25,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<int>& indices) override;
+	void SetControllerRef(const int controllerId) { controllerRef.index = controllerId; }
 };
 
 class NiProperty;

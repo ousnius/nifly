@@ -241,6 +241,7 @@ public:
 	virtual bool HasSkinInstance() const { return false; }
 	virtual NiBlockRef<NiBoneContainer>* SkinInstanceRef() { return nullptr; }
 	virtual const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const { return nullptr; }
+	virtual void SetSkinInstanceRef(const int shaderId) { }
 
 	virtual bool HasShaderProperty() const { return false; }
 	virtual NiBlockRef<NiShader>* ShaderPropertyRef() { return nullptr; }
@@ -333,6 +334,7 @@ public:
 	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
 	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
 	const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const override { return &skinInstanceRef; }
+	void SetSkinInstanceRef(const int shaderId) override { skinInstanceRef.index = shaderId; }
 
 	bool HasShaderProperty() const override { return !shaderPropertyRef.IsEmpty(); }
 	NiBlockRef<NiShader>* ShaderPropertyRef() override { return &shaderPropertyRef; }
@@ -602,6 +604,7 @@ public:
 	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
 	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
 	const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const override { return &skinInstanceRef; }
+	void SetSkinInstanceRef(const int shaderId) override { skinInstanceRef.index = shaderId; }
 
 	bool HasShaderProperty() const override { return !shaderPropertyRef.IsEmpty(); }
 	NiBlockRef<NiShader>* ShaderPropertyRef() override { return &shaderPropertyRef; }
