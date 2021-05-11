@@ -119,24 +119,37 @@ public:
 	uint32_t NDS() const { return nds; }
 	void SetNDS(const uint32_t ndsVer) { nds = ndsVer; }
 
+	// Check if file is for a Bethesda title
 	bool IsBethesda() const { return (file == V20_2_0_7 && user >= 11) || IsOB(); }
 
+	// Check if file has an Oblivion version range
 	bool IsOB() const {
 		return ((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11)
 			   || (file == V20_0_0_4 && (user == 10 || user == 11)) || (file == V20_0_0_5 && user == 11);
 	}
 
+	// Check if file has a Fallout 3 version range
 	bool IsFO3() const { return file == V20_2_0_7 && stream > 11 && stream < 83; }
+	// Check if file has a Skyrim (LE) version range
 	bool IsSK() const { return file == V20_2_0_7 && stream == 83; }
+	// Check if file has a Skyrim (SE) version range
 	bool IsSSE() const { return file == V20_2_0_7 && stream == 100; }
+	// Check if file has a Fallout 4 version range
 	bool IsFO4() const { return file == V20_2_0_7 && stream == 130; }
+	// Check if file has a Fallout 76 version range
 	bool IsFO76() const { return file == V20_2_0_7 && stream == 155; }
 
+	// Return an Oblivion file version
 	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 0); }
+	// Return a Fallout 3 file version
 	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 82); }
+	// Return a Skyrim (LE) file version
 	static NiVersion getSK() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 83); }
+	// Return a Skyrim (SE) file version
 	static NiVersion getSSE() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 100); }
+	// Return a Fallout 4 file version
 	static NiVersion getFO4() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 130); }
+	// Return a Fallout 76 file version
 	static NiVersion getFO76() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 155); }
 };
 
@@ -919,8 +932,11 @@ public:
 	void SetCreatorInfo(const std::string& creatorInfo);
 
 	std::string GetExportInfo() const;
+
+	// Sets export info string (automatically split into three members after 256 characters each)
 	void SetExportInfo(const std::string& exportInfo);
 
+	// Sets pointer to all blocks in the file
 	void SetBlockReference(std::vector<std::unique_ptr<NiObject>>* blockRef) { blocks = blockRef; }
 
 	uint32_t GetNumBlocks() const { return numBlocks; }
@@ -989,13 +1005,25 @@ public:
 		return nullptr;
 	}
 
+	// Returns the index of a block in the file (or NIF_NPOS)
 	uint32_t GetBlockID(NiObject* block) const;
 
+	// Deletes a block and notifies all other blocks
 	void DeleteBlock(const uint32_t blockId);
+	// Deletes a block and notifies all other blocks
 	void DeleteBlock(const NiRef& blockRef);
+
+	// Deletes all blocks with the specified block type name.
+	// "orphanedOnly" makes sure no blocks that are still referenced by other blocks are deleted.
 	void DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly = false);
+
+	// Adds a new block to the file. Pointer is moved to the file.
 	uint32_t AddBlock(std::unique_ptr<NiObject> newBlock);
+
+	// Replaces an existing block in the file. Pointer is moved to the file.
+	// This is not the same as deleting and adding a new block.
 	uint32_t ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObject> newBlock);
+
 	void SetBlockOrder(std::vector<uint32_t>& newOrder);
 	void FixBlockAlignment(const std::vector<NiObject*>& currentTree);
 
@@ -1004,6 +1032,9 @@ public:
 	bool IsBlockReferenced(const uint32_t blockId);
 	int GetBlockRefCount(const uint32_t blockId);
 
+	// Deletes all unreferenced (loose) blocks of the given type starting at the specified root.
+	// Use template type "NiObject" for all block types.
+	// Sets the amount of deleted blocks (or 0) in "deletionCount".
 	template<class T>
 	bool DeleteUnreferencedBlocks(const uint32_t rootId, uint32_t* deletionCount = nullptr) {
 		if (rootId == NIF_NPOS)
@@ -1038,13 +1069,25 @@ public:
 
 	uint32_t GetStringCount() const;
 	uint32_t FindStringId(const std::string& str) const;
+
+	// Adds a new string to the header (or finds a matching one).
+	// "addEmpty" allows for adding an empty string, which is usually not required.
+	// Returns the string index that can then be assigned to a block's member.
 	uint32_t AddOrFindStringId(const std::string& str, const bool addEmpty = false);
+
+	// Returns string at the specified string index (or empty string)
 	std::string GetStringById(const uint32_t id) const;
+
+	// Sets string at the specified string index (or does nothing)
 	void SetStringById(const uint32_t id, const std::string& str);
 
 	void ClearStrings();
 	void UpdateMaxStringLength();
+
+	// Fills all string references with their corresponding header string (index -> string)
 	void FillStringRefs();
+
+	// Creates header strings for all string references or updates existing ones (string -> index)
 	void UpdateHeaderStrings(const bool hasUnknown);
 
 	static void BlockDeleted(NiObject* o, const uint32_t blockId);
@@ -1054,6 +1097,7 @@ public:
 	void Put(NiOStream& stream) override;
 };
 
+// Used for all unknown block types
 class NiUnknown : public NiCloneableStreamable<NiUnknown, NiObject> {
 public:
 	std::vector<char> data;

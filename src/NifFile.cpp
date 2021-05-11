@@ -2223,7 +2223,6 @@ void NifFile::UpdateShapeBoneID(const std::string& shapeName, const uint32_t old
 	}
 }
 
-// Not implemented for BSTriShape, use SetShapeVertWeights instead
 void NifFile::SetShapeBoneWeights(const std::string& shapeName,
 								  const uint32_t boneIndex,
 								  std::unordered_map<uint16_t, float>& inWeights) {
