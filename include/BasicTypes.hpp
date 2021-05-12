@@ -140,9 +140,9 @@ public:
 	bool IsFO76() const { return file == V20_2_0_7 && stream == 155; }
 
 	// Return an Oblivion file version
-	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 0); }
+	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 11); }
 	// Return a Fallout 3 file version
-	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 82); }
+	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 11, 34); }
 	// Return a Skyrim (LE) file version
 	static NiVersion getSK() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 83); }
 	// Return a Skyrim (SE) file version
