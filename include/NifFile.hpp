@@ -203,25 +203,30 @@ public:
 	NiShader* GetShader(NiShape* shape) const;
 
 	// Returns NiMaterialProperty pointer of the shape (or nullptr).
-	// Used by FO3/NV.
+	// Used by OB/FO3/NV.
 	NiMaterialProperty* GetMaterialProperty(NiShape* shape) const;
 
 	// Returns NiStencilProperty pointer of the shape (or nullptr)
-	// Used by FO3/NV.
+	// Used by OB/FO3/NV.
 	NiStencilProperty* GetStencilProperty(NiShape* shape) const;
+
+	// Returns NiTexturingProperty pointer of the shape (or nullptr)
+	// Used by OB.
+	NiTexturingProperty* GetTexturingProperty(NiShape* shape) const;
 
 	// Fills "outTexFile" with the texture path in the specified slot.
 	// Returns:
 	// 0 if the texture slot was not found
 	// 1 if the texture is found in a BSShaderTextureSet block
 	// 2 if the texture is found in a BSEffectShaderProperty block
-	uint32_t GetTextureSlot(NiShader* shader, std::string& outTexFile, const uint32_t texIndex = 0) const;
+	// 3 if the texture is found in a NiTexturingProperty block
+	uint32_t GetTextureSlot(NiShape* shape, std::string& outTexFile, uint32_t texIndex = 0) const;
 
 	// Sets texture path in the specified slot.
-	// Will fill path in both BSShaderTextureSet or BSEffectShaderProperty blocks.
-	void SetTextureSlot(NiShader* shader, std::string& inTexFile, const uint32_t texIndex = 0);
+	// Will fill path in both BSShaderTextureSet, BSEffectShaderProperty or NiTexturingProperty blocks.
+	void SetTextureSlot(NiShape* shape, std::string& inTexFile, uint32_t texIndex = 0);
 
-	// Normalizes all texture paths in BSShaderTextureSet and BSEffectShaderProperty blocks
+	// Normalizes all texture paths in BSShaderTextureSet, BSEffectShaderProperty and NiTexturingProperty blocks
 	void TrimTexturePaths();
 
 	// Clones all referenced blocks in the specified block.

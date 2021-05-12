@@ -579,11 +579,16 @@ NiShader* NifFile::GetShader(NiShape* shape) const {
 
 	for (auto& prop : shape->propertyRefs) {
 		auto shaderProp = hdr.GetBlock<NiShader>(prop);
-		if (shaderProp)
-			return shaderProp;
+		if (shaderProp) {
+			shader = shaderProp;
+
+			// Only return NiMaterialProperty if no other shader blocks are found
+			if (!shaderProp->HasType<NiMaterialProperty>())
+				return shaderProp;
+		}
 	}
 
-	return nullptr;
+	return shader;
 }
 
 NiMaterialProperty* NifFile::GetMaterialProperty(NiShape* shape) const {
@@ -606,50 +611,183 @@ NiStencilProperty* NifFile::GetStencilProperty(NiShape* shape) const {
 	return nullptr;
 }
 
-uint32_t NifFile::GetTextureSlot(NiShader* shader, std::string& outTexFile, const uint32_t texIndex) const {
-	outTexFile.clear();
-
-	auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-	if (textureSet && texIndex + 1 <= textureSet->textures.size()) {
-		outTexFile = textureSet->textures[texIndex].get();
-		return 1;
+NiTexturingProperty* NifFile::GetTexturingProperty(NiShape* shape) const {
+	for (auto& prop : shape->propertyRefs) {
+		auto texturingProp = hdr.GetBlock<NiTexturingProperty>(prop);
+		if (texturingProp)
+			return texturingProp;
 	}
 
-	if (!textureSet) {
-		auto effectShader = dynamic_cast<BSEffectShaderProperty*>(shader);
-		if (effectShader) {
-			switch (texIndex) {
-				case 0: outTexFile = effectShader->sourceTexture.get(); break;
-				case 1: outTexFile = effectShader->normalTexture.get(); break;
-				case 3: outTexFile = effectShader->greyscaleTexture.get(); break;
-				case 4: outTexFile = effectShader->envMapTexture.get(); break;
-				case 5: outTexFile = effectShader->envMaskTexture.get(); break;
-			}
+	return nullptr;
+}
 
-			return 2;
+uint32_t NifFile::GetTextureSlot(NiShape* shape, std::string& outTexFile, uint32_t texIndex) const {
+	outTexFile.clear();
+
+	auto shader = GetShader(shape);
+	if (shader) {
+		auto textureSet = hdr.GetBlock(shader->TextureSetRef());
+		if (textureSet && texIndex + 1 <= textureSet->textures.size()) {
+			outTexFile = textureSet->textures[texIndex].get();
+			return 1;
 		}
+
+		if (!textureSet) {
+			auto effectShader = dynamic_cast<BSEffectShaderProperty*>(shader);
+			if (effectShader) {
+				switch (texIndex) {
+					case 0: outTexFile = effectShader->sourceTexture.get(); break;
+					case 1: outTexFile = effectShader->normalTexture.get(); break;
+					case 3: outTexFile = effectShader->greyscaleTexture.get(); break;
+					case 4: outTexFile = effectShader->envMapTexture.get(); break;
+					case 5: outTexFile = effectShader->envMaskTexture.get(); break;
+				}
+
+				return 2;
+			}
+		}
+	}
+
+	// Get texture path from referenced NiSourceTexture block
+	auto getSourceTexturePath = [&hdr = hdr](const NiBlockRef<NiSourceTexture>& sourceRef) -> std::string {
+		auto sourceTexture = hdr.GetBlock(sourceRef);
+		if (sourceTexture)
+			return sourceTexture->fileName.get();
+
+		return std::string();
+	};
+
+	// NiTexturingProperty and NiSourceTexture for OB
+	auto texturingProp = GetTexturingProperty(shape);
+	if (texturingProp && texturingProp->textureCount > texIndex) {
+		switch (texIndex) {
+			case 0:
+				if (texturingProp->hasBaseTex)
+					outTexFile = getSourceTexturePath(texturingProp->baseTex.sourceRef);
+				break;
+			case 1:
+				if (texturingProp->hasDarkTex)
+					outTexFile = getSourceTexturePath(texturingProp->darkTex.sourceRef);
+				break;
+			case 2:
+				if (texturingProp->hasDetailTex)
+					outTexFile = getSourceTexturePath(texturingProp->detailTex.sourceRef);
+				break;
+			case 3:
+				if (texturingProp->hasGlossTex)
+					outTexFile = getSourceTexturePath(texturingProp->glossTex.sourceRef);
+				break;
+			case 4:
+				if (texturingProp->hasGlowTex)
+					outTexFile = getSourceTexturePath(texturingProp->glowTex.sourceRef);
+				break;
+			case 5:
+				if (texturingProp->hasBumpTex)
+					outTexFile = getSourceTexturePath(texturingProp->bumpTex.sourceRef);
+				break;
+			case 6:
+				if (texturingProp->hasDecalTex0)
+					outTexFile = getSourceTexturePath(texturingProp->decalTex0.sourceRef);
+				break;
+			case 7:
+				if (texturingProp->hasDecalTex1)
+					outTexFile = getSourceTexturePath(texturingProp->decalTex1.sourceRef);
+				break;
+			case 8:
+				if (texturingProp->hasDecalTex2)
+					outTexFile = getSourceTexturePath(texturingProp->decalTex2.sourceRef);
+				break;
+			case 9:
+				if (texturingProp->hasDecalTex3)
+					outTexFile = getSourceTexturePath(texturingProp->decalTex3.sourceRef);
+				break;
+		}
+
+		if (!outTexFile.empty())
+			return 3;
 	}
 
 	return 0;
 }
 
-void NifFile::SetTextureSlot(NiShader* shader, std::string& inTexFile, const uint32_t texIndex) {
-	auto textureSet = hdr.GetBlock(shader->TextureSetRef());
-	if (textureSet && texIndex + 1 <= textureSet->textures.size()) {
-		textureSet->textures[texIndex].get() = inTexFile;
-		return;
+void NifFile::SetTextureSlot(NiShape* shape, std::string& inTexFile, uint32_t texIndex) {
+	auto shader = GetShader(shape);
+	if (shader) {
+		auto textureSet = hdr.GetBlock(shader->TextureSetRef());
+		if (textureSet && texIndex + 1 <= textureSet->textures.size()) {
+			textureSet->textures[texIndex].get() = inTexFile;
+			return;
+		}
+
+		if (!textureSet) {
+			auto effectShader = dynamic_cast<BSEffectShaderProperty*>(shader);
+			if (effectShader) {
+				switch (texIndex) {
+					case 0: effectShader->sourceTexture.get() = inTexFile; break;
+					case 1: effectShader->normalTexture.get() = inTexFile; break;
+					case 3: effectShader->greyscaleTexture.get() = inTexFile; break;
+					case 4: effectShader->envMapTexture.get() = inTexFile; break;
+					case 5: effectShader->envMaskTexture.get() = inTexFile; break;
+				}
+				return;
+			}
+		}
 	}
 
-	if (!textureSet) {
-		auto effectShader = dynamic_cast<BSEffectShaderProperty*>(shader);
-		if (effectShader) {
-			switch (texIndex) {
-				case 0: effectShader->sourceTexture.get() = inTexFile; break;
-				case 1: effectShader->normalTexture.get() = inTexFile; break;
-				case 3: effectShader->greyscaleTexture.get() = inTexFile; break;
-				case 4: effectShader->envMapTexture.get() = inTexFile; break;
-				case 5: effectShader->envMaskTexture.get() = inTexFile; break;
-			}
+	// Set texture path in referenced NiSourceTexture block
+	auto setSourceTexturePath = [&hdr = hdr](const NiBlockRef<NiSourceTexture>& sourceRef,
+											 const std::string& texturePath) {
+		auto sourceTexture = hdr.GetBlock(sourceRef);
+		if (sourceTexture)
+			sourceTexture->fileName.get() = texturePath;
+	};
+
+	// NiTexturingProperty and NiSourceTexture for OB
+	auto texturingProp = GetTexturingProperty(shape);
+	if (texturingProp) {
+		texturingProp->textureCount = texIndex + 1;
+
+		switch (texIndex) {
+			case 0:
+				texturingProp->hasBaseTex = true;
+				setSourceTexturePath(texturingProp->baseTex.sourceRef, inTexFile);
+				break;
+			case 1:
+				texturingProp->hasDarkTex = true;
+				setSourceTexturePath(texturingProp->darkTex.sourceRef, inTexFile);
+				break;
+			case 2:
+				texturingProp->hasDetailTex = true;
+				setSourceTexturePath(texturingProp->detailTex.sourceRef, inTexFile);
+				break;
+			case 3:
+				texturingProp->hasGlossTex = true;
+				setSourceTexturePath(texturingProp->glossTex.sourceRef, inTexFile);
+				break;
+			case 4:
+				texturingProp->hasGlowTex = true;
+				setSourceTexturePath(texturingProp->glowTex.sourceRef, inTexFile);
+				break;
+			case 5:
+				texturingProp->hasBumpTex = true;
+				setSourceTexturePath(texturingProp->bumpTex.sourceRef, inTexFile);
+				break;
+			case 6:
+				texturingProp->hasDecalTex0 = true;
+				setSourceTexturePath(texturingProp->decalTex0.sourceRef, inTexFile);
+				break;
+			case 7:
+				texturingProp->hasDecalTex1 = true;
+				setSourceTexturePath(texturingProp->decalTex1.sourceRef, inTexFile);
+				break;
+			case 8:
+				texturingProp->hasDecalTex2 = true;
+				setSourceTexturePath(texturingProp->decalTex2.sourceRef, inTexFile);
+				break;
+			case 9:
+				texturingProp->hasDecalTex3 = true;
+				setSourceTexturePath(texturingProp->decalTex3.sourceRef, inTexFile);
+				break;
 		}
 	}
 }
@@ -677,8 +815,18 @@ void NifFile::TrimTexturePaths() {
 		return tex;
 	};
 
+	// Trim texture path in referenced NiSourceTexture block
+	auto trimSourceTexturePath = [&hdr = hdr,
+								  &fTrimPath = fTrimPath](const NiBlockRef<NiSourceTexture>& sourceRef) {
+		auto sourceTexture = hdr.GetBlock(sourceRef);
+		if (sourceTexture) {
+			std::string tex = sourceTexture->fileName.get();
+			sourceTexture->fileName.get() = fTrimPath(tex);
+		}
+	};
+
 	for (auto& shape : GetShapes()) {
-		NiShader* shader = GetShader(shape);
+		auto shader = GetShader(shape);
 		if (shader) {
 			auto textureSet = hdr.GetBlock(shader->TextureSetRef());
 			if (textureSet) {
@@ -705,6 +853,31 @@ void NifFile::TrimTexturePaths() {
 					effectShader->envMaskTexture.get() = fTrimPath(tex);
 				}
 			}
+		}
+
+		// NiTexturingProperty and NiSourceTexture for OB
+		auto texturingProp = GetTexturingProperty(shape);
+		if (texturingProp) {
+			if (texturingProp->hasBaseTex)
+				trimSourceTexturePath(texturingProp->baseTex.sourceRef);
+			if (texturingProp->hasDarkTex)
+				trimSourceTexturePath(texturingProp->darkTex.sourceRef);
+			if (texturingProp->hasDetailTex)
+				trimSourceTexturePath(texturingProp->detailTex.sourceRef);
+			if (texturingProp->hasGlossTex)
+				trimSourceTexturePath(texturingProp->glossTex.sourceRef);
+			if (texturingProp->hasGlowTex)
+				trimSourceTexturePath(texturingProp->glowTex.sourceRef);
+			if (texturingProp->hasBumpTex)
+				trimSourceTexturePath(texturingProp->bumpTex.sourceRef);
+			if (texturingProp->hasDecalTex0)
+				trimSourceTexturePath(texturingProp->decalTex0.sourceRef);
+			if (texturingProp->hasDecalTex1)
+				trimSourceTexturePath(texturingProp->decalTex1.sourceRef);
+			if (texturingProp->hasDecalTex2)
+				trimSourceTexturePath(texturingProp->decalTex2.sourceRef);
+			if (texturingProp->hasDecalTex3)
+				trimSourceTexturePath(texturingProp->decalTex3.sourceRef);
 		}
 	}
 }
@@ -3337,7 +3510,7 @@ uint32_t NifFile::AssignAlphaProperty(NiShape* shape, std::unique_ptr<NiAlphaPro
 	NiShader* shader = GetShader(shape);
 	if (shader) {
 		int alphaRef = hdr.AddBlock(std::move(alphaProp));
-		if (shader->HasType<BSShaderPPLightingProperty>())
+		if (shader->HasType<BSShaderPPLightingProperty>() || shader->HasType<NiMaterialProperty>())
 			shape->propertyRefs.AddBlockRef(alphaRef);
 		else if (shape->AlphaPropertyRef())
 			shape->AlphaPropertyRef()->index = alphaRef;
