@@ -210,17 +210,39 @@ void NiPixelData::Sync(NiStreamReversible& stream) {
 
 
 void NiSourceTexture::Sync(NiStreamReversible& stream) {
+	const NiFileVersion fileVersion = stream.GetVersion().File();
+
 	stream.Sync(useExternal);
-	fileName.Sync(stream);
-	dataRef.Sync(stream);
+
+	if (fileVersion <= NiFileVersion::V10_0_1_3)
+		if (!useExternal)
+			stream.Sync(useInternal);
+
+	if (useExternal || fileVersion >= NiFileVersion::V10_1_0_0)
+		fileName.Sync(stream);
+
+	if (useExternal) {
+		if (fileVersion >= NiFileVersion::V10_1_0_0)
+			dataRef.Sync(stream);
+	}
+	else if (useInternal) {
+		if (fileVersion <= NiFileVersion::V10_0_1_3)
+			dataRef.Sync(stream);
+	}
+	else {
+		if (fileVersion > NiFileVersion::V10_0_1_3)
+			dataRef.Sync(stream);
+	}
+
 	stream.Sync(pixelLayout);
 	stream.Sync(mipMapFormat);
 	stream.Sync(alphaFormat);
+
 	stream.Sync(isStatic);
 
-	if (stream.GetVersion().File() >= NiVersion::ToFile(10, 1, 0, 103))
+	if (fileVersion >= NiVersion::ToFile(10, 1, 0, 103))
 		stream.Sync(directRender);
-	if (stream.GetVersion().File() >= NiVersion::ToFile(20, 2, 0, 4))
+	if (fileVersion >= NiVersion::ToFile(20, 2, 0, 4))
 		stream.Sync(persistentRenderData);
 }
 

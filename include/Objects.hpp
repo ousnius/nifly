@@ -258,6 +258,7 @@ class NiTexture : public NiCloneable<NiTexture, NiObjectNET> {};
 class NiSourceTexture : public NiCloneableStreamable<NiSourceTexture, NiTexture> {
 public:
 	bool useExternal = true;
+	bool useInternal = true;
 	NiStringRef fileName;
 
 	// NiPixelData if < 20.2.0.4 or !persistentRenderData
