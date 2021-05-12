@@ -670,7 +670,7 @@ public:
 };
 
 
-class NiMaterialProperty : public NiCloneableStreamable<NiMaterialProperty, NiProperty> {
+class NiMaterialProperty : public NiCloneableStreamable<NiMaterialProperty, NiShader> {
 protected:
 	Vector3 colorSpecular = Vector3(1.0f, 1.0f, 1.0f);
 	Vector3 colorEmissive;
@@ -687,16 +687,17 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	static bool IsEmissive();
-	Vector3 GetSpecularColor();
-	void SetSpecularColor(const Vector3& color);
-	float GetGlossiness() const;
-	void SetGlossiness(const float gloss);
-	Color4 GetEmissiveColor() const;
-	void SetEmissiveColor(const Color4& color);
-	float GetEmissiveMultiple() const;
-	void SetEmissiveMultiple(const float emissive);
-	float GetAlpha() const;
+	bool IsEmissive() const override;
+	bool HasSpecular() const override;
+	void SetSpecularColor(const Vector3& color) override;
+	Vector3 GetSpecularColor() const override;
+	float GetGlossiness() const override;
+	void SetGlossiness(const float gloss) override;
+	Color4 GetEmissiveColor() const override;
+	void SetEmissiveColor(const Color4& color) override;
+	float GetEmissiveMultiple() const override;
+	void SetEmissiveMultiple(const float emissive) override;
+	float GetAlpha() const override;
 };
 
 enum StencilMasks {

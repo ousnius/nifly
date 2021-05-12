@@ -810,16 +810,20 @@ void NiMaterialProperty::Sync(NiStreamReversible& stream) {
 		stream.Sync(emitMulti);
 }
 
-bool NiMaterialProperty::IsEmissive() {
-	return true;
+bool NiMaterialProperty::IsEmissive() const {
+	return !colorEmissive.IsZero();
 }
 
-Vector3 NiMaterialProperty::GetSpecularColor() {
-	return colorSpecular;
+bool NiMaterialProperty::HasSpecular() const {
+	return !colorSpecular.IsZero();
 }
 
 void NiMaterialProperty::SetSpecularColor(const Vector3& color) {
 	colorSpecular = color;
+}
+
+Vector3 NiMaterialProperty::GetSpecularColor() const {
+	return colorSpecular;
 }
 
 float NiMaterialProperty::GetGlossiness() const {
