@@ -46,6 +46,10 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 			stream.Sync(vertices[i]);
 	}
 
+	// Disable tangent flag for OB
+	if (stream.GetVersion().IsOB())
+		dataFlags &= ~(1 << 12);
+
 	if (stream.GetVersion().File() >= NiFileVersion::V10_0_1_0)
 		stream.Sync(dataFlags);
 
