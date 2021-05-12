@@ -139,6 +139,8 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
+enum ConsistencyType : uint16_t { CT_MUTABLE = 0x0000, CT_STATIC = 0x4000, CT_VOLATILE = 0x8000 };
+
 class NiGeometryData : public NiCloneableStreamable<NiGeometryData, NiObject> {
 protected:
 	bool isPSys = false;
@@ -161,10 +163,10 @@ public:
 	uint32_t materialCRC = 0;
 
 	uint8_t keepFlags = 0;
-	uint16_t numUVSets = 0;
+	uint16_t dataFlags = 0;
 	std::vector<std::vector<Vector2>> uvSets;
 
-	uint16_t consistencyFlags = 0;
+	ConsistencyType consistencyFlags = CT_MUTABLE;
 	NiBlockRef<AdditionalGeomData> additionalDataRef;
 
 	void Sync(NiStreamReversible& stream);
@@ -184,10 +186,10 @@ public:
 	bool HasVertexColors() const { return hasVertexColors; }
 
 	void SetUVs(const bool enable);
-	bool HasUVs() const { return (numUVSets & (1 << 0)) != 0; }
+	bool HasUVs() const { return (dataFlags & (1 << 0)) != 0; }
 
 	void SetTangents(const bool enable);
-	bool HasTangents() const { return (numUVSets & (1 << 12)) != 0; }
+	bool HasTangents() const { return (dataFlags & (1 << 12)) != 0; }
 
 	virtual uint32_t GetNumTriangles() const;
 	virtual bool GetTriangles(std::vector<Triangle>& tris) const;
@@ -644,7 +646,7 @@ public:
 class StripsInfo {
 public:
 	NiVector<uint16_t, uint16_t> stripLengths;
-	bool hasPoints = false;
+	bool hasPoints = true;
 	std::vector<std::vector<uint16_t>> points;
 
 	void Sync(NiStreamReversible& stream);

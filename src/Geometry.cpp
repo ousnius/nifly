@@ -32,7 +32,9 @@ void BSPackedAdditionalGeometryData::Sync(NiStreamReversible& stream) {
 
 
 void NiGeometryData::Sync(NiStreamReversible& stream) {
-	stream.Sync(groupID);
+	if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_114)
+		stream.Sync(groupID);
+
 	stream.Sync(numVertices);
 	stream.Sync(keepFlags);
 	stream.Sync(compressFlags);
@@ -44,14 +46,15 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 			stream.Sync(vertices[i]);
 	}
 
-	stream.Sync(numUVSets);
+	if (stream.GetVersion().File() >= NiFileVersion::V10_0_1_0)
+		stream.Sync(dataFlags);
 
-	uint16_t nbtMethod = numUVSets & 0xF000;
-	uint8_t numTextureSets = numUVSets & 0x3F;
+	uint16_t nbtMethod = dataFlags & 0xF000;
+	uint8_t numTextureSets = dataFlags & 0x3F;
 	if (stream.GetVersion().Stream() >= 34)
-		numTextureSets = numUVSets & 0x1;
+		numTextureSets = dataFlags & 0x1;
 
-	if (stream.GetVersion().Stream() > 34)
+	if (stream.GetVersion().File() == NiFileVersion::V20_2_0_7 && stream.GetVersion().Stream() > 34)
 		stream.Sync(materialCRC);
 
 	stream.Sync(hasNormals);
@@ -145,24 +148,24 @@ void NiGeometryData::SetVertexColors(const bool enable) {
 
 void NiGeometryData::SetUVs(const bool enable) {
 	if (enable) {
-		numUVSets |= 1 << 0;
+		dataFlags |= 1 << 0;
 		uvSets.resize(1);
 		uvSets[0].resize(numVertices);
 	}
 	else {
-		numUVSets &= ~(1 << 0);
+		dataFlags &= ~(1 << 0);
 		uvSets.clear();
 	}
 }
 
 void NiGeometryData::SetTangents(const bool enable) {
 	if (enable) {
-		numUVSets |= 1 << 12;
+		dataFlags |= 1 << 12;
 		tangents.resize(numVertices);
 		bitangents.resize(numVertices);
 	}
 	else {
-		numUVSets &= ~(1 << 12);
+		dataFlags &= ~(1 << 12);
 		tangents.clear();
 		bitangents.clear();
 	}
@@ -1844,7 +1847,11 @@ void NiTriShape::SetGeomData(NiGeometryData* geomDataPtr) {
 void StripsInfo::Sync(NiStreamReversible& stream) {
 	stripLengths.Sync(stream);
 
-	stream.Sync(hasPoints);
+	if (stream.GetVersion().File() >= NiFileVersion::V10_0_1_3)
+		stream.Sync(hasPoints);
+	else
+		hasPoints = true;
+
 	if (hasPoints) {
 		points.resize(stripLengths.size());
 		for (uint16_t i = 0; i < stripLengths.size(); i++) {
