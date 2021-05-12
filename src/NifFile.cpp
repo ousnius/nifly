@@ -205,8 +205,8 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 		}
 
 		NiVersion& version = stream.GetVersion();
-		if (!(version.File() >= NiVersion::ToFile(20, 2, 0, 7)
-			  && (version.User() == 11 || version.User() == 12))) {
+		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4())) {
+			// Unsupported file version
 			Clear();
 			return 2;
 		}
@@ -223,6 +223,12 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 				blocks[i] = nifactory->Load(stream);
 			}
 			else {
+				if (version.File() < V20_2_0_5) {
+					// Loading unknown blocks w/o block sizes isn't possible
+					Clear();
+					return 3;
+				}
+
 				hasUnknown = true;
 				blocks[i] = std::make_unique<NiUnknown>(stream, hdr.GetBlockSize(i));
 			}
@@ -356,17 +362,16 @@ void NifFile::SortGraph(NiNode* root, std::vector<uint32_t>& newIndices, uint32_
 			children.AddBlockRef(i);
 
 	if (children.GetSize() > 0) {
-		if (hdr.GetVersion().IsFO3()) {
+		if (hdr.GetVersion().IsOB() || hdr.GetVersion().IsFO3()) {
 			auto bookmark = children.begin();
 			auto peek = children.begin();
 
-			// For FO3, put shapes at start of children
+			// For OB and FO3, put shapes at start of children
 			for (uint32_t i = 0; i < children.GetSize(); i++) {
 				auto shape = hdr.GetBlock<NiShape>(children.GetBlockRef(i));
 				if (shape) {
 					std::iter_swap(bookmark, peek);
-					if (i != 0)
-						++bookmark;
+					++bookmark;
 				}
 				++peek;
 			}
@@ -392,8 +397,8 @@ void NifFile::SortGraph(NiNode* root, std::vector<uint32_t>& newIndices, uint32_
 		auto bookmark = children.begin();
 		auto peek = children.begin();
 
-		if (hdr.GetVersion().IsFO3()) {
-			// For FO3, put nodes at start of children if they have children
+		if (hdr.GetVersion().IsOB() || hdr.GetVersion().IsFO3()) {
+			// For OB and FO3, put nodes at start of children if they have children
 			for (uint32_t i = 0; i < children.GetSize(); i++) {
 				auto node = hdr.GetBlock<NiNode>(children.GetBlockRef(i));
 				if (node && node->childRefs.GetSize() > 0) {
@@ -3649,7 +3654,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 	std::vector<int>& triParts = skinPart->triParts;
 
 	uint16_t maxBonesPerPartition = std::numeric_limits<uint16_t>::max();
-	if (hdr.GetVersion().IsFO3())
+	if (hdr.GetVersion().IsOB() || hdr.GetVersion().IsFO3())
 		maxBonesPerPartition = 18;
 	else if (hdr.GetVersion().IsSSE())
 		maxBonesPerPartition = 80;
@@ -3888,5 +3893,5 @@ void NifFile::SetShapeDynamic(const std::string& shapeName) {
 	// Set consistency flag to mutable
 	auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
 	if (geomData)
-		geomData->consistencyFlags = 0;
+		geomData->consistencyFlags = CT_MUTABLE;
 }

@@ -236,10 +236,13 @@ void NiHeader::DeleteBlock(const uint32_t blockId) {
 				blockTypeIndice--;
 	}
 
+	blockTypeIndices.erase(blockTypeIndices.begin() + blockId);
+
+	if (version.File() >= V20_2_0_5)
+		blockSizes.erase(blockSizes.begin() + blockId);
+
 	blocks->erase(blocks->begin() + blockId);
 	numBlocks--;
-	blockTypeIndices.erase(blockTypeIndices.begin() + blockId);
-	blockSizes.erase(blockSizes.begin() + blockId);
 
 	// Next tell all the blocks that the deletion happened
 	for (auto& b : (*blocks))
@@ -272,7 +275,10 @@ void NiHeader::DeleteBlockByType(const std::string& blockTypeStr, const bool orp
 uint32_t NiHeader::AddBlock(std::unique_ptr<NiObject> newBlock) {
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices.push_back(btID);
-	blockSizes.push_back(0);
+
+	if (version.File() >= V20_2_0_5)
+		blockSizes.push_back(0);
+
 	blocks->emplace_back(std::move(newBlock));
 	numBlocks++;
 	return numBlocks - 1;
@@ -298,7 +304,10 @@ uint32_t NiHeader::ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObj
 
 	uint16_t btID = AddOrFindBlockTypeId(newBlock->GetBlockName());
 	blockTypeIndices[oldBlockId] = btID;
-	blockSizes[oldBlockId] = 0;
+
+	if (version.File() >= V20_2_0_5)
+		blockSizes[oldBlockId] = 0;
+
 	(*blocks)[oldBlockId].swap(newBlock);
 	return oldBlockId;
 }
@@ -345,13 +354,19 @@ void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
 	for (auto& i : indices) {
 		int newIndex = i.second;
 		newBlockTypeIndices[i.first] = blockTypeIndices[newIndex];
-		newBlockSizes[i.first] = blockSizes[newIndex];
+
+		if (version.File() >= V20_2_0_5)
+			newBlockSizes[i.first] = blockSizes[newIndex];
+
 		std::swap(newBlocks[i.first], blocks->at(newIndex));
 	}
 
 	for (int i = numBlocks - 1; i >= 0; i--) {
 		blockTypeIndices[i] = newBlockTypeIndices[i];
-		blockSizes[i] = newBlockSizes[i];
+
+		if (version.File() >= V20_2_0_5)
+			blockSizes[i] = newBlockSizes[i];
+
 		blocks->at(i) = std::move(newBlocks[i]);
 	}
 }
@@ -363,7 +378,10 @@ void NiHeader::SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndex
 
 	// First swap data
 	std::iter_swap(blockTypeIndices.begin() + blockIndexLo, blockTypeIndices.begin() + blockIndexHi);
-	std::iter_swap(blockSizes.begin() + blockIndexLo, blockSizes.begin() + blockIndexHi);
+
+	if (version.File() >= V20_2_0_5)
+		std::iter_swap(blockSizes.begin() + blockIndexLo, blockSizes.begin() + blockIndexHi);
+
 	std::iter_swap(blocks->begin() + blockIndexLo, blocks->begin() + blockIndexHi);
 
 	// Next tell all the blocks that the swap happened
@@ -444,7 +462,7 @@ uint16_t NiHeader::GetBlockTypeIndex(const uint32_t blockId) const {
 }
 
 uint32_t NiHeader::GetBlockSize(const uint32_t blockId) const {
-	if (blockId != NIF_NPOS && blockId < numBlocks)
+	if (blockId < numBlocks && blockSizes.size() > blockId)
 		return blockSizes[blockId];
 
 	return NIF_NPOS;
