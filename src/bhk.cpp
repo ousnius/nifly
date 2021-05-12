@@ -397,8 +397,10 @@ void bhkRigidBody::Sync(NiStreamReversible& stream) {
 	stream.Sync(unusedByte1);
 	stream.Sync(processContactCallbackDelay);
 	stream.Sync(unkInt1);
+
 	stream.Sync(collisionFilterCopy);
 	stream.Sync(reinterpret_cast<char*>(unkShorts2), 12);
+
 	stream.Sync(translation);
 	stream.Sync(rotation);
 	stream.Sync(linearVelocity);
@@ -409,14 +411,16 @@ void bhkRigidBody::Sync(NiStreamReversible& stream) {
 	stream.Sync(linearDamping);
 	stream.Sync(angularDamping);
 
-	if (stream.GetVersion().User() >= 12) {
-		stream.Sync(timeFactor);
+	if (stream.GetVersion().Stream() > 34) {
+		if (stream.GetVersion().Stream() < 130)
+			stream.Sync(timeFactor);
+
 		stream.Sync(gravityFactor);
 	}
 
 	stream.Sync(friction);
 
-	if (stream.GetVersion().User() >= 12)
+	if (stream.GetVersion().Stream() > 34)
 		stream.Sync(rollingFrictionMult);
 
 	stream.Sync(restitution);
@@ -427,22 +431,24 @@ void bhkRigidBody::Sync(NiStreamReversible& stream) {
 	stream.Sync(deactivatorType);
 	stream.Sync(solverDeactivation);
 	stream.Sync(qualityType);
-	stream.Sync(autoRemoveLevel);
-	stream.Sync(responseModifierFlag);
-	stream.Sync(numShapeKeysInContactPointProps);
-	stream.Sync(forceCollideOntoPpu);
-	stream.Sync(unkInt2);
-	stream.Sync(unkInt3);
 
-	if (stream.GetVersion().User() >= 12)
-		stream.Sync(unkInt4);
+	if (stream.GetVersion().Stream() > 34) {
+		stream.Sync(autoRemoveLevel);
+		stream.Sync(responseModifierFlag);
+		stream.Sync(numShapeKeysInContactPointProps);
+		stream.Sync(forceCollideOntoPpu);
+	}
+
+	if (stream.GetVersion().IsFO4())
+		stream.Sync(reinterpret_cast<char*>(unusedBytes2), 3);
+	else
+		stream.Sync(reinterpret_cast<char*>(unusedInts1), 12);
 
 	constraintRefs.Sync(stream);
 
-	if (stream.GetVersion().User() <= 11)
-		stream.Sync(unkInt5);
-
-	if (stream.GetVersion().User() >= 12)
+	if (stream.GetVersion().Stream() < 76)
+		stream.Sync(bodyFlagsInt);
+	else
 		stream.Sync(bodyFlags);
 }
 
@@ -473,16 +479,12 @@ void bhkConstraint::GetPtrs(std::set<NiPtr*>& ptrs) {
 
 
 void bhkHingeConstraint::Sync(NiStreamReversible& stream) {
-	stream.Sync(hinge);
+	hinge.Sync(stream);
 }
 
 
 void bhkLimitedHingeConstraint::Sync(NiStreamReversible& stream) {
-	stream.Sync(limitedHinge.hinge);
-	stream.Sync(limitedHinge.minAngle);
-	stream.Sync(limitedHinge.maxAngle);
-	stream.Sync(limitedHinge.maxFriction);
-	limitedHinge.motorDesc.Sync(stream);
+	limitedHinge.Sync(stream);
 }
 
 
@@ -494,49 +496,19 @@ void ConstraintData::Sync(NiStreamReversible& stream) {
 
 	switch (type) {
 		case BallAndSocket: stream.Sync(reinterpret_cast<char*>(&desc1), 32); break;
-		case Hinge: stream.Sync(reinterpret_cast<char*>(&desc2), 128); break;
-		case LimitedHinge:
-			stream.Sync(desc3.hinge);
-			stream.Sync(desc3.minAngle);
-			stream.Sync(desc3.maxAngle);
-			stream.Sync(desc3.maxFriction);
-			desc3.motorDesc.Sync(stream);
-			break;
-		case Prismatic:
-			stream.Sync(desc4.slidingA);
-			stream.Sync(desc4.rotationA);
-			stream.Sync(desc4.planeA);
-			stream.Sync(desc4.pivotA);
-			stream.Sync(desc4.slidingB);
-			stream.Sync(desc4.rotationB);
-			stream.Sync(desc4.planeB);
-			stream.Sync(desc4.pivotB);
-			stream.Sync(desc4.minDistance);
-			stream.Sync(desc4.maxDistance);
-			stream.Sync(desc4.friction);
-			desc4.motorDesc.Sync(stream);
-			break;
-		case Ragdoll:
-			stream.Sync(desc5.twistA);
-			stream.Sync(desc5.planeA);
-			stream.Sync(desc5.motorA);
-			stream.Sync(desc5.pivotA);
-			stream.Sync(desc5.twistB);
-			stream.Sync(desc5.planeB);
-			stream.Sync(desc5.motorB);
-			stream.Sync(desc5.pivotB);
-			stream.Sync(desc5.coneMaxAngle);
-			stream.Sync(desc5.planeMinAngle);
-			stream.Sync(desc5.planeMaxAngle);
-			stream.Sync(desc5.twistMinAngle);
-			stream.Sync(desc5.twistMaxAngle);
-			stream.Sync(desc5.maxFriction);
-			desc5.motorDesc.Sync(stream);
-			break;
+		case Hinge: desc2.Sync(stream); break;
+		case LimitedHinge: desc3.Sync(stream); break;
+		case Prismatic: desc4.Sync(stream); break;
+		case Ragdoll: desc5.Sync(stream); break;
 		case StiffSpring: stream.Sync(reinterpret_cast<char*>(&desc6), 36); break;
 	}
 
-	stream.Sync(strength);
+	if (stream.GetVersion().File() <= NiFileVersion::V20_0_0_5) {
+		stream.Sync(tau);
+		stream.Sync(damping);
+	}
+	else if (stream.GetVersion().File() >= NiFileVersion::V20_2_0_7)
+		stream.Sync(strength);
 }
 
 void ConstraintData::GetPtrs(std::set<NiPtr*>& ptrs) {
@@ -557,21 +529,36 @@ void bhkBreakableConstraint::GetPtrs(std::set<NiPtr*>& ptrs) {
 
 
 void bhkRagdollConstraint::Sync(NiStreamReversible& stream) {
-	stream.Sync(ragdoll.twistA);
-	stream.Sync(ragdoll.planeA);
-	stream.Sync(ragdoll.motorA);
-	stream.Sync(ragdoll.pivotA);
-	stream.Sync(ragdoll.twistB);
-	stream.Sync(ragdoll.planeB);
-	stream.Sync(ragdoll.motorB);
-	stream.Sync(ragdoll.pivotB);
+	if (stream.GetVersion().Stream() <= 16) {
+		// OB/FO3
+		stream.Sync(ragdoll.pivotA);
+		stream.Sync(ragdoll.planeA);
+		stream.Sync(ragdoll.twistA);
+		stream.Sync(ragdoll.pivotB);
+		stream.Sync(ragdoll.planeB);
+		stream.Sync(ragdoll.twistB);
+	}
+	else {
+		// FO3 and later
+		stream.Sync(ragdoll.twistA);
+		stream.Sync(ragdoll.planeA);
+		stream.Sync(ragdoll.motorA);
+		stream.Sync(ragdoll.pivotA);
+		stream.Sync(ragdoll.twistB);
+		stream.Sync(ragdoll.planeB);
+		stream.Sync(ragdoll.motorB);
+		stream.Sync(ragdoll.pivotB);
+	}
+
 	stream.Sync(ragdoll.coneMaxAngle);
 	stream.Sync(ragdoll.planeMinAngle);
 	stream.Sync(ragdoll.planeMaxAngle);
 	stream.Sync(ragdoll.twistMinAngle);
 	stream.Sync(ragdoll.twistMaxAngle);
 	stream.Sync(ragdoll.maxFriction);
-	ragdoll.motorDesc.Sync(stream);
+
+	if (stream.GetVersion().Stream() > 16)
+		ragdoll.motorDesc.Sync(stream);
 }
 
 
@@ -583,18 +570,7 @@ void bhkStiffSpringConstraint::Sync(NiStreamReversible& stream) {
 
 
 void bhkPrismaticConstraint::Sync(NiStreamReversible& stream) {
-	stream.Sync(prismatic.slidingA);
-	stream.Sync(prismatic.rotationA);
-	stream.Sync(prismatic.planeA);
-	stream.Sync(prismatic.pivotA);
-	stream.Sync(prismatic.slidingB);
-	stream.Sync(prismatic.rotationB);
-	stream.Sync(prismatic.planeB);
-	stream.Sync(prismatic.pivotB);
-	stream.Sync(prismatic.minDistance);
-	stream.Sync(prismatic.maxDistance);
-	stream.Sync(prismatic.friction);
-	prismatic.motorDesc.Sync(stream);
+	prismatic.Sync(stream);
 }
 
 

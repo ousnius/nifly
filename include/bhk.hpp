@@ -105,14 +105,70 @@ struct HingeDesc {
 	Vector4 axleInB1;
 	Vector4 axleInB2;
 	Vector4 pivotB;
+
+	void Sync(NiStreamReversible& stream) {
+		if (stream.GetVersion().File() <= NiFileVersion::V20_0_0_5) {
+			stream.Sync(pivotA);
+			stream.Sync(axleInA1);
+			stream.Sync(axleInA2);
+			stream.Sync(pivotB);
+			stream.Sync(axleB);
+		}
+		else if (stream.GetVersion().File() >= NiFileVersion::V20_2_0_7) {
+			stream.Sync(axleA);
+			stream.Sync(axleInA1);
+			stream.Sync(axleInA2);
+			stream.Sync(pivotA);
+			stream.Sync(axleB);
+			stream.Sync(axleInB1);
+			stream.Sync(axleInB2);
+			stream.Sync(pivotB);
+		}
+	}
 };
 
 struct LimitedHingeDesc {
-	HingeDesc hinge;
+	Vector4 axleA;
+	Vector4 axleInA1;
+	Vector4 axleInA2;
+	Vector4 pivotA;
+	Vector4 axleB;
+	Vector4 axleInB1;
+	Vector4 axleInB2;
+	Vector4 pivotB;
 	float minAngle = 0.0f;
 	float maxAngle = 0.0f;
 	float maxFriction = 0.0f;
 	MotorDesc motorDesc;
+
+	void Sync(NiStreamReversible& stream) {
+		if (stream.GetVersion().Stream() <= 16) {
+			stream.Sync(pivotA);
+			stream.Sync(axleA);
+			stream.Sync(axleInA1);
+			stream.Sync(axleInA2);
+			stream.Sync(pivotB);
+			stream.Sync(axleB);
+			stream.Sync(axleInB2);
+		}
+		else {
+			stream.Sync(axleA);
+			stream.Sync(axleInA1);
+			stream.Sync(axleInA2);
+			stream.Sync(pivotA);
+			stream.Sync(axleB);
+			stream.Sync(axleInB1);
+			stream.Sync(axleInB2);
+			stream.Sync(pivotB);
+		}
+
+		stream.Sync(minAngle);
+		stream.Sync(maxAngle);
+		stream.Sync(maxFriction);
+
+		if (stream.GetVersion().File() >= NiFileVersion::V20_2_0_7 && stream.GetVersion().Stream() > 16)
+			motorDesc.Sync(stream);
+	}
 };
 
 struct RagdollDesc {
@@ -131,6 +187,37 @@ struct RagdollDesc {
 	float twistMaxAngle = 0.0f;
 	float maxFriction = 0.0f;
 	MotorDesc motorDesc;
+
+	void Sync(NiStreamReversible& stream) {
+		if (stream.GetVersion().Stream() <= 16) {
+			stream.Sync(pivotA);
+			stream.Sync(planeA);
+			stream.Sync(twistA);
+			stream.Sync(pivotB);
+			stream.Sync(planeB);
+			stream.Sync(twistB);
+		}
+		else {
+			stream.Sync(twistA);
+			stream.Sync(planeA);
+			stream.Sync(motorA);
+			stream.Sync(pivotA);
+			stream.Sync(twistB);
+			stream.Sync(planeB);
+			stream.Sync(motorB);
+			stream.Sync(pivotB);
+		}
+
+		stream.Sync(coneMaxAngle);
+		stream.Sync(planeMinAngle);
+		stream.Sync(planeMaxAngle);
+		stream.Sync(twistMinAngle);
+		stream.Sync(twistMaxAngle);
+		stream.Sync(maxFriction);
+
+		if (stream.GetVersion().File() >= NiFileVersion::V20_2_0_7 && stream.GetVersion().Stream() > 16)
+			motorDesc.Sync(stream);
+	}
 };
 
 struct StiffSpringDesc {
@@ -157,6 +244,36 @@ struct PrismaticDesc {
 	float maxDistance = 0.0f;
 	float friction = 0.0f;
 	MotorDesc motorDesc;
+
+	void Sync(NiStreamReversible& stream) {
+		if (stream.GetVersion().File() <= NiFileVersion::V20_0_0_5) {
+			stream.Sync(pivotA);
+			stream.Sync(rotationA);
+			stream.Sync(planeA);
+			stream.Sync(slidingA);
+			stream.Sync(slidingB);
+			stream.Sync(pivotB);
+			stream.Sync(rotationB);
+			stream.Sync(planeB);
+		}
+		else if (stream.GetVersion().File() >= NiFileVersion::V20_2_0_7) {
+			stream.Sync(slidingA);
+			stream.Sync(rotationA);
+			stream.Sync(planeA);
+			stream.Sync(pivotA);
+			stream.Sync(slidingB);
+			stream.Sync(rotationB);
+			stream.Sync(planeB);
+			stream.Sync(pivotB);
+		}
+
+		stream.Sync(minDistance);
+		stream.Sync(maxDistance);
+		stream.Sync(friction);
+
+		if (stream.GetVersion().File() >= NiFileVersion::V20_2_0_7 && stream.GetVersion().Stream() > 16)
+			motorDesc.Sync(stream);
+	}
 };
 
 enum hkConstraintType : uint32_t {
@@ -821,12 +938,11 @@ public:
 	uint8_t responseModifierFlag = 0;
 	uint8_t numShapeKeysInContactPointProps = 0;
 	bool forceCollideOntoPpu = false;
-	uint32_t unkInt2 = 0;
-	uint32_t unkInt3 = 0;
-	uint32_t unkInt4 = 0; // User Version >= 12
+	uint32_t unusedInts1[3]{};
+	uint8_t unusedBytes2[3]{};
 	NiBlockRefArray<bhkSerializable> constraintRefs;
-	uint32_t unkInt5 = 0;	// User Version <= 11
-	uint16_t bodyFlags = 0; // User Version >= 12
+	uint32_t bodyFlagsInt = 0;
+	uint16_t bodyFlags = 0;
 
 	static constexpr const char* BlockName = "bhkRigidBody";
 	const char* GetBlockName() override { return BlockName; }
@@ -884,6 +1000,8 @@ public:
 	RagdollDesc desc5;
 	StiffSpringDesc desc6;
 
+	float tau = 0.0f;
+	float damping = 0.0f;
 	float strength = 0.0f;
 
 	void Sync(NiStreamReversible& stream);
