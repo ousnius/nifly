@@ -1594,7 +1594,7 @@ void NifFile::PrepareData() {
 
 	for (auto& shape : GetShapes()) {
 		// Move triangle and vertex data from partition to shape
-		if (hdr.GetVersion().User() >= 12 && hdr.GetVersion().Stream() == 100) {
+		if (hdr.GetVersion().IsSSE()) {
 			auto* bsTriShape = dynamic_cast<BSTriShape*>(shape);
 			if (!bsTriShape)
 				continue;
@@ -1628,6 +1628,16 @@ void NifFile::PrepareData() {
 				}
 			}
 		}
+
+		// Move tangents and bitangents from binary extra data to shape
+		if (hdr.GetVersion().IsOB()) {
+			std::vector<Vector3> tangents;
+			std::vector<Vector3> bitangents;
+			if (GetBinaryTangentData(shape, &tangents, &bitangents)) {
+				SetTangentsForShape(shape, tangents);
+				SetBitangentsForShape(shape, bitangents);
+			}
+		}
 	}
 
 	RemoveInvalidTris();
@@ -1643,7 +1653,7 @@ void NifFile::FinalizeData() {
 
 			bsTriShape->CalcDataSizes(hdr.GetVersion());
 
-			if (hdr.GetVersion().User() >= 12 && hdr.GetVersion().Stream() == 100) {
+			if (hdr.GetVersion().IsSSE()) {
 				// Move triangle and vertex data from shape to partition
 				auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
 				if (skinInst) {
@@ -1664,6 +1674,17 @@ void NifFile::FinalizeData() {
 					}
 				}
 			}
+		}
+
+		if (hdr.GetVersion().IsOB()) {
+			// Move tangents and bitangents from shape back to binary extra data
+			if (shape->HasTangents()) {
+				auto tangents = GetTangentsForShape(shape);
+				auto bitangents = GetBitangentsForShape(shape);
+				SetBinaryTangentData(shape, tangents, bitangents);
+			}
+			else
+				DeleteBinaryTangentData(shape);
 		}
 	}
 
@@ -3080,6 +3101,110 @@ void NifFile::SetEyeDataForShape(NiShape* shape, const std::vector<float>& eyeDa
 	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 	if (bsTriShape && eyeData.size() == bsTriShape->GetNumVertices())
 		bsTriShape->SetEyeData(eyeData);
+}
+
+NiBinaryExtraData* NifFile::GetBinaryTangentData(NiShape* shape,
+												 std::vector<nifly::Vector3>* outTangents,
+												 std::vector<nifly::Vector3>* outBitangents) const {
+	if (!shape)
+		return nullptr;
+
+	uint16_t numVerts = shape->GetNumVertices();
+
+	for (auto& extraData : shape->extraDataRefs) {
+		auto binaryData = hdr.GetBlock<NiBinaryExtraData>(extraData);
+		if (binaryData && binaryData->name.get() == "Tangent space (binormal & tangent vectors)") {
+			uint32_t dataSize = numVerts * 4 * 3 * 2;
+			if (binaryData->data.size() == dataSize) {
+				auto vecPtr = reinterpret_cast<Vector3*>(binaryData->data.data());
+
+				if (outTangents) {
+					outTangents->resize(numVerts);
+
+					for (uint16_t i = 0; i < numVerts; i++) {
+						outTangents->at(i) = (*vecPtr);
+						++vecPtr;
+					}
+				}
+				else
+					vecPtr += numVerts;
+
+				if (outBitangents) {
+					outBitangents->resize(numVerts);
+
+					for (uint16_t i = 0; i < numVerts; i++) {
+						outBitangents->at(i) = (*vecPtr);
+						++vecPtr;
+					}
+				}
+				else
+					vecPtr += numVerts;
+			}
+
+			return binaryData;
+		}
+	}
+
+	return nullptr;
+}
+
+void NifFile::SetBinaryTangentData(NiShape* shape,
+								   const std::vector<nifly::Vector3>* tangents,
+								   const std::vector<nifly::Vector3>* bitangents) {
+	if (!shape || !tangents || !bitangents)
+		return;
+
+	uint16_t numVerts = shape->GetNumVertices();
+	if (tangents->size() != numVerts || bitangents->size() != numVerts)
+		return;
+
+	NiBinaryExtraData* binaryData = nullptr;
+
+	for (auto& extraData : shape->extraDataRefs) {
+		auto binaryExtraData = hdr.GetBlock<NiBinaryExtraData>(extraData);
+		if (binaryExtraData && binaryExtraData->name.get() == "Tangent space (binormal & tangent vectors)") {
+			binaryData = binaryExtraData;
+			break;
+		}
+	}
+
+	if (!binaryData) {
+		// Add new NiBinaryExtraData block
+		NiBinaryExtraData binaryExtraData;
+		binaryExtraData.name.get() = "Tangent space (binormal & tangent vectors)";
+
+		uint32_t extraDataId = AssignExtraData(shape, binaryExtraData.Clone());
+		binaryData = hdr.GetBlock<NiBinaryExtraData>(extraDataId);
+	}
+
+	if (!binaryData)
+		return;
+
+	uint32_t dataSize = numVerts * 4 * 3 * 2;
+	binaryData->data.resize(dataSize);
+
+	auto vecPtr = reinterpret_cast<Vector3*>(binaryData->data.data());
+
+	for (uint16_t i = 0; i < numVerts; i++) {
+		(*vecPtr) = tangents->at(i);
+		++vecPtr;
+	}
+
+	for (uint16_t i = 0; i < numVerts; i++) {
+		(*vecPtr) = bitangents->at(i);
+		++vecPtr;
+	}
+}
+
+void NifFile::DeleteBinaryTangentData(NiShape* shape) {
+	if (!shape)
+		return;
+
+	for (auto& extraData : shape->extraDataRefs) {
+		auto binaryExtraData = hdr.GetBlock<NiBinaryExtraData>(extraData);
+		if (binaryExtraData && binaryExtraData->name.get() == "Tangent space (binormal & tangent vectors)")
+			hdr.DeleteBlock(extraData);
+	}
 }
 
 void NifFile::InvertUVsForShape(NiShape* shape, bool invertX, bool invertY) {

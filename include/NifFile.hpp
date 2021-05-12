@@ -474,6 +474,20 @@ public:
 	// Sets vertex eye data of the shape. Size needs to match the current vertex count.
 	static void SetEyeDataForShape(NiShape* shape, const std::vector<float>& eyeData);
 
+	// Gets binary extra data that contains tangent and bitangent data (used in OB).
+	// Returns nullptr if no matching extra data was found.
+	NiBinaryExtraData* GetBinaryTangentData(NiShape* shape,
+											std::vector<nifly::Vector3>* outTangents = nullptr,
+											std::vector<nifly::Vector3>* outBitangents = nullptr) const;
+
+	// Sets binary extra data that contains tangent and bitangent data (used in OB).
+	void SetBinaryTangentData(NiShape* shape,
+							  const std::vector<nifly::Vector3>* tangents,
+							  const std::vector<nifly::Vector3>* bitangents);
+
+	// Deletes binary extra data that contains tangent and bitangent data (used in OB).
+	void DeleteBinaryTangentData(NiShape* shape);
+
 	// Inverts all texture coordinates on the U- and/or V-axis
 	void InvertUVsForShape(NiShape* shape, bool invertX, bool invertY);
 
