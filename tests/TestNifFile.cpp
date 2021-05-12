@@ -66,6 +66,17 @@ TEST_CASE("Load and save static file (FO4)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Load and save skinned file (OB)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Skinned_OB";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
 TEST_CASE("Load and save skinned file (SE)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_Skinned_SE";
 	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
