@@ -2935,7 +2935,7 @@ bool NifFile::GetBitangentsForShape(NiShape* shape, std::vector<Vector3>& outBit
 	if (shape->HasType<NiTriBasedGeom>()) {
 		auto geomData = hdr.GetBlock<NiGeometryData>(shape->DataRef());
 		if (geomData && geomData->HasTangents()) {
-			outBitang = geomData->tangents;
+			outBitang = geomData->bitangents;
 			return true;
 		}
 	}
