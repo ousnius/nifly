@@ -107,7 +107,7 @@ struct Vector3 {
 	void Zero() { x = y = z = 0.0f; }
 
 	// With bUseEpsilon, uses nifly::EPSILON for a nearly zero comparison.
-	bool IsZero(bool bUseEpsilon = false) {
+	bool IsZero(bool bUseEpsilon = false) const {
 		if (bUseEpsilon) {
 			if (std::fabs(x) < EPSILON && std::fabs(y) < EPSILON && std::fabs(z) < EPSILON)
 				return true;
