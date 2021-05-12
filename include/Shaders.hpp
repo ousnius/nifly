@@ -197,6 +197,8 @@ public:
 class NiVertexColorProperty : public NiCloneableStreamable<NiVertexColorProperty, NiProperty> {
 public:
 	uint16_t flags = 0;
+	uint32_t vertexMode = 0;
+	uint32_t lightingMode = 0;
 
 	static constexpr const char* BlockName = "NiVertexColorProperty";
 	const char* GetBlockName() override { return BlockName; }

@@ -170,6 +170,11 @@ void NiTexturingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 
 void NiVertexColorProperty::Sync(NiStreamReversible& stream) {
 	stream.Sync(flags);
+
+	if (stream.GetVersion().File() <= NiFileVersion::V20_0_0_5) {
+		stream.Sync(vertexMode);
+		stream.Sync(lightingMode);
+	}
 }
 
 
