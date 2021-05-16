@@ -2838,7 +2838,7 @@ bool NifFile::GetVertsForShape(NiShape* shape, std::vector<Vector3>& outVerts) c
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
-		if (bsTriShape && bsTriShape->HasVertices()) {
+		if (bsTriShape) {
 			outVerts.resize(bsTriShape->GetNumVertices());
 
 			for (uint16_t i = 0; i < bsTriShape->GetNumVertices(); i++)

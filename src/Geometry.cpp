@@ -609,11 +609,6 @@ void BSTriShape::GetChildIndices(std::vector<uint32_t>& indices) {
 }
 
 std::vector<Vector3>& BSTriShape::UpdateRawVertices() {
-	if (!HasVertices()) {
-		rawVertices.clear();
-		return rawVertices;
-	}
-
 	rawVertices.resize(numVertices);
 
 	for (uint16_t i = 0; i < numVertices; i++)
