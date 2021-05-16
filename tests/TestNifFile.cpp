@@ -88,6 +88,17 @@ TEST_CASE("Load and save skinned file (SE)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Load and save skinned, dynamic file (SE)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Skinned_Dynamic_SE";
+	const auto[fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
 TEST_CASE("Load and save skinned file (FO4)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_Skinned_FO4";
 	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
@@ -136,12 +147,44 @@ TEST_CASE("Load, optimize (LE to SE) and save file", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Load, optimize (LE to SE, dynamic) and save file", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Optimize_Dynamic_LE_to_SE";
+	const auto[fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	OptOptions options;
+	options.targetVersion = NiVersion::getSSE();
+	options.headParts = true;
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	nif.OptimizeFor(options);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
 TEST_CASE("Load, optimize (SE to LE) and save file", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_Optimize_SE_to_LE";
 	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
 
 	OptOptions options;
 	options.targetVersion = NiVersion::getSK();
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	nif.OptimizeFor(options);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
+TEST_CASE("Load, optimize (SE to LE, dynamic) and save file", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Optimize_Dynamic_SE_to_LE";
+	const auto[fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	OptOptions options;
+	options.targetVersion = NiVersion::getSK();
+	options.headParts = true;
 
 	NifFile nif;
 	REQUIRE(nif.Load(fileInput) == 0);
