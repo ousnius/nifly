@@ -6,16 +6,7 @@ See the included GPLv3 LICENSE file
 
 #pragma once
 
-#include "Animation.hpp"
 #include "BasicTypes.hpp"
-#include "ExtraData.hpp"
-#include "Geometry.hpp"
-#include "Keys.hpp"
-#include "Objects.hpp"
-#include "Particles.hpp"
-#include "Shaders.hpp"
-#include "Skin.hpp"
-#include "bhk.hpp"
 
 #include <unordered_map>
 

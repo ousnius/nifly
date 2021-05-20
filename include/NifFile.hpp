@@ -7,6 +7,7 @@ See the included GPLv3 LICENSE file
 #pragma once
 
 #include "Factory.hpp"
+#include "Geometry.hpp"
 
 #include <filesystem>
 
