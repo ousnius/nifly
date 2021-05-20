@@ -5,7 +5,6 @@ See the included GPLv3 LICENSE file
 */
 
 #include "NifFile.hpp"
-#include "Nodes.hpp"
 #include "bhk.hpp"
 #include "NifUtil.hpp"
 
