@@ -11,21 +11,20 @@ See the included GPLv3 LICENSE file
 #include <cstring>
 #include <vector>
 
-#pragma warning(disable : 4018 4244 4267 4389)
-
 namespace nifly {
-const double EPSILON = 0.0001;
+constexpr float EPSILON = 0.0001f;
 
-const float PI = 3.141592f;
-const float DEG2RAD = PI / 180.0f;
+constexpr float PI = 3.141592f;
+constexpr float DEG2RAD = PI / 180.0f;
 
 inline bool FloatsAreNearlyEqual(float a, float b) {
 	float scale = std::max(std::max(std::fabs(a), std::fabs(b)), 1.0f);
 	return std::fabs(a - b) <= EPSILON * scale;
 }
 
-float CalcMedianOfFloats(const std::vector<float>& data);
+float CalcMedianOfFloats(std::vector<float>& data);
 
+// Vector with 2 float components (uv)
 struct Vector2 {
 	float u;
 	float v;
@@ -37,15 +36,9 @@ struct Vector2 {
 	}
 
 	bool operator==(const Vector2& other) {
-		if (u == other.u && v == other.v)
-			return true;
-		return false;
+		return FloatsAreNearlyEqual(u, other.u) && FloatsAreNearlyEqual(v, other.v);
 	}
-	bool operator!=(const Vector2& other) {
-		if (u != other.u || v != other.v)
-			return true;
-		return false;
-	}
+	bool operator!=(const Vector2& other) { return !(*this == other); }
 
 	Vector2& operator-=(const Vector2& other) {
 		u -= other.u;
@@ -92,24 +85,29 @@ struct Vector2 {
 	}
 };
 
+// Vector with 3 float components (xyz)
 struct Vector3 {
 	float x;
 	float y;
 	float z;
 
-	Vector3() { x = y = z = 0.0f; }
-	Vector3(float X, float Y, float Z) {
-		x = X;
-		y = Y;
-		z = Z;
-	}
+	constexpr Vector3()
+		: x(0.0f)
+		, y(0.0f)
+		, z(0.0f) {}
+
+	constexpr Vector3(float X, float Y, float Z)
+		: x(X)
+		, y(Y)
+		, z(Z) {}
 
 	float& operator[](int ind) { return ind ? (ind == 2 ? z : y) : x; }
-	const float& operator[](int ind) const { return ind ? (ind == 2 ? z : y) : x; }
+	float operator[](int ind) const { return ind ? (ind == 2 ? z : y) : x; }
 
 	void Zero() { x = y = z = 0.0f; }
 
-	bool IsZero(bool bUseEpsilon = false) {
+	// With bUseEpsilon, uses nifly::EPSILON for a nearly zero comparison.
+	bool IsZero(bool bUseEpsilon = false) const {
 		if (bUseEpsilon) {
 			if (std::fabs(x) < EPSILON && std::fabs(y) < EPSILON && std::fabs(z) < EPSILON)
 				return true;
@@ -124,7 +122,7 @@ struct Vector3 {
 
 	void Normalize() {
 		float d = std::sqrt(x * x + y * y + z * z);
-		if (d == 0)
+		if (FloatsAreNearlyEqual(d, 0.0f))
 			d = 1.0f;
 
 		x /= d;
@@ -133,21 +131,17 @@ struct Vector3 {
 	}
 
 	uint32_t hash() {
-		uint32_t* h = (uint32_t*) this;
+		static_assert(sizeof(float) == sizeof(uint32_t));
+		uint32_t* h = reinterpret_cast<uint32_t*>(this);
 		uint32_t f = (h[0] + h[1] * 11 - h[2] * 17) & 0x7fffffff;
 		return (f >> 22) ^ (f >> 12) ^ (f);
 	}
 
 	bool operator==(const Vector3& other) {
-		if (x == other.x && y == other.y && z == other.z)
-			return true;
-		return false;
+		return FloatsAreNearlyEqual(x, other.x) && FloatsAreNearlyEqual(y, other.y)
+			   && FloatsAreNearlyEqual(z, other.z);
 	}
-	bool operator!=(const Vector3& other) {
-		if (x != other.x || y != other.y || z != other.z)
-			return true;
-		return false;
-	}
+	bool operator!=(const Vector3& other) { return !(*this == other); }
 
 	Vector3& operator-=(const Vector3& other) {
 		x -= other.x;
@@ -193,6 +187,7 @@ struct Vector3 {
 		tmp /= other;
 		return tmp;
 	}
+
 	Vector3& operator*=(float val) {
 		x *= val;
 		y *= val;
@@ -216,6 +211,56 @@ struct Vector3 {
 		return tmp;
 	}
 
+	Vector3& operator*=(int val) {
+		auto v = static_cast<float>(val);
+		x *= v;
+		y *= v;
+		z *= v;
+		return (*this);
+	}
+	Vector3 operator*(int val) const {
+		Vector3 tmp = (*this);
+		tmp *= val;
+		return tmp;
+	}
+	Vector3& operator/=(int val) {
+		auto v = static_cast<float>(val);
+		x /= v;
+		y /= v;
+		z /= v;
+		return (*this);
+	}
+	Vector3 operator/(int val) const {
+		Vector3 tmp = (*this);
+		tmp /= val;
+		return tmp;
+	}
+
+	Vector3& operator*=(uint32_t val) {
+		auto v = static_cast<float>(val);
+		x *= v;
+		y *= v;
+		z *= v;
+		return (*this);
+	}
+	Vector3 operator*(uint32_t val) const {
+		Vector3 tmp = (*this);
+		tmp *= val;
+		return tmp;
+	}
+	Vector3& operator/=(uint32_t val) {
+		auto v = static_cast<float>(val);
+		x /= v;
+		y /= v;
+		z /= v;
+		return (*this);
+	}
+	Vector3 operator/(uint32_t val) const {
+		Vector3 tmp = (*this);
+		tmp /= val;
+		return tmp;
+	}
+
 	Vector3 cross(const Vector3& other) const {
 		Vector3 tmp;
 		tmp.x = y * other.z - z * other.y;
@@ -226,18 +271,18 @@ struct Vector3 {
 
 	float dot(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
 
-	float DistanceTo(const Vector3& target) {
+	float DistanceTo(const Vector3& target) const {
 		float dx = target.x - x;
 		float dy = target.y - y;
 		float dz = target.z - z;
-		return (float) std::sqrt(dx * dx + dy * dy + dz * dz);
+		return static_cast<float>(std::sqrt(dx * dx + dy * dy + dz * dz));
 	}
 
 	float DistanceSquaredTo(const Vector3& target) {
 		float dx = target.x - x;
 		float dy = target.y - y;
 		float dz = target.z - z;
-		return (float) dx * dx + dy * dy + dz * dz;
+		return static_cast<float>(dx * dx + dy * dy + dz * dz);
 	}
 
 	float angle(const Vector3& other) const {
@@ -247,22 +292,22 @@ struct Vector3 {
 		B.Normalize();
 
 		float dot = A.dot(B);
-		if (dot > 1.0)
+		if (dot > 1.0f)
 			return 0.0f;
 		else if (dot < -1.0f)
 			return PI;
 		else if (dot == 0.0f)
 			return PI / 2.0f;
 
-		return acos(dot);
+		return std::acos(dot);
 	}
 
 	void clampEpsilon() {
-		if (fabs(x) < EPSILON)
+		if (std::fabs(x) < EPSILON)
 			x = 0.0f;
-		if (fabs(y) < EPSILON)
+		if (std::fabs(y) < EPSILON)
 			y = 0.0f;
-		if (fabs(z) < EPSILON)
+		if (std::fabs(z) < EPSILON)
 			z = 0.0f;
 	}
 
@@ -273,7 +318,7 @@ struct Vector3 {
 
 	float length2() const { return x * x + y * y + z * z; }
 
-	float length() const { return sqrt(x * x + y * y + z * z); }
+	float length() const { return std::sqrt(x * x + y * y + z * z); }
 
 	float DistanceToSegment(const Vector3& p1, const Vector3& p2) const {
 		Vector3 segvec(p2 - p1);
@@ -293,61 +338,65 @@ inline Vector3 operator*(float f, const Vector3& v) {
 
 Vector3 CalcMedianOfVector3(const std::vector<Vector3>& data);
 
+// Vector with 4 float components (xyzw)
 struct Vector4 {
-	float x;
-	float y;
-	float z;
-	float w;
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+	float w = 0.0f;
 
-	Vector4() { x = y = z = w = 0.0f; }
-	Vector4(float X, float Y, float Z, float W) {
-		x = X;
-		y = Y;
-		z = Z;
-		w = W;
-	}
+	constexpr Vector4() = default;
+	constexpr Vector4(float X, float Y, float Z, float W)
+		: x(X)
+		, y(Y)
+		, z(Z)
+		, w(W) {}
 };
 
+// Color with 3 float components (rgb)
 struct Color3 {
 	float r;
 	float g;
 	float b;
 
 	Color3() { r = g = b = 0.0f; }
-	Color3(const float& r, const float& g, const float& b) {
-		this->r = r;
-		this->g = g;
-		this->b = b;
-	}
+	Color3(float r_, float g_, float b_)
+		: r(r_)
+		, g(g_)
+		, b(b_) {}
 
-	bool operator==(const Color3& other) { return (r == other.r && g == other.g && b == other.b); }
+	bool operator==(const Color3& other) {
+		return FloatsAreNearlyEqual(r, other.r) && FloatsAreNearlyEqual(g, other.g)
+			   && FloatsAreNearlyEqual(b, other.b);
+	}
 	bool operator!=(const Color3& other) { return !(*this == other); }
 
-	Color3& operator*=(const float& val) {
+	Color3& operator*=(float val) {
 		r *= val;
 		g *= val;
 		b *= val;
 		return *this;
 	}
-	Color3 operator*(const float& val) const {
+	Color3 operator*(float val) const {
 		Color3 tmp = *this;
 		tmp *= val;
 		return tmp;
 	}
 
-	Color3& operator/=(const float& val) {
+	Color3& operator/=(float val) {
 		r /= val;
 		g /= val;
 		b /= val;
 		return *this;
 	}
-	Color3 operator/(const float& val) const {
+	Color3 operator/(float val) const {
 		Color3 tmp = *this;
 		tmp /= val;
 		return tmp;
 	}
 };
 
+// Color with 4 float components (rgba)
 struct Color4 {
 	float r;
 	float g;
@@ -355,45 +404,46 @@ struct Color4 {
 	float a;
 
 	Color4() { r = g = b = a = 0.0f; }
-	Color4(const float& r, const float& g, const float& b, const float& a) {
-		this->r = r;
-		this->g = g;
-		this->b = b;
-		this->a = a;
-	}
+	Color4(float r_, float g_, float b_, float a_)
+		: r(r_)
+		, g(g_)
+		, b(b_)
+		, a(a_) {}
 
 	bool operator==(const Color4& other) {
-		return (r == other.r && g == other.g && b == other.b && a == other.a);
+		return FloatsAreNearlyEqual(r, other.r) && FloatsAreNearlyEqual(g, other.g)
+			   && FloatsAreNearlyEqual(b, other.b) && FloatsAreNearlyEqual(a, other.a);
 	}
 	bool operator!=(const Color4& other) { return !(*this == other); }
 
-	Color4& operator*=(const float& val) {
+	Color4& operator*=(float val) {
 		r *= val;
 		g *= val;
 		b *= val;
 		a *= val;
 		return *this;
 	}
-	Color4 operator*(const float& val) const {
+	Color4 operator*(float val) const {
 		Color4 tmp = *this;
 		tmp *= val;
 		return tmp;
 	}
 
-	Color4& operator/=(const float& val) {
+	Color4& operator/=(float val) {
 		r /= val;
 		g /= val;
 		b /= val;
 		a /= val;
 		return *this;
 	}
-	Color4 operator/(const float& val) const {
+	Color4 operator/(float val) const {
 		Color4 tmp = *this;
 		tmp /= val;
 		return tmp;
 	}
 };
 
+// Color with 3 byte components (rgb)
 struct ByteColor3 {
 	uint8_t r = 0;
 	uint8_t g = 0;
@@ -403,6 +453,7 @@ struct ByteColor3 {
 	bool operator!=(const ByteColor3& other) { return !(*this == other); }
 };
 
+// Color with 4 byte components (rgba)
 struct ByteColor4 {
 	uint8_t r = 0;
 	uint8_t g = 0;
@@ -878,16 +929,16 @@ struct BoundingSphere {
 
 	BoundingSphere() {}
 
-	BoundingSphere(const Vector3& center, const float radius) {
-		this->center = center;
-		this->radius = radius;
-	}
+	BoundingSphere(const Vector3& center_, const float radius_)
+		: center(center_)
+		, radius(radius_) {}
 
 	// Miniball algorithm
 	BoundingSphere(const std::vector<Vector3>& vertices);
 };
 
 
+// Quaternion using float components (wxyz)
 struct Quaternion {
 	float w;
 	float x;
@@ -901,14 +952,14 @@ struct Quaternion {
 		z = 0.0f;
 	}
 
-	Quaternion(float w, float x, float y, float z) {
-		this->w = w;
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
+	Quaternion(float w_, float x_, float y_, float z_)
+		: w(w_)
+		, x(x_)
+		, y(y_)
+		, z(z_) {}
 };
 
+// Quaternion using float components (xyzw)
 struct QuaternionXYZW {
 	float x;
 	float y;
@@ -922,12 +973,11 @@ struct QuaternionXYZW {
 		w = 1.0f;
 	}
 
-	QuaternionXYZW(float x, float y, float z, float w) {
-		this->x = x;
-		this->y = y;
-		this->z = z;
-		this->w = w;
-	}
+	QuaternionXYZW(float x_, float y_, float z_, float w_)
+		: x(x_)
+		, y(y_)
+		, z(z_)
+		, w(w_) {}
 };
 
 
@@ -989,7 +1039,7 @@ struct MatTransform {
 		return mat;
 	}
 
-	Vector3 GetVector() const { return translation + rotation * scale; };
+	Vector3 GetVector() const { return translation + rotation * scale; }
 
 	// ApplyTransform applies this MatTransform to a vector v by first
 	// scaling v, then rotating the result of that, then translating the
@@ -1015,6 +1065,7 @@ MatTransform CalcAverageMatTransform(const std::vector<MatTransform>& ts);
 MatTransform CalcMedianMatTransform(const std::vector<MatTransform>& ts);
 
 
+// Edge with uint16_t point indices
 struct Edge {
 	uint16_t p1;
 	uint16_t p2;
@@ -1028,12 +1079,13 @@ struct Edge {
 	bool CompareIndices(const Edge& o) { return (p1 == o.p1 && p2 == o.p2) || (p1 == o.p2 && p2 == o.p1); }
 };
 
+// Triangle with uint16_t point indices
 struct Triangle {
 	uint16_t p1;
 	uint16_t p2;
 	uint16_t p3;
 
-	Triangle() { p1 = p2 = p3 = 0.0f; }
+	Triangle() { p1 = p2 = p3 = 0; }
 	Triangle(uint16_t P1, uint16_t P2, uint16_t P3) {
 		p1 = P1;
 		p2 = P2;
@@ -1278,6 +1330,7 @@ inline bool operator==(const Edge& t1, const Edge& t2) {
 	return ((t1.p1 == t2.p1) && (t1.p2 == t2.p2));
 }
 
+// Face with either 3 or 4 point and uv indices
 struct Face {
 	uint8_t nPoints = 0;
 	uint16_t p1 = 0;
@@ -1289,7 +1342,7 @@ struct Face {
 	uint16_t p4 = 0;
 	uint16_t uv4 = 0;
 
-	Face(int npts = 0, int* points = nullptr, int* tc = nullptr) {
+	Face(const uint8_t npts = 0, const uint16_t* points = nullptr, const uint16_t* tc = nullptr) {
 		nPoints = npts;
 		if (npts < 3)
 			return;
@@ -1307,6 +1360,7 @@ struct Face {
 	}
 };
 
+// Rectangle with float components (x1, y1, x2, y2)
 struct Rect {
 	float x1 = 0.0f;
 	float y1 = 0.0f;
@@ -1428,17 +1482,19 @@ using namespace nifly;
 
 template<>
 struct hash<Edge> {
-	std::size_t operator()(const Edge& t) const { return ((t.p2 << 16) | (t.p1 & 0xFFFF)); }
+	std::size_t operator()(const Edge& t) const {
+		return static_cast<size_t>((t.p2 << 16) | (t.p1 & 0xFFFF));
+	}
 };
 
 template<>
 struct hash<Triangle> {
 	std::size_t operator()(const Triangle& t) const {
-		char* d = (char*) &t;
+		auto d = reinterpret_cast<const char*>(&t);
 		std::size_t len = sizeof(Triangle);
 		std::size_t hash, i;
 		for (hash = i = 0; i < len; ++i) {
-			hash += d[i];
+			hash += static_cast<size_t>(d[i]);
 			hash += (hash << 10);
 			hash ^= (hash >> 6);
 		}

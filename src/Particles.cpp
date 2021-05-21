@@ -21,18 +21,18 @@ void NiParticlesData::Sync(NiStreamReversible& stream) {
 	stream.Sync(hasRotationAxes);
 	stream.Sync(hasTextureIndices);
 
+	uint32_t sz = 0;
+
 	if (stream.GetVersion().User() >= 12) {
-		stream.Sync(numSubtexOffsets);
+		sz = subtexOffsets.SyncSize(stream);
 	}
 	else {
-		uint8_t numOffsets = numSubtexOffsets > 255 ? 255 : numSubtexOffsets;
+		uint8_t numOffsets = subtexOffsets.size() > 255 ? 255 : static_cast<uint8_t>(subtexOffsets.size());
 		stream.Sync(numOffsets);
-		numSubtexOffsets = numOffsets;
+		sz = numOffsets;
 	}
 
-	subtexOffsets.resize(numSubtexOffsets);
-	for (uint32_t i = 0; i < numSubtexOffsets; i++)
-		stream.Sync(subtexOffsets[i]);
+	subtexOffsets.SyncData(stream, sz);
 
 	if (stream.GetVersion().User() >= 12) {
 		stream.Sync(aspectRatio);
@@ -48,16 +48,16 @@ void NiParticleMeshesData::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
 }
 
-void NiParticleMeshesData::GetChildRefs(std::set<Ref*>& refs) {
+void NiParticleMeshesData::GetChildRefs(std::set<NiRef*>& refs) {
 	NiRotatingParticlesData::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
 }
 
-void NiParticleMeshesData::GetChildIndices(std::vector<int>& indices) {
+void NiParticleMeshesData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiRotatingParticlesData::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
+	indices.push_back(dataRef.index);
 }
 
 
@@ -73,24 +73,20 @@ void NiMeshPSysData::Sync(NiStreamReversible& stream) {
 	stream.Sync(defaultPoolSize);
 	stream.Sync(fillPoolsOnLoad);
 
-	stream.Sync(numGenerations);
-	generationPoolSize.resize(numGenerations);
-	for (uint32_t i = 0; i < numGenerations; i++)
-		stream.Sync(generationPoolSize[i]);
-
+	generationPoolSize.Sync(stream);
 	nodeRef.Sync(stream);
 }
 
-void NiMeshPSysData::GetChildRefs(std::set<Ref*>& refs) {
+void NiMeshPSysData::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysData::GetChildRefs(refs);
 
 	refs.insert(&nodeRef);
 }
 
-void NiMeshPSysData::GetChildIndices(std::vector<int>& indices) {
+void NiMeshPSysData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysData::GetChildIndices(indices);
 
-	indices.push_back(nodeRef.GetIndex());
+	indices.push_back(nodeRef.index);
 }
 
 
@@ -104,13 +100,7 @@ void BSStripPSysData::Sync(NiStreamReversible& stream) {
 
 void NiPSysEmitterCtlrData::Sync(NiStreamReversible& stream) {
 	floatKeys.Sync(stream);
-
-	stream.Sync(numVisibilityKeys);
-	visibilityKeys.resize(numVisibilityKeys);
-	for (uint32_t i = 0; i < numVisibilityKeys; i++) {
-		stream.Sync(visibilityKeys[i].time);
-		stream.Sync(visibilityKeys[i].value);
-	}
+	visibilityKeys.Sync(stream);
 }
 
 
@@ -122,13 +112,13 @@ void NiPSysModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(isActive);
 }
 
-void NiPSysModifier::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiPSysModifier::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
 	refs.emplace_back(&name);
 }
 
-void NiPSysModifier::GetPtrs(std::set<Ref*>& ptrs) {
+void NiPSysModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
 	ptrs.insert(&targetRef);
@@ -157,24 +147,24 @@ void NiPSysAgeDeathModifier::Sync(NiStreamReversible& stream) {
 	spawnModifierRef.Sync(stream);
 }
 
-void NiPSysAgeDeathModifier::GetChildRefs(std::set<Ref*>& refs) {
+void NiPSysAgeDeathModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
 	refs.insert(&spawnModifierRef);
 }
 
-void NiPSysAgeDeathModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysAgeDeathModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(spawnModifierRef.GetIndex());
+	indices.push_back(spawnModifierRef.index);
 }
 
 
 void BSPSysLODModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(lodBeginDistance);
 	stream.Sync(lodEndDistance);
-	stream.Sync(unknownFadeFactor1);
-	stream.Sync(unknownFadeFactor2);
+	stream.Sync(endEmitScale);
+	stream.Sync(endSize);
 }
 
 
@@ -214,10 +204,7 @@ void NiPSysRotationModifier::Sync(NiStreamReversible& stream) {
 
 
 void BSPSysScaleModifier::Sync(NiStreamReversible& stream) {
-	stream.Sync(numFloats);
-	floats.resize(numFloats);
-	for (uint32_t i = 0; i < numFloats; i++)
-		stream.Sync(floats[i]);
+	floats.Sync(stream);
 }
 
 
@@ -232,7 +219,7 @@ void NiPSysGravityModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(worldAligned);
 }
 
-void NiPSysGravityModifier::GetPtrs(std::set<Ref*>& ptrs) {
+void NiPSysGravityModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
 	ptrs.insert(&gravityObjRef);
@@ -252,7 +239,7 @@ void NiPSysDragModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(rangeFalloff);
 }
 
-void NiPSysDragModifier::GetPtrs(std::set<Ref*>& ptrs) {
+void NiPSysDragModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
 	ptrs.insert(&parentRef);
@@ -266,7 +253,7 @@ void BSPSysInheritVelocityModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(velocityVar);
 }
 
-void BSPSysInheritVelocityModifier::GetPtrs(std::set<Ref*>& ptrs) {
+void BSPSysInheritVelocityModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
 	ptrs.insert(&targetNodeRef);
@@ -293,7 +280,7 @@ void NiPSysBombModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(symmetryType);
 }
 
-void NiPSysBombModifier::GetPtrs(std::set<Ref*>& ptrs) {
+void NiPSysBombModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
 	ptrs.insert(&bombNodeRef);
@@ -309,16 +296,16 @@ void NiPSysColorModifier::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
 }
 
-void NiPSysColorModifier::GetChildRefs(std::set<Ref*>& refs) {
+void NiPSysColorModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
 }
 
-void NiPSysColorModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysColorModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
+	indices.push_back(dataRef.index);
 }
 
 
@@ -337,20 +324,16 @@ void NiPSysMeshUpdateModifier::Sync(NiStreamReversible& stream) {
 	meshRefs.Sync(stream);
 }
 
-void NiPSysMeshUpdateModifier::GetChildRefs(std::set<Ref*>& refs) {
+void NiPSysMeshUpdateModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
 	meshRefs.GetIndexPtrs(refs);
 }
 
-void NiPSysMeshUpdateModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysMeshUpdateModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	meshRefs.GetIndices(indices);
-}
-
-BlockRefArray<NiAVObject>& NiPSysMeshUpdateModifier::GetMeshes() {
-	return meshRefs;
 }
 
 
@@ -362,16 +345,16 @@ void NiPSysFieldModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(maxDistance);
 }
 
-void NiPSysFieldModifier::GetChildRefs(std::set<Ref*>& refs) {
+void NiPSysFieldModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
 	refs.insert(&fieldObjectRef);
 }
 
-void NiPSysFieldModifier::GetChildIndices(std::vector<int>& indices) {
+void NiPSysFieldModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(fieldObjectRef.GetIndex());
+	indices.push_back(fieldObjectRef.index);
 }
 
 
@@ -398,12 +381,12 @@ void NiPSysTurbulenceFieldModifier::Sync(NiStreamReversible& stream) {
 
 void NiPSysAirFieldModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(direction);
-	stream.Sync(unkFloat1);
-	stream.Sync(unkFloat2);
-	stream.Sync(unkBool1);
-	stream.Sync(unkBool2);
-	stream.Sync(unkBool3);
-	stream.Sync(unkFloat3);
+	stream.Sync(airFriction);
+	stream.Sync(inheritVelocity);
+	stream.Sync(inheritRotation);
+	stream.Sync(componentOnly);
+	stream.Sync(enableSpread);
+	stream.Sync(spread);
 }
 
 
@@ -423,7 +406,7 @@ void BSPSysRecycleBoundModifier::Sync(NiStreamReversible& stream) {
 	targetNodeRef.Sync(stream);
 }
 
-void BSPSysRecycleBoundModifier::GetPtrs(std::set<Ref*>& ptrs) {
+void BSPSysRecycleBoundModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysModifier::GetPtrs(ptrs);
 
 	ptrs.insert(&targetNodeRef);
@@ -435,31 +418,18 @@ void BSPSysHavokUpdateModifier::Sync(NiStreamReversible& stream) {
 	modifierRef.Sync(stream);
 }
 
-void BSPSysHavokUpdateModifier::GetChildRefs(std::set<Ref*>& refs) {
+void BSPSysHavokUpdateModifier::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
 	nodeRefs.GetIndexPtrs(refs);
 	refs.insert(&modifierRef);
 }
 
-void BSPSysHavokUpdateModifier::GetChildIndices(std::vector<int>& indices) {
+void BSPSysHavokUpdateModifier::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
 	nodeRefs.GetIndices(indices);
-	indices.push_back(modifierRef.GetIndex());
-}
-
-
-BlockRefArray<NiNode>& BSPSysHavokUpdateModifier::GetNodes() {
-	return nodeRefs;
-}
-
-int BSPSysHavokUpdateModifier::GetModifierRef() {
-	return modifierRef.GetIndex();
-}
-
-void BSPSysHavokUpdateModifier::SetModifierRef(int modRef) {
-	modifierRef.SetIndex(modRef);
+	indices.push_back(modifierRef.index);
 }
 
 
@@ -473,20 +443,16 @@ void BSMasterParticleSystem::Sync(NiStreamReversible& stream) {
 	particleSysRefs.Sync(stream);
 }
 
-void BSMasterParticleSystem::GetChildRefs(std::set<Ref*>& refs) {
+void BSMasterParticleSystem::GetChildRefs(std::set<NiRef*>& refs) {
 	NiNode::GetChildRefs(refs);
 
 	particleSysRefs.GetIndexPtrs(refs);
 }
 
-void BSMasterParticleSystem::GetChildIndices(std::vector<int>& indices) {
+void BSMasterParticleSystem::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiNode::GetChildIndices(indices);
 
 	particleSysRefs.GetIndices(indices);
-}
-
-BlockRefArray<NiAVObject>& BSMasterParticleSystem::GetParticleSystems() {
-	return particleSysRefs;
 }
 
 
@@ -512,17 +478,11 @@ void NiParticleSystem::Sync(NiStreamReversible& stream) {
 	}
 	else {
 		dataRef.Sync(stream);
-		psysDataRef.SetIndex(dataRef.GetIndex());
+		psysDataRef.index = dataRef.index;
 		skinInstanceRef.Sync(stream);
 
-		stream.Sync(numMaterials);
-		materialNameRefs.resize(numMaterials);
-		for (uint32_t i = 0; i < numMaterials; i++)
-			materialNameRefs[i].Sync(stream);
-
-		materials.resize(numMaterials);
-		for (uint32_t i = 0; i < numMaterials; i++)
-			stream.Sync(materials[i]);
+		uint32_t numMaterials = materialNames.Sync(stream);
+		materialExtraData.SyncData(stream, numMaterials);
 
 		stream.Sync(activeMaterial);
 		stream.Sync(defaultMatNeedsUpdate);
@@ -541,7 +501,7 @@ void NiParticleSystem::Sync(NiStreamReversible& stream) {
 
 		if (stream.GetVersion().Stream() >= 100) {
 			psysDataRef.Sync(stream);
-			dataRef.SetIndex(psysDataRef.GetIndex());
+			dataRef.index = psysDataRef.index;
 		}
 	}
 
@@ -549,14 +509,14 @@ void NiParticleSystem::Sync(NiStreamReversible& stream) {
 	modifierRefs.Sync(stream);
 }
 
-void NiParticleSystem::GetStringRefs(std::vector<StringRef*>& refs) {
+void NiParticleSystem::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiAVObject::GetStringRefs(refs);
 
-	for (auto& m : materialNameRefs)
-		refs.emplace_back(&m);
+	for (auto& mn : materialNames)
+		refs.emplace_back(&mn);
 }
 
-void NiParticleSystem::GetChildRefs(std::set<Ref*>& refs) {
+void NiParticleSystem::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
@@ -567,59 +527,15 @@ void NiParticleSystem::GetChildRefs(std::set<Ref*>& refs) {
 	modifierRefs.GetIndexPtrs(refs);
 }
 
-void NiParticleSystem::GetChildIndices(std::vector<int>& indices) {
+void NiParticleSystem::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
-	indices.push_back(skinInstanceRef.GetIndex());
-	indices.push_back(shaderPropertyRef.GetIndex());
-	indices.push_back(alphaPropertyRef.GetIndex());
-	indices.push_back(psysDataRef.GetIndex());
+	indices.push_back(dataRef.index);
+	indices.push_back(skinInstanceRef.index);
+	indices.push_back(shaderPropertyRef.index);
+	indices.push_back(alphaPropertyRef.index);
+	indices.push_back(psysDataRef.index);
 	modifierRefs.GetIndices(indices);
-}
-
-int NiParticleSystem::GetDataRef() {
-	return dataRef.GetIndex();
-}
-
-void NiParticleSystem::SetDataRef(int datRef) {
-	dataRef.SetIndex(datRef);
-}
-
-int NiParticleSystem::GetSkinInstanceRef() {
-	return skinInstanceRef.GetIndex();
-}
-
-void NiParticleSystem::SetSkinInstanceRef(int skinRef) {
-	skinInstanceRef.SetIndex(skinRef);
-}
-
-int NiParticleSystem::GetShaderPropertyRef() {
-	return shaderPropertyRef.GetIndex();
-}
-
-void NiParticleSystem::SetShaderPropertyRef(int shaderRef) {
-	shaderPropertyRef.SetIndex(shaderRef);
-}
-
-int NiParticleSystem::GetAlphaPropertyRef() {
-	return alphaPropertyRef.GetIndex();
-}
-
-void NiParticleSystem::SetAlphaPropertyRef(int alphaRef) {
-	alphaPropertyRef.SetIndex(alphaRef);
-}
-
-int NiParticleSystem::GetPSysDataRef() {
-	return psysDataRef.GetIndex();
-}
-
-void NiParticleSystem::SetPSysDataRef(int psysDatRef) {
-	psysDataRef.SetIndex(psysDatRef);
-}
-
-BlockRefArray<NiPSysModifier>& NiParticleSystem::GetModifiers() {
-	return modifierRefs;
 }
 
 
@@ -633,21 +549,21 @@ void NiPSysCollider::Sync(NiStreamReversible& stream) {
 	colliderNodeRef.Sync(stream);
 }
 
-void NiPSysCollider::GetChildRefs(std::set<Ref*>& refs) {
+void NiPSysCollider::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&spawnModifierRef);
 	refs.insert(&nextColliderRef);
 }
 
-void NiPSysCollider::GetChildIndices(std::vector<int>& indices) {
+void NiPSysCollider::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(spawnModifierRef.GetIndex());
-	indices.push_back(nextColliderRef.GetIndex());
+	indices.push_back(spawnModifierRef.index);
+	indices.push_back(nextColliderRef.index);
 }
 
-void NiPSysCollider::GetPtrs(std::set<Ref*>& ptrs) {
+void NiPSysCollider::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
 	ptrs.insert(&managerRef);
@@ -672,16 +588,16 @@ void NiPSysColliderManager::Sync(NiStreamReversible& stream) {
 	colliderRef.Sync(stream);
 }
 
-void NiPSysColliderManager::GetChildRefs(std::set<Ref*>& refs) {
+void NiPSysColliderManager::GetChildRefs(std::set<NiRef*>& refs) {
 	NiPSysModifier::GetChildRefs(refs);
 
 	refs.insert(&colliderRef);
 }
 
-void NiPSysColliderManager::GetChildIndices(std::vector<int>& indices) {
+void NiPSysColliderManager::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiPSysModifier::GetChildIndices(indices);
 
-	indices.push_back(colliderRef.GetIndex());
+	indices.push_back(colliderRef.index);
 }
 
 
@@ -704,7 +620,7 @@ void NiPSysVolumeEmitter::Sync(NiStreamReversible& stream) {
 	emitterNodeRef.Sync(stream);
 }
 
-void NiPSysVolumeEmitter::GetPtrs(std::set<Ref*>& ptrs) {
+void NiPSysVolumeEmitter::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiPSysEmitter::GetPtrs(ptrs);
 
 	ptrs.insert(&emitterNodeRef);
@@ -737,18 +653,8 @@ void NiPSysMeshEmitter::Sync(NiStreamReversible& stream) {
 	stream.Sync(emissionAxis);
 }
 
-void NiPSysMeshEmitter::GetChildRefs(std::set<Ref*>& refs) {
-	NiPSysEmitter::GetChildRefs(refs);
+void NiPSysMeshEmitter::GetPtrs(std::set<NiPtr*>& ptrs) {
+	NiPSysEmitter::GetPtrs(ptrs);
 
-	meshRefs.GetIndexPtrs(refs);
-}
-
-void NiPSysMeshEmitter::GetChildIndices(std::vector<int>& indices) {
-	NiPSysEmitter::GetChildIndices(indices);
-
-	meshRefs.GetIndices(indices);
-}
-
-BlockRefArray<NiAVObject>& NiPSysMeshEmitter::GetMeshes() {
-	return meshRefs;
+	meshRefs.GetIndexPtrs(ptrs);
 }

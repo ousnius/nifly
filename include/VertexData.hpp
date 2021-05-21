@@ -23,15 +23,15 @@ enum VertexAttribute : uint8_t {
 };
 
 enum VertexFlags : uint16_t {
-	VF_VERTEX = 1 << VA_POSITION,
-	VF_UV = 1 << VA_TEXCOORD0,
-	VF_UV_2 = 1 << VA_TEXCOORD1,
-	VF_NORMAL = 1 << VA_NORMAL,
-	VF_TANGENT = 1 << VA_BINORMAL,
-	VF_COLORS = 1 << VA_COLOR,
-	VF_SKINNED = 1 << VA_SKINNING,
-	VF_LANDDATA = 1 << VA_LANDDATA,
-	VF_EYEDATA = 1 << VA_EYEDATA,
+	VF_VERTEX = 1 << 0,		// VA_POSITION
+	VF_UV = 1 << 1,			// VA_TEXCOORD0
+	VF_UV_2 = 1 << 2,		// VA_TEXCOORD1
+	VF_NORMAL = 1 << 3,		// VA_NORMAL
+	VF_TANGENT = 1 << 4,	// VA_BINORMAL
+	VF_COLORS = 1 << 5,		// VA_COLOR
+	VF_SKINNED = 1 << 6,	// VA_SKINNING
+	VF_LANDDATA = 1 << 7,	// VA_LANDDATA
+	VF_EYEDATA = 1 << 8,	// VA_EYEDATA
 	VF_FULLPREC = 0x400
 };
 
@@ -49,18 +49,18 @@ private:
 
 public:
 	// Sets a specific flag
-	void SetFlag(VertexFlags flag) { desc |= ((uint64_t) flag << 44); }
+	void SetFlag(VertexFlags flag) { desc |= Convert(flag); }
 
 	// Removes a specific flag
-	void RemoveFlag(VertexFlags flag) { desc &= ~((uint64_t) flag << 44); }
+	void RemoveFlag(VertexFlags flag) { desc &= ~Convert(flag); }
 
 	// Checks for a specific flag
-	bool HasFlag(VertexFlags flag) { return ((desc >> 44) & flag) != 0; }
+	bool HasFlag(VertexFlags flag) const { return ((desc >> 44) & flag) != 0; }
 
 	// Sets the vertex size
 	void SetSize(uint32_t size) {
 		desc &= DESC_MASK_VERT;
-		desc |= (uint64_t) size >> 2;
+		desc |= static_cast<uint64_t>(size) >> 2;
 	}
 
 	// Sets the dynamic vertex size
@@ -70,23 +70,28 @@ public:
 	}
 
 	// Return offset to a specific vertex attribute in the description
-	uint32_t GetAttributeOffset(VertexAttribute attr) { return (desc >> (4 * (uint8_t) attr + 2)) & 0x3C; }
+	uint32_t GetAttributeOffset(VertexAttribute attr) const {
+		return (desc >> (4 * static_cast<uint8_t>(attr) + 2)) & 0x3C;
+	}
 
 	// Set offset to a specific vertex attribute in the description
 	void SetAttributeOffset(VertexAttribute attr, uint32_t offset) {
 		if (attr != VA_POSITION) {
-			desc = ((uint64_t) offset << (4 * (uint8_t) attr + 2))
-				   | (desc & ~(15 << (4 * (uint8_t) attr + 4)));
+			const uint64_t lhs = static_cast<uint64_t>(offset) << (4 * static_cast<uint8_t>(attr) + 2);
+			const uint64_t rhs = desc & ~static_cast<uint64_t>(15 << (4 * static_cast<uint8_t>(attr) + 4));
+			desc = lhs | rhs;
 		}
 	}
 
 	void ClearAttributeOffsets() { desc &= DESC_MASK_OFFSET; }
 
-	VertexFlags GetFlags() { return VertexFlags((desc & DESC_MASK_OFFSET) >> 44); }
-
-	void SetFlags(VertexFlags flags) { desc |= ((uint64_t) flags << 44) | (desc & DESC_MASK_FLAGS); }
+	VertexFlags GetFlags() const { return VertexFlags((desc & DESC_MASK_OFFSET) >> 44); }
+	void SetFlags(VertexFlags flags) { desc |= Convert(flags) | (desc & DESC_MASK_FLAGS); }
 
 	void Sync(NiStreamReversible& stream) { stream.Sync(desc); }
+
+private:
+	uint64_t Convert(VertexFlags flag) { return static_cast<uint64_t>(flag) << 44; }
 };
 
 struct BSVertexData {

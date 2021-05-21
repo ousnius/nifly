@@ -15,25 +15,25 @@ void NiNode::Sync(NiStreamReversible& stream) {
 		effectRefs.Sync(stream);
 }
 
-void NiNode::GetChildRefs(std::set<Ref*>& refs) {
+void NiNode::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
 	childRefs.GetIndexPtrs(refs);
 	effectRefs.GetIndexPtrs(refs);
 }
 
-void NiNode::GetChildIndices(std::vector<int>& indices) {
+void NiNode::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
 	childRefs.GetIndices(indices);
 	effectRefs.GetIndices(indices);
 }
 
-BlockRefArray<NiAVObject>& NiNode::GetChildren() {
+NiBlockRefArray<NiAVObject>& NiNode::GetChildren() {
 	return childRefs;
 }
 
-BlockRefArray<NiDynamicEffect>& NiNode::GetEffects() {
+NiBlockRefArray<NiDynamicEffect>& NiNode::GetEffects() {
 	return effectRefs;
 }
 
@@ -49,26 +49,18 @@ void BSTreeNode::Sync(NiStreamReversible& stream) {
 	bones2.Sync(stream);
 }
 
-void BSTreeNode::GetChildRefs(std::set<Ref*>& refs) {
+void BSTreeNode::GetChildRefs(std::set<NiRef*>& refs) {
 	NiNode::GetChildRefs(refs);
 
 	bones1.GetIndexPtrs(refs);
 	bones2.GetIndexPtrs(refs);
 }
 
-void BSTreeNode::GetChildIndices(std::vector<int>& indices) {
+void BSTreeNode::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiNode::GetChildIndices(indices);
 
 	bones1.GetIndices(indices);
 	bones2.GetIndices(indices);
-}
-
-BlockRefArray<NiNode>& BSTreeNode::GetBones1() {
-	return bones1;
-}
-
-BlockRefArray<NiNode>& BSTreeNode::GetBones2() {
-	return bones2;
 }
 
 
@@ -101,24 +93,16 @@ void BSMultiBound::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
 }
 
-void BSMultiBound::GetChildRefs(std::set<Ref*>& refs) {
+void BSMultiBound::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
 }
 
-void BSMultiBound::GetChildIndices(std::vector<int>& indices) {
+void BSMultiBound::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
-}
-
-int BSMultiBound::GetDataRef() {
-	return dataRef.GetIndex();
-}
-
-void BSMultiBound::SetDataRef(int datRef) {
-	dataRef.SetIndex(datRef);
+	indices.push_back(dataRef.index);
 }
 
 
@@ -129,25 +113,16 @@ void BSMultiBoundNode::Sync(NiStreamReversible& stream) {
 		stream.Sync(cullingMode);
 }
 
-void BSMultiBoundNode::GetChildRefs(std::set<Ref*>& refs) {
+void BSMultiBoundNode::GetChildRefs(std::set<NiRef*>& refs) {
 	NiNode::GetChildRefs(refs);
 
 	refs.insert(&multiBoundRef);
 }
 
-void BSMultiBoundNode::GetChildIndices(std::vector<int>& indices) {
+void BSMultiBoundNode::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiNode::GetChildIndices(indices);
 
-	indices.push_back(multiBoundRef.GetIndex());
-}
-
-
-int BSMultiBoundNode::GetMultiBoundRef() {
-	return multiBoundRef.GetIndex();
-}
-
-void BSMultiBoundNode::SetMultiBoundRef(int multBoundRef) {
-	multiBoundRef.SetIndex(multBoundRef);
+	indices.push_back(multiBoundRef.index);
 }
 
 
@@ -171,11 +146,7 @@ void NiSwitchNode::Sync(NiStreamReversible& stream) {
 
 void NiRangeLODData::Sync(NiStreamReversible& stream) {
 	stream.Sync(lodCenter);
-	stream.Sync(numLODLevels);
-
-	lodLevels.resize(numLODLevels);
-	for (uint32_t i = 0; i < numLODLevels; i++)
-		stream.Sync(lodLevels[i]);
+	lodLevels.Sync(stream);
 }
 
 
@@ -184,11 +155,7 @@ void NiScreenLODData::Sync(NiStreamReversible& stream) {
 	stream.Sync(boundRadius);
 	stream.Sync(worldCenter);
 	stream.Sync(worldRadius);
-	stream.Sync(numProportions);
-
-	proportionLevels.resize(numProportions);
-	for (uint32_t i = 0; i < numProportions; i++)
-		stream.Sync(proportionLevels[i]);
+	proportionLevels.Sync(stream);
 }
 
 
@@ -196,24 +163,16 @@ void NiLODNode::Sync(NiStreamReversible& stream) {
 	lodLevelData.Sync(stream);
 }
 
-void NiLODNode::GetChildRefs(std::set<Ref*>& refs) {
+void NiLODNode::GetChildRefs(std::set<NiRef*>& refs) {
 	NiSwitchNode::GetChildRefs(refs);
 
 	refs.insert(&lodLevelData);
 }
 
-void NiLODNode::GetChildIndices(std::vector<int>& indices) {
+void NiLODNode::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiSwitchNode::GetChildIndices(indices);
 
-	indices.push_back(lodLevelData.GetIndex());
-}
-
-int NiLODNode::GetLodLevelDataRef() {
-	return lodLevelData.GetIndex();
-}
-
-void NiLODNode::SetLodLevelDataRef(int dataRef) {
-	lodLevelData.SetIndex(dataRef);
+	indices.push_back(lodLevelData.index);
 }
 
 

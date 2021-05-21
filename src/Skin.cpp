@@ -6,7 +6,6 @@ See the included GPLv3 LICENSE file
 
 #include "Skin.hpp"
 #include "NifUtil.hpp"
-#include "half.hpp"
 
 #include <unordered_map>
 
@@ -50,7 +49,8 @@ void NiSkinData::Sync(NiStreamReversible& stream) {
 
 void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
 	uint16_t highestRemoved = vertIndices.back();
-	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, highestRemoved + 1);
+	uint16_t mapSize = highestRemoved + 1;
+	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, mapSize);
 
 	NiObject::notifyVerticesDelete(vertIndices);
 
@@ -59,14 +59,14 @@ void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 		for (int i = b.numVertices - 1; i >= 0; i--) {
 			ival = b.vertexWeights[i].index;
 			if (b.vertexWeights[i].index > highestRemoved) {
-				b.vertexWeights[i].index -= vertIndices.size();
+				b.vertexWeights[i].index -= static_cast<uint16_t>(vertIndices.size());
 			}
 			else if (indexCollapse[ival] == -1) {
 				b.vertexWeights.erase(b.vertexWeights.begin() + i);
 				b.numVertices--;
 			}
 			else
-				b.vertexWeights[i].index = indexCollapse[ival];
+				b.vertexWeights[i].index = static_cast<uint16_t>(indexCollapse[ival]);
 		}
 	}
 }
@@ -77,7 +77,8 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 	partitions.resize(numPartitions);
 
 	if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() == 100) {
-		bMappedIndices = false;
+		if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+			bMappedIndices = false;
 
 		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
 			dataSize = vertexSize * numVertices;
@@ -92,7 +93,6 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 
 			vertData.resize(numVertices);
 
-			half_float::half halfData;
 			for (uint32_t i = 0; i < numVertices; i++) {
 				auto& vertex = vertData[i];
 				if (HasVertices()) {
@@ -206,8 +206,10 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 				stream.Sync(partition.boneIndices[i]);
 		}
 
-		if (stream.GetVersion().User() >= 12)
-			stream.Sync(partition.unkShort);
+		if (stream.GetVersion().User() >= 12) {
+			stream.Sync(partition.lodLevel);
+			stream.Sync(partition.globalVB);
+		}
 
 		if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() == 100) {
 			partition.vertexDesc.Sync(stream);
@@ -241,15 +243,17 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 			maxVertInd = std::max(maxVertInd, CalcMaxTriangleIndex(p.triangles));
 	}
 
+	uint16_t mapSize = maxVertInd + 1;
+
 	// Make collapse map for shape vertex indices
-	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, maxVertInd + 1);
+	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, mapSize);
 
 	for (auto& p : partitions) {
-		int oldNumVertices = p.vertexMap.size();
+		const size_t oldNumVertices = p.vertexMap.size();
 
 		// Make list of deleted vertexMap indices
-		std::vector<int> vertexMapDelList;
-		for (size_t i = 0; i < p.vertexMap.size(); i++)
+		std::vector<uint32_t> vertexMapDelList;
+		for (uint32_t i = 0; i < static_cast<uint32_t>(p.vertexMap.size()); i++)
 			if (indexCollapse[p.vertexMap[i]] == -1)
 				vertexMapDelList.push_back(i);
 
@@ -259,11 +263,11 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 			EraseVectorIndices(p.vertexWeights, vertexMapDelList);
 		if (p.hasBoneIndices)
 			EraseVectorIndices(p.boneIndices, vertexMapDelList);
-		p.numVertices = p.vertexMap.size();
+		p.numVertices = static_cast<uint16_t>(p.vertexMap.size());
 
 		// Compose vertexMap with indexCollapse to get new vertexMap
 		for (uint16_t& i : p.vertexMap)
-			i = indexCollapse[i];
+			i = static_cast<uint16_t>(indexCollapse[i]);
 
 		if (!bMappedIndices) {
 			// Apply shape vertex index collapse map to true triangles
@@ -277,45 +281,52 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 			ApplyMapToTriangles(p.triangles, mapCollapse);
 			p.trueTriangles.clear();
 		}
-		p.numTriangles = p.triangles.size();
+		p.numTriangles = static_cast<uint16_t>(p.triangles.size());
 	}
 
 	if (!vertData.empty()) {
 		EraseVectorIndices(vertData, vertIndices);
-		numVertices = vertData.size();
+		numVertices = static_cast<uint32_t>(vertData.size());
 	}
 }
 
-void NiSkinPartition::DeletePartitions(const std::vector<int>& partInds) {
+void NiSkinPartition::DeletePartitions(const std::vector<uint32_t>& partInds) {
 	if (partInds.empty())
 		return;
+
 	if (!triParts.empty()) {
 		std::vector<int> piMap = GenerateIndexCollapseMap(partInds, numPartitions);
-		for (int& pi : triParts) {
-			if (pi >= 0 && pi < piMap.size())
+		const auto piMapSize = static_cast<int>(piMap.size());
+		for (auto& pi : triParts) {
+			if (pi >= 0 && pi < piMapSize)
 				pi = piMap[pi];
 		}
 	}
+
 	EraseVectorIndices(partitions, partInds);
-	numPartitions = partitions.size();
+	numPartitions = static_cast<uint32_t>(partitions.size());
 }
 
-int NiSkinPartition::RemoveEmptyPartitions(std::vector<int>& outDeletedIndices) {
+uint32_t NiSkinPartition::RemoveEmptyPartitions(std::vector<uint32_t>& outDeletedIndices) {
 	outDeletedIndices.clear();
-	for (size_t i = 0; i < partitions.size(); ++i)
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(partitions.size()); ++i)
 		if (partitions[i].numTriangles == 0)
 			outDeletedIndices.push_back(i);
+
 	if (!outDeletedIndices.empty())
 		DeletePartitions(outDeletedIndices);
-	return outDeletedIndices.size();
+
+	return static_cast<uint32_t>(outDeletedIndices.size());
 }
 
 bool NiSkinPartition::PartitionBlock::ConvertStripsToTriangles() {
 	if (numStrips == 0)
 		return false;
+
 	hasFaces = true;
 	triangles = GenerateTrianglesFromStrips(strips);
-	numTriangles = triangles.size();
+	numTriangles = static_cast<uint16_t>(triangles.size());
 	numStrips = 0;
 	strips.clear();
 	stripLengths.clear();
@@ -348,7 +359,7 @@ void NiSkinPartition::PartitionBlock::GenerateTrueTrianglesFromMappedTriangles()
 
 	if (triangles.size() != trueTriangles.size()) {
 		triangles.clear();
-		numTriangles = trueTriangles.size();
+		numTriangles = static_cast<uint16_t>(trueTriangles.size());
 	}
 }
 
@@ -361,7 +372,7 @@ void NiSkinPartition::PartitionBlock::GenerateMappedTrianglesFromTrueTrianglesAn
 	}
 
 	std::vector<uint16_t> invmap(vertexMap.back() + 1);
-	for (unsigned int mi = 0; mi < vertexMap.size(); ++mi) {
+	for (uint16_t mi = 0; mi < static_cast<uint16_t>(vertexMap.size()); ++mi) {
 		if (vertexMap[mi] >= invmap.size())
 			invmap.resize(vertexMap[mi] + 1);
 
@@ -376,7 +387,7 @@ void NiSkinPartition::PartitionBlock::GenerateMappedTrianglesFromTrueTrianglesAn
 
 	if (triangles.size() != trueTriangles.size()) {
 		trueTriangles.clear();
-		numTriangles = triangles.size();
+		numTriangles = static_cast<uint16_t>(triangles.size());
 	}
 }
 
@@ -390,12 +401,12 @@ void NiSkinPartition::PartitionBlock::GenerateVertexMapFromTrueTriangles() {
 
 	vertexMap.clear();
 
-	for (unsigned int i = 0; i < vertUsed.size(); ++i) {
+	for (uint16_t i = 0; i < static_cast<uint16_t>(vertUsed.size()); ++i) {
 		if (vertUsed[i])
 			vertexMap.push_back(i);
 	}
 
-	numVertices = vertexMap.size();
+	numVertices = static_cast<uint16_t>(vertexMap.size());
 }
 
 void NiSkinPartition::PrepareTrueTriangles() {
@@ -433,14 +444,17 @@ void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triang
 
 	// Make a map from Triangles to their indices in shapeTris
 	std::unordered_map<Triangle, int> shapeTriInds;
-	for (size_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
+
+	int numTris = static_cast<int>(shapeTris.size());
+	for (int triInd = 0; triInd < numTris; ++triInd) {
 		Triangle t = shapeTris[triInd];
 		t.rot();
 		shapeTriInds[t] = triInd;
 	}
 
 	// Set triParts for each partition triangle
-	for (size_t partInd = 0; partInd < partitions.size(); ++partInd) {
+	int numParts = static_cast<int>(partitions.size());
+	for (int partInd = 0; partInd < numParts; ++partInd) {
 		for (const Triangle& pt : partitions[partInd].trueTriangles) {
 			Triangle t = pt;
 			t.rot();
@@ -454,6 +468,7 @@ void NiSkinPartition::GenerateTriPartsFromTrueTriangles(const std::vector<Triang
 void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triangle>& shapeTris) {
 	if (shapeTris.size() != triParts.size())
 		return;
+
 	for (PartitionBlock& p : partitions) {
 		p.trueTriangles.clear();
 		p.triangles.clear();
@@ -465,13 +480,16 @@ void NiSkinPartition::GenerateTrueTrianglesFromTriParts(const std::vector<Triang
 		p.vertexWeights.clear();
 		p.boneIndices.clear();
 	}
+
 	for (size_t triInd = 0; triInd < shapeTris.size(); ++triInd) {
-		int partInd = triParts[triInd];
-		if (partInd >= 0 && partInd < partitions.size())
+		const auto partitionsSize = static_cast<int>(partitions.size());
+		const int partInd = triParts[triInd];
+		if (partInd >= 0 && partInd < partitionsSize)
 			partitions[partInd].trueTriangles.push_back(shapeTris[triInd]);
 	}
+
 	for (PartitionBlock& p : partitions)
-		p.numTriangles = p.trueTriangles.size();
+		p.numTriangles = static_cast<uint16_t>(p.trueTriangles.size());
 }
 
 void NiSkinPartition::PrepareTriParts(const std::vector<Triangle>& shapeTris) {
@@ -482,11 +500,6 @@ void NiSkinPartition::PrepareTriParts(const std::vector<Triangle>& shapeTris) {
 }
 
 
-BlockRefArray<NiNode>& NiBoneContainer::GetBones() {
-	return boneRefs;
-}
-
-
 void NiSkinInstance::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
 	skinPartitionRef.Sync(stream);
@@ -494,21 +507,21 @@ void NiSkinInstance::Sync(NiStreamReversible& stream) {
 	boneRefs.Sync(stream);
 }
 
-void NiSkinInstance::GetChildRefs(std::set<Ref*>& refs) {
+void NiSkinInstance::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
 	refs.insert(&skinPartitionRef);
 }
 
-void NiSkinInstance::GetChildIndices(std::vector<int>& indices) {
+void NiSkinInstance::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
-	indices.push_back(skinPartitionRef.GetIndex());
+	indices.push_back(dataRef.index);
+	indices.push_back(skinPartitionRef.index);
 }
 
-void NiSkinInstance::GetPtrs(std::set<Ref*>& ptrs) {
+void NiSkinInstance::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
 	ptrs.insert(&targetRef);
@@ -517,35 +530,14 @@ void NiSkinInstance::GetPtrs(std::set<Ref*>& ptrs) {
 
 
 void BSDismemberSkinInstance::Sync(NiStreamReversible& stream) {
-	stream.Sync(numPartitions);
-	partitions.resize(numPartitions);
-
-	for (int i = 0; i < numPartitions; i++)
-		stream.Sync(partitions[i]);
+	partitions.Sync(stream);
 }
 
-void BSDismemberSkinInstance::AddPartition(const BSDismemberSkinInstance::PartitionInfo& part) {
-	partitions.push_back(part);
-	numPartitions++;
-}
-
-void BSDismemberSkinInstance::DeletePartitions(const std::vector<int>& partInds) {
+void BSDismemberSkinInstance::DeletePartitions(const std::vector<uint32_t>& partInds) {
 	if (partInds.empty())
 		return;
+
 	EraseVectorIndices(partitions, partInds);
-	numPartitions = partitions.size();
-}
-
-void BSDismemberSkinInstance::RemovePartition(const int id) {
-	if (id >= 0 && id < numPartitions) {
-		partitions.erase(partitions.begin() + id);
-		numPartitions--;
-	}
-}
-
-void BSDismemberSkinInstance::ClearPartitions() {
-	partitions.clear();
-	numPartitions = 0;
 }
 
 
@@ -565,26 +557,22 @@ void BSSkinInstance::Sync(NiStreamReversible& stream) {
 	targetRef.Sync(stream);
 	dataRef.Sync(stream);
 	boneRefs.Sync(stream);
-
-	stream.Sync(numScales);
-	scales.resize(numScales);
-	for (uint32_t i = 0; i < numScales; i++)
-		stream.Sync(scales[i]);
+	scales.Sync(stream);
 }
 
-void BSSkinInstance::GetChildRefs(std::set<Ref*>& refs) {
+void BSSkinInstance::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
 }
 
-void BSSkinInstance::GetChildIndices(std::vector<int>& indices) {
+void BSSkinInstance::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.GetIndex());
+	indices.push_back(dataRef.index);
 }
 
-void BSSkinInstance::GetPtrs(std::set<Ref*>& ptrs) {
+void BSSkinInstance::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
 	ptrs.insert(&targetRef);

@@ -11,13 +11,12 @@ See the included GPLv3 LICENSE file
 
 namespace nifly {
 struct SkinWeight {
-	uint16_t index;
+	std::uint16_t index;
 	float weight;
 
-	SkinWeight(const uint16_t index = 0, const float weight = 0.0f) {
-		this->index = index;
-		this->weight = weight;
-	}
+	SkinWeight(const uint16_t index_ = 0, const float weight_ = 0.0f)
+		: index(index_)
+		, weight(weight_) {}
 };
 
 struct VertexWeight {
@@ -34,7 +33,7 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
-class NiSkinData : public NiObjectCRTP<NiSkinData, NiObject, true> {
+class NiSkinData : public NiCloneableStreamable<NiSkinData, NiObject> {
 public:
 	struct BoneData {
 		// boneTransform transforms from skin CS to bone CS.
@@ -59,7 +58,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiSkinPartition : public NiObjectCRTP<NiSkinPartition, NiObject, true> {
+class NiSkinPartition : public NiCloneableStreamable<NiSkinPartition, NiObject> {
 public:
 	struct PartitionBlock {
 		uint16_t numVertices = 0;
@@ -79,7 +78,8 @@ public:
 		bool hasBoneIndices = false;
 		std::vector<BoneIndices> boneIndices;
 
-		uint16_t unkShort = 0; // User Version >= 12
+		uint8_t lodLevel = 0;  // User Version >= 12
+		bool globalVB = false; // User Version >= 12
 		VertexDesc vertexDesc; // User Version >= 12, User Version 2 == 100
 		// When trueTriangles is changed so it's no longer in sync with
 		// triParts, triParts should be cleared.
@@ -114,14 +114,14 @@ public:
 	// be called to get them back in sync.
 	std::vector<int> triParts;
 
-	bool HasVertices() { return vertexDesc.HasFlag(VF_VERTEX); }
-	bool HasUVs() { return vertexDesc.HasFlag(VF_UV); }
-	bool HasNormals() { return vertexDesc.HasFlag(VF_NORMAL); }
-	bool HasTangents() { return vertexDesc.HasFlag(VF_TANGENT); }
-	bool HasVertexColors() { return vertexDesc.HasFlag(VF_COLORS); }
-	bool IsSkinned() { return vertexDesc.HasFlag(VF_SKINNED); }
-	bool HasEyeData() { return vertexDesc.HasFlag(VF_EYEDATA); }
-	bool IsFullPrecision() { return true; }
+	bool HasVertices() const { return vertexDesc.HasFlag(VF_VERTEX); }
+	bool HasUVs() const { return vertexDesc.HasFlag(VF_UV); }
+	bool HasNormals() const { return vertexDesc.HasFlag(VF_NORMAL); }
+	bool HasTangents() const { return vertexDesc.HasFlag(VF_TANGENT); }
+	bool HasVertexColors() const { return vertexDesc.HasFlag(VF_COLORS); }
+	bool IsSkinned() const { return vertexDesc.HasFlag(VF_SKINNED); }
+	bool HasEyeData() const { return vertexDesc.HasFlag(VF_EYEDATA); }
+	bool IsFullPrecision() const { return true; }
 
 	static constexpr const char* BlockName = "NiSkinPartition";
 	const char* GetBlockName() override { return BlockName; }
@@ -129,8 +129,8 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
-	void DeletePartitions(const std::vector<int>& partInds);
-	int RemoveEmptyPartitions(std::vector<int>& outDeletedIndices);
+	void DeletePartitions(const std::vector<uint32_t>& partInds);
+	uint32_t RemoveEmptyPartitions(std::vector<uint32_t>& outDeletedIndices);
 	// ConvertStripsToTriangles returns true if any conversions were
 	// actually performed.  After calling this function, all of the
 	// strips will be empty.
@@ -161,75 +161,48 @@ public:
 
 class NiNode;
 
-class NiBoneContainer : public NiObjectCRTP<NiBoneContainer, NiObject> {
-protected:
-	BlockRefArray<NiNode> boneRefs;
-
+class NiBoneContainer : public NiCloneable<NiBoneContainer, NiObject> {
 public:
-	BlockRefArray<NiNode>& GetBones();
+	NiBlockPtrArray<NiNode> boneRefs;
 };
 
-class NiSkinInstance : public NiObjectCRTP<NiSkinInstance, NiBoneContainer, true> {
-private:
-	BlockRef<NiSkinData> dataRef;
-	BlockRef<NiSkinPartition> skinPartitionRef;
-	BlockRef<NiNode> targetRef;
-
+class NiSkinInstance : public NiCloneableStreamable<NiSkinInstance, NiBoneContainer> {
 public:
+	NiBlockRef<NiSkinData> dataRef;
+	NiBlockRef<NiSkinPartition> skinPartitionRef;
+	NiBlockPtr<NiNode> targetRef;
+
 	static constexpr const char* BlockName = "NiSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
-	void GetPtrs(std::set<Ref*>& ptrs) override;
-
-	int GetDataRef() { return dataRef.GetIndex(); }
-	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
-
-	int GetSkinPartitionRef() { return skinPartitionRef.GetIndex(); }
-	void SetSkinPartitionRef(const int skinPartRef) { skinPartitionRef.SetIndex(skinPartRef); }
-
-	int GetSkeletonRootRef() { return targetRef.GetIndex(); }
-	void SetSkeletonRootRef(const int skelRootRef) { targetRef.SetIndex(skelRootRef); }
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 
 
 enum PartitionFlags : uint16_t { PF_NONE = 0, PF_EDITOR_VISIBLE = 1 << 0, PF_START_NET_BONESET = 1 << 8 };
 
-class BSDismemberSkinInstance : public NiObjectCRTP<BSDismemberSkinInstance, NiSkinInstance, true> {
+class BSDismemberSkinInstance : public NiCloneableStreamable<BSDismemberSkinInstance, NiSkinInstance> {
 public:
 	struct PartitionInfo {
 		PartitionFlags flags = PF_NONE;
 		uint16_t partID = 0;
 	};
 
-private:
-	int numPartitions = 0;
-	std::vector<PartitionInfo> partitions;
+	NiVector<PartitionInfo> partitions;
 
-public:
 	static constexpr const char* BlockName = "BSDismemberSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 
-	int GetNumPartitions() { return numPartitions; }
-	std::vector<PartitionInfo> GetPartitions() { return partitions; }
-
-	void AddPartition(const PartitionInfo& partition);
-	void RemovePartition(const int id);
 	// DeletePartitions: partInds must be in sorted ascending order.
-	void DeletePartitions(const std::vector<int>& partInds);
-	void ClearPartitions();
-
-	void SetPartitions(const std::vector<PartitionInfo>& parts) {
-		this->partitions = parts;
-		this->numPartitions = parts.size();
-	}
+	void DeletePartitions(const std::vector<uint32_t>& partInds);
 };
 
-class BSSkinBoneData : public NiObjectCRTP<BSSkinBoneData, NiObject, true> {
+class BSSkinBoneData : public NiCloneableStreamable<BSSkinBoneData, NiObject> {
 public:
 	uint32_t nBones = 0;
 
@@ -254,27 +227,18 @@ public:
 
 class NiAVObject;
 
-class BSSkinInstance : public NiObjectCRTP<BSSkinInstance, NiBoneContainer, true> {
-private:
-	BlockRef<NiAVObject> targetRef;
-	BlockRef<BSSkinBoneData> dataRef;
-
-	uint32_t numScales = 0;
-	std::vector<Vector3> scales;
-
+class BSSkinInstance : public NiCloneableStreamable<BSSkinInstance, NiBoneContainer> {
 public:
+	NiBlockPtr<NiAVObject> targetRef;
+	NiBlockRef<BSSkinBoneData> dataRef;
+	NiVector<Vector3> scales;
+
 	static constexpr const char* BlockName = "BSSkin::Instance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-	void GetChildRefs(std::set<Ref*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
-	void GetPtrs(std::set<Ref*>& ptrs) override;
-
-	int GetTargetRef() { return targetRef.GetIndex(); }
-	void SetTargetRef(const int targRef) { targetRef.SetIndex(targRef); }
-
-	int GetDataRef() { return dataRef.GetIndex(); }
-	void SetDataRef(const int datRef) { dataRef.SetIndex(datRef); }
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 } // namespace nifly
