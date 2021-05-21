@@ -17,21 +17,22 @@ class kd_matcher {
 public:
 	class kd_node {
 	public:
-		int p;
-		std::vector<int> matchset;
+		uint16_t p;
+		std::vector<uint16_t> matchset;
 	private:
 		std::unique_ptr<kd_node> less;
 		std::unique_ptr<kd_node> more;
 
 	public:
-		kd_node(int point) { p = point; }
+		kd_node(const uint16_t point) { p = point; }
 
-		void add(const Vector3* pts, int point, int depth) {
+		void add(const Vector3* pts, const uint16_t point, const uint32_t depth) {
 			Vector3 d = pts[p] - pts[point];
 
 			if (std::fabs(d.x) < EPSILON && std::fabs(d.y) < EPSILON && std::fabs(d.z) < EPSILON) {
 				if (matchset.empty())
 					matchset.push_back(p);
+
 				matchset.push_back(point);
 				return;
 			}
@@ -50,9 +51,10 @@ public:
 			}
 		}
 
-		void collect(std::vector<std::vector<int>>& matches) {
+		void collect(std::vector<std::vector<uint16_t>>& matches) {
 			if (!matchset.empty())
 				matches.push_back(std::move(matchset));
+
 			if (more)
 				more->collect(matches);
 			if (less)
@@ -60,15 +62,16 @@ public:
 		}
 	};
 
-	std::vector<std::vector<int>> matches;
+	std::vector<std::vector<uint16_t>> matches;
 
-	kd_matcher(const Vector3* pts, int cnt) {
+	kd_matcher(const Vector3* pts, const uint16_t cnt) {
 		if (cnt <= 0)
 			return;
 
 		kd_node root(0);
-		for (int i = 1; i < cnt; i++)
+		for (uint16_t i = 1; i < cnt; i++)
 			root.add(pts, i, 0);
+
 		root.collect(matches);
 	}
 };
@@ -77,34 +80,38 @@ public:
 // but more robustly and hopefully more efficiently.
 class SortingMatcher {
 public:
-	std::vector<std::vector<int>> matches;
+	std::vector<std::vector<uint16_t>> matches;
 
-	SortingMatcher(const Vector3* pts, int cnt) {
+	SortingMatcher(const Vector3* pts, const uint16_t cnt) {
 		if (cnt <= 0)
 			return;
 
-		std::vector<int> inds(cnt);
-		for (int i = 0; i < cnt; ++i)
+		std::vector<uint16_t> inds(cnt);
+		for (uint16_t i = 0; i < cnt; ++i)
 			inds[i] = i;
 
-		std::sort(inds.begin(), inds.end(), [&pts](int i, int j) { return pts[i].x < pts[j].x; });
+		std::sort(inds.begin(), inds.end(), [&pts](uint16_t i, uint16_t j) { return pts[i].x < pts[j].x; });
 
 		std::vector<bool> used(cnt, false);
-		for (int si = 0; si < cnt; ++si) {
+		for (uint16_t si = 0; si < cnt; ++si) {
 			if (used[si])
 				continue;
+
 			bool matched = false;
-			for (int mi = si + 1; mi < cnt; ++mi) {
+			for (uint16_t mi = si + 1; mi < cnt; ++mi) {
 				if (pts[inds[mi]].x - pts[inds[si]].x >= EPSILON)
 					break;
+
 				if (used[mi])
 					continue;
 				if (std::fabs(pts[inds[si]].y - pts[inds[mi]].y) >= EPSILON)
 					continue;
 				if (std::fabs(pts[inds[si]].z - pts[inds[mi]].z) >= EPSILON)
 					continue;
+
 				if (!matched)
-					matches.emplace_back(std::vector<int>(1, inds[si]));
+					matches.emplace_back(std::vector<uint16_t>(1, inds[si]));
+
 				matched = true;
 				matches.back().push_back(inds[mi]);
 				used[mi] = true;
@@ -115,7 +122,7 @@ public:
 
 class kd_query_result {
 public:
-	Vector3* v;
+	const Vector3* v;
 	uint16_t vertex_index;
 	float distance;
 	bool operator<(const kd_query_result& other) const { return distance < other.distance; }
@@ -126,20 +133,20 @@ class kd_tree {
 public:
 	class kd_node {
 	public:
-		Vector3* p = nullptr;
-		int p_i = -1;
+		const Vector3* p = nullptr;
+		uint16_t p_i = 0;
 	private:
 		std::unique_ptr<kd_node> less;
 		std::unique_ptr<kd_node> more;
 
 	public:
-		kd_node(Vector3* point, int point_index) {
+		kd_node(Vector3* point, const uint16_t point_index) {
 			p = point;
 			p_i = point_index;
 		}
 
-		void add(Vector3* point, int point_index, int depth) {
-			int axis = depth % 3;
+		void add(const Vector3* point, const uint16_t point_index, const uint32_t depth) {
+			uint32_t axis = depth % 3;
 			bool domore = false;
 			float dx = p->x - point->x;
 			float dy = p->y - point->y;
@@ -175,13 +182,13 @@ public:
 
 		// Finds the closest point(s) to "querypoint" within the provided radius. If radius is 0, only the single closest point is found.
 		// On first call, "mindist" should be set to FLT_MAX and depth set to 0.
-		void find_closest(Vector3* querypoint,
+		void find_closest(const Vector3* querypoint,
 						  std::vector<kd_query_result>& queryResult,
-						  float radius,
+						  const float radius,
 						  float& mindist,
-						  int depth = 0) {
+						  const uint32_t depth = 0) {
 			kd_query_result kdqr;
-			int axis = depth % 3;			 // Which separating axis to use based on depth
+			uint32_t axis = depth % 3;		 // Which separating axis to use based on depth
 			float dx = p->x - querypoint->x; // Axis sides
 			float dy = p->y - querypoint->y;
 			float dz = p->z - querypoint->z;
@@ -264,16 +271,17 @@ private:
 public:
 	std::vector<kd_query_result> queryResult;
 
-	kd_tree(Vector3* points, int count) {
+	kd_tree(const Vector3* points, const uint16_t count) {
 		if (count <= 0)
 			return;
 
-		root = std::make_unique<kd_node>(&points[0], 0);
-		for (int i = 1; i < count; i++)
+		uint16_t pointIndex = 0;
+		root = std::make_unique<kd_node>(&points[0], pointIndex);
+		for (uint16_t i = 1; i < count; i++)
 			root->add(&points[i], i, 0);
 	}
 
-	int kd_nn(Vector3* querypoint, float radius) {
+	uint16_t kd_nn(const Vector3* querypoint, const float radius) {
 		float mindist = std::numeric_limits<float>().max();
 		if (radius > 0.0f)
 			mindist = radius;
@@ -282,7 +290,7 @@ public:
 		root->find_closest(querypoint, queryResult, radius, mindist);
 		std::sort(queryResult.begin(), queryResult.end());
 
-		return queryResult.size();
+		return static_cast<uint16_t>(queryResult.size());
 	}
 };
 } // namespace nifly

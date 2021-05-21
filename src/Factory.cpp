@@ -5,6 +5,15 @@ See the included GPLv3 LICENSE file
 */
 
 #include "Factory.hpp"
+#include "Animation.hpp"
+#include "ExtraData.hpp"
+#include "Geometry.hpp"
+#include "Keys.hpp"
+#include "Objects.hpp"
+#include "Particles.hpp"
+#include "Shaders.hpp"
+#include "Skin.hpp"
+#include "bhk.hpp"
 
 using namespace nifly;
 

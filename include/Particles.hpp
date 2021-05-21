@@ -36,10 +36,6 @@ public:
 };
 
 class NiParticlesData : public NiCloneableStreamable<NiParticlesData, NiGeometryData> {
-protected:
-	uint32_t numSubtexOffsets = 0;
-	std::vector<Vector4> subtexOffsets;
-
 public:
 	bool hasRadii = false;
 	uint16_t numActive = 0;
@@ -48,6 +44,8 @@ public:
 	bool hasRotationAngles = false;
 	bool hasRotationAxes = false;
 	bool hasTextureIndices = false;
+
+	NiVector<Vector4> subtexOffsets;
 
 	float aspectRatio = 0.0f;
 	uint16_t aspectFlags = 0;
@@ -61,9 +59,6 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<Vector4> GetSubtexOffsets() const;
-	void SetSubtexOffsets(const std::vector<Vector4>& sto);
 };
 
 class NiAutoNormalParticlesData : public NiCloneable<NiAutoNormalParticlesData, NiParticlesData> {
@@ -87,7 +82,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiPSysData : public NiCloneableStreamable<NiPSysData, NiRotatingParticlesData> {
@@ -114,7 +109,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSStripPSysData : public NiCloneableStreamable<BSStripPSysData, NiPSysData> {
@@ -131,20 +126,14 @@ public:
 };
 
 class NiPSysEmitterCtlrData : public NiCloneableStreamable<NiPSysEmitterCtlrData, NiObject> {
-protected:
-	uint32_t numVisibilityKeys = 0;
-	std::vector<Key<uint8_t>> visibilityKeys;
-
 public:
-	KeyGroup<float> floatKeys;
+	NiAnimationKeyGroup<float> floatKeys;
+	NiSyncVector<NiAnimationKey<uint8_t>> visibilityKeys;
 
 	static constexpr const char* BlockName = "NiPSysEmitterCtlrData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<Key<uint8_t>> GetVisibilityKeys() const;
-	void SetVisibilityKeys(const std::vector<Key<uint8_t>>& vk);
 };
 
 class NiParticleSystem;
@@ -198,7 +187,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSPSysLODModifier : public NiCloneableStreamable<BSPSysLODModifier, NiPSysModifier> {
@@ -365,7 +354,7 @@ public:
 
 class NiColorData : public NiCloneableStreamable<NiColorData, NiObject> {
 public:
-	KeyGroup<Color4> data;
+	NiAnimationKeyGroup<Color4> data;
 
 	static constexpr const char* BlockName = "NiColorData";
 	const char* GetBlockName() override { return BlockName; }
@@ -382,7 +371,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiPSysGrowFadeModifier : public NiCloneableStreamable<NiPSysGrowFadeModifier, NiPSysModifier> {
@@ -408,7 +397,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiPSysFieldModifier : public NiCloneableStreamable<NiPSysFieldModifier, NiPSysModifier> {
@@ -421,7 +410,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiPSysVortexFieldModifier
@@ -528,7 +517,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSParentVelocityModifier : public NiCloneableStreamable<BSParentVelocityModifier, NiPSysModifier> {
@@ -552,19 +541,18 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiParticleSystem : public NiCloneableStreamable<NiParticleSystem, NiAVObject> {
-protected:
-	uint32_t numMaterials = 0;
-	std::vector<MaterialInfo> materials;
-
 public:
 	NiBlockRef<NiGeometryData> dataRef;
 	NiBlockRef<NiObject> skinInstanceRef;
 	NiBlockRef<NiProperty> shaderPropertyRef;
 	NiBlockRef<NiProperty> alphaPropertyRef;
+
+	NiSyncVector<NiStringRef> materialNames;
+	NiVector<uint32_t> materialExtraData;
 
 	uint32_t activeMaterial = 0;
 	uint8_t defaultMatNeedsUpdate = 0;
@@ -597,10 +585,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
-
-	std::vector<MaterialInfo> GetMaterials() const;
-	void SetMaterials(const std::vector<MaterialInfo>& mi);
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiMeshParticleSystem : public NiCloneable<NiMeshParticleSystem, NiParticleSystem> {
@@ -629,7 +614,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
@@ -665,7 +650,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiPSysEmitter : public NiCloneableStreamable<NiPSysEmitter, NiPSysModifier> {

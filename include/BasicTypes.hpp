@@ -136,24 +136,37 @@ public:
 	uint32_t NDS() const { return nds; }
 	void SetNDS(const uint32_t ndsVer) { nds = ndsVer; }
 
+	// Check if file is for a Bethesda title
 	bool IsBethesda() const { return (file == V20_2_0_7 && user >= 11) || IsOB(); }
 
+	// Check if file has an Oblivion version range
 	bool IsOB() const {
 		return ((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11)
 			   || (file == V20_0_0_4 && (user == 10 || user == 11)) || (file == V20_0_0_5 && user == 11);
 	}
 
+	// Check if file has a Fallout 3 version range
 	bool IsFO3() const { return file == V20_2_0_7 && stream > 11 && stream < 83; }
+	// Check if file has a Skyrim (LE) version range
 	bool IsSK() const { return file == V20_2_0_7 && stream == 83; }
+	// Check if file has a Skyrim (SE) version range
 	bool IsSSE() const { return file == V20_2_0_7 && stream == 100; }
+	// Check if file has a Fallout 4 version range
 	bool IsFO4() const { return file == V20_2_0_7 && stream == 130; }
+	// Check if file has a Fallout 76 version range
 	bool IsFO76() const { return file == V20_2_0_7 && stream == 155; }
 
-	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 0); }
-	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 82); }
+	// Return an Oblivion file version
+	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 11); }
+	// Return a Fallout 3 file version
+	static NiVersion getFO3() { return NiVersion(NiFileVersion::V20_2_0_7, 11, 34); }
+	// Return a Skyrim (LE) file version
 	static NiVersion getSK() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 83); }
+	// Return a Skyrim (SE) file version
 	static NiVersion getSSE() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 100); }
+	// Return a Fallout 4 file version
 	static NiVersion getFO4() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 130); }
+	// Return a Fallout 76 file version
 	static NiVersion getFO76() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 155); }
 };
 
@@ -198,7 +211,7 @@ public:
 class NiOStream : public NiStreamBase {
 private:
 	std::ostream* stream = nullptr;
-	int blockSize = 0;
+	std::streamsize blockSize = 0;
 
 public:
 	NiOStream(std::ostream* s, NiVersion v)
@@ -225,17 +238,17 @@ public:
 	}
 
 	void InitBlockSize() { blockSize = 0; }
-	int GetBlockSize() { return blockSize; }
+	std::streamsize GetBlockSize() { return blockSize; }
 };
 
 class NiStreamReversible {
 public:
 	enum class Mode { Reading, Writing };
 
-	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode)
+	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode_)
 		: istream(is)
 		, ostream(os)
-		, mode(mode) {}
+		, mode(mode_) {}
 
 	void SetMode(Mode m) { mode = m; }
 	Mode GetMode() const { return mode; }
@@ -380,7 +393,7 @@ public:
 class NiStringRef {
 private:
 	std::string str;
-	int index = NIF_NPOS; // Temporary index storage for load/save
+	uint32_t index = NIF_NPOS; // Temporary index storage for load/save
 
 public:
 	NiStringRef() = default;
@@ -392,8 +405,8 @@ public:
 
 	size_t length() const { return str.length(); }
 
-	int GetIndex() const { return index; }
-	void SetIndex(const int id) { index = id; }
+	uint32_t GetIndex() const { return index; }
+	void SetIndex(const uint32_t id) { index = id; }
 
 	void clear() {
 		index = NIF_NPOS;
@@ -422,6 +435,22 @@ struct NiPlane {
 	float constant = 0.0f;
 };
 
+class NiRef {
+public:
+	uint32_t index = NIF_NPOS;
+
+	void Clear() { index = NIF_NPOS; }
+	bool IsEmpty() const { return index == NIF_NPOS; }
+
+	bool operator==(const NiRef& rhs) const { return index == rhs.index; }
+	bool operator!=(const NiRef& rhs) const { return !operator==(rhs); }
+
+	bool operator==(const uint32_t rhs) const { return index == rhs; }
+	bool operator!=(const uint32_t rhs) const { return !operator==(rhs); }
+};
+
+using NiPtr = NiRef;
+
 // Helper to reduce duplication
 template<typename ValueType, typename SizeType>
 class NiVectorBase {
@@ -441,7 +470,7 @@ public:
 	NiVectorBase() = default;
 	NiVectorBase(const SizeType size) { resize(size); }
 
-	SizeType size() const { return vec.size(); }
+	SizeType size() const { return static_cast<SizeType>(vec.size()); }
 	bool empty() const { return vec.empty(); }
 
 	void clear() { vec.clear(); }
@@ -454,7 +483,13 @@ public:
 
 	void resize(SizeType size) { vec.resize(size); }
 
+	void push_back(ValueType& val) { vec.push_back(val); }
+	auto insert(SizeType index, ValueType& val) { vec.insert(vec.begin() + index, val); }
+
 	ValueType& operator[](SizeType i) { return vec[i]; }
+
+	ValueType* data() { return vec.data(); }
+	const ValueType* data() const { return vec.data(); }
 
 	iterator erase(SizeType i) { return vec.erase(vec.begin() + i); }
 };
@@ -470,32 +505,99 @@ public:
 	NiVector(const SizeType size)
 		: Base(size) {}
 
-	void Read(NiIStream& stream) {
-		size_t sz = 0;
-		stream.read(reinterpret_cast<char*>(&sz), NumSize);
+	SizeType Sync(NiStreamReversible& stream) {
+		SizeType sz = SyncSize(stream);
+		SyncData(stream, sz);
+		return sz;
+	}
 
+	SizeType SyncSize(NiStreamReversible& stream) {
+		SizeType sz = 0;
+
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
+			if (!Base::empty() && Base::size() - 1 > MaxIndex)
+				Base::resize(MaxIndex + 1);
+		}
+
+		sz = Base::size();
+
+		stream.Sync(reinterpret_cast<char*>(&sz), NumSize);
+		return sz;
+	}
+
+
+	void SyncData(NiStreamReversible& stream, const SizeType size) {
+		Base::resize(size);
+
+		for (auto& e : *this)
+			stream.Sync(e);
+	}
+
+	void SyncByteArray(NiStreamReversible& stream) {
+		SizeType sz = SyncSize(stream);
 		Base::resize(sz);
 
-		for (auto& e : *this)
-			stream >> e;
+		if (sz > 0)
+			stream.Sync(reinterpret_cast<char*>(Base::data()), sz);
+	}
+};
+
+template<typename ValueType, typename SizeType = uint32_t>
+class NiSyncVector : public NiVectorBase<ValueType, SizeType> {
+	using Base = NiVectorBase<ValueType, SizeType>;
+	using Base::MaxIndex;
+	using Base::NumSize;
+
+public:
+	NiSyncVector() = default;
+	NiSyncVector(const SizeType size)
+		: Base(size) {}
+
+	SizeType Sync(NiStreamReversible& stream) {
+		SizeType sz = SyncSize(stream);
+		SyncData(stream, sz);
+		return sz;
 	}
 
-	void Write(NiOStream& stream) {
-		if (!Base::empty() && Base::size() - 1 > MaxIndex)
-			Base::resize(MaxIndex + 1);
+	SizeType SyncSize(NiStreamReversible& stream) {
+		SizeType sz = 0;
 
-		size_t sz = Base::size();
-		stream.write(reinterpret_cast<char*>(&sz), NumSize);
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
+			if (!Base::empty() && Base::size() - 1 > MaxIndex)
+				Base::resize(MaxIndex + 1);
+		}
 
-		for (auto& e : *this)
-			stream << e;
+		sz = Base::size();
+
+		stream.Sync(reinterpret_cast<char*>(&sz), NumSize);
+		return sz;
 	}
 
-	void Sync(NiStreamReversible& stream) {
-		if (auto istream = stream.asRead())
-			Read(*istream);
-		else if (auto ostream = stream.asWrite())
-			Write(*ostream);
+	void SyncData(NiStreamReversible& stream, const SizeType size) {
+		Base::resize(size);
+
+		for (auto& e : *this)
+			e.Sync(stream);
+	}
+
+	void GetStringRefs(std::vector<NiStringRef*>& refs) {
+		for (auto& e : *this)
+			e.GetStringRefs(refs);
+	}
+
+	void GetChildRefs(std::set<NiRef*>& refs) {
+		for (auto& e : *this)
+			e.GetChildRefs(refs);
+	}
+
+	void GetChildIndices(std::vector<uint32_t>& indices) {
+		for (auto& e : *this)
+			e.GetChildIndices(indices);
+	}
+
+	void GetPtrs(std::set<NiPtr*>& ptrs) {
+		for (auto& e : *this)
+			e.GetPtrs(ptrs);
 	}
 };
 
@@ -511,7 +613,7 @@ public:
 	NiStringVector(const SizeType size) { Base::resize(size); }
 
 	void Read(NiIStream& stream) {
-		size_t sz = 0;
+		SizeType sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
 		Base::resize(sz);
@@ -524,7 +626,7 @@ public:
 		if (!Base::empty() && Base::size() - 1 > MaxIndex)
 			Base::resize(MaxIndex + 1);
 
-		size_t sz = Base::size();
+		SizeType sz = Base::size();
 		stream.write(reinterpret_cast<char*>(&sz), NumSize);
 
 		for (auto& e : *this)
@@ -551,7 +653,7 @@ public:
 	NiStringRefVector(const SizeType size) { resize(size); }
 
 	void Read(NiIStream& stream) {
-		size_t sz = 0;
+		SizeType sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
 		Base::resize(sz);
@@ -564,7 +666,7 @@ public:
 		if (!Base::empty() && Base::size() - 1 > MaxIndex)
 			Base::resize(MaxIndex + 1);
 
-		size_t sz = Base::size();
+		SizeType sz = Base::size();
 		stream.write(reinterpret_cast<char*>(&sz), NumSize);
 
 		for (auto& e : *this)
@@ -579,29 +681,13 @@ public:
 	}
 };
 
-class NiRef {
-public:
-	int index = NIF_NPOS;
-
-	void Clear() { index = NIF_NPOS; }
-	bool IsEmpty() const { return index == NIF_NPOS; }
-
-	bool operator==(const NiRef& rhs) const { return index == rhs.index; }
-	bool operator!=(const NiRef& rhs) const { return !operator==(rhs); }
-
-	bool operator==(const int rhs) const { return index == rhs; }
-	bool operator!=(const int rhs) const { return !operator==(rhs); }
-};
-
-using NiPtr = NiRef;
-
 template<typename T>
 class NiBlockRef : public NiRef {
 	using base = NiRef;
 
 public:
 	NiBlockRef() {}
-	NiBlockRef(const int id) { NiRef::index = id; }
+	NiBlockRef(const uint32_t id) { NiRef::index = id; }
 
 	void Sync(NiStreamReversible& stream) { stream.Sync(base::index); }
 };
@@ -611,25 +697,25 @@ using NiBlockPtr = NiBlockRef<T>;
 
 class NiRefArray {
 protected:
-	int arraySize = 0;
+	uint32_t arraySize = 0;
 	bool keepEmptyRefs = false;
 
 public:
 	virtual ~NiRefArray() {}
 
-	int GetSize() const { return arraySize; }
+	uint32_t GetSize() const { return arraySize; }
 
 	void SetKeepEmptyRefs(const bool keep = true) { keepEmptyRefs = keep; }
 
 	virtual void Sync(NiStreamReversible& stream) = 0;
 
-	virtual void AddBlockRef(const int id) = 0;
-	virtual int GetBlockRef(const int id) const = 0;
-	virtual void SetBlockRef(const int id, const int index) = 0;
-	virtual void RemoveBlockRef(const int id) = 0;
-	virtual void GetIndices(std::vector<int>& indices) = 0;
+	virtual void AddBlockRef(const uint32_t id) = 0;
+	virtual uint32_t GetBlockRef(const uint32_t id) const = 0;
+	virtual void SetBlockRef(const uint32_t id, const uint32_t index) = 0;
+	virtual void RemoveBlockRef(const uint32_t id) = 0;
+	virtual void GetIndices(std::vector<uint32_t>& indices) = 0;
 	virtual void GetIndexPtrs(std::set<NiRef*>& indices) = 0;
-	virtual void SetIndices(const std::vector<int>& indices) = 0;
+	virtual void SetIndices(const std::vector<uint32_t>& indices) = 0;
 };
 
 template<typename T>
@@ -647,7 +733,7 @@ protected:
 		refs.erase(std::remove_if(refs.begin(), refs.end(), [](NiBlockRef<T> r) { return r.IsEmpty(); }),
 				   refs.end());
 
-		arraySize = refs.size();
+		arraySize = static_cast<uint32_t>(refs.size());
 	}
 
 public:
@@ -672,7 +758,7 @@ public:
 		keepEmptyRefs = false;
 	}
 
-	void SetSize(const int size) {
+	void SetSize(const uint32_t size) {
 		arraySize = size;
 		refs.resize(arraySize);
 	}
@@ -688,31 +774,31 @@ public:
 			r.Sync(stream);
 	}
 
-	void AddBlockRef(const int index) override {
+	void AddBlockRef(const uint32_t index) override {
 		refs.push_back(NiBlockRef<T>(index));
 		arraySize++;
 	}
 
-	int GetBlockRef(const int id) const override {
-		if (id >= 0 && refs.size() > id)
+	uint32_t GetBlockRef(const uint32_t id) const override {
+		if (id != NIF_NPOS && refs.size() > id)
 			return refs[id].index;
 
 		return NIF_NPOS;
 	}
 
-	void SetBlockRef(const int id, const int index) override {
-		if (id >= 0 && refs.size() > id)
+	void SetBlockRef(const uint32_t id, const uint32_t index) override {
+		if (id != NIF_NPOS && refs.size() > id)
 			refs[id].index = index;
 	}
 
-	void RemoveBlockRef(const int id) override {
-		if (id >= 0 && refs.size() > id) {
+	void RemoveBlockRef(const uint32_t id) override {
+		if (id != NIF_NPOS && refs.size() > id) {
 			refs.erase(refs.begin() + id);
 			arraySize--;
 		}
 	}
 
-	void GetIndices(std::vector<int>& indices) override {
+	void GetIndices(std::vector<uint32_t>& indices) override {
 		for (auto& r : refs)
 			indices.push_back(r.index);
 	}
@@ -722,11 +808,11 @@ public:
 			indices.insert(&r);
 	}
 
-	void SetIndices(const std::vector<int>& indices) override {
-		arraySize = indices.size();
+	void SetIndices(const std::vector<uint32_t>& indices) override {
+		arraySize = static_cast<uint32_t>(indices.size());
 		refs.resize(arraySize);
 
-		for (int i = 0; i < arraySize; i++)
+		for (uint32_t i = 0; i < arraySize; i++)
 			refs[i].index = indices[i];
 	}
 };
@@ -773,7 +859,7 @@ public:
 
 	virtual void GetStringRefs(std::vector<NiStringRef*>&) {}
 	virtual void GetChildRefs(std::set<NiRef*>&) {}
-	virtual void GetChildIndices(std::vector<int>&) {}
+	virtual void GetChildIndices(std::vector<uint32_t>&) {}
 	virtual void GetPtrs(std::set<NiPtr*>&) {}
 
 	NiObject* Clone() const {
@@ -838,8 +924,6 @@ private:
 	std::vector<uint32_t> groupSizes;
 
 public:
-	NiHeader(){};
-
 	static constexpr const char* BlockName = "NiHeader";
 	const char* GetBlockName() override { return BlockName; }
 
@@ -856,15 +940,18 @@ public:
 	void SetCreatorInfo(const std::string& creatorInfo);
 
 	std::string GetExportInfo() const;
+
+	// Sets export info string (automatically split into three members after 256 characters each)
 	void SetExportInfo(const std::string& exportInfo);
 
+	// Sets pointer to all blocks in the file
 	void SetBlockReference(std::vector<std::unique_ptr<NiObject>>* blockRef) { blocks = blockRef; }
 
 	uint32_t GetNumBlocks() const { return numBlocks; }
 
 	template<class T>
-	T* GetBlock(const int blockId) const {
-		if (blockId >= 0 && blockId < numBlocks)
+	T* GetBlock(const uint32_t blockId) const {
+		if (blockId != NIF_NPOS && blockId < numBlocks)
 			return dynamic_cast<T*>((*blocks)[blockId].get());
 
 		return nullptr;
@@ -895,8 +982,8 @@ public:
 	}
 
 	template<class T>
-	T* GetBlockUnsafe(const int blockId) const {
-		if (blockId >= 0 && blockId < numBlocks)
+	T* GetBlockUnsafe(const uint32_t blockId) const {
+		if (blockId != NIF_NPOS && blockId < numBlocks)
 			return static_cast<T*>((*blocks)[blockId].get());
 
 		return nullptr;
@@ -926,27 +1013,42 @@ public:
 		return nullptr;
 	}
 
-	int GetBlockID(NiObject* block) const;
+	// Returns the index of a block in the file (or NIF_NPOS)
+	uint32_t GetBlockID(NiObject* block) const;
 
-	void DeleteBlock(int blockId);
+	// Deletes a block and notifies all other blocks
+	void DeleteBlock(const uint32_t blockId);
+	// Deletes a block and notifies all other blocks
 	void DeleteBlock(const NiRef& blockRef);
+
+	// Deletes all blocks with the specified block type name.
+	// "orphanedOnly" makes sure no blocks that are still referenced by other blocks are deleted.
 	void DeleteBlockByType(const std::string& blockTypeStr, const bool orphanedOnly = false);
-	int AddBlock(NiObject* newBlock);
-	int ReplaceBlock(int oldBlockId, NiObject* newBlock);
-	void SetBlockOrder(std::vector<int>& newOrder);
+
+	// Adds a new block to the file. Pointer is moved to the file.
+	uint32_t AddBlock(NiObject* newBlock);
+
+	// Replaces an existing block in the file. Pointer is moved to the file.
+	// This is not the same as deleting and adding a new block.
+	uint32_t ReplaceBlock(const uint32_t oldBlockId, NiObject* newBlock);
+
+	void SetBlockOrder(std::vector<uint32_t>& newOrder);
 	void FixBlockAlignment(const std::vector<NiObject*>& currentTree);
 
 	// Swaps two blocks, updating references in other blocks that may refer to their old indices
-	void SwapBlocks(const int blockIndexLo, const int blockIndexHi);
-	bool IsBlockReferenced(const int blockId);
-	int GetBlockRefCount(const int blockId);
+	void SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndexHi);
+	bool IsBlockReferenced(const uint32_t blockId);
+	int GetBlockRefCount(const uint32_t blockId);
 
+	// Deletes all unreferenced (loose) blocks of the given type starting at the specified root.
+	// Use template type "NiObject" for all block types.
+	// Sets the amount of deleted blocks (or 0) in "deletionCount".
 	template<class T>
-	bool DeleteUnreferencedBlocks(const int rootId, int* deletionCount = nullptr) {
+	bool DeleteUnreferencedBlocks(const uint32_t rootId, uint32_t* deletionCount = nullptr) {
 		if (rootId == NIF_NPOS)
 			return false;
 
-		for (int i = 0; i < numBlocks; i++) {
+		for (uint32_t i = 0; i < numBlocks; i++) {
 			if (i != rootId) {
 				// Only check blocks of provided template type
 				auto block = GetBlock<T>(i);
@@ -966,26 +1068,38 @@ public:
 	}
 
 	uint16_t AddOrFindBlockTypeId(const std::string& blockTypeName);
-	std::string GetBlockTypeStringById(const int blockId) const;
-	uint16_t GetBlockTypeIndex(const int blockId) const;
+	std::string GetBlockTypeStringById(const uint32_t blockId) const;
+	uint16_t GetBlockTypeIndex(const uint32_t blockId) const;
 
 	uint32_t GetBlockSize(const uint32_t blockId) const;
 	std::streampos GetBlockSizeStreamPos() const;
 	void ResetBlockSizeStreamPos();
 
-	int GetStringCount() const;
-	int FindStringId(const std::string& str) const;
-	int AddOrFindStringId(const std::string& str, const bool addEmpty = false);
-	std::string GetStringById(const int id) const;
-	void SetStringById(const int id, const std::string& str);
+	uint32_t GetStringCount() const;
+	uint32_t FindStringId(const std::string& str) const;
+
+	// Adds a new string to the header (or finds a matching one).
+	// "addEmpty" allows for adding an empty string, which is usually not required.
+	// Returns the string index that can then be assigned to a block's member.
+	uint32_t AddOrFindStringId(const std::string& str, const bool addEmpty = false);
+
+	// Returns string at the specified string index (or empty string)
+	std::string GetStringById(const uint32_t id) const;
+
+	// Sets string at the specified string index (or does nothing)
+	void SetStringById(const uint32_t id, const std::string& str);
 
 	void ClearStrings();
 	void UpdateMaxStringLength();
+
+	// Fills all string references with their corresponding header string (index -> string)
 	void FillStringRefs();
+
+	// Creates header strings for all string references or updates existing ones (string -> index)
 	void UpdateHeaderStrings(const bool hasUnknown);
 
-	static void BlockDeleted(NiObject* o, int blockId);
-	static void BlockSwapped(NiObject* o, int blockIndexLo, int blockIndexHi);
+	static void BlockDeleted(NiObject* o, const uint32_t blockId);
+	static void BlockSwapped(NiObject* o, const uint32_t blockIndexLo, const uint32_t blockIndexHi);
 
 	void Get(NiIStream& stream) override;
 	void Put(NiOStream& stream) override;

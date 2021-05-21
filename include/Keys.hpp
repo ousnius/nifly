@@ -9,7 +9,20 @@ See the included GPLv3 LICENSE file
 #include "BasicTypes.hpp"
 
 namespace nifly {
-enum KeyType : uint32_t { NO_INTERP, LINEAR_KEY, QUADRATIC_KEY, TBC_KEY, XYZ_ROTATION_KEY, CONST_KEY };
+class NiTextKey {
+public:
+	float time = 0.0f;
+	NiStringRef value;
+
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(time);
+		value.Sync(stream);
+	}
+
+	void GetStringRefs(std::vector<NiStringRef*>& refs) { refs.emplace_back(&value); }
+};
+
+enum NiKeyType : uint32_t { NO_INTERP, LINEAR_KEY, QUADRATIC_KEY, TBC_KEY, XYZ_ROTATION_KEY, CONST_KEY };
 
 struct TBC {
 	float tension = 0.0f;
@@ -18,20 +31,37 @@ struct TBC {
 };
 
 template<typename T>
-struct Key {
+class NiAnimationKey {
+public:
+	NiKeyType type = NiKeyType::NO_INTERP; // no IO, used for Sync condition only
+
 	float time = 0.0f;
 	T value{};
 	T forward{};
 	T backward{};
 	TBC tbc;
+
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(time);
+		stream.Sync(value);
+
+		switch (type) {
+			case NiKeyType::QUADRATIC_KEY:
+				stream.Sync(forward);
+				stream.Sync(backward);
+				break;
+			case NiKeyType::TBC_KEY: stream.Sync(tbc); break;
+			default: break;
+		}
+	}
 };
 
 template<typename T>
-class KeyGroup {
+class NiAnimationKeyGroup {
 private:
 	uint32_t numKeys = 0;
-	KeyType interpolation = NO_INTERP;
-	std::vector<Key<T>> keys;
+	NiKeyType interpolation = NO_INTERP;
+	std::vector<NiAnimationKey<T>> keys;
 
 public:
 	void Sync(NiStreamReversible& stream) {
@@ -41,34 +71,25 @@ public:
 		if (numKeys > 0) {
 			stream.Sync(interpolation);
 
-			for (int i = 0; i < numKeys; i++) {
+			for (uint32_t i = 0; i < numKeys; i++) {
 				auto& key = keys[i];
-				stream.Sync(key.time);
-				stream.Sync(key.value);
-
-				switch (interpolation) {
-					case QUADRATIC_KEY:
-						stream.Sync(key.forward);
-						stream.Sync(key.backward);
-						break;
-					case TBC_KEY: stream.Sync(key.tbc); break;
-					default: break;
-				}
+				key.type = interpolation;
+				key.Sync(stream);
 			}
 		}
 	}
 
-	KeyType GetInterpolationType() const { return interpolation; }
+	NiKeyType GetInterpolationType() const { return interpolation; }
 
-	void SetInterpolationType(const KeyType interp) { interpolation = interp; }
+	void SetInterpolationType(const NiKeyType interp) { interpolation = interp; }
 
 	uint32_t GetNumKeys() const { return numKeys; }
 
-	Key<T> GetKey(const int id) const { return keys[id]; }
+	NiAnimationKey<T> GetKey(const int id) const { return keys[id]; }
 
-	void SetKey(const int id, const Key<T>& key) { keys[id] = key; }
+	void SetKey(const int id, const NiAnimationKey<T>& key) { keys[id] = key; }
 
-	void AddKey(const Key<T>& key) {
+	void AddKey(const NiAnimationKey<T>& key) {
 		keys.push_back(key);
 		numKeys++;
 	}
