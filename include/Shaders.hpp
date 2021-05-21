@@ -266,7 +266,7 @@ public:
 	virtual bool HasTextureSet() const { return false; }
 	virtual NiBlockRef<BSShaderTextureSet>* TextureSetRef() { return nullptr; }
 	virtual const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const { return nullptr; }
-	virtual void SetTextureSetRef(const int textureId) {  }
+	virtual void SetTextureSetRef(const uint32_t textureId) {  }
 
 	virtual bool IsSkinTinted() const { return false; }
 	virtual bool IsFaceTinted() const { return false; }
@@ -484,7 +484,7 @@ public:
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
 	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
-	void SetTextureSetRef(const int textureId) override { textureSetRef.index = textureId; }
+	void SetTextureSetRef(const uint32_t textureId) override { textureSetRef.index = textureId; }
 
 	bool IsSkinTinted() const override;
 	bool IsFaceTinted() const override;
@@ -649,7 +649,7 @@ public:
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
 	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
-	void SetTextureSetRef(const int textureId) override { textureSetRef.index = textureId; }
+	void SetTextureSetRef(const uint32_t textureId) override { textureSetRef.index = textureId; }
 
 	bool IsSkinned() const override;
 	void SetSkinned(const bool enable) override;

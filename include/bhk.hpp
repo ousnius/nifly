@@ -1158,7 +1158,7 @@ public:
 
 STREAMABLECLASSDEF(bhkPoseArray, NiObject) {
 public:
-	NiStringRefVector<> bones;
+	NiStringRefVector bones;
 	NiSyncVector<BonePose> poses;
 
 	static constexpr const char* BlockName = "bhkPoseArray";

@@ -21,7 +21,7 @@ public:
 };
 
 template<typename T>
-class NiFactoryType final : public NiFactory {
+class NiFactoryType FINALCLASS : public NiFactory {
 public:
 	// Create new NiObject
 	NiObject* Create() override { return new T; }

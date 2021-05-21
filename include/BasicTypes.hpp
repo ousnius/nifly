@@ -29,12 +29,16 @@ class DERIVED : public NiCloneable<DERIVED, BASE>
 
 #define STREAMABLECLASSDEF(DERIVED, BASE) class DERIVED; \
 %template(DERIVED##BASE) NiCloneableStreamable<DERIVED, BASE>; \
-class DERIVED : public NiCloneableStreamable<DERIVED, BASE> 
+class DERIVED : public NiCloneableStreamable<DERIVED, BASE>
+
+#define FINALCLASS
 
 #else
 
 #define CLONEABLECLASSDEF(DERIVED, BASE) class DERIVED : public NiCloneable<DERIVED, BASE>
 #define STREAMABLECLASSDEF(DERIVED, BASE) class DERIVED : public NiCloneableStreamable<DERIVED, BASE> 
+
+#define FINALCLASS final
 
 #endif
 
@@ -485,7 +489,7 @@ public:
 	void resize(SizeType size) { vec.resize(size); }
 
 	void push_back(ValueType& val) { vec.push_back(val); }
-	auto insert(SizeType index, ValueType& val) { vec.insert(vec.begin() + index, val); }
+	void insert(SizeType index, ValueType& val) { vec.insert(vec.begin() + index, val); }
 
 	ValueType& operator[](SizeType i) { return vec[i]; }
 
@@ -547,6 +551,23 @@ public:
 	}
 };
 
+template<typename T, typename U>
+concept HasGetStringRefs = requires(const T t, const U u) {
+	t.GetStringRefs(u);
+};
+template<typename T, typename U>
+concept HasGetChildRefs = requires(const T t, const U u) {
+	t.GetChildRefs(u);
+};
+template<typename T, typename U>
+concept HasGetChildIndices = requires(const T t, const U u) {
+	t.GetChildIndices(u);
+};
+template<typename T, typename U>
+concept HasGetPtrs = requires(const T t, const U u) {
+	t.GetPtrs(u);
+};
+
 template<typename ValueType, typename SizeType = uint32_t>
 class NiSyncVector : public NiVectorBase<ValueType, SizeType> {
 	using Base = NiVectorBase<ValueType, SizeType>;
@@ -586,23 +607,35 @@ public:
 	}
 
 	void GetStringRefs(std::vector<NiStringRef*>& refs) {
-		for (auto& e : *this)
-			e.GetStringRefs(refs);
+		if constexpr (HasGetStringRefs<ValueType, std::set<NiStringRef*>>)
+		{
+			for (auto& e : *this)
+				e.GetStringRefs(refs);
+		}
 	}
 
 	void GetChildRefs(std::set<NiRef*>& refs) {
-		for (auto& e : *this)
-			e.GetChildRefs(refs);
+		if constexpr (HasGetChildRefs<ValueType, std::set<NiRef*>>)
+		{
+			for (auto& e : *this)
+				e.GetChildRefs(refs);
+		}
 	}
 
 	void GetChildIndices(std::vector<uint32_t>& indices) {
-		for (auto& e : *this)
-			e.GetChildIndices(indices);
+		if constexpr (HasGetChildIndices<ValueType, std::vector<uint32_t>>)
+		{
+			for (auto& e : *this)
+				e.GetChildIndices(indices);
+		}
 	}
 
 	void GetPtrs(std::set<NiPtr*>& ptrs) {
-		for (auto& e : *this)
-			e.GetPtrs(ptrs);
+		if constexpr (HasGetPtrs<ValueType, std::set<NiPtr*>>)
+		{
+			for (auto& e : *this)
+				e.GetPtrs(ptrs);
+		}
 	}
 };
 
@@ -646,8 +679,9 @@ public:
 	}
 };
 
-template<typename SizeType = uint32_t>
-class NiStringRefVector : public NiVectorBase<NiStringRef, SizeType> {
+class NiStringRefVector : public NiVectorBase<NiStringRef, uint32_t> {
+public:
+	using SizeType = uint32_t;
 private:
 	using Base = NiVectorBase<NiStringRef, SizeType>;
 	using Base::MaxIndex;
@@ -962,8 +996,8 @@ public:
 
 	uint32_t GetNumBlocks() const { return numBlocks; }
 
-	NiObject* GetBlockById(const int blockId) {
-		if (blockId >= 0 && blockId < numBlocks)
+	NiObject* GetBlockById(const uint32_t blockId) {
+		if (blockId < numBlocks)
 			return (*blocks)[blockId].get();
 		return nullptr;
 	}

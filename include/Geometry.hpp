@@ -216,22 +216,22 @@ public:
 	virtual bool HasData() const { return false; }
 	virtual NiBlockRef<NiGeometryData>* DataRef() { return nullptr; }
 	virtual const NiBlockRef<NiGeometryData>* DataRef() const { return nullptr; }
-	virtual void SetDataRef(const int dataId) { }
+	virtual void SetDataRef(const uint32_t dataId) { }
 
 	virtual bool HasSkinInstance() const { return false; }
 	virtual NiBlockRef<NiBoneContainer>* SkinInstanceRef() { return nullptr; }
 	virtual const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const { return nullptr; }
-	virtual void SetSkinInstanceRef(const int shaderId) { }
+	virtual void SetSkinInstanceRef(const uint32_t shaderId) { }
 
 	virtual bool HasShaderProperty() const { return false; }
 	virtual NiBlockRef<NiShader>* ShaderPropertyRef() { return nullptr; }
 	virtual const NiBlockRef<NiShader>* ShaderPropertyRef() const { return nullptr; }
-	virtual void SetShaderPropertyRef(const int shaderId) { }
+	virtual void SetShaderPropertyRef(const uint32_t shaderId) { }
 
 	virtual bool HasAlphaProperty() const { return false; }
 	virtual NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() { return nullptr; }
 	virtual const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const { return nullptr; }
-	virtual void SetAlphaPropertyRef(const int alphaId) { }
+	virtual void SetAlphaPropertyRef(const uint32_t alphaId) { }
 
 	virtual uint16_t GetNumVertices() const;
 	virtual void SetVertices(const bool enable);
@@ -314,17 +314,17 @@ public:
 	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
 	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
 	const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const override { return &skinInstanceRef; }
-	void SetSkinInstanceRef(const int shaderId) override { skinInstanceRef.index = shaderId; }
+	void SetSkinInstanceRef(const uint32_t shaderId) override { skinInstanceRef.index = shaderId; }
 
 	bool HasShaderProperty() const override { return !shaderPropertyRef.IsEmpty(); }
 	NiBlockRef<NiShader>* ShaderPropertyRef() override { return &shaderPropertyRef; }
 	const NiBlockRef<NiShader>* ShaderPropertyRef() const override { return &shaderPropertyRef; }
-	void SetShaderPropertyRef(const int shaderId) override { shaderPropertyRef.index = shaderId; }
+	void SetShaderPropertyRef(const uint32_t shaderId) override { shaderPropertyRef.index = shaderId; }
 
 	bool HasAlphaProperty() const override { return !alphaPropertyRef.IsEmpty(); }
 	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
-	void SetAlphaPropertyRef(const int alphaId) override { alphaPropertyRef.index = alphaId; }
+	void SetAlphaPropertyRef(const uint32_t alphaId) override { alphaPropertyRef.index = alphaId; }
 
 	std::vector<Vector3>& UpdateRawVertices();
 	std::vector<Vector3>& UpdateRawNormals();
@@ -571,22 +571,22 @@ public:
 	bool HasData() const override { return !dataRef.IsEmpty(); }
 	NiBlockRef<NiGeometryData>* DataRef() override { return &dataRef; }
 	const NiBlockRef<NiGeometryData>* DataRef() const override { return &dataRef; }
-	void SetDataRef(const int dataId) override { dataRef.index = dataId; }
+	void SetDataRef(const uint32_t dataId) override { dataRef.index = dataId; }
 
 	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
 	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
 	const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const override { return &skinInstanceRef; }
-	void SetSkinInstanceRef(const int shaderId) override { skinInstanceRef.index = shaderId; }
+	void SetSkinInstanceRef(const uint32_t shaderId) override { skinInstanceRef.index = shaderId; }
 
 	bool HasShaderProperty() const override { return !shaderPropertyRef.IsEmpty(); }
 	NiBlockRef<NiShader>* ShaderPropertyRef() override { return &shaderPropertyRef; }
 	const NiBlockRef<NiShader>* ShaderPropertyRef() const override { return &shaderPropertyRef; }
-	void SetShaderPropertyRef(const int shaderId) override { shaderPropertyRef.index = shaderId; }
+	void SetShaderPropertyRef(const uint32_t shaderId) override { shaderPropertyRef.index = shaderId; }
 
 	bool HasAlphaProperty() const override { return !alphaPropertyRef.IsEmpty(); }
 	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
-	void SetAlphaPropertyRef(const int alphaId) override { alphaPropertyRef.index = alphaId; }
+	void SetAlphaPropertyRef(const uint32_t alphaId) override { alphaPropertyRef.index = alphaId; }
 };
 
 CLONEABLECLASSDEF(NiTriBasedGeom, NiGeometry) {};

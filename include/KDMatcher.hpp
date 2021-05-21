@@ -140,7 +140,7 @@ public:
 		std::unique_ptr<kd_node> more;
 
 	public:
-		kd_node(Vector3* point, const uint16_t point_index) {
+		kd_node(const Vector3* point, const uint16_t point_index) {
 			p = point;
 			p_i = point_index;
 		}
