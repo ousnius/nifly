@@ -339,7 +339,7 @@ public:
 
 class NiAVObject;
 
-class NiCollisionObject : public NiCloneableStreamable<NiCollisionObject, NiObject> {
+STREAMABLECLASSDEF(NiCollisionObject, NiObject) {
 public:
 	NiBlockPtr<NiAVObject> targetRef;
 
@@ -422,7 +422,7 @@ struct UnionBV {
 	}
 };
 
-class NiCollisionData : public NiCloneableStreamable<NiCollisionData, NiCollisionObject> {
+STREAMABLECLASSDEF(NiCollisionData, NiCollisionObject) {
 public:
 	PropagationMode propagationMode = PROPAGATE_ON_SUCCESS;
 	CollisionMode collisionMode = CM_USE_OBB;
@@ -435,7 +435,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkNiCollisionObject : public NiCloneableStreamable<bhkNiCollisionObject, NiCollisionObject> {
+STREAMABLECLASSDEF(bhkNiCollisionObject, NiCollisionObject) {
 public:
 	uint16_t flags = 1;
 	NiBlockRef<NiObject> bodyRef;
@@ -448,13 +448,13 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class bhkCollisionObject : public NiCloneable<bhkCollisionObject, bhkNiCollisionObject> {
+CLONEABLECLASSDEF(bhkCollisionObject, bhkNiCollisionObject) {
 public:
 	static constexpr const char* BlockName = "bhkCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkNPCollisionObject : public NiCloneableStreamable<bhkNPCollisionObject, bhkCollisionObject> {
+STREAMABLECLASSDEF(bhkNPCollisionObject, bhkCollisionObject) {
 public:
 	uint32_t bodyID = 0;
 
@@ -464,19 +464,19 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkPCollisionObject : public NiCloneable<bhkPCollisionObject, bhkNiCollisionObject> {
+CLONEABLECLASSDEF(bhkPCollisionObject, bhkNiCollisionObject) {
 public:
 	static constexpr const char* BlockName = "bhkPCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkSPCollisionObject : public NiCloneable<bhkSPCollisionObject, bhkPCollisionObject> {
+CLONEABLECLASSDEF(bhkSPCollisionObject, bhkPCollisionObject) {
 public:
 	static constexpr const char* BlockName = "bhkSPCollisionObject";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkBlendCollisionObject : public NiCloneableStreamable<bhkBlendCollisionObject, bhkCollisionObject> {
+STREAMABLECLASSDEF(bhkBlendCollisionObject, bhkCollisionObject) {
 public:
 	float heirGain = 0.0f;
 	float velGain = 0.0f;
@@ -487,7 +487,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkPhysicsSystem : public NiCloneableStreamable<bhkPhysicsSystem, BSExtraData> {
+STREAMABLECLASSDEF(bhkPhysicsSystem, BSExtraData) {
 public:
 	NiVector<char> data;
 
@@ -499,7 +499,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkRagdollSystem : public NiCloneableStreamable<bhkRagdollSystem, BSExtraData> {
+STREAMABLECLASSDEF(bhkRagdollSystem, BSExtraData) {
 public:
 	NiVector<char> data;
 
@@ -511,7 +511,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBlendController : public NiCloneableStreamable<bhkBlendController, NiTimeController> {
+STREAMABLECLASSDEF(bhkBlendController, NiTimeController) {
 public:
 	uint32_t keys = 0;
 
@@ -521,17 +521,17 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkRefObject : public NiCloneable<bhkRefObject, NiObject> {};
+CLONEABLECLASSDEF(bhkRefObject, NiObject) {};
 
-class bhkSerializable : public NiCloneable<bhkSerializable, bhkRefObject> {};
+CLONEABLECLASSDEF(bhkSerializable, bhkRefObject) {};
 
-class bhkShape : public NiCloneable<bhkShape, bhkSerializable> {
+CLONEABLECLASSDEF(bhkShape, bhkSerializable) {
 public:
 	virtual HavokMaterial GetMaterial() const { return 0; }
 	virtual void SetMaterial(HavokMaterial) {}
 };
 
-class bhkHeightFieldShape : public NiCloneableStreamable<bhkHeightFieldShape, bhkShape> {
+STREAMABLECLASSDEF(bhkHeightFieldShape, bhkShape) {
 protected:
 	HavokMaterial material = 0;
 
@@ -542,7 +542,7 @@ public:
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
-class bhkPlaneShape : public NiCloneableStreamable<bhkPlaneShape, bhkHeightFieldShape> {
+STREAMABLECLASSDEF(bhkPlaneShape, bhkHeightFieldShape) {
 protected:
 public:
 	Vector3 unkVec;
@@ -556,7 +556,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkSphereRepShape : public NiCloneableStreamable<bhkSphereRepShape, bhkShape> {
+STREAMABLECLASSDEF(bhkSphereRepShape, bhkShape) {
 protected:
 	HavokMaterial material = 0;
 
@@ -567,14 +567,14 @@ public:
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
-class bhkConvexShape : public NiCloneableStreamable<bhkConvexShape, bhkSphereRepShape> {
+STREAMABLECLASSDEF(bhkConvexShape, bhkSphereRepShape) {
 public:
 	float radius = 0.0f;
 
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkMultiSphereShape : public NiCloneableStreamable<bhkMultiSphereShape, bhkSphereRepShape> {
+STREAMABLECLASSDEF(bhkMultiSphereShape, bhkSphereRepShape) {
 public:
 	hkWorldObjCInfoProperty shapeProperty;
 	NiVector<BoundingSphere> spheres;
@@ -585,7 +585,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkConvexListShape : public NiCloneableStreamable<bhkConvexListShape, bhkShape> {
+STREAMABLECLASSDEF(bhkConvexListShape, bhkShape) {
 public:
 	NiBlockRefArray<bhkConvexShape> shapeRefs;
 	HavokMaterial material = 0;
@@ -604,7 +604,7 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class bhkConvexVerticesShape : public NiCloneableStreamable<bhkConvexVerticesShape, bhkConvexShape> {
+STREAMABLECLASSDEF(bhkConvexVerticesShape, bhkConvexShape) {
 public:
 	hkWorldObjCInfoProperty vertsProp;
 	hkWorldObjCInfoProperty normalsProp;
@@ -618,7 +618,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBoxShape : public NiCloneableStreamable<bhkBoxShape, bhkConvexShape> {
+STREAMABLECLASSDEF(bhkBoxShape, bhkConvexShape) {
 private:
 	uint64_t padding = 0;
 
@@ -632,13 +632,13 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkSphereShape : public NiCloneable<bhkSphereShape, bhkConvexShape> {
+CLONEABLECLASSDEF(bhkSphereShape, bhkConvexShape) {
 public:
 	static constexpr const char* BlockName = "bhkSphereShape";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkTransformShape : public NiCloneableStreamable<bhkTransformShape, bhkShape> {
+STREAMABLECLASSDEF(bhkTransformShape, bhkShape) {
 private:
 	uint64_t padding = 0;
 
@@ -656,13 +656,13 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class bhkConvexTransformShape : public NiCloneable<bhkConvexTransformShape, bhkTransformShape> {
+CLONEABLECLASSDEF(bhkConvexTransformShape, bhkTransformShape) {
 public:
 	static constexpr const char* BlockName = "bhkConvexTransformShape";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkCapsuleShape : public NiCloneableStreamable<bhkCapsuleShape, bhkConvexShape> {
+STREAMABLECLASSDEF(bhkCapsuleShape, bhkConvexShape) {
 private:
 	uint64_t padding = 0;
 
@@ -678,9 +678,9 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBvTreeShape : public NiCloneable<bhkBvTreeShape, bhkShape> {};
+CLONEABLECLASSDEF(bhkBvTreeShape, bhkShape) {};
 
-class bhkMoppBvTreeShape : public NiCloneableStreamable<bhkMoppBvTreeShape, bhkBvTreeShape> {
+STREAMABLECLASSDEF(bhkMoppBvTreeShape, bhkBvTreeShape) {
 public:
 	NiBlockRef<bhkShape> shapeRef;
 	uint32_t userData = 0;
@@ -701,7 +701,7 @@ public:
 
 class NiTriStripsData;
 
-class bhkNiTriStripsShape : public NiCloneableStreamable<bhkNiTriStripsShape, bhkShape> {
+STREAMABLECLASSDEF(bhkNiTriStripsShape, bhkShape) {
 protected:
 	HavokMaterial material = 0;
 
@@ -729,9 +729,9 @@ public:
 	void SetMaterial(HavokMaterial mat) override { material = mat; }
 };
 
-class bhkShapeCollection : public NiCloneable<bhkShapeCollection, bhkShape> {};
+CLONEABLECLASSDEF(bhkShapeCollection, bhkShape) {};
 
-class bhkListShape : public NiCloneableStreamable<bhkListShape, bhkShapeCollection> {
+STREAMABLECLASSDEF(bhkListShape, bhkShapeCollection) {
 protected:
 	HavokMaterial material = 0;
 
@@ -769,7 +769,7 @@ struct hkSubPartData {
 	HavokMaterial material = 0;
 };
 
-class hkPackedNiTriStripsData : public NiCloneableStreamable<hkPackedNiTriStripsData, bhkShapeCollection> {
+STREAMABLECLASSDEF(hkPackedNiTriStripsData, bhkShapeCollection) {
 public:
 	uint32_t keyCount = 0;
 	std::vector<hkTriangleData> triData;
@@ -787,8 +787,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkPackedNiTriStripsShape
-	: public NiCloneableStreamable<bhkPackedNiTriStripsShape, bhkShapeCollection> {
+STREAMABLECLASSDEF(bhkPackedNiTriStripsShape, bhkShapeCollection) {
 private:
 	uint32_t unused1 = 0;
 	uint32_t unused2 = 0;
@@ -811,7 +810,7 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class bhkLiquidAction : public NiCloneableStreamable<bhkLiquidAction, bhkSerializable> {
+STREAMABLECLASSDEF(bhkLiquidAction, bhkSerializable) {
 public:
 	uint32_t userData = 0;
 	uint32_t unkInt1 = 0;
@@ -827,7 +826,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkOrientHingedBodyAction : public NiCloneableStreamable<bhkOrientHingedBodyAction, bhkSerializable> {
+STREAMABLECLASSDEF(bhkOrientHingedBodyAction, bhkSerializable) {
 private:
 	uint64_t padding = 0;
 	uint64_t padding2 = 0;
@@ -848,13 +847,13 @@ public:
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
-class bhkWorldObject : public NiCloneableStreamable<bhkWorldObject, bhkSerializable> {
+STREAMABLECLASSDEF(bhkWorldObject, bhkSerializable) {
 public:
 	NiBlockRef<bhkShape> shapeRef;
 	HavokFilter collisionFilter;
 	int unkInt1 = 0;
 	uint8_t broadPhaseType = 0;
-	uint8_t unkBytes[3]{};
+	std::array<uint8_t, 3> unkBytes{};
 	hkWorldObjCInfoProperty prop;
 
 	void Sync(NiStreamReversible& stream);
@@ -862,11 +861,11 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class bhkPhantom : public NiCloneable<bhkPhantom, bhkWorldObject> {};
+CLONEABLECLASSDEF(bhkPhantom, bhkWorldObject) {};
 
-class bhkShapePhantom : public NiCloneable<bhkShapePhantom, bhkPhantom> {};
+CLONEABLECLASSDEF(bhkShapePhantom, bhkPhantom) {};
 
-class bhkSimpleShapePhantom : public NiCloneableStreamable<bhkSimpleShapePhantom, bhkShapePhantom> {
+STREAMABLECLASSDEF(bhkSimpleShapePhantom, bhkShapePhantom) {
 private:
 	uint64_t padding = 0;
 
@@ -879,7 +878,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkAabbPhantom : public NiCloneableStreamable<bhkAabbPhantom, bhkShapePhantom> {
+STREAMABLECLASSDEF(bhkAabbPhantom, bhkShapePhantom) {
 private:
 	uint64_t padding = 0;
 
@@ -893,7 +892,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkEntity : public NiCloneable<bhkEntity, bhkWorldObject> {};
+CLONEABLECLASSDEF(bhkEntity, bhkWorldObject) {};
 
 enum hkResponseType : uint8_t {
 	RESPONSE_INVALID,
@@ -902,19 +901,19 @@ enum hkResponseType : uint8_t {
 	RESPONSE_NONE
 };
 
-class bhkRigidBody : public NiCloneableStreamable<bhkRigidBody, bhkEntity> {
+STREAMABLECLASSDEF(bhkRigidBody, bhkEntity) {
 public:
 	hkResponseType collisionResponse = RESPONSE_SIMPLE_CONTACT;
 	uint8_t unusedByte1 = 0;
 	uint16_t processContactCallbackDelay = 0xFFFF;
 	uint32_t unkInt1 = 0;
 	HavokFilter collisionFilterCopy;
-	uint16_t unkShorts2[6]{};
+	std::array<uint16_t, 6> unkShorts2{};
 	Vector4 translation;
 	QuaternionXYZW rotation;
 	Vector4 linearVelocity;
 	Vector4 angularVelocity;
-	float inertiaMatrix[12]{};
+	std::array<float, 12> inertiaMatrix{};
 	Vector4 center;
 	float mass = 1.0f;
 	float linearDamping = 0.1f;
@@ -949,13 +948,13 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class bhkRigidBodyT : public NiCloneable<bhkRigidBodyT, bhkRigidBody> {
+CLONEABLECLASSDEF(bhkRigidBodyT, bhkRigidBody) {
 public:
 	static constexpr const char* BlockName = "bhkRigidBodyT";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class bhkConstraint : public NiCloneableStreamable<bhkConstraint, bhkSerializable> {
+STREAMABLECLASSDEF(bhkConstraint, bhkSerializable) {
 public:
 	NiBlockPtrArray<bhkEntity> entityRefs;
 	uint32_t priority = 0;
@@ -964,7 +963,7 @@ public:
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
-class bhkHingeConstraint : public NiCloneableStreamable<bhkHingeConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkHingeConstraint, bhkConstraint) {
 public:
 	HingeDesc hinge;
 
@@ -974,7 +973,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkLimitedHingeConstraint : public NiCloneableStreamable<bhkLimitedHingeConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkLimitedHingeConstraint, bhkConstraint) {
 public:
 	LimitedHingeDesc limitedHinge;
 
@@ -1005,7 +1004,7 @@ public:
 	void GetPtrs(std::set<NiPtr*>& ptrs);
 };
 
-class bhkBreakableConstraint : public NiCloneableStreamable<bhkBreakableConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkBreakableConstraint, bhkConstraint) {
 public:
 	ConstraintData subConstraint;
 	bool removeWhenBroken = false;
@@ -1017,7 +1016,7 @@ public:
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
-class bhkRagdollConstraint : public NiCloneableStreamable<bhkRagdollConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkRagdollConstraint, bhkConstraint) {
 public:
 	RagdollDesc ragdoll;
 
@@ -1027,7 +1026,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkStiffSpringConstraint : public NiCloneableStreamable<bhkStiffSpringConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkStiffSpringConstraint, bhkConstraint) {
 public:
 	StiffSpringDesc stiffSpring;
 
@@ -1037,7 +1036,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkPrismaticConstraint : public NiCloneableStreamable<bhkPrismaticConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkPrismaticConstraint, bhkConstraint) {
 public:
 	PrismaticDesc prismatic;
 
@@ -1047,7 +1046,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkMalleableConstraint : public NiCloneableStreamable<bhkMalleableConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkMalleableConstraint, bhkConstraint) {
 public:
 	ConstraintData subConstraint;
 
@@ -1057,7 +1056,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBallAndSocketConstraint : public NiCloneableStreamable<bhkBallAndSocketConstraint, bhkConstraint> {
+STREAMABLECLASSDEF(bhkBallAndSocketConstraint, bhkConstraint) {
 public:
 	BallAndSocketDesc ballAndSocket;
 
@@ -1067,8 +1066,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkBallSocketConstraintChain
-	: public NiCloneableStreamable<bhkBallSocketConstraintChain, bhkSerializable> {
+STREAMABLECLASSDEF(bhkBallSocketConstraintChain, bhkSerializable) {
 public:
 	NiVector<Vector4> pivots;
 
@@ -1091,7 +1089,7 @@ public:
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
 
-class bhkCompressedMeshShapeData : public NiCloneableStreamable<bhkCompressedMeshShapeData, bhkRefObject> {
+STREAMABLECLASSDEF(bhkCompressedMeshShapeData, bhkRefObject) {
 public:
 	uint32_t bitsPerIndex = 0;
 	uint32_t bitsPerWIndex = 0;
@@ -1125,7 +1123,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class bhkCompressedMeshShape : public NiCloneableStreamable<bhkCompressedMeshShape, bhkShape> {
+STREAMABLECLASSDEF(bhkCompressedMeshShape, bhkShape) {
 public:
 	NiBlockPtr<NiAVObject> targetRef;
 	uint32_t userData = 0;
@@ -1158,7 +1156,7 @@ public:
 	void Sync(NiStreamReversible& stream) { matrices.Sync(stream); }
 };
 
-class bhkPoseArray : public NiCloneableStreamable<bhkPoseArray, NiObject> {
+STREAMABLECLASSDEF(bhkPoseArray, NiObject) {
 public:
 	NiStringRefVector<> bones;
 	NiSyncVector<BonePose> poses;
@@ -1170,7 +1168,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 };
 
-class bhkRagdollTemplate : public NiCloneableStreamable<bhkRagdollTemplate, NiExtraData> {
+STREAMABLECLASSDEF(bhkRagdollTemplate, NiExtraData) {
 public:
 	NiBlockRefArray<NiObject> boneRefs;
 
@@ -1182,7 +1180,7 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class bhkRagdollTemplateData : public NiCloneableStreamable<bhkRagdollTemplateData, NiObject> {
+STREAMABLECLASSDEF(bhkRagdollTemplateData, NiObject) {
 public:
 	NiStringRef name;
 	float mass = 9.0f;

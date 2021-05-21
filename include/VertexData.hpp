@@ -58,7 +58,7 @@ public:
 	bool HasFlag(VertexFlags flag) const { return ((desc >> 44) & flag) != 0; }
 
 	// Sets the vertex size
-	void SetSize(uint32_t size) {
+	void SetSize(uint32_t  size) {
 		desc &= DESC_MASK_VERT;
 		desc |= static_cast<uint64_t>(size) >> 2;
 	}
@@ -95,21 +95,35 @@ private:
 };
 
 struct BSVertexData {
+	BSVertexData() {}
+	BSVertexData(const BSVertexData& rhs) {
+		vert = rhs.vert;
+		bitangentX = rhs.bitangentX;
+		uv = rhs.uv;
+		normal = rhs.normal;
+		bitangentY = rhs.bitangentY;
+		tangent = rhs.tangent;
+		bitangentZ = rhs.bitangentZ;
+		colorData = rhs.colorData;
+		weights = rhs.weights;
+		weightBones = rhs.weightBones;
+		eyeData = rhs.eyeData;
+	}
 	// Single- or half-precision depending on IsFullPrecision() being true
 	Vector3 vert;
 	float bitangentX = 0.0f; // Maybe the dot product of the vert normal and the z-axis?
 
 	Vector2 uv;
 
-	uint8_t normal[3]{};
+	std::array<uint8_t, 3> normal{};
 	uint8_t bitangentY = 0;
-	uint8_t tangent[3]{};
+	std::array<uint8_t, 3> tangent{};
 	uint8_t bitangentZ = 0;
 
-	uint8_t colorData[4]{};
+	std::array<uint8_t, 4> colorData{};
 
-	float weights[4]{};
-	uint8_t weightBones[4]{};
+	std::array<float, 4> weights{};
+	std::array<uint8_t, 4> weightBones{};
 
 	float eyeData = 0.0f;
 };

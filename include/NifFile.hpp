@@ -69,8 +69,9 @@ public:
 
 	NifFile(std::istream& file, const NifLoadOptions& options = NifLoadOptions()) { Load(file, options); }
 
-	NifFile(const std::string& fileData, const NifLoadOptions& options = NifLoadOptions()) {
-		std::istringstream iss(fileData);
+	NifFile(const std::vector<unsigned char>& fileData, const NifLoadOptions& options = NifLoadOptions()) {
+		std::stringstream iss;
+		iss.write((const char *)&fileData.front(), fileData.size());
 		Load(iss, options);
 	}
 
@@ -167,6 +168,7 @@ public:
 	void SetNodeName(const uint32_t blockID, const std::string& newName);
 
 	uint32_t AssignExtraData(NiAVObject* target, NiExtraData* extraData);
+	void AddStringExtraDataToNode(const int blockID, const std::string& edName, const std::string& edValue);
 
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);

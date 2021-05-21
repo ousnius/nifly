@@ -15,7 +15,8 @@ void NiCollisionObject::Sync(NiStreamReversible& stream) {
 void NiCollisionObject::GetPtrs(std::set<NiPtr*>& ptrs) {
 	NiObject::GetPtrs(ptrs);
 
-	ptrs.insert(&targetRef);
+	if (!targetRef.IsEmpty())
+		ptrs.insert(&targetRef);
 }
 
 BoundingVolume::BoundingVolume() : bvUnion(new UnionBV) {}
@@ -70,13 +71,15 @@ void bhkNiCollisionObject::Sync(NiStreamReversible& stream) {
 void bhkNiCollisionObject::GetChildRefs(std::set<NiRef*>& refs) {
 	NiCollisionObject::GetChildRefs(refs);
 
-	refs.insert(&bodyRef);
+	if (!bodyRef.IsEmpty())
+		refs.insert(&bodyRef);
 }
 
 void bhkNiCollisionObject::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiCollisionObject::GetChildIndices(indices);
 
-	indices.push_back(bodyRef.index);
+	if (!bodyRef.IsEmpty())
+		indices.push_back(bodyRef.index);
 }
 
 
@@ -193,13 +196,15 @@ void bhkTransformShape::Sync(NiStreamReversible& stream) {
 void bhkTransformShape::GetChildRefs(std::set<NiRef*>& refs) {
 	bhkShape::GetChildRefs(refs);
 
-	refs.insert(&shapeRef);
+	if (!shapeRef.IsEmpty())
+		refs.insert(&shapeRef);
 }
 
 void bhkTransformShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShape::GetChildIndices(indices);
 
-	indices.push_back(shapeRef.index);
+	if (!shapeRef.IsEmpty())
+		indices.push_back(shapeRef.index);
 }
 
 
@@ -230,13 +235,15 @@ void bhkMoppBvTreeShape::Sync(NiStreamReversible& stream) {
 void bhkMoppBvTreeShape::GetChildRefs(std::set<NiRef*>& refs) {
 	bhkBvTreeShape::GetChildRefs(refs);
 
-	refs.insert(&shapeRef);
+	if (!shapeRef.IsEmpty())
+		refs.insert(&shapeRef);
 }
 
 void bhkMoppBvTreeShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkBvTreeShape::GetChildIndices(indices);
 
-	indices.push_back(shapeRef.index);
+	if (!shapeRef.IsEmpty())
+		indices.push_back(shapeRef.index);
 }
 
 
@@ -336,13 +343,15 @@ void bhkPackedNiTriStripsShape::Sync(NiStreamReversible& stream) {
 void bhkPackedNiTriStripsShape::GetChildRefs(std::set<NiRef*>& refs) {
 	bhkShapeCollection::GetChildRefs(refs);
 
-	refs.insert(&dataRef);
+	if (!dataRef.IsEmpty())
+		refs.insert(&dataRef);
 }
 
 void bhkPackedNiTriStripsShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkShapeCollection::GetChildIndices(indices);
 
-	indices.push_back(dataRef.index);
+	if (!dataRef.IsEmpty())
+		indices.push_back(dataRef.index);
 }
 
 
@@ -372,7 +381,8 @@ void bhkOrientHingedBodyAction::Sync(NiStreamReversible& stream) {
 void bhkOrientHingedBodyAction::GetPtrs(std::set<NiPtr*>& ptrs) {
 	bhkSerializable::GetPtrs(ptrs);
 
-	ptrs.insert(&bodyRef);
+	if (!bodyRef.IsEmpty())
+		ptrs.insert(&bodyRef);
 }
 
 
@@ -381,20 +391,22 @@ void bhkWorldObject::Sync(NiStreamReversible& stream) {
 	stream.Sync(collisionFilter);
 	stream.Sync(unkInt1);
 	stream.Sync(broadPhaseType);
-	stream.Sync(reinterpret_cast<char*>(unkBytes), 3);
+	stream.Sync(reinterpret_cast<char*>(&unkBytes), 3);
 	stream.Sync(prop);
 }
 
 void bhkWorldObject::GetChildRefs(std::set<NiRef*>& refs) {
 	bhkSerializable::GetChildRefs(refs);
 
-	refs.insert(&shapeRef);
+	if (!shapeRef.IsEmpty())
+		refs.insert(&shapeRef);
 }
 
 void bhkWorldObject::GetChildIndices(std::vector<uint32_t>& indices) {
 	bhkSerializable::GetChildIndices(indices);
 
-	indices.push_back(shapeRef.index);
+	if (!shapeRef.IsEmpty())
+		indices.push_back(shapeRef.index);
 }
 
 
@@ -418,13 +430,13 @@ void bhkRigidBody::Sync(NiStreamReversible& stream) {
 	stream.Sync(unkInt1);
 
 	stream.Sync(collisionFilterCopy);
-	stream.Sync(reinterpret_cast<char*>(unkShorts2), 12);
+	stream.Sync(reinterpret_cast<char*>(&unkShorts2), 12);
 
 	stream.Sync(translation);
 	stream.Sync(rotation);
 	stream.Sync(linearVelocity);
 	stream.Sync(angularVelocity);
-	stream.Sync(reinterpret_cast<char*>(inertiaMatrix), 48);
+	stream.Sync(reinterpret_cast<char*>(&inertiaMatrix), 48);
 	stream.Sync(center);
 	stream.Sync(mass);
 	stream.Sync(linearDamping);
@@ -627,8 +639,10 @@ void bhkBallSocketConstraintChain::GetPtrs(std::set<NiPtr*>& ptrs) {
 	bhkSerializable::GetPtrs(ptrs);
 
 	chainedEntityRefs.GetIndexPtrs(ptrs);
-	ptrs.insert(&entityARef);
-	ptrs.insert(&entityBRef);
+	if (!entityARef.IsEmpty())
+		ptrs.insert(&entityARef);
+	if (!entityBRef.IsEmpty())
+		ptrs.insert(&entityBRef);
 }
 
 
@@ -687,7 +701,8 @@ void bhkCompressedMeshShape::GetChildIndices(std::vector<uint32_t>& indices) {
 void bhkCompressedMeshShape::GetPtrs(std::set<NiPtr*>& ptrs) {
 	bhkShape::GetPtrs(ptrs);
 
-	ptrs.insert(&targetRef);
+	if (!targetRef.IsEmpty())
+		ptrs.insert(&targetRef);
 }
 
 

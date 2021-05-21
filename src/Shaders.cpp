@@ -316,6 +316,11 @@ bool BSShaderProperty::HasSoftlight() const {
 	return (shaderFlags2 & (1 << 25)) != 0;
 }
 
+bool BSShaderProperty::HasWeaponBlood() const {
+	// Skyrim
+	return (shaderFlags2 & (1 << 17)) != 0;
+}
+
 bool BSShaderProperty::HasGlowmap() const {
 	return (shaderFlags2 & (1 << 6)) != 0;
 }
@@ -525,13 +530,15 @@ void BSLightingShaderProperty::GetStringRefs(std::vector<NiStringRef*>& refs) {
 void BSLightingShaderProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	BSShaderProperty::GetChildRefs(refs);
 
-	refs.insert(&textureSetRef);
+	if (!textureSetRef.IsEmpty())
+		refs.insert(&textureSetRef);
 }
 
 void BSLightingShaderProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	BSShaderProperty::GetChildIndices(indices);
 
-	indices.push_back(textureSetRef.index);
+	if (!textureSetRef.IsEmpty())
+		indices.push_back(textureSetRef.index);
 }
 
 bool BSLightingShaderProperty::IsSkinTinted() const {
@@ -745,13 +752,15 @@ void BSShaderPPLightingProperty::Sync(NiStreamReversible& stream) {
 void BSShaderPPLightingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	BSShaderLightingProperty::GetChildRefs(refs);
 
-	refs.insert(&textureSetRef);
+	if (!textureSetRef.IsEmpty())
+		refs.insert(&textureSetRef);
 }
 
 void BSShaderPPLightingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	BSShaderLightingProperty::GetChildIndices(indices);
 
-	indices.push_back(textureSetRef.index);
+	if (!textureSetRef.IsEmpty())
+		indices.push_back(textureSetRef.index);
 }
 
 bool BSShaderPPLightingProperty::IsSkinned() const {

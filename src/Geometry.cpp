@@ -105,13 +105,15 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 void NiGeometryData::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
-	refs.insert(&additionalDataRef);
+	if (!additionalDataRef.IsEmpty())
+		refs.insert(&additionalDataRef);
 }
 
 void NiGeometryData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
-	indices.push_back(additionalDataRef.index);
+	if (!additionalDataRef.IsEmpty())
+		indices.push_back(additionalDataRef.index);
 }
 
 uint16_t NiGeometryData::GetNumVertices() const {
@@ -181,6 +183,14 @@ uint32_t NiGeometryData::GetNumTriangles() const {
 bool NiGeometryData::GetTriangles(std::vector<Triangle>&) const {
 	return false;
 }
+std::vector<Triangle> NiGeometryData::Triangles() const {
+	std::vector<Triangle> tris;
+	if (!GetTriangles(tris)) {
+		return std::vector<Triangle>();
+	}
+	return tris;
+}
+
 void NiGeometryData::SetTriangles(const std::vector<Triangle>&){};
 
 void NiGeometryData::UpdateBounds() {
@@ -595,17 +605,23 @@ void BSTriShape::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 void BSTriShape::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
-	refs.insert(&skinInstanceRef);
-	refs.insert(&shaderPropertyRef);
-	refs.insert(&alphaPropertyRef);
+	if (!skinInstanceRef.IsEmpty())
+		refs.insert(&skinInstanceRef);
+	if (!shaderPropertyRef.IsEmpty())
+		refs.insert(&shaderPropertyRef);
+	if (!alphaPropertyRef.IsEmpty())
+		refs.insert(&alphaPropertyRef);
 }
 
 void BSTriShape::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
-	indices.push_back(skinInstanceRef.index);
-	indices.push_back(shaderPropertyRef.index);
-	indices.push_back(alphaPropertyRef.index);
+	if (!skinInstanceRef.IsEmpty())
+		indices.push_back(skinInstanceRef.index);
+	if (!shaderPropertyRef.IsEmpty())
+		indices.push_back(shaderPropertyRef.index);
+	if (!alphaPropertyRef.IsEmpty())
+		indices.push_back(alphaPropertyRef.index);
 }
 
 std::vector<Vector3>& BSTriShape::UpdateRawVertices() {
@@ -1131,9 +1147,9 @@ void BSTriShape::Create(NiVersion& version,
 		vertex.bitangentY = 0;
 		vertex.bitangentZ = 0;
 		vertex.normal[0] = vertex.normal[1] = vertex.normal[2] = 0;
-		std::memset(vertex.colorData, 255, 4);
-		std::memset(vertex.weights, 0, sizeof(float) * 4);
-		std::memset(vertex.weightBones, 0, 4);
+		std::memset(&vertex.colorData, 255, 4);
+		std::memset(&vertex.weights, 0, sizeof(float) * 4);
+		std::memset(&vertex.weightBones, 0, 4);
 		vertex.eyeData = 0.0f;
 	}
 
@@ -1605,19 +1621,27 @@ void NiGeometry::GetStringRefs(std::vector<NiStringRef*>& refs) {
 void NiGeometry::GetChildRefs(std::set<NiRef*>& refs) {
 	NiAVObject::GetChildRefs(refs);
 
-	refs.insert(&dataRef);
-	refs.insert(&skinInstanceRef);
-	refs.insert(&shaderPropertyRef);
-	refs.insert(&alphaPropertyRef);
+	if (!dataRef.IsEmpty())
+		refs.insert(&dataRef);
+	if (!skinInstanceRef.IsEmpty())
+		refs.insert(&skinInstanceRef);
+	if (!shaderPropertyRef.IsEmpty())
+		refs.insert(&shaderPropertyRef);
+	if (!alphaPropertyRef.IsEmpty())
+		refs.insert(&alphaPropertyRef);
 }
 
 void NiGeometry::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiAVObject::GetChildIndices(indices);
 
-	indices.push_back(dataRef.index);
-	indices.push_back(skinInstanceRef.index);
-	indices.push_back(shaderPropertyRef.index);
-	indices.push_back(alphaPropertyRef.index);
+	if (!dataRef.IsEmpty())
+		indices.push_back(dataRef.index);
+	if (!skinInstanceRef.IsEmpty())
+		indices.push_back(skinInstanceRef.index);
+	if (!shaderPropertyRef.IsEmpty())
+		indices.push_back(shaderPropertyRef.index);
+	if (!alphaPropertyRef.IsEmpty())
+		indices.push_back(alphaPropertyRef.index);
 }
 
 bool NiGeometry::IsSkinned() const {

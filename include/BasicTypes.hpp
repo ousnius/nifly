@@ -9,6 +9,7 @@ See the included GPLv3 LICENSE file
 #include "Object3d.hpp"
 #include "half.hpp"
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -401,7 +402,6 @@ public:
 
 	std::string& get() { return str; }
 	const std::string& get() const { return str; }
-	std::string copy() { return str; }
 
 	size_t length() const { return str.length(); }
 
@@ -454,9 +454,10 @@ using NiPtr = NiRef;
 // Helper to reduce duplication
 template<typename ValueType, typename SizeType>
 class NiVectorBase {
-private:
+public:
 	typedef std::vector<ValueType> Container;
 
+private:
 	Container vec;
 
 protected:
@@ -492,6 +493,10 @@ public:
 	const ValueType* data() const { return vec.data(); }
 
 	iterator erase(SizeType i) { return vec.erase(vec.begin() + i); }
+
+	// for SWIG, to avoid duplicating std_vector.i to handle iteration
+	Container items() const { return vec; }
+	void SetItems(const Container& newItems) { vec = newItems; }
 };
 
 template<typename ValueType, typename SizeType = uint32_t>
@@ -800,12 +805,14 @@ public:
 
 	void GetIndices(std::vector<uint32_t>& indices) override {
 		for (auto& r : refs)
-			indices.push_back(r.index);
+			if (!r.IsEmpty())
+				indices.push_back(r.index);
 	}
 
 	void GetIndexPtrs(std::set<NiRef*>& indices) override {
 		for (auto& r : refs)
-			indices.insert(&r);
+			if (!r.IsEmpty())
+				indices.insert(&r);
 	}
 
 	void SetIndices(const std::vector<uint32_t>& indices) override {
@@ -824,9 +831,10 @@ template<typename T>
 class NiBlockRefShortArray : public NiBlockRefArray<T> {
 public:
 	using base = NiBlockRefArray<T>;
-	using base::arraySize;
+protected:
 	using base::refs;
-
+public:
+	using base::arraySize;
 	void Sync(NiStreamReversible& stream) override {
 		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
 			base::CleanInvalidRefs();
@@ -859,6 +867,11 @@ public:
 
 	virtual void GetStringRefs(std::vector<NiStringRef*>&) {}
 	virtual void GetChildRefs(std::set<NiRef*>&) {}
+	std::set<NiRef*> CopyChildRefs() {
+		std::set<NiRef*> refs;
+		GetChildRefs(refs);
+		return refs;
+	}
 	virtual void GetChildIndices(std::vector<uint32_t>&) {}
 	virtual void GetPtrs(std::set<NiPtr*>&) {}
 
@@ -948,6 +961,12 @@ public:
 	void SetBlockReference(std::vector<std::unique_ptr<NiObject>>* blockRef) { blocks = blockRef; }
 
 	uint32_t GetNumBlocks() const { return numBlocks; }
+
+	NiObject* GetBlockById(const int blockId) {
+		if (blockId >= 0 && blockId < numBlocks)
+			return (*blocks)[blockId].get();
+		return nullptr;
+	}
 
 	template<class T>
 	T* GetBlock(const uint32_t blockId) const {

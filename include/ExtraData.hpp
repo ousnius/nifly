@@ -20,7 +20,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 };
 
-class NiBinaryExtraData : public NiCloneableStreamable<NiBinaryExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiBinaryExtraData, NiExtraData) {
 public:
 	NiVector<uint8_t> data;
 
@@ -30,7 +30,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiFloatExtraData : public NiCloneableStreamable<NiFloatExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiFloatExtraData, NiExtraData) {
 public:
 	float floatData = 0.0f;
 
@@ -40,7 +40,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiFloatsExtraData : public NiCloneableStreamable<NiFloatsExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiFloatsExtraData, NiExtraData) {
 public:
 	NiVector<float> floatsData;
 
@@ -61,7 +61,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	std::vector<NiStringRef*> GetStringRefList();};
 
-class NiStringsExtraData : public NiCloneableStreamable<NiStringsExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiStringsExtraData, NiExtraData) {
 public:
 	NiStringVector<> stringsData;
 
@@ -71,7 +71,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiBooleanExtraData : public NiCloneableStreamable<NiBooleanExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiBooleanExtraData, NiExtraData) {
 public:
 	bool booleanData = false;
 
@@ -81,7 +81,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiIntegerExtraData : public NiCloneableStreamable<NiIntegerExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiIntegerExtraData, NiExtraData) {
 public:
 	uint32_t integerData = 0;
 
@@ -91,7 +91,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiIntegersExtraData : public NiCloneableStreamable<NiIntegersExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiIntegersExtraData, NiExtraData) {
 public:
 	NiVector<uint32_t> integersData;
 
@@ -101,7 +101,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiVectorExtraData : public NiCloneableStreamable<NiVectorExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiVectorExtraData, NiExtraData) {
 public:
 	Vector4 vectorData;
 
@@ -111,7 +111,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiColorExtraData : public NiCloneableStreamable<NiColorExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiColorExtraData, NiExtraData) {
 public:
 	Color4 colorData;
 
@@ -121,13 +121,13 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSXFlags : public NiCloneable<BSXFlags, NiIntegerExtraData> {
+CLONEABLECLASSDEF(BSXFlags, NiIntegerExtraData) {
 public:
 	static constexpr const char* BlockName = "BSXFlags";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSWArray : public NiCloneableStreamable<BSWArray, NiExtraData> {
+STREAMABLECLASSDEF(BSWArray, NiExtraData) {
 public:
 	NiVector<uint32_t> data;
 
@@ -137,7 +137,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSPositionData : public NiCloneableStreamable<BSPositionData, NiExtraData> {
+STREAMABLECLASSDEF(BSPositionData, NiExtraData) {
 public:
 	NiVector<half_float::half> data;
 
@@ -147,7 +147,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSEyeCenterExtraData : public NiCloneableStreamable<BSEyeCenterExtraData, NiExtraData> {
+STREAMABLECLASSDEF(BSEyeCenterExtraData, NiExtraData) {
 public:
 	NiVector<float> data;
 
@@ -215,8 +215,7 @@ struct BSPackedGeomData {
 	bool CanChangePrecision() const { return (HasVertices()); }
 };
 
-class BSPackedCombinedSharedGeomDataExtra
-	: public NiCloneableStreamable<BSPackedCombinedSharedGeomDataExtra, NiExtraData> {
+STREAMABLECLASSDEF(BSPackedCombinedSharedGeomDataExtra, NiExtraData) {
 public:
 	VertexDesc vertexDesc;
 	uint32_t numVertices = 0;
@@ -233,7 +232,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSInvMarker : public NiCloneableStreamable<BSInvMarker, NiExtraData> {
+STREAMABLECLASSDEF(BSInvMarker, NiExtraData) {
 public:
 	uint16_t rotationX = 4712;
 	uint16_t rotationY = 6283;
@@ -261,7 +260,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSFurnitureMarker : public NiCloneableStreamable<BSFurnitureMarker, NiExtraData> {
+STREAMABLECLASSDEF(BSFurnitureMarker, NiExtraData) {
 public:
 	NiSyncVector<FurniturePosition> positions;
 
@@ -271,7 +270,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSFurnitureMarkerNode : public NiCloneable<BSFurnitureMarkerNode, BSFurnitureMarker> {
+CLONEABLECLASSDEF(BSFurnitureMarkerNode, BSFurnitureMarker) {
 public:
 	static constexpr const char* BlockName = "BSFurnitureMarkerNode";
 	const char* GetBlockName() override { return BlockName; }
@@ -285,8 +284,7 @@ public:
 	void Sync(NiStreamReversible&);
 };
 
-class BSDecalPlacementVectorExtraData
-	: public NiCloneableStreamable<BSDecalPlacementVectorExtraData, NiFloatExtraData> {
+STREAMABLECLASSDEF(BSDecalPlacementVectorExtraData, NiFloatExtraData) {
 public:
 	NiSyncVector<DecalVectorBlock, uint16_t> decalVectorBlocks;
 
@@ -296,7 +294,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSBehaviorGraphExtraData : public NiCloneableStreamable<BSBehaviorGraphExtraData, NiExtraData> {
+STREAMABLECLASSDEF(BSBehaviorGraphExtraData, NiExtraData) {
 public:
 	NiStringRef behaviorGraphFile;
 	bool controlsBaseSkel = false;
@@ -308,7 +306,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 };
 
-class BSBound : public NiCloneableStreamable<BSBound, NiExtraData> {
+STREAMABLECLASSDEF(BSBound, NiExtraData) {
 public:
 	Vector3 center;
 	Vector3 halfExtents;
@@ -328,7 +326,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs);
 };
 
-class BSBoneLODExtraData : public NiCloneableStreamable<BSBoneLODExtraData, NiExtraData> {
+STREAMABLECLASSDEF(BSBoneLODExtraData, NiExtraData) {
 public:
 	NiSyncVector<BoneLOD> boneLODs;
 
@@ -339,7 +337,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 };
 
-class NiTextKeyExtraData : public NiCloneableStreamable<NiTextKeyExtraData, NiExtraData> {
+STREAMABLECLASSDEF(NiTextKeyExtraData, NiExtraData) {
 public:
 	NiSyncVector<NiTextKey> textKeys;
 
@@ -350,8 +348,7 @@ public:
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 };
 
-class BSDistantObjectLargeRefExtraData
-	: public NiCloneableStreamable<BSDistantObjectLargeRefExtraData, NiExtraData> {
+STREAMABLECLASSDEF(BSDistantObjectLargeRefExtraData, NiExtraData) {
 public:
 	bool largeRef = true;
 
@@ -372,7 +369,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSConnectPointParents : public NiCloneableStreamable<BSConnectPointParents, NiExtraData> {
+STREAMABLECLASSDEF(BSConnectPointParents, NiExtraData) {
 public:
 	NiSyncVector<BSConnectPoint> connectPoints;
 
@@ -382,7 +379,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSConnectPointChildren : public NiCloneableStreamable<BSConnectPointChildren, NiExtraData> {
+STREAMABLECLASSDEF(BSConnectPointChildren, NiExtraData) {
 public:
 	bool skinned = true;
 	NiStringVector<> targets;
@@ -393,9 +390,9 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSExtraData : public NiCloneable<BSExtraData, NiObject> {};
+CLONEABLECLASSDEF(BSExtraData, NiObject) {};
 
-class BSClothExtraData : public NiCloneableStreamable<BSClothExtraData, BSExtraData> {
+STREAMABLECLASSDEF(BSClothExtraData, BSExtraData) {
 public:
 	NiVector<char> data;
 

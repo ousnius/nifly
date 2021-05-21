@@ -39,7 +39,7 @@ enum BSValueNodeFlags : uint8_t {
 	BSVN_USE_PLAYER_ADJUST = 0x2
 };
 
-class BSValueNode : public NiCloneableStreamable<BSValueNode, NiNode> {
+STREAMABLECLASSDEF(BSValueNode, NiNode) {
 public:
 	int value = 0;
 	BSValueNodeFlags valueFlags = BSVN_NONE;
@@ -50,13 +50,13 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSLeafAnimNode : public NiCloneable<BSLeafAnimNode, NiNode> {
+CLONEABLECLASSDEF(BSLeafAnimNode, NiNode) {
 public:
 	static constexpr const char* BlockName = "BSLeafAnimNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSTreeNode : public NiCloneableStreamable<BSTreeNode, NiNode> {
+STREAMABLECLASSDEF(BSTreeNode, NiNode) {
 public:
 	NiBlockRefArray<NiNode> bones1;
 	NiBlockRefArray<NiNode> bones2;
@@ -70,7 +70,7 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class BSOrderedNode : public NiCloneableStreamable<BSOrderedNode, NiNode> {
+STREAMABLECLASSDEF(BSOrderedNode, NiNode) {
 public:
 	Vector4 alphaSortBound;
 	bool isStaticBound = false;
@@ -81,9 +81,9 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBoundData : public NiCloneable<BSMultiBoundData, NiObject> {};
+CLONEABLECLASSDEF(BSMultiBoundData, NiObject) {};
 
-class BSMultiBoundOBB : public NiCloneableStreamable<BSMultiBoundOBB, BSMultiBoundData> {
+STREAMABLECLASSDEF(BSMultiBoundOBB, BSMultiBoundData) {
 public:
 	Vector3 center;
 	Vector3 size;
@@ -95,7 +95,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBoundAABB : public NiCloneableStreamable<BSMultiBoundAABB, BSMultiBoundData> {
+STREAMABLECLASSDEF(BSMultiBoundAABB, BSMultiBoundData) {
 public:
 	Vector3 center;
 	Vector3 halfExtent;
@@ -106,7 +106,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBoundSphere : public NiCloneableStreamable<BSMultiBoundSphere, BSMultiBoundData> {
+STREAMABLECLASSDEF(BSMultiBoundSphere, BSMultiBoundData) {
 public:
 	Vector3 center;
 	float radius = 0.0f;
@@ -117,7 +117,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSMultiBound : public NiCloneableStreamable<BSMultiBound, NiObject> {
+STREAMABLECLASSDEF(BSMultiBound, NiObject) {
 public:
 	NiBlockRef<BSMultiBoundData> dataRef;
 
@@ -138,7 +138,7 @@ enum BSCPCullingType : uint32_t {
 	BSCP_CULL_FORCEMULTIBOUNDSNOUPDATE
 };
 
-class BSMultiBoundNode : public NiCloneableStreamable<BSMultiBoundNode, NiNode> {
+STREAMABLECLASSDEF(BSMultiBoundNode, NiNode) {
 public:
 	NiBlockRef<BSMultiBound> multiBoundRef;
 	BSCPCullingType cullingMode = BSCP_CULL_NORMAL;
@@ -152,7 +152,7 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class BSRangeNode : public NiCloneableStreamable<BSRangeNode, NiNode> {
+STREAMABLECLASSDEF(BSRangeNode, NiNode) {
 public:
 	uint8_t min = 0;
 	uint8_t max = 0;
@@ -164,19 +164,19 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSDebrisNode : public NiCloneable<BSDebrisNode, BSRangeNode> {
+CLONEABLECLASSDEF(BSDebrisNode, BSRangeNode) {
 public:
 	static constexpr const char* BlockName = "BSDebrisNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSBlastNode : public NiCloneable<BSBlastNode, BSRangeNode> {
+CLONEABLECLASSDEF(BSBlastNode, BSRangeNode) {
 public:
 	static constexpr const char* BlockName = "BSBlastNode";
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSDamageStage : public NiCloneable<BSDamageStage, BSBlastNode> {
+CLONEABLECLASSDEF(BSDamageStage, BSBlastNode) {
 public:
 	static constexpr const char* BlockName = "BSDamageStage";
 	const char* GetBlockName() override { return BlockName; }
@@ -192,7 +192,7 @@ enum BillboardMode : uint16_t {
 	ROTATE_ABOUT_UP2 = 9
 };
 
-class NiBillboardNode : public NiCloneableStreamable<NiBillboardNode, NiNode> {
+STREAMABLECLASSDEF(NiBillboardNode, NiNode) {
 public:
 	BillboardMode billboardMode = ALWAYS_FACE_CAMERA;
 
@@ -204,7 +204,7 @@ public:
 
 enum NiSwitchFlags : uint16_t { UPDATE_ONLY_ACTIVE_CHILD, UPDATE_CONTROLLERS };
 
-class NiSwitchNode : public NiCloneableStreamable<NiSwitchNode, NiNode> {
+STREAMABLECLASSDEF(NiSwitchNode, NiNode) {
 public:
 	NiSwitchFlags flags = UPDATE_ONLY_ACTIVE_CHILD;
 	uint32_t index = 0;
@@ -220,9 +220,9 @@ struct LODRange {
 	float farExtent = 0.0f;
 };
 
-class NiLODData : public NiCloneable<NiLODData, NiObject> {};
+CLONEABLECLASSDEF(NiLODData, NiObject) {};
 
-class NiRangeLODData : public NiCloneableStreamable<NiRangeLODData, NiLODData> {
+STREAMABLECLASSDEF(NiRangeLODData, NiLODData) {
 public:
 	Vector3 lodCenter;
 	NiVector<LODRange> lodLevels;
@@ -233,7 +233,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiScreenLODData : public NiCloneableStreamable<NiScreenLODData, NiLODData> {
+STREAMABLECLASSDEF(NiScreenLODData, NiLODData) {
 public:
 	Vector3 boundCenter;
 	float boundRadius = 0.0f;
@@ -247,7 +247,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiLODNode : public NiCloneableStreamable<NiLODNode, NiSwitchNode> {
+STREAMABLECLASSDEF(NiLODNode, NiSwitchNode) {
 public:
 	NiBlockRef<NiLODData> lodLevelData;
 
@@ -260,7 +260,7 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class NiBone : public NiCloneable<NiBone, NiNode> {
+CLONEABLECLASSDEF(NiBone, NiNode) {
 public:
 	static constexpr const char* BlockName = "NiBone";
 	const char* GetBlockName() override { return BlockName; }
@@ -268,7 +268,7 @@ public:
 
 enum SortingMode { SORTING_INHERIT, SORTING_OFF };
 
-class NiSortAdjustNode : public NiCloneableStreamable<NiSortAdjustNode, NiNode> {
+STREAMABLECLASSDEF(NiSortAdjustNode, NiNode) {
 public:
 	SortingMode sortingMode = SORTING_INHERIT;
 

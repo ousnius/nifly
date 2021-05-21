@@ -72,9 +72,9 @@ struct AdditionalDataBlock {
 	}
 };
 
-class AdditionalGeomData : public NiCloneable<AdditionalGeomData, NiObject> {};
+CLONEABLECLASSDEF(AdditionalGeomData, NiObject) {};
 
-class NiAdditionalGeometryData : public NiCloneableStreamable<NiAdditionalGeometryData, AdditionalGeomData> {
+STREAMABLECLASSDEF(NiAdditionalGeometryData, AdditionalGeomData) {
 public:
 	uint16_t numVertices = 0;
 	NiSyncVector<AdditionalDataInfo> blockInfos;
@@ -126,8 +126,7 @@ struct BSPackedAdditionalDataBlock {
 	}
 };
 
-class BSPackedAdditionalGeometryData
-	: public NiCloneableStreamable<BSPackedAdditionalGeometryData, AdditionalGeomData> {
+STREAMABLECLASSDEF(BSPackedAdditionalGeometryData, AdditionalGeomData) {
 public:
 	uint16_t numVertices = 0;
 	NiSyncVector<AdditionalDataInfo> blockInfos;
@@ -141,7 +140,7 @@ public:
 
 enum ConsistencyType : uint16_t { CT_MUTABLE = 0x0000, CT_STATIC = 0x4000, CT_VOLATILE = 0x8000 };
 
-class NiGeometryData : public NiCloneableStreamable<NiGeometryData, NiObject> {
+STREAMABLECLASSDEF(NiGeometryData, NiObject) {
 protected:
 	bool isPSys = false;
 
@@ -193,6 +192,7 @@ public:
 
 	virtual uint32_t GetNumTriangles() const;
 	virtual bool GetTriangles(std::vector<Triangle>& tris) const;
+	std::vector<Triangle> Triangles() const;
 	virtual void SetTriangles(const std::vector<Triangle>& tris);
 
 	void SetBounds(const BoundingSphere& newBounds) { this->bounds = newBounds; }
@@ -216,18 +216,22 @@ public:
 	virtual bool HasData() const { return false; }
 	virtual NiBlockRef<NiGeometryData>* DataRef() { return nullptr; }
 	virtual const NiBlockRef<NiGeometryData>* DataRef() const { return nullptr; }
+	virtual void SetDataRef(const int dataId) { }
 
 	virtual bool HasSkinInstance() const { return false; }
 	virtual NiBlockRef<NiBoneContainer>* SkinInstanceRef() { return nullptr; }
 	virtual const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const { return nullptr; }
+	virtual void SetSkinInstanceRef(const int shaderId) { }
 
 	virtual bool HasShaderProperty() const { return false; }
 	virtual NiBlockRef<NiShader>* ShaderPropertyRef() { return nullptr; }
 	virtual const NiBlockRef<NiShader>* ShaderPropertyRef() const { return nullptr; }
+	virtual void SetShaderPropertyRef(const int shaderId) { }
 
 	virtual bool HasAlphaProperty() const { return false; }
 	virtual NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() { return nullptr; }
 	virtual const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const { return nullptr; }
+	virtual void SetAlphaPropertyRef(const int alphaId) { }
 
 	virtual uint16_t GetNumVertices() const;
 	virtual void SetVertices(const bool enable);
@@ -261,14 +265,14 @@ public:
 };
 
 
-class BSTriShape : public NiCloneableStreamable<BSTriShape, NiShape> {
+STREAMABLECLASSDEF(BSTriShape, NiShape) {
 protected:
 	NiBlockRef<NiBoneContainer> skinInstanceRef;
 	NiBlockRef<NiShader> shaderPropertyRef;
 	NiBlockRef<NiAlphaProperty> alphaPropertyRef;
 
 	BoundingSphere bounds;
-	float boundMinMax[6]{};
+	std::array<float, 6> boundMinMax{};
 
 	uint32_t numTriangles = 0;
 	uint16_t numVertices = 0;
@@ -310,14 +314,17 @@ public:
 	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
 	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
 	const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const override { return &skinInstanceRef; }
+	void SetSkinInstanceRef(const int shaderId) override { skinInstanceRef.index = shaderId; }
 
 	bool HasShaderProperty() const override { return !shaderPropertyRef.IsEmpty(); }
 	NiBlockRef<NiShader>* ShaderPropertyRef() override { return &shaderPropertyRef; }
 	const NiBlockRef<NiShader>* ShaderPropertyRef() const override { return &shaderPropertyRef; }
+	void SetShaderPropertyRef(const int shaderId) override { shaderPropertyRef.index = shaderId; }
 
 	bool HasAlphaProperty() const override { return !alphaPropertyRef.IsEmpty(); }
 	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
+	void SetAlphaPropertyRef(const int alphaId) override { alphaPropertyRef.index = alphaId; }
 
 	std::vector<Vector3>& UpdateRawVertices();
 	std::vector<Vector3>& UpdateRawNormals();
@@ -426,7 +433,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSSubIndexTriShape : public NiCloneableStreamable<BSSubIndexTriShape, BSTriShape> {
+STREAMABLECLASSDEF(BSSubIndexTriShape, BSTriShape) {
 public:
 	class BSSITSSubSegment {
 	public:
@@ -500,7 +507,7 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
-class BSMeshLODTriShape : public NiCloneableStreamable<BSMeshLODTriShape, BSTriShape> {
+STREAMABLECLASSDEF(BSMeshLODTriShape, BSTriShape) {
 public:
 	uint32_t lodSize0 = 0;
 	uint32_t lodSize1 = 0;
@@ -513,7 +520,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class BSDynamicTriShape : public NiCloneableStreamable<BSDynamicTriShape, BSTriShape> {
+STREAMABLECLASSDEF(BSDynamicTriShape, BSTriShape) {
 public:
 	uint32_t dynamicDataSize;
 	std::vector<Vector4> dynamicData;
@@ -536,7 +543,7 @@ public:
 
 class NiSkinInstance;
 
-class NiGeometry : public NiCloneableStreamable<NiGeometry, NiShape> {
+STREAMABLECLASSDEF(NiGeometry, NiShape) {
 protected:
 	NiBlockRef<NiGeometryData> dataRef;
 	NiBlockRef<NiBoneContainer> skinInstanceRef;
@@ -564,23 +571,27 @@ public:
 	bool HasData() const override { return !dataRef.IsEmpty(); }
 	NiBlockRef<NiGeometryData>* DataRef() override { return &dataRef; }
 	const NiBlockRef<NiGeometryData>* DataRef() const override { return &dataRef; }
+	void SetDataRef(const int dataId) override { dataRef.index = dataId; }
 
 	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
 	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
 	const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const override { return &skinInstanceRef; }
+	void SetSkinInstanceRef(const int shaderId) override { skinInstanceRef.index = shaderId; }
 
 	bool HasShaderProperty() const override { return !shaderPropertyRef.IsEmpty(); }
 	NiBlockRef<NiShader>* ShaderPropertyRef() override { return &shaderPropertyRef; }
 	const NiBlockRef<NiShader>* ShaderPropertyRef() const override { return &shaderPropertyRef; }
+	void SetShaderPropertyRef(const int shaderId) override { shaderPropertyRef.index = shaderId; }
 
 	bool HasAlphaProperty() const override { return !alphaPropertyRef.IsEmpty(); }
 	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
+	void SetAlphaPropertyRef(const int alphaId) override { alphaPropertyRef.index = alphaId; }
 };
 
-class NiTriBasedGeom : public NiCloneable<NiTriBasedGeom, NiGeometry> {};
+CLONEABLECLASSDEF(NiTriBasedGeom, NiGeometry) {};
 
-class NiTriBasedGeomData : public NiCloneableStreamable<NiTriBasedGeomData, NiGeometryData> {
+STREAMABLECLASSDEF(NiTriBasedGeomData, NiGeometryData) {
 protected:
 	uint16_t numTriangles = 0;
 
@@ -599,7 +610,7 @@ struct MatchGroup {
 	std::vector<uint16_t> matches;
 };
 
-class NiTriShapeData : public NiCloneableStreamable<NiTriShapeData, NiTriBasedGeomData> {
+STREAMABLECLASSDEF(NiTriShapeData, NiTriBasedGeomData) {
 protected:
 	uint32_t numTrianglePoints = 0;
 	bool hasTriangles = false;
@@ -631,7 +642,7 @@ public:
 	void CalcTangentSpace() override;
 };
 
-class NiTriShape : public NiCloneable<NiTriShape, NiTriBasedGeom> {
+CLONEABLECLASSDEF(NiTriShape, NiTriBasedGeom) {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -652,7 +663,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiTriStripsData : public NiCloneableStreamable<NiTriStripsData, NiTriBasedGeomData> {
+STREAMABLECLASSDEF(NiTriStripsData, NiTriBasedGeomData) {
 public:
 	StripsInfo stripsInfo;
 
@@ -671,7 +682,7 @@ public:
 	void CalcTangentSpace() override;
 };
 
-class NiTriStrips : public NiCloneable<NiTriStrips, NiTriBasedGeom> {
+CLONEABLECLASSDEF(NiTriStrips, NiTriBasedGeom) {
 protected:
 	NiTriStripsData* stripsData = nullptr;
 
@@ -685,7 +696,7 @@ public:
 	bool ReorderTriangles(const std::vector<uint32_t>&) override { return false; }
 };
 
-class NiLinesData : public NiCloneableStreamable<NiLinesData, NiGeometryData> {
+STREAMABLECLASSDEF(NiLinesData, NiGeometryData) {
 public:
 	std::deque<bool> lineFlags;
 
@@ -696,7 +707,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiLines : public NiCloneable<NiLines, NiTriBasedGeom> {
+CLONEABLECLASSDEF(NiLines, NiTriBasedGeom) {
 protected:
 	NiLinesData* linesData = nullptr;
 
@@ -715,7 +726,7 @@ struct PolygonInfo {
 	uint16_t triangleOffset = 0;
 };
 
-class NiScreenElementsData : public NiCloneableStreamable<NiScreenElementsData, NiTriShapeData> {
+STREAMABLECLASSDEF(NiScreenElementsData, NiTriShapeData) {
 protected:
 	uint16_t maxPolygons = 0;
 	std::vector<PolygonInfo> polygons;
@@ -736,7 +747,7 @@ public:
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 
-class NiScreenElements : public NiCloneable<NiScreenElements, NiTriShape> {
+CLONEABLECLASSDEF(NiScreenElements, NiTriShape) {
 protected:
 	NiScreenElementsData* elemData = nullptr;
 
@@ -748,7 +759,7 @@ public:
 	void SetGeomData(NiGeometryData* geomDataPtr) override;
 };
 
-class BSLODTriShape : public NiCloneableStreamable<BSLODTriShape, NiTriBasedGeom> {
+STREAMABLECLASSDEF(BSLODTriShape, NiTriBasedGeom) {
 protected:
 	NiTriShapeData* shapeData = nullptr;
 
@@ -766,7 +777,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class BSSegmentedTriShape : public NiCloneableStreamable<BSSegmentedTriShape, NiTriShape> {
+STREAMABLECLASSDEF(BSSegmentedTriShape, NiTriShape) {
 protected:
 	uint32_t numSegments = 0;
 	std::vector<BSGeometrySegmentData> segments;
