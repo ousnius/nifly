@@ -246,7 +246,8 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-struct FurniturePosition {
+class FurniturePosition {
+public:
 	Vector3 offset;
 
 	uint16_t orientation = 0; // User Version <= 11
@@ -256,21 +257,18 @@ struct FurniturePosition {
 	float heading = 0.0f;		// User Version >= 12
 	uint16_t animationType = 0; // User Version >= 12
 	uint16_t entryPoints = 0;	// User Version >= 12
+
+	void Sync(NiStreamReversible& stream);
 };
 
 class BSFurnitureMarker : public NiCloneableStreamable<BSFurnitureMarker, NiExtraData> {
-private:
-	uint32_t numPositions = 0;
-	std::vector<FurniturePosition> positions;
-
 public:
+	NiSyncVector<FurniturePosition> positions;
+
 	static constexpr const char* BlockName = "BSFurnitureMarker";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<FurniturePosition> GetPositions();
-	void SetPositions(const std::vector<FurniturePosition>& pos);
 };
 
 class BSFurnitureMarkerNode : public NiCloneable<BSFurnitureMarkerNode, BSFurnitureMarker> {
@@ -279,26 +277,23 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-struct DecalVectorBlock {
-	uint16_t numVectors = 0;
-	std::vector<Vector3> points;
-	std::vector<Vector3> normals;
+class DecalVectorBlock {
+public:
+	NiVector<Vector3, uint16_t> points;
+	NiVector<Vector3, uint16_t> normals;
+
+	void Sync(NiStreamReversible&);
 };
 
 class BSDecalPlacementVectorExtraData
 	: public NiCloneableStreamable<BSDecalPlacementVectorExtraData, NiFloatExtraData> {
-private:
-	uint16_t numVectorBlocks = 0;
-	std::vector<DecalVectorBlock> decalVectorBlocks;
-
 public:
+	NiSyncVector<DecalVectorBlock, uint16_t> decalVectorBlocks;
+
 	static constexpr const char* BlockName = "BSDecalPlacementVectorExtraData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<DecalVectorBlock> GetDecalVectorBlocks();
-	void SetDecalVectorBlocks(const std::vector<DecalVectorBlock>& vectorBlocks);
 };
 
 class BSBehaviorGraphExtraData : public NiCloneableStreamable<BSBehaviorGraphExtraData, NiExtraData> {
@@ -324,41 +319,35 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-struct BoneLOD {
+class BoneLOD {
+public:
 	uint32_t distance = 0;
 	NiStringRef boneName;
+
+	void Sync(NiStreamReversible& stream);
+	void GetStringRefs(std::vector<NiStringRef*>& refs);
 };
 
 class BSBoneLODExtraData : public NiCloneableStreamable<BSBoneLODExtraData, NiExtraData> {
-private:
-	uint32_t numBoneLODs = 0;
-	std::vector<BoneLOD> boneLODs;
-
 public:
+	NiSyncVector<BoneLOD> boneLODs;
+
 	static constexpr const char* BlockName = "BSBoneLODExtraData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
-
-	std::vector<BoneLOD> GetBoneLODs();
-	void SetBoneLODs(const std::vector<BoneLOD>& lods);
 };
 
 class NiTextKeyExtraData : public NiCloneableStreamable<NiTextKeyExtraData, NiExtraData> {
-private:
-	uint32_t numTextKeys = 0;
-	std::vector<Key<NiStringRef>> textKeys;
-
 public:
+	NiSyncVector<NiTextKey> textKeys;
+
 	static constexpr const char* BlockName = "NiTextKeyExtraData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
-
-	std::vector<Key<NiStringRef>> GetTextKeys();
-	void SetTextKeys(const std::vector<Key<NiStringRef>>& keys);
 };
 
 class BSDistantObjectLargeRefExtraData
@@ -372,7 +361,8 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-struct BSConnectPoint {
+class BSConnectPoint {
+public:
 	NiString root;
 	NiString variableName;
 	Quaternion rotation;
@@ -383,18 +373,13 @@ struct BSConnectPoint {
 };
 
 class BSConnectPointParents : public NiCloneableStreamable<BSConnectPointParents, NiExtraData> {
-private:
-	uint32_t numConnectPoints = 0;
-	std::vector<BSConnectPoint> connectPoints;
-
 public:
+	NiSyncVector<BSConnectPoint> connectPoints;
+
 	static constexpr const char* BlockName = "BSConnectPoint::Parents";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<BSConnectPoint> GetConnectPoints();
-	void SetConnectPoints(const std::vector<BSConnectPoint>& cps);
 };
 
 class BSConnectPointChildren : public NiCloneableStreamable<BSConnectPointChildren, NiExtraData> {
@@ -411,11 +396,9 @@ public:
 class BSExtraData : public NiCloneable<BSExtraData, NiObject> {};
 
 class BSClothExtraData : public NiCloneableStreamable<BSClothExtraData, BSExtraData> {
-private:
-	uint32_t numBytes = 0;
-	std::vector<char> data;
-
 public:
+	NiVector<char> data;
+
 	BSClothExtraData() {}
 	BSClothExtraData(const uint32_t size);
 
@@ -423,9 +406,6 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
-
-	std::vector<char> GetData();
-	void SetData(const std::vector<char>& dat);
 
 	bool ToHKX(const std::string& fileName);
 	bool FromHKX(const std::string& fileName);

@@ -70,30 +70,53 @@ public:
 
 struct TexTransform {
 	Vector2 translation;
-	Vector2 tiling;
+	Vector2 scale;
 	float wRotation = 0.0f;
 	uint32_t transformType = 0;
-	Vector2 offset;
+	Vector2 center;
 };
 
 class TexDesc {
 public:
 	NiBlockRef<NiSourceTexture> sourceRef;
-	uint16_t flags = 0;
+	TexClampMode clampMode = TexClampMode::WRAP_S_WRAP_T;
+	TexFilterMode filterMode = TexFilterMode::FILTER_TRILERP;
+	uint16_t flags = 0; // TexturingMapFlags
+	uint16_t maxAnisotropy = 0;
+	uint32_t uvSet = 0;
 	bool hasTexTransform = false;
 	TexTransform transform;
 
 	void Sync(NiStreamReversible& stream) {
-		sourceRef.Sync(stream);
-		stream.Sync(flags);
-		stream.Sync(hasTexTransform);
+		const NiFileVersion fileVersion = stream.GetVersion().File();
 
-		if (hasTexTransform)
-			stream.Sync(transform);
+		if (fileVersion >= NiFileVersion::V3_3_0_13)
+			sourceRef.Sync(stream);
+
+		if (fileVersion <= NiFileVersion::V20_0_0_5) {
+			stream.Sync(clampMode);
+			stream.Sync(filterMode);
+		}
+
+		if (fileVersion >= NiFileVersion::V20_1_0_3)
+			stream.Sync(flags);
+
+		if (fileVersion >= NiVersion::ToFile(20, 5, 0, 4))
+			stream.Sync(maxAnisotropy);
+
+		if (fileVersion <= NiFileVersion::V20_0_0_5)
+			stream.Sync(uvSet);
+
+		if (fileVersion >= NiFileVersion::V10_1_0_0) {
+			stream.Sync(hasTexTransform);
+
+			if (hasTexTransform)
+				stream.Sync(transform);
+		}
 	}
 
 	void GetChildRefs(std::set<NiRef*>& refs) { refs.insert(&sourceRef); }
-	void GetChildIndices(std::vector<int>& indices) { indices.push_back(sourceRef.index); }
+	void GetChildIndices(std::vector<uint32_t>& indices) { indices.push_back(sourceRef.index); }
 };
 
 class ShaderTexDesc {
@@ -112,17 +135,14 @@ public:
 	}
 
 	void GetChildRefs(std::set<NiRef*>& refs) { data.GetChildRefs(refs); }
-	void GetChildIndices(std::vector<int>& indices) { data.GetChildIndices(indices); }
+	void GetChildIndices(std::vector<uint32_t>& indices) { data.GetChildIndices(indices); }
 };
 
 class NiTexturingProperty : public NiCloneableStreamable<NiTexturingProperty, NiProperty> {
-protected:
-	uint32_t numShaderTex = 0;
-	std::vector<ShaderTexDesc> shaderTex;
-
 public:
 	uint16_t flags = 0;
-	uint32_t textureCount = 0;
+	uint32_t applyMode = 2;
+	uint32_t textureCount = 7;
 
 	bool hasBaseTex = false;
 	TexDesc baseTex;
@@ -150,7 +170,7 @@ public:
 
 	bool hasParallaxTex = false;
 	TexDesc parallaxTex;
-	float parallaxFloat = 0.0f;
+	float parallaxOffset = 0.0f;
 
 	bool hasDecalTex0 = false;
 	TexDesc decalTex0;
@@ -164,20 +184,21 @@ public:
 	bool hasDecalTex3 = false;
 	TexDesc decalTex3;
 
+	NiSyncVector<ShaderTexDesc> shaderTex;
+
 	static constexpr const char* BlockName = "NiTexturingProperty";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
-
-	std::vector<ShaderTexDesc> GetShaderTex() const;
-	void SetShaderTex(const std::vector<ShaderTexDesc>& stdescs);
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiVertexColorProperty : public NiCloneableStreamable<NiVertexColorProperty, NiProperty> {
 public:
 	uint16_t flags = 0;
+	uint32_t vertexMode = 0;
+	uint32_t lightingMode = 0;
 
 	static constexpr const char* BlockName = "NiVertexColorProperty";
 	const char* GetBlockName() override { return BlockName; }
@@ -455,7 +476,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
@@ -621,7 +642,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	bool HasTextureSet() const override { return !textureSetRef.IsEmpty(); }
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
@@ -649,33 +670,34 @@ public:
 };
 
 
-class NiMaterialProperty : public NiCloneableStreamable<NiMaterialProperty, NiProperty> {
+class NiMaterialProperty : public NiCloneableStreamable<NiMaterialProperty, NiShader> {
 protected:
-	Vector3 colorSpecular;
+	Vector3 colorSpecular = Vector3(1.0f, 1.0f, 1.0f);
 	Vector3 colorEmissive;
-	float glossiness = 1.0f;
+	float glossiness = 10.0f;
 	float alpha = 1.0f;
-	float emitMulti = 1.0f; // Version == 20.2.0.7 && User Version >= 11 && User Version 2 > 21
+	float emitMulti = 1.0f;
 
 public:
-	Vector3 colorAmbient; // !(Version == 20.2.0.7 && User Version >= 11 && User Version 2 > 21)
-	Vector3 colorDiffuse; // !(Version == 20.2.0.7 && User Version >= 11 && User Version 2 > 21)
+	Vector3 colorAmbient = Vector3(1.0f, 1.0f, 1.0f);
+	Vector3 colorDiffuse = Vector3(1.0f, 1.0f, 1.0f);
 
 	static constexpr const char* BlockName = "NiMaterialProperty";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 
-	static bool IsEmissive();
-	Vector3 GetSpecularColor();
-	void SetSpecularColor(const Vector3& color);
-	float GetGlossiness() const;
-	void SetGlossiness(const float gloss);
-	Color4 GetEmissiveColor() const;
-	void SetEmissiveColor(const Color4& color);
-	float GetEmissiveMultiple() const;
-	void SetEmissiveMultiple(const float emissive);
-	float GetAlpha() const;
+	bool IsEmissive() const override;
+	bool HasSpecular() const override;
+	void SetSpecularColor(const Vector3& color) override;
+	Vector3 GetSpecularColor() const override;
+	float GetGlossiness() const override;
+	void SetGlossiness(const float gloss) override;
+	Color4 GetEmissiveColor() const override;
+	void SetEmissiveColor(const Color4& color) override;
+	float GetEmissiveMultiple() const override;
+	void SetEmissiveMultiple(const float emissive) override;
+	float GetAlpha() const override;
 };
 
 enum StencilMasks {
@@ -697,8 +719,14 @@ enum DrawMode { DRAW_CCW_OR_BOTH, DRAW_CCW, DRAW_CW, DRAW_BOTH, DRAW_MAX };
 class NiStencilProperty : public NiCloneableStreamable<NiStencilProperty, NiProperty> {
 public:
 	uint16_t flags = 19840;
+	bool stencilEnabled = false;
+	uint32_t stencilFunction = 0;
 	uint32_t stencilRef = 0;
 	uint32_t stencilMask = 0xFFFFFFFF;
+	uint32_t failAction = 0;
+	uint32_t zFailAction = 0;
+	uint32_t passAction = 0;
+	uint32_t drawMode = 3;
 
 	static constexpr const char* BlockName = "NiStencilProperty";
 	const char* GetBlockName() override { return BlockName; }

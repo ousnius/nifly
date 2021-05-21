@@ -19,40 +19,40 @@ void NiSpecularProperty::Sync(NiStreamReversible& stream) {
 
 
 void NiTexturingProperty::Sync(NiStreamReversible& stream) {
-	stream.Sync(flags);
+	const NiFileVersion fileVersion = stream.GetVersion().File();
+
+	if (fileVersion <= NiFileVersion::V10_0_1_2)
+		stream.Sync(flags);
+
+	if (fileVersion >= NiVersion::ToFile(20, 1, 0, 2))
+		stream.Sync(flags); // TexturingFlags
+
+	if (fileVersion >= NiFileVersion::V3_3_0_13 && fileVersion <= NiFileVersion::V20_1_0_1)
+		stream.Sync(applyMode);
+
 	stream.Sync(textureCount);
 
-	if (textureCount > 0) {
-		stream.Sync(hasBaseTex);
-		if (hasBaseTex)
-			baseTex.Sync(stream);
-	}
+	stream.Sync(hasBaseTex);
+	if (hasBaseTex)
+		baseTex.Sync(stream);
 
-	if (textureCount > 1) {
-		stream.Sync(hasDarkTex);
-		if (hasDarkTex)
-			darkTex.Sync(stream);
-	}
+	stream.Sync(hasDarkTex);
+	if (hasDarkTex)
+		darkTex.Sync(stream);
 
-	if (textureCount > 2) {
-		stream.Sync(hasDetailTex);
-		if (hasDetailTex)
-			detailTex.Sync(stream);
-	}
+	stream.Sync(hasDetailTex);
+	if (hasDetailTex)
+		detailTex.Sync(stream);
 
-	if (textureCount > 3) {
-		stream.Sync(hasGlossTex);
-		if (hasGlossTex)
-			glossTex.Sync(stream);
-	}
+	stream.Sync(hasGlossTex);
+	if (hasGlossTex)
+		glossTex.Sync(stream);
 
-	if (textureCount > 4) {
-		stream.Sync(hasGlowTex);
-		if (hasGlowTex)
-			glowTex.Sync(stream);
-	}
+	stream.Sync(hasGlowTex);
+	if (hasGlowTex)
+		glowTex.Sync(stream);
 
-	if (textureCount > 5) {
+	if (textureCount > 5 && fileVersion >= NiFileVersion::V3_3_0_13) {
 		stream.Sync(hasBumpTex);
 		if (hasBumpTex) {
 			bumpTex.Sync(stream);
@@ -62,48 +62,73 @@ void NiTexturingProperty::Sync(NiStreamReversible& stream) {
 		}
 	}
 
-	if (textureCount > 6) {
-		stream.Sync(hasNormalTex);
-		if (hasNormalTex)
-			normalTex.Sync(stream);
-	}
+	if (fileVersion >= NiFileVersion::V20_2_0_5) {
+		if (textureCount > 6) {
+			stream.Sync(hasNormalTex);
+			if (hasNormalTex)
+				normalTex.Sync(stream);
+		}
 
-	if (textureCount > 7) {
-		stream.Sync(hasParallaxTex);
-		if (hasParallaxTex) {
-			parallaxTex.Sync(stream);
-			stream.Sync(parallaxFloat);
+		if (textureCount > 7) {
+			stream.Sync(hasParallaxTex);
+			if (hasParallaxTex) {
+				parallaxTex.Sync(stream);
+				stream.Sync(parallaxOffset);
+			}
+		}
+
+		if (textureCount > 8) {
+			stream.Sync(hasDecalTex0);
+			if (hasDecalTex0)
+				decalTex0.Sync(stream);
+		}
+
+		if (textureCount > 9) {
+			stream.Sync(hasDecalTex1);
+			if (hasDecalTex1)
+				decalTex1.Sync(stream);
+		}
+
+		if (textureCount > 10) {
+			stream.Sync(hasDecalTex2);
+			if (hasDecalTex2)
+				decalTex2.Sync(stream);
+		}
+
+		if (textureCount > 11) {
+			stream.Sync(hasDecalTex3);
+			if (hasDecalTex3)
+				decalTex3.Sync(stream);
+		}
+	}
+	else {
+		if (textureCount > 6) {
+			stream.Sync(hasDecalTex0);
+			if (hasDecalTex0)
+				decalTex0.Sync(stream);
+		}
+
+		if (textureCount > 7) {
+			stream.Sync(hasDecalTex1);
+			if (hasDecalTex1)
+				decalTex1.Sync(stream);
+		}
+
+		if (textureCount > 8) {
+			stream.Sync(hasDecalTex2);
+			if (hasDecalTex2)
+				decalTex2.Sync(stream);
+		}
+
+		if (textureCount > 9) {
+			stream.Sync(hasDecalTex3);
+			if (hasDecalTex3)
+				decalTex3.Sync(stream);
 		}
 	}
 
-	if (textureCount > 8) {
-		stream.Sync(hasDecalTex0);
-		if (hasDecalTex0)
-			decalTex0.Sync(stream);
-	}
-
-	if (textureCount > 9) {
-		stream.Sync(hasDecalTex1);
-		if (hasDecalTex1)
-			decalTex1.Sync(stream);
-	}
-
-	if (textureCount > 10) {
-		stream.Sync(hasDecalTex2);
-		if (hasDecalTex2)
-			decalTex2.Sync(stream);
-	}
-
-	if (textureCount > 11) {
-		stream.Sync(hasDecalTex3);
-		if (hasDecalTex3)
-			decalTex3.Sync(stream);
-	}
-
-	stream.Sync(numShaderTex);
-	shaderTex.resize(numShaderTex);
-	for (uint32_t i = 0; i < numShaderTex; i++)
-		shaderTex[i].Sync(stream);
+	if (fileVersion >= NiFileVersion::V10_0_1_0)
+		shaderTex.Sync(stream);
 }
 
 void NiTexturingProperty::GetChildRefs(std::set<NiRef*>& refs) {
@@ -121,12 +146,10 @@ void NiTexturingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	decalTex1.GetChildRefs(refs);
 	decalTex2.GetChildRefs(refs);
 	decalTex3.GetChildRefs(refs);
-
-	for (auto& t : shaderTex)
-		t.GetChildRefs(refs);
+	shaderTex.GetChildRefs(refs);
 }
 
-void NiTexturingProperty::GetChildIndices(std::vector<int>& indices) {
+void NiTexturingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiProperty::GetChildIndices(indices);
 
 	baseTex.GetChildIndices(indices);
@@ -141,23 +164,17 @@ void NiTexturingProperty::GetChildIndices(std::vector<int>& indices) {
 	decalTex1.GetChildIndices(indices);
 	decalTex2.GetChildIndices(indices);
 	decalTex3.GetChildIndices(indices);
-
-	for (auto& t : shaderTex)
-		t.GetChildIndices(indices);
-}
-
-std::vector<ShaderTexDesc> NiTexturingProperty::GetShaderTex() const {
-	return shaderTex;
-}
-
-void NiTexturingProperty::SetShaderTex(const std::vector<ShaderTexDesc>& stdescs) {
-	numShaderTex = stdescs.size();
-	shaderTex = stdescs;
+	shaderTex.GetChildIndices(indices);
 }
 
 
 void NiVertexColorProperty::Sync(NiStreamReversible& stream) {
 	stream.Sync(flags);
+
+	if (stream.GetVersion().File() <= NiFileVersion::V20_0_0_5) {
+		stream.Sync(vertexMode);
+		stream.Sync(lightingMode);
+	}
 }
 
 
@@ -511,7 +528,7 @@ void BSLightingShaderProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&textureSetRef);
 }
 
-void BSLightingShaderProperty::GetChildIndices(std::vector<int>& indices) {
+void BSLightingShaderProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	BSShaderProperty::GetChildIndices(indices);
 
 	indices.push_back(textureSetRef.index);
@@ -731,7 +748,7 @@ void BSShaderPPLightingProperty::GetChildRefs(std::set<NiRef*>& refs) {
 	refs.insert(&textureSetRef);
 }
 
-void BSShaderPPLightingProperty::GetChildIndices(std::vector<int>& indices) {
+void BSShaderPPLightingProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 	BSShaderLightingProperty::GetChildIndices(indices);
 
 	indices.push_back(textureSetRef.index);
@@ -793,16 +810,20 @@ void NiMaterialProperty::Sync(NiStreamReversible& stream) {
 		stream.Sync(emitMulti);
 }
 
-bool NiMaterialProperty::IsEmissive() {
-	return true;
+bool NiMaterialProperty::IsEmissive() const {
+	return !colorEmissive.IsZero();
 }
 
-Vector3 NiMaterialProperty::GetSpecularColor() {
-	return colorSpecular;
+bool NiMaterialProperty::HasSpecular() const {
+	return !colorSpecular.IsZero();
 }
 
 void NiMaterialProperty::SetSpecularColor(const Vector3& color) {
 	colorSpecular = color;
+}
+
+Vector3 NiMaterialProperty::GetSpecularColor() const {
+	return colorSpecular;
 }
 
 float NiMaterialProperty::GetGlossiness() const {
@@ -841,7 +862,24 @@ float NiMaterialProperty::GetAlpha() const {
 
 
 void NiStencilProperty::Sync(NiStreamReversible& stream) {
-	stream.Sync(flags);
-	stream.Sync(stencilRef);
-	stream.Sync(stencilMask);
+	const NiFileVersion fileVersion = stream.GetVersion().File();
+
+	if (fileVersion <= NiFileVersion::V10_0_1_2)
+		stream.Sync(flags);
+
+	if (fileVersion <= NiFileVersion::V20_0_0_5) {
+		stream.Sync(stencilEnabled);
+		stream.Sync(stencilFunction);
+		stream.Sync(stencilRef);
+		stream.Sync(stencilMask);
+		stream.Sync(failAction);
+		stream.Sync(zFailAction);
+		stream.Sync(passAction);
+		stream.Sync(drawMode);
+	}
+	else if (fileVersion >= NiFileVersion::V20_1_0_3) {
+		stream.Sync(flags);
+		stream.Sync(stencilRef);
+		stream.Sync(stencilMask);
+	}
 }

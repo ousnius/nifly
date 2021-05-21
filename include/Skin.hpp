@@ -14,10 +14,9 @@ struct SkinWeight {
 	std::uint16_t index;
 	float weight;
 
-	SkinWeight(const uint16_t index = 0, const float weight = 0.0f) {
-		this->index = index;
-		this->weight = weight;
-	}
+	SkinWeight(const uint16_t index_ = 0, const float weight_ = 0.0f)
+		: index(index_)
+		, weight(weight_) {}
 };
 
 struct VertexWeight {
@@ -130,8 +129,8 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 	// DeletePartitions: partInds must be in sorted ascending order
-	void DeletePartitions(const std::vector<int>& partInds);
-	int RemoveEmptyPartitions(std::vector<int>& outDeletedIndices);
+	void DeletePartitions(const std::vector<uint32_t>& partInds);
+	uint32_t RemoveEmptyPartitions(std::vector<uint32_t>& outDeletedIndices);
 	// ConvertStripsToTriangles returns true if any conversions were
 	// actually performed.  After calling this function, all of the
 	// strips will be empty.
@@ -178,7 +177,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 
@@ -192,29 +191,15 @@ public:
 		uint16_t partID = 0;
 	};
 
-protected:
-	int numPartitions = 0;
-	std::vector<PartitionInfo> partitions;
+	NiVector<PartitionInfo> partitions;
 
-public:
 	static constexpr const char* BlockName = "BSDismemberSkinInstance";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 
-	int GetNumPartitions() const { return numPartitions; }
-	std::vector<PartitionInfo> GetPartitions() const { return partitions; }
-
-	void AddPartition(const PartitionInfo& partition);
-	void RemovePartition(const int id);
 	// DeletePartitions: partInds must be in sorted ascending order.
-	void DeletePartitions(const std::vector<int>& partInds);
-	void ClearPartitions();
-
-	void SetPartitions(const std::vector<PartitionInfo>& parts) {
-		partitions = parts;
-		numPartitions = parts.size();
-	}
+	void DeletePartitions(const std::vector<uint32_t>& partInds);
 };
 
 class BSSkinBoneData : public NiCloneableStreamable<BSSkinBoneData, NiObject> {
@@ -253,7 +238,7 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void GetPtrs(std::set<NiRef*>& ptrs) override;
 };
 } // namespace nifly

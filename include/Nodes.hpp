@@ -21,7 +21,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 
 	NiBlockRefArray<NiAVObject>& GetChildren();
 	NiBlockRefArray<NiDynamicEffect>& GetEffects();
@@ -67,7 +67,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSOrderedNode : public NiCloneableStreamable<BSOrderedNode, NiNode> {
@@ -127,7 +127,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 enum BSCPCullingType : uint32_t {
@@ -149,7 +149,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class BSRangeNode : public NiCloneableStreamable<BSRangeNode, NiNode> {
@@ -257,7 +257,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 
 	void GetChildRefs(std::set<NiRef*>& refs) override;
-	void GetChildIndices(std::vector<int>& indices) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiBone : public NiCloneable<NiBone, NiNode> {
