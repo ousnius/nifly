@@ -216,6 +216,9 @@ public:
 	// Used by OB.
 	NiTexturingProperty* GetTexturingProperty(NiShape* shape) const;
 
+	// Returns references to all texture path strings of the shape
+	std::vector<std::reference_wrapper<std::string>> GetTexturePathRefs(NiShape* shape) const;
+
 	// Fills "outTexFile" with the texture path in the specified slot.
 	// Returns:
 	// 0 if the texture slot was not found

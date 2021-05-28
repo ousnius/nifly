@@ -622,6 +622,71 @@ NiTexturingProperty* NifFile::GetTexturingProperty(NiShape* shape) const {
 	return nullptr;
 }
 
+std::vector<std::reference_wrapper<std::string>> NifFile::GetTexturePathRefs(NiShape* shape) const {
+	std::vector<std::reference_wrapper<std::string>> texturePaths;
+
+	auto shader = GetShader(shape);
+	if (shader) {
+		auto textureSet = hdr.GetBlock(shader->TextureSetRef());
+		if (textureSet) {
+			for (auto &t : textureSet->textures)
+				texturePaths.push_back(t.get());
+		}
+
+		auto effectShader = dynamic_cast<BSEffectShaderProperty*>(shader);
+		if (effectShader) {
+			texturePaths.push_back(effectShader->sourceTexture.get());
+			texturePaths.push_back(effectShader->normalTexture.get());
+			texturePaths.push_back(effectShader->greyscaleTexture.get());
+			texturePaths.push_back(effectShader->envMapTexture.get());
+			texturePaths.push_back(effectShader->envMaskTexture.get());
+		}
+	}
+
+	// Get texture path from referenced NiSourceTexture block
+	auto pushSourceTexturePath = [&hdr = hdr, &texturePaths](const NiBlockRef<NiSourceTexture>& sourceRef) {
+		auto sourceTexture = hdr.GetBlock(sourceRef);
+		if (sourceTexture)
+			texturePaths.push_back(sourceTexture->fileName.get());
+	};
+
+	// NiTexturingProperty and NiSourceTexture for OB
+	auto texturingProp = GetTexturingProperty(shape);
+	if (texturingProp) {
+		if (texturingProp->hasBaseTex)
+			pushSourceTexturePath(texturingProp->baseTex.sourceRef);
+
+		if (texturingProp->hasDarkTex)
+			pushSourceTexturePath(texturingProp->darkTex.sourceRef);
+
+		if (texturingProp->hasDetailTex)
+			pushSourceTexturePath(texturingProp->detailTex.sourceRef);
+
+		if (texturingProp->hasGlossTex)
+			pushSourceTexturePath(texturingProp->glossTex.sourceRef);
+
+		if (texturingProp->hasGlowTex)
+			pushSourceTexturePath(texturingProp->glowTex.sourceRef);
+
+		if (texturingProp->hasBumpTex)
+			pushSourceTexturePath(texturingProp->bumpTex.sourceRef);
+
+		if (texturingProp->hasDecalTex0)
+			pushSourceTexturePath(texturingProp->decalTex0.sourceRef);
+
+		if (texturingProp->hasDecalTex1)
+			pushSourceTexturePath(texturingProp->decalTex1.sourceRef);
+
+		if (texturingProp->hasDecalTex2)
+			pushSourceTexturePath(texturingProp->decalTex2.sourceRef);
+
+		if (texturingProp->hasDecalTex3)
+			pushSourceTexturePath(texturingProp->decalTex3.sourceRef);
+	}
+
+	return texturePaths;
+}
+
 uint32_t NifFile::GetTextureSlot(NiShape* shape, std::string& outTexFile, uint32_t texIndex) const {
 	outTexFile.clear();
 
