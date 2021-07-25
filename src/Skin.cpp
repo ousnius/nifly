@@ -56,7 +56,7 @@ void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 
 	uint16_t ival = 0;
 	for (auto& b : bones) {
-		for (int i = b.numVertices - 1; i >= 0; i--) {
+		for (uint16_t i = b.numVertices - 1; i != static_cast<uint16_t>(-1); i--) {
 			ival = b.vertexWeights[i].index;
 			if (b.vertexWeights[i].index > highestRemoved) {
 				b.vertexWeights[i].index -= static_cast<uint16_t>(vertIndices.size());

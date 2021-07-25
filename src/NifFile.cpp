@@ -382,7 +382,7 @@ void NifFile::SortGraph(NiNode* root, std::vector<uint32_t>& newIndices, uint32_
 			auto peek = children.end() - 1;
 
 			// Put shapes at end of children
-			for (int i = children.GetSize() - 1; i >= 0; i--) {
+			for (uint32_t i = children.GetSize() - 1; i != NIF_NPOS; i--) {
 				auto shape = hdr.GetBlock<NiShape>(children.GetBlockRef(i));
 				if (shape) {
 					std::iter_swap(bookmark, peek);
@@ -3883,7 +3883,7 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 			uint16_t mapSize = highestRemoved + 1;
 			std::vector<int> indexCollapse = GenerateIndexCollapseMap(indices, mapSize);
 
-			for (int i = integersData.size() - 1; i >= 0; i--) {
+			for (uint32_t i = integersData.size() - 1; i != NIF_NPOS; i--) {
 				auto& val = integersData[i];
 				if (val > highestRemoved) {
 					val -= static_cast<uint32_t>(indices.size());
