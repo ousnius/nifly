@@ -3736,7 +3736,11 @@ void NifFile::DeleteShape(NiShape* shape) {
 	if (shape->HasData())
 		hdr.DeleteBlock(*shape->DataRef());
 
-	DeleteShader(shape);
+	if (shape->HasShaderProperty()) {
+		if (hdr.GetBlockRefCount(shape->ShaderPropertyRef()->index) == 1)
+			DeleteShader(shape);
+	}
+
 	DeleteSkinning(shape);
 
 	for (int i = shape->propertyRefs.GetSize() - 1; i >= 0; --i)
@@ -3752,8 +3756,10 @@ void NifFile::DeleteShape(NiShape* shape) {
 void NifFile::DeleteShader(NiShape* shape) {
 	auto shader = hdr.GetBlock(shape->ShaderPropertyRef());
 	if (shader) {
-		if (shader->HasTextureSet())
-			hdr.DeleteBlock(*shader->TextureSetRef());
+		if (shader->HasTextureSet()) {
+			if (hdr.GetBlockRefCount(shader->TextureSetRef()->index) == 1)
+				hdr.DeleteBlock(*shader->TextureSetRef());
+		}
 
 		hdr.DeleteBlock(shader->controllerRef);
 		hdr.DeleteBlock(*shape->ShaderPropertyRef());
@@ -3766,8 +3772,10 @@ void NifFile::DeleteShader(NiShape* shape) {
 		shader = hdr.GetBlock<NiShader>(shape->propertyRefs.GetBlockRef(i));
 		if (shader) {
 			if (shader->HasType<BSShaderPPLightingProperty>() || shader->HasType<NiMaterialProperty>()) {
-				if (shader->HasTextureSet())
-					hdr.DeleteBlock(*shader->TextureSetRef());
+				if (shader->HasTextureSet()) {
+					if (hdr.GetBlockRefCount(shader->TextureSetRef()->index) == 1)
+						hdr.DeleteBlock(*shader->TextureSetRef());
+				}
 
 				hdr.DeleteBlock(shader->controllerRef);
 				hdr.DeleteBlock(shape->propertyRefs.GetBlockRef(i));
