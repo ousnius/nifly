@@ -538,7 +538,9 @@ bool NifFile::CanDeleteNode(NiNode* node) {
 	node->GetChildRefs(refs);
 
 	// Only delete if the node has no child refs
-	return std::all_of(refs.begin(), refs.end(), std::not_fn(&NiRef::IsEmpty));
+	return std::all_of(refs.cbegin(), refs.cend(), [](auto&& ref) {
+		return ref->IsEmpty();
+	});
 }
 
 bool NifFile::CanDeleteNode(const std::string& nodeName) const {
