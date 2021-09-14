@@ -1409,21 +1409,34 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	// Find first triangle of each partition
 	int j = 0;
 	std::vector<int> partTriInds(newPartID + 1);
+
 	for (int i = 0; i < static_cast<int>(triInds.size()); ++i)
 		while (triParts[triInds[i]] >= j)
 			partTriInds[j++] = i;
 
+	size_t lastFilledPart = 0;
+	for (size_t i = 0; i < partTriInds.size(); i++)
+		if (partTriInds[i] > 0)
+			lastFilledPart = i;
+
 	// Fill gaps for partitions that don't have any tris assigned
 	int maxInd = 0;
-	for (int& partTriInd : partTriInds) {
-		if (partTriInd == 0) {
-			if (maxInd != 0) {
-				partTriInd = maxInd;
-			}
+	for (size_t i = 0; i < partTriInds.size(); i++) {
+		int& partTriInd = partTriInds[i];
+
+		if (lastFilledPart > 0 && i > lastFilledPart) {
+			partTriInd = static_cast<int>(triInds.size());
 		}
 		else {
-			if (partTriInd > maxInd) {
-				maxInd = partTriInd;
+			if (partTriInd == 0) {
+				if (maxInd != 0) {
+					partTriInd = maxInd;
+				}
+			}
+			else {
+				if (partTriInd > maxInd) {
+					maxInd = partTriInd;
+				}
 			}
 		}
 	}
