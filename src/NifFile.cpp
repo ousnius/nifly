@@ -206,7 +206,7 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 		}
 
 		NiVersion& version = stream.GetVersion();
-		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4())) {
+		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4() || version.IsSpecial())) {
 			// Unsupported file version
 			Clear();
 			return 2;
@@ -861,7 +861,7 @@ void NifFile::SetTextureSlot(NiShape* shape, std::string& inTexFile, uint32_t te
 }
 
 void NifFile::TrimTexturePaths() {
-	auto fTrimPath = [&isTerrain = isTerrain](std::string& tex) -> std::string& {
+	auto fTrimPath = [&hdr = hdr, &isTerrain = isTerrain](std::string& tex) -> std::string& {
 		if (!tex.empty()) {
 			tex = std::regex_replace(tex,
 									 std::regex("/+|\\\\+"),
@@ -870,10 +870,13 @@ void NifFile::TrimTexturePaths() {
 									 std::regex(R"(^(.*?)\\textures\\)", std::regex_constants::icase),
 									 ""); // Remove everything before the first occurence of "\textures\"
 			tex = std::regex_replace(tex, std::regex("^\\\\+"), ""); // Remove all backslashes from the front
-			tex = std::regex_replace(
-				tex,
-				std::regex("^(?!^textures\\\\)", std::regex_constants::icase),
-				"textures\\"); // If the path doesn't start with "textures\", add it to the front
+
+			if (!hdr.GetVersion().IsOB() && !hdr.GetVersion().IsSpecial()) {
+				tex = std::regex_replace(
+					tex,
+					std::regex("^(?!^textures\\\\)", std::regex_constants::icase),
+					"textures\\"); // If the path doesn't start with "textures\", add it to the front
+			}
 
 			if (isTerrain)
 				tex = std::regex_replace(tex,

@@ -796,6 +796,11 @@ void NiAlphaProperty::Sync(NiStreamReversible& stream) {
 
 
 void NiMaterialProperty::Sync(NiStreamReversible& stream) {
+	const NiFileVersion fileVersion = stream.GetVersion().File();
+
+	if (fileVersion >= NiFileVersion::V3_0 && fileVersion <= NiFileVersion::V10_0_1_2)
+		stream.Sync(legacyFlags);
+
 	if (stream.GetVersion().Stream() < 26) {
 		stream.Sync(colorAmbient);
 		stream.Sync(colorDiffuse);
@@ -864,8 +869,8 @@ float NiMaterialProperty::GetAlpha() const {
 void NiStencilProperty::Sync(NiStreamReversible& stream) {
 	const NiFileVersion fileVersion = stream.GetVersion().File();
 
-	if (fileVersion <= NiFileVersion::V10_0_1_2)
-		stream.Sync(flags);
+	if (fileVersion >= NiFileVersion::V3_0 && fileVersion <= NiFileVersion::V10_0_1_2)
+		stream.Sync(legacyFlags);
 
 	if (fileVersion <= NiFileVersion::V20_0_0_5) {
 		stream.Sync(stencilEnabled);

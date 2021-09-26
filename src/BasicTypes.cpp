@@ -124,7 +124,7 @@ void NiString::Write(NiOStream& stream, const int szSize) {
 
 
 void NiStringRef::Read(NiIStream& stream) {
-	if (stream.GetVersion().File() < V20_1_0_1) {
+	if (stream.GetVersion().File() < V20_1_0_3) {
 		std::array<char, 2048 + 1> buf{};
 
 		uint32_t sz = 0;
@@ -143,7 +143,7 @@ void NiStringRef::Read(NiIStream& stream) {
 }
 
 void NiStringRef::Write(NiOStream& stream) {
-	if (stream.GetVersion().File() < V20_1_0_1) {
+	if (stream.GetVersion().File() < V20_1_0_3) {
 		auto sz = uint32_t(str.length());
 		str.resize(sz);
 

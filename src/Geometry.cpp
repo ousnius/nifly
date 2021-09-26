@@ -36,8 +36,12 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 		stream.Sync(groupID);
 
 	stream.Sync(numVertices);
-	stream.Sync(keepFlags);
-	stream.Sync(compressFlags);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_0) {
+		stream.Sync(keepFlags);
+		stream.Sync(compressFlags);
+	}
+
 	stream.Sync(hasVertices);
 
 	if (hasVertices && !isPSys) {
@@ -99,7 +103,9 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 	}
 
 	stream.Sync(consistencyFlags);
-	additionalDataRef.Sync(stream);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V20_0_0_4)
+		additionalDataRef.Sync(stream);
 }
 
 void NiGeometryData::GetChildRefs(std::set<NiRef*>& refs) {

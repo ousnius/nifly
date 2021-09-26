@@ -267,8 +267,11 @@ void NiSourceTexture::GetChildIndices(std::vector<uint32_t>& indices) {
 
 void NiDynamicEffect::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().Stream() < 130) {
-		stream.Sync(switchState);
-		affectedNodes.Sync(stream);
+		if (stream.GetVersion().File() > NiFileVersion::V10_1_0_101)
+			stream.Sync(switchState);
+
+		if (stream.GetVersion().File() <= NiFileVersion::V4_0_0_2 && stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
+			affectedNodes.Sync(stream);
 	}
 }
 

@@ -122,10 +122,15 @@ public:
 	// Check if file is for a Bethesda title
 	bool IsBethesda() const { return (file == V20_2_0_7 && user >= 11) || IsOB(); }
 
+	// Check if file has a special but supported version range
+	bool IsSpecial() const { return (file == V10_0_1_0 && user == 0); }
+
 	// Check if file has an Oblivion version range
 	bool IsOB() const {
-		return ((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11)
-			   || (file == V20_0_0_4 && (user == 10 || user == 11)) || (file == V20_0_0_5 && user == 11);
+		return
+			((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11) ||
+			(file == V20_0_0_4 && (user == 10 || user == 11)) ||
+			(file == V20_0_0_5 && user == 11);
 	}
 
 	// Check if file has a Fallout 3 version range
@@ -837,6 +842,7 @@ using NiBlockPtrShortArray = NiBlockRefShortArray<T>;
 class NiObject {
 protected:
 	uint32_t blockSize = 0;
+	uint32_t groupID = 0;
 
 public:
 	virtual ~NiObject() = default;
@@ -846,8 +852,15 @@ public:
 
 	virtual void notifyVerticesDelete(const std::vector<uint16_t>&) {}
 
-	virtual void Get(NiIStream&) {}
-	virtual void Put(NiOStream&) {}
+	virtual void Get(NiIStream& stream) {
+		if (stream.GetVersion().File() >= V10_0_0_0 && stream.GetVersion().File() < V10_1_0_114)
+			stream.read(reinterpret_cast<char*>(&groupID), 4);
+	}
+
+	virtual void Put(NiOStream& stream) {
+		if (stream.GetVersion().File() >= V10_0_0_0 && stream.GetVersion().File() < V10_1_0_114)
+			stream.write(reinterpret_cast<const char*>(&groupID), 4);
+	}
 
 	virtual void GetStringRefs(std::vector<NiStringRef*>&) {}
 	virtual void GetChildRefs(std::set<NiRef*>&) {}
