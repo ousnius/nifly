@@ -2039,10 +2039,28 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) const {
 		}
 	}
 
+	auto constraintChain = dynamic_cast<bhkBallSocketConstraintChain*>(parent);
+	if (constraintChain) {
+		for (auto& entityId : constraintChain->chainedEntityRefs) {
+			auto entity = hdr.GetBlock<NiObject>(entityId);
+			if (entity && !findResult(entity))
+				GetTree(result, entity);
+		}
+
+		auto entityA = hdr.GetBlock<NiObject>(constraintChain->entityARef);
+		if (entityA && !findResult(entityA))
+			GetTree(result, entityA);
+
+		auto entityB = hdr.GetBlock<NiObject>(constraintChain->entityBRef);
+		if (entityB && !findResult(entityB))
+			GetTree(result, entityB);
+	}
+
 	for (auto& id : indices) {
 		auto child = hdr.GetBlock<NiObject>(id);
 		if (child && !findResult(child)) {
-			bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>();
+			bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>()
+									 && !child->HasType<bhkBallSocketConstraintChain>();
 			if (childBeforeParent)
 				GetTree(result, child);
 		}
@@ -2053,7 +2071,8 @@ void NifFile::GetTree(std::vector<NiObject*>& result, NiObject* parent) const {
 	for (auto& id : indices) {
 		auto child = hdr.GetBlock<NiObject>(id);
 		if (child && !findResult(child)) {
-			bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>();
+			bool childBeforeParent = child->HasType<bhkRefObject>() && !child->HasType<bhkConstraint>()
+									 && !child->HasType<bhkBallSocketConstraintChain>();
 			if (!childBeforeParent)
 				GetTree(result, child);
 		}
