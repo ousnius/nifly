@@ -306,6 +306,7 @@ public:
 	virtual float GetEmissiveMultiple() const { return 0.0f; }
 	virtual void SetEmissiveMultiple(const float) {}
 	virtual float GetAlpha() const { return 1.0f; }
+	virtual void SetAlpha(const float) {}
 	virtual float GetBacklightPower() const { return 0.0f; }
 	virtual float GetRimlightPower() const { return 2.0f; }
 	virtual float GetSoftlight() const { return 0.3f; }
@@ -504,6 +505,7 @@ public:
 	float GetEmissiveMultiple() const override;
 	void SetEmissiveMultiple(const float emissive) override;
 	float GetAlpha() const override;
+	void SetAlpha(const float alphaValue) override;
 	float GetBacklightPower() const override;
 	float GetRimlightPower() const override;
 	float GetSoftlight() const override;
@@ -704,6 +706,7 @@ public:
 	float GetEmissiveMultiple() const override;
 	void SetEmissiveMultiple(const float emissive) override;
 	float GetAlpha() const override;
+	void SetAlpha(const float alpha) override;
 };
 
 enum StencilMasks {

@@ -608,6 +608,10 @@ float BSLightingShaderProperty::GetAlpha() const {
 	return alpha;
 }
 
+void BSLightingShaderProperty::SetAlpha(const float alphaValue) {
+	alpha = alphaValue;
+}
+
 float BSLightingShaderProperty::GetBacklightPower() const {
 	return backlightPower;
 }
@@ -863,6 +867,10 @@ void NiMaterialProperty::SetEmissiveMultiple(const float emissive) {
 
 float NiMaterialProperty::GetAlpha() const {
 	return alpha;
+}
+
+void NiMaterialProperty::SetAlpha(const float alphaValue) {
+	alpha = alphaValue;
 }
 
 
