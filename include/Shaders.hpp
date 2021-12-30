@@ -300,6 +300,7 @@ public:
 	virtual void SetSpecularStrength(const float) {}
 	virtual float GetGlossiness() const { return 0.0f; }
 	virtual void SetGlossiness(const float) {}
+	virtual void SetAlpha(const float) {}
 	virtual float GetEnvironmentMapScale() const { return 0.0f; }
 	virtual Color4 GetEmissiveColor() const { return Color4(); }
 	virtual void SetEmissiveColor(const Color4&) {}
@@ -503,6 +504,7 @@ public:
 	void SetEmissiveColor(const Color4& color) override;
 	float GetEmissiveMultiple() const override;
 	void SetEmissiveMultiple(const float emissive) override;
+	void SetAlpha(const float alphaValue) override;
 	float GetAlpha() const override;
 	float GetBacklightPower() const override;
 	float GetRimlightPower() const override;
@@ -703,6 +705,7 @@ public:
 	void SetEmissiveColor(const Color4& color) override;
 	float GetEmissiveMultiple() const override;
 	void SetEmissiveMultiple(const float emissive) override;
+	void SetAlpha(const float alpha) override;
 	float GetAlpha() const override;
 };
 
