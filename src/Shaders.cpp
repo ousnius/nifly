@@ -604,12 +604,12 @@ void BSLightingShaderProperty::SetEmissiveMultiple(const float emissive) {
 	emissiveMultiple = emissive;
 }
 
-void BSLightingShaderProperty::SetAlpha(const float alphaValue) {
-	alpha = alphaValue;
-}
-
 float BSLightingShaderProperty::GetAlpha() const {
 	return alpha;
+}
+
+void BSLightingShaderProperty::SetAlpha(const float alphaValue) {
+	alpha = alphaValue;
 }
 
 float BSLightingShaderProperty::GetBacklightPower() const {
@@ -843,10 +843,6 @@ void NiMaterialProperty::SetGlossiness(const float gloss) {
 	glossiness = gloss;
 }
 
-void NiMaterialProperty::SetAlpha(const float alphaValue) {
-	alpha = alphaValue;
-}
-
 Color4 NiMaterialProperty::GetEmissiveColor() const {
 	Color4 color;
 	color.r = colorEmissive.x;
@@ -871,6 +867,10 @@ void NiMaterialProperty::SetEmissiveMultiple(const float emissive) {
 
 float NiMaterialProperty::GetAlpha() const {
 	return alpha;
+}
+
+void NiMaterialProperty::SetAlpha(const float alphaValue) {
+	alpha = alphaValue;
 }
 
 
