@@ -499,12 +499,11 @@ void BSTriShape::Sync(NiStreamReversible& stream) {
 				auto& vertex = vertData[i];
 				if (HasVertices()) {
 					if (IsFullPrecision() || stream.GetVersion().Stream() == 100) {
-						// Full precision
-						stream.Sync(vertex.vert);
-						stream.Sync(vertex.bitangentX);
+						// Full precision (vert + bitangentX = 16 bytes)
+						stream.Sync((char*) &vertex.vert, sizeof(vertex.vert) + sizeof(vertex.bitangentX));
 					}
 					else {
-						// Half precision
+						// Half precision (vert + bitangentX = 8 bytes)
 						stream.SyncHalf(vertex.vert.x);
 						stream.SyncHalf(vertex.vert.y);
 						stream.SyncHalf(vertex.vert.z);
@@ -519,30 +518,28 @@ void BSTriShape::Sync(NiStreamReversible& stream) {
 				}
 
 				if (HasNormals()) {
-					for (uint8_t& j : vertex.normal)
-						stream.Sync(j);
-
-					stream.Sync(vertex.bitangentY);
+					// 3 normals + bitangentY = 4 bytes
+					stream.Sync((char*) &vertex.normal, sizeof(vertex.normal) + sizeof(vertex.bitangentY));
 
 					if (HasTangents()) {
-						for (uint8_t& j : vertex.tangent)
-							stream.Sync(j);
-
-						stream.Sync(vertex.bitangentZ);
+						// 3 tangents + bitangentZ = 4 bytes
+						stream.Sync((char*) &vertex.tangent,
+									sizeof(vertex.tangent) + sizeof(vertex.bitangentZ));
 					}
 				}
 
-
-				if (HasVertexColors())
-					for (uint8_t& j : vertex.colorData)
-						stream.Sync(j);
+				if (HasVertexColors()) {
+					// 4 vertex colors = 4 bytes
+					stream.Sync((char*) &vertex.colorData, sizeof(vertex.colorData));
+				}
 
 				if (IsSkinned()) {
+					// 4 weights = 8 bytes
 					for (float& weight : vertex.weights)
 						stream.SyncHalf(weight);
 
-					for (uint8_t& weightBone : vertex.weightBones)
-						stream.Sync(weightBone);
+					// 4 bones = 4 bytes
+					stream.Sync((char*) &vertex.weightBones, sizeof(vertex.weightBones));
 				}
 
 				if (HasEyeData())

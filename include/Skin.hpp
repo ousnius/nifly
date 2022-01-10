@@ -10,6 +10,7 @@ See the included GPLv3 LICENSE file
 #include "VertexData.hpp"
 
 namespace nifly {
+#pragma pack(push, 1)
 struct SkinWeight {
 	uint16_t index;
 	float weight;
@@ -18,6 +19,7 @@ struct SkinWeight {
 		: index(index_)
 		, weight(weight_) {}
 };
+#pragma pack(pop)
 
 struct VertexWeight {
 	float w1 = 0.0f;

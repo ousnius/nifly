@@ -40,10 +40,9 @@ void NiSkinData::Sync(NiStreamReversible& stream) {
 
 		boneData.vertexWeights.resize(numVerts);
 
-		for (int j = 0; j < numVerts; j++) {
-			stream.Sync(boneData.vertexWeights[j].index);
-			stream.Sync(boneData.vertexWeights[j].weight);
-		}
+		// Num Verts * 6 bytes (index + weight)
+		stream.Sync((char*) boneData.vertexWeights.data(),
+					static_cast<std::streamsize>(numVerts) * sizeof(SkinWeight));
 	}
 }
 
@@ -97,12 +96,11 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 				auto& vertex = vertData[i];
 				if (HasVertices()) {
 					if (IsFullPrecision()) {
-						// Full precision
-						stream.Sync(vertex.vert);
-						stream.Sync(vertex.bitangentX);
+						// Full precision (vert + bitangentX = 16 bytes)
+						stream.Sync((char*) &vertex.vert, sizeof(vertex.vert) + sizeof(vertex.bitangentX));
 					}
 					else {
-						// Half precision
+						// Half precision (vert + bitangentX = 8 bytes)
 						stream.SyncHalf(vertex.vert.x);
 						stream.SyncHalf(vertex.vert.y);
 						stream.SyncHalf(vertex.vert.z);
@@ -117,29 +115,28 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 				}
 
 				if (HasNormals()) {
-					for (uint8_t& j : vertex.normal)
-						stream.Sync(j);
-
-					stream.Sync(vertex.bitangentY);
+					// 3 normals + bitangentY = 4 bytes
+					stream.Sync((char*) &vertex.normal, sizeof(vertex.normal) + sizeof(vertex.bitangentY));
 
 					if (HasTangents()) {
-						for (uint8_t& j : vertex.tangent)
-							stream.Sync(j);
-
-						stream.Sync(vertex.bitangentZ);
+						// 3 tangents + bitangentZ = 4 bytes
+						stream.Sync((char*) &vertex.tangent,
+									sizeof(vertex.tangent) + sizeof(vertex.bitangentZ));
 					}
 				}
 
-				if (HasVertexColors())
-					for (uint8_t& j : vertex.colorData)
-						stream.Sync(j);
+				if (HasVertexColors()) {
+					// 4 vertex colors = 4 bytes
+					stream.Sync((char*) &vertex.colorData, sizeof(vertex.colorData));
+				}
 
 				if (IsSkinned()) {
+					// 4 weights = 8 bytes
 					for (float& weight : vertex.weights)
 						stream.SyncHalf(weight);
 
-					for (uint8_t& weightBone : vertex.weightBones)
-						stream.Sync(weightBone);
+					// 4 bones = 4 bytes
+					stream.Sync((char*) &vertex.weightBones, sizeof(vertex.weightBones));
 				}
 
 				if (HasEyeData())
@@ -162,48 +159,41 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 		stream.Sync(partition.numWeightsPerVertex);
 
 		partition.bones.resize(partition.numBones);
-		for (uint32_t i = 0; i < partition.numBones; i++)
-			stream.Sync(partition.bones[i]);
+		stream.Sync((char*) partition.bones.data(), partition.numBones * sizeof(uint16_t));
 
 		stream.Sync(partition.hasVertexMap);
 		if (partition.hasVertexMap) {
 			partition.vertexMap.resize(partition.numVertices);
-			for (uint32_t i = 0; i < partition.numVertices; i++)
-				stream.Sync(partition.vertexMap[i]);
+			stream.Sync((char*) partition.vertexMap.data(), partition.numVertices * sizeof(uint16_t));
 		}
 
 		stream.Sync(partition.hasVertexWeights);
 		if (partition.hasVertexWeights) {
 			partition.vertexWeights.resize(partition.numVertices);
-			for (uint32_t i = 0; i < partition.numVertices; i++)
-				stream.Sync(partition.vertexWeights[i]);
+			stream.Sync((char*) partition.vertexWeights.data(), partition.numVertices * sizeof(VertexWeight));
 		}
 
 		partition.stripLengths.resize(partition.numStrips);
-		for (uint32_t i = 0; i < partition.numStrips; i++)
-			stream.Sync(partition.stripLengths[i]);
+		stream.Sync((char*) partition.stripLengths.data(), partition.numStrips * sizeof(uint16_t));
 
 		stream.Sync(partition.hasFaces);
 		if (partition.hasFaces) {
 			partition.strips.resize(partition.numStrips);
 			for (uint32_t i = 0; i < partition.numStrips; i++) {
 				partition.strips[i].resize(partition.stripLengths[i]);
-				for (int j = 0; j < partition.stripLengths[i]; j++)
-					stream.Sync(partition.strips[i][j]);
+				stream.Sync((char*) partition.strips[i].data(), partition.stripLengths[i] * sizeof(uint16_t));
 			}
 		}
 
 		if (partition.numStrips == 0 && partition.hasFaces) {
 			partition.triangles.resize(partition.numTriangles);
-			for (uint32_t i = 0; i < partition.numTriangles; i++)
-				stream.Sync(partition.triangles[i]);
+			stream.Sync((char*) partition.triangles.data(), partition.numTriangles * sizeof(Triangle));
 		}
 
 		stream.Sync(partition.hasBoneIndices);
 		if (partition.hasBoneIndices) {
 			partition.boneIndices.resize(partition.numVertices);
-			for (uint32_t i = 0; i < partition.numVertices; i++)
-				stream.Sync(partition.boneIndices[i]);
+			stream.Sync((char*) partition.boneIndices.data(), partition.numVertices * sizeof(BoneIndices));
 		}
 
 		if (stream.GetVersion().User() >= 12) {
@@ -215,8 +205,7 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 			partition.vertexDesc.Sync(stream);
 
 			partition.trueTriangles.resize(partition.numTriangles);
-			for (uint32_t i = 0; i < partition.numTriangles; i++)
-				stream.Sync(partition.trueTriangles[i]);
+			stream.Sync((char*) partition.trueTriangles.data(), partition.numTriangles * sizeof(Triangle));
 		}
 	}
 }
