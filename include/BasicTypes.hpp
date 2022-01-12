@@ -1042,8 +1042,8 @@ public:
 
 	// Swaps two blocks, updating references in other blocks that may refer to their old indices
 	void SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndexHi);
-	bool IsBlockReferenced(const uint32_t blockId);
-	int GetBlockRefCount(const uint32_t blockId);
+	bool IsBlockReferenced(const uint32_t blockId, bool includePtrs = true);
+	int GetBlockRefCount(const uint32_t blockId, bool includePtrs = true);
 
 	// Deletes all unreferenced (loose) blocks of the given type starting at the specified root.
 	// Use template type "NiObject" for all block types.

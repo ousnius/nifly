@@ -389,14 +389,16 @@ void NiHeader::SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndex
 		BlockSwapped(b.get(), blockIndexLo, blockIndexHi);
 }
 
-bool NiHeader::IsBlockReferenced(const uint32_t blockId) {
+bool NiHeader::IsBlockReferenced(const uint32_t blockId, bool includePtrs) {
 	if (blockId == NIF_NPOS)
 		return false;
 
 	for (auto& block : (*blocks)) {
 		std::set<NiRef*> refs;
 		block->GetChildRefs(refs);
-		block->GetPtrs(refs);
+
+		if (includePtrs)
+			block->GetPtrs(refs);
 
 		for (auto& ref : refs)
 			if (ref->index == blockId)
@@ -406,7 +408,7 @@ bool NiHeader::IsBlockReferenced(const uint32_t blockId) {
 	return false;
 }
 
-int NiHeader::GetBlockRefCount(const uint32_t blockId) {
+int NiHeader::GetBlockRefCount(const uint32_t blockId, bool includePtrs) {
 	if (blockId == NIF_NPOS)
 		return 0;
 
@@ -415,7 +417,9 @@ int NiHeader::GetBlockRefCount(const uint32_t blockId) {
 	for (auto& block : (*blocks)) {
 		std::set<NiRef*> refs;
 		block->GetChildRefs(refs);
-		block->GetPtrs(refs);
+
+		if (includePtrs)
+			block->GetPtrs(refs);
 
 		for (auto& ref : refs)
 			if (ref->index == blockId)
