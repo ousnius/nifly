@@ -6,6 +6,7 @@ See the included GPLv3 LICENSE file
 
 #pragma once
 
+#include <cstdint>
 #include <algorithm>
 #include <cmath>
 #include <cstring>
