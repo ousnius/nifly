@@ -10,7 +10,18 @@ See the included GPLv3 LICENSE file
 #include "Geometry.hpp"
 #include "Nodes.hpp"
 
+#if __has_include(<filesystem>)
+
 #include <filesystem>
+
+#elif __has_include(<experimental/optional>)
+
+#include <experimental/filesystem>
+namespace std::filesystem {
+	using namespace std::experimental::filesystem;
+}
+
+#endif
 
 namespace nifly {
 // OptimizeFor function options
