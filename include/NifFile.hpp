@@ -158,17 +158,33 @@ public:
 	// Explicitly sets the order of shapes to a new one.
 	void SetShapeOrder(const std::vector<std::string>& order);
 
-	static void SetSortIndex(const NiRef& ref, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
-	static void SetSortIndex(const NiRef* ref, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	struct SortState {
+		std::set<uint32_t> visitedIndices;
+		std::vector<uint32_t> newIndices;
+		uint32_t newIndex = 0;
+	};
+
+	void SetSortIndices(const NiRef& ref, SortState& sortState);
+	void SetSortIndices(const NiRef* ref, SortState& sortState);
+	void SetSortIndices(uint32_t refIndex, SortState& sortState);
+
+	// Sorts NiObjectNET children
+	void SortNiObjectNET(NiObjectNET* objnet, SortState& sortState);
 
 	// Sorts NiAVObject children
-	void SortAVObject(NiAVObject* avobj, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	void SortAVObject(NiAVObject* avobj, SortState& sortState);
+
+	// Sorts NiTimeController children
+	void SortController(NiTimeController* controller, SortState& sortState);
+
+	// Sorts NiCollisionObject children
+	void SortCollision(NiObject* parent, uint32_t parentIndex, SortState& sortState);
 
 	// Sorts NiShape children
-	void SortShape(NiShape* shape, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	void SortShape(NiShape* shape, SortState& sortState);
 
 	// Sorts a scene graph (starting at NiNode parent)
-	void SortGraph(NiNode* root, std::vector<uint32_t>& newIndices, uint32_t& newIndex);
+	void SortGraph(NiNode* root, SortState& sortState);
 
 	// Sorts all blocks in a logical order.
 	// Order is based on child references, block types and version.

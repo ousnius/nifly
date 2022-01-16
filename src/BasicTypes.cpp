@@ -316,58 +316,42 @@ void NiHeader::SetBlockOrder(std::vector<uint32_t>& newOrder) {
 	if (newOrder.size() != numBlocks)
 		return;
 
-	for (uint32_t i = 0; i < numBlocks; i++)
-		SwapBlocks(i, newOrder[i]);
-}
+	std::vector<uint16_t> newBlockTypeIndices(blockTypeIndices.size());
+	std::vector<std::unique_ptr<NiObject>> newBlocks(blocks->size());
 
-void NiHeader::FixBlockAlignment(const std::vector<NiObject*>& currentTree) {
-	if (currentTree.size() != numBlocks)
-		return;
+	for (uint32_t i = 0; i < numBlocks; i++) {
+		newBlockTypeIndices[newOrder[i]] = blockTypeIndices[i];
+		newBlocks[newOrder[i]] = std::move(blocks->at(i));
+	}
 
-	std::map<uint32_t, uint32_t> indices;
-	for (uint32_t i = 0; i < numBlocks; i++)
-		indices[i] = GetBlockID(currentTree[i]);
+	if (version.File() >= V20_2_0_5) {
+		std::vector<uint32_t> newBlockSizes(blockSizes.size());
 
-	std::vector<uint16_t> newBlockTypeIndices(numBlocks);
-	std::vector<uint32_t> newBlockSizes(numBlocks);
-	std::vector<std::unique_ptr<NiObject>> newBlocks(numBlocks);
+		for (uint32_t i = 0; i < numBlocks; i++)
+			newBlockSizes[newOrder[i]] = blockSizes[i];
 
-	std::set<NiRef*> updatedRefs;
+		blockSizes = std::move(newBlockSizes);
+	}
 
-	for (auto& i : indices) {
-		for (auto& b : (*blocks)) {
-			std::set<NiRef*> refs;
-			b->GetChildRefs(refs);
-			b->GetPtrs(refs);
+	blockTypeIndices = std::move(newBlockTypeIndices);
+	(*blocks) = std::move(newBlocks);
 
-			for (auto& r : refs) {
-				if (updatedRefs.find(r) == updatedRefs.end()) {
-					if (r->index == i.second) {
-						r->index = i.first;
-						updatedRefs.insert(r);
-					}
-				}
-			}
+	for (auto& b : (*blocks)) {
+		std::set<NiRef*> refs;
+		b->GetChildRefs(refs);
+
+		for (auto& r : refs) {
+			if (!r->IsEmpty())
+				r->index = newOrder[r->index];
 		}
-	}
 
-	for (auto& i : indices) {
-		int newIndex = i.second;
-		newBlockTypeIndices[i.first] = blockTypeIndices[newIndex];
+		std::set<NiRef*> ptrs;
+		b->GetPtrs(ptrs);
 
-		if (version.File() >= V20_2_0_5)
-			newBlockSizes[i.first] = blockSizes[newIndex];
-
-		std::swap(newBlocks[i.first], blocks->at(newIndex));
-	}
-
-	for (uint32_t i = numBlocks - 1; i != NIF_NPOS; i--) {
-		blockTypeIndices[i] = newBlockTypeIndices[i];
-
-		if (version.File() >= V20_2_0_5)
-			blockSizes[i] = newBlockSizes[i];
-
-		blocks->at(i) = std::move(newBlocks[i]);
+		for (auto& p : ptrs) {
+			if (!p->IsEmpty())
+				p->index = newOrder[p->index];
+		}
 	}
 }
 
@@ -598,6 +582,12 @@ void NiHeader::BlockDeleted(NiObject* o, const uint32_t blockId) {
 }
 
 void NiHeader::BlockSwapped(NiObject* o, const uint32_t blockIndexLo, const uint32_t blockIndexHi) {
+	if (blockIndexLo == NIF_NPOS || blockIndexHi == NIF_NPOS)
+		return;
+
+	if (blockIndexLo == blockIndexHi)
+		return;
+
 	std::set<NiRef*> refs;
 	o->GetChildRefs(refs);
 	o->GetPtrs(refs);

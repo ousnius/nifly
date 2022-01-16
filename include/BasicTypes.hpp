@@ -1038,7 +1038,6 @@ public:
 	uint32_t ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObject> newBlock);
 
 	void SetBlockOrder(std::vector<uint32_t>& newOrder);
-	void FixBlockAlignment(const std::vector<NiObject*>& currentTree);
 
 	// Swaps two blocks, updating references in other blocks that may refer to their old indices
 	void SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndexHi);
