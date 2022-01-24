@@ -1130,6 +1130,15 @@ struct Triangle {
 
 	float AxisMidPointZ(Vector3* vertref) { return (vertref[p1].z + vertref[p2].z + vertref[p3].z) / 3.0f; }
 
+	Edge GetEdge(int i) {
+		if (i == 0)
+			return Edge(p1, p2);
+		else if (i == 1)
+			return Edge(p2, p3);
+		else
+			return Edge(p3, p1);
+	}
+
 	bool HasOrientedEdge(const Edge& e) const {
 		return (e.p1 == p1 && e.p2 == p2) || (e.p1 == p2 && e.p2 == p3) || (e.p1 == p3 && e.p2 == p1);
 	}
@@ -1484,7 +1493,7 @@ using namespace nifly;
 template<>
 struct hash<Edge> {
 	std::size_t operator()(const Edge& t) const {
-		return static_cast<size_t>((t.p2 << 16) | (t.p1 & 0xFFFF));
+		return (static_cast<size_t>(t.p2) << 16) | (t.p1 & 0xFFFF);
 	}
 };
 
