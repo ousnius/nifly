@@ -1130,7 +1130,7 @@ struct Triangle {
 
 	float AxisMidPointZ(Vector3* vertref) { return (vertref[p1].z + vertref[p2].z + vertref[p3].z) / 3.0f; }
 
-	Edge GetEdge(int i) {
+	Edge GetEdge(int i) const {
 		if (i == 0)
 			return Edge(p1, p2);
 		else if (i == 1)
