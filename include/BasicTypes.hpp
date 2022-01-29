@@ -1039,8 +1039,6 @@ public:
 
 	void SetBlockOrder(std::vector<uint32_t>& newOrder);
 
-	// Swaps two blocks, updating references in other blocks that may refer to their old indices
-	void SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndexHi);
 	bool IsBlockReferenced(const uint32_t blockId, bool includePtrs = true);
 	int GetBlockRefCount(const uint32_t blockId, bool includePtrs = true);
 
@@ -1103,7 +1101,6 @@ public:
 	void UpdateHeaderStrings(const bool hasUnknown);
 
 	static void BlockDeleted(NiObject* o, const uint32_t blockId);
-	static void BlockSwapped(NiObject* o, const uint32_t blockIndexLo, const uint32_t blockIndexHi);
 
 	void Get(NiIStream& stream) override;
 	void Put(NiOStream& stream) override;

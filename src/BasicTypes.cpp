@@ -355,24 +355,6 @@ void NiHeader::SetBlockOrder(std::vector<uint32_t>& newOrder) {
 	}
 }
 
-void NiHeader::SwapBlocks(const uint32_t blockIndexLo, const uint32_t blockIndexHi) {
-	if (blockIndexLo == NIF_NPOS || blockIndexHi == NIF_NPOS || blockIndexLo >= numBlocks
-		|| blockIndexHi >= numBlocks || blockIndexLo == blockIndexHi)
-		return;
-
-	// First swap data
-	std::iter_swap(blockTypeIndices.begin() + blockIndexLo, blockTypeIndices.begin() + blockIndexHi);
-
-	if (version.File() >= V20_2_0_5)
-		std::iter_swap(blockSizes.begin() + blockIndexLo, blockSizes.begin() + blockIndexHi);
-
-	std::iter_swap(blocks->begin() + blockIndexLo, blocks->begin() + blockIndexHi);
-
-	// Next tell all the blocks that the swap happened
-	for (auto& b : (*blocks))
-		BlockSwapped(b.get(), blockIndexLo, blockIndexHi);
-}
-
 bool NiHeader::IsBlockReferenced(const uint32_t blockId, bool includePtrs) {
 	if (blockId == NIF_NPOS)
 		return false;
@@ -577,27 +559,6 @@ void NiHeader::BlockDeleted(NiObject* o, const uint32_t blockId) {
 				r->Clear();
 			else if (r->index > blockId)
 				r->index--;
-		}
-	}
-}
-
-void NiHeader::BlockSwapped(NiObject* o, const uint32_t blockIndexLo, const uint32_t blockIndexHi) {
-	if (blockIndexLo == NIF_NPOS || blockIndexHi == NIF_NPOS)
-		return;
-
-	if (blockIndexLo == blockIndexHi)
-		return;
-
-	std::set<NiRef*> refs;
-	o->GetChildRefs(refs);
-	o->GetPtrs(refs);
-
-	for (auto& r : refs) {
-		if (!r->IsEmpty()) {
-			if (r->index == blockIndexLo)
-				r->index = blockIndexHi;
-			else if (r->index == blockIndexHi)
-				r->index = blockIndexLo;
 		}
 	}
 }

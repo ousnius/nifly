@@ -251,51 +251,38 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 	if (hasUnknown)
 		return;
 
-	std::vector<int64_t> delta;
-	bool hadoffset = false;
+	if (order.empty())
+		return;
 
-	// Have to do this in multiple passes
-	do {
-		std::vector<std::string> oldOrder = GetShapeNames();
-		std::vector<int> oldOrderIds;
-		for (const auto& s : oldOrder) {
-			int blockID = GetBlockID(FindBlockByName<NiShape>(s));
-			if (blockID != NIF_NPOS)
-				oldOrderIds.push_back(blockID);
+	auto shapes = GetShapes();
+	if (order.size() != shapes.size())
+		return;
+
+	SortState sortState{};
+	sortState.newIndices.resize(hdr.GetNumBlocks());
+	for (size_t i = 0; i < sortState.newIndices.size(); i++)
+		sortState.newIndices[i] = static_cast<uint32_t>(i);
+
+	for (auto& s : order) {
+		auto shape = FindBlockByName<NiShape>(s);
+		if (shape)
+			sortState.rootShapeOrder.push_back(GetBlockID(shape));
+	}
+
+	auto root = GetRootNode();
+	if (root) {
+		sortState.newIndex = GetBlockID(root);
+		SetSortIndices(sortState.newIndex, sortState);
+	}
+
+	for (size_t i = 0; i < sortState.newIndices.size(); i++) {
+		if (sortState.visitedIndices.count(i) == 0) {
+			sortState.newIndices[i] = sortState.newIndex++;
+			sortState.visitedIndices.insert(i);
 		}
+	}
 
-		if (order.size() != oldOrder.size())
-			return;
-
-		// Get movement offset for each item.  This is the difference between old and new position.
-		delta.clear();
-		delta.resize(order.size());
-
-		for (size_t p = 0; p < oldOrder.size(); p++)
-			delta[p] = (find(order, oldOrder[p]) - order.begin()) - p;
-
-		hadoffset = false;
-		//Positive offsets mean that the item has moved down the list.  By necessity, that means another item has moved up the list.
-		// thus, we only need to move the "rising" items, the other blocks will naturally end up in the right place.
-
-		// find first negative delta, and raise it in list.  The first item can't have a negative delta
-		for (size_t i = 1; i < delta.size(); i++) {
-			// don't move positive or zero offset items.
-			if (delta[i] >= 0)
-				continue;
-
-			hadoffset = true;
-			int64_t c = 0 - delta[i];
-			size_t p = i;
-			while (c > 0) {
-				hdr.SwapBlocks(oldOrderIds[p], oldOrderIds[p - 1]);
-				p--;
-				c--;
-			}
-			break;
-		}
-
-	} while (hadoffset);
+	hdr.SetBlockOrder(sortState.newIndices);
 }
 
 void NifFile::SetSortIndices(const NiRef& ref, SortState& sortState) {
@@ -521,6 +508,7 @@ void NifFile::SortShape(NiShape* shape, SortState& sortState) {
 }
 
 void NifFile::SortGraph(NiNode* root, SortState& sortState) {
+	bool isRootNode = GetBlockID(root) == 0;
 	SortAVObject(root, sortState);
 
 	std::vector<uint32_t> childIndices;
@@ -552,12 +540,29 @@ void NifFile::SortGraph(NiNode* root, SortState& sortState) {
 			}
 
 			// Add shapes
+			std::vector<uint32_t> shapeIndices;
 			for (auto& index : childIndices) {
 				auto shape = hdr.GetBlock<NiShape>(index);
-				if (shape) {
-					newChildIndices.push_back(index);
-					newChildRefs.AddBlockRef(index);
+				if (shape)
+					shapeIndices.push_back(index);
+			}
+
+			if (isRootNode) {
+				// Reorder shapes on root node if order is provided
+				if (sortState.rootShapeOrder.size() == shapeIndices.size()) {
+					std::vector<uint32_t> newShapeIndices(shapeIndices.size());
+					for (size_t si = 0; si < sortState.rootShapeOrder.size(); si++) {
+						auto it = find(shapeIndices, sortState.rootShapeOrder[si]);
+						if (it != shapeIndices.end())
+							newShapeIndices[si] = shapeIndices[std::distance(shapeIndices.begin(), it)];
+					}
+					shapeIndices = newShapeIndices;
 				}
+			}
+
+			for (auto& index : shapeIndices) {
+				newChildIndices.push_back(index);
+				newChildRefs.AddBlockRef(index);
 			}
 		}
 		else {
@@ -576,12 +581,29 @@ void NifFile::SortGraph(NiNode* root, SortState& sortState) {
 			}
 
 			// Add shapes
+			std::vector<uint32_t> shapeIndices;
 			for (auto& index : childIndices) {
 				auto shape = hdr.GetBlock<NiShape>(index);
-				if (shape) {
-					newChildIndices.push_back(index);
-					newChildRefs.AddBlockRef(index);
+				if (shape)
+					shapeIndices.push_back(index);
+			}
+
+			if (isRootNode) {
+				// Reorder shapes on root node if order is provided
+				if (sortState.rootShapeOrder.size() == shapeIndices.size()) {
+					std::vector<uint32_t> newShapeIndices(shapeIndices.size());
+					for (size_t si = 0; si < sortState.rootShapeOrder.size(); si++) {
+						auto it = find(shapeIndices, sortState.rootShapeOrder[si]);
+						if (it != shapeIndices.end())
+							newShapeIndices[si] = shapeIndices[std::distance(shapeIndices.begin(), it)];
+					}
+					shapeIndices = newShapeIndices;
 				}
+			}
+
+			for (auto& index : shapeIndices) {
+				newChildIndices.push_back(index);
+				newChildRefs.AddBlockRef(index);
 			}
 		}
 

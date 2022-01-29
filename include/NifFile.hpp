@@ -162,6 +162,7 @@ public:
 		std::set<uint32_t> visitedIndices;
 		std::vector<uint32_t> newIndices;
 		uint32_t newIndex = 0;
+		std::vector<uint32_t> rootShapeOrder;
 	};
 
 	void SetSortIndices(const NiRef& ref, SortState& sortState);
