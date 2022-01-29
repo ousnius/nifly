@@ -276,9 +276,10 @@ void NifFile::SetShapeOrder(const std::vector<std::string>& order) {
 	}
 
 	for (size_t i = 0; i < sortState.newIndices.size(); i++) {
-		if (sortState.visitedIndices.count(i) == 0) {
+		uint32_t index = static_cast<uint32_t>(i);
+		if (sortState.visitedIndices.count(index) == 0) {
 			sortState.newIndices[i] = sortState.newIndex++;
-			sortState.visitedIndices.insert(i);
+			sortState.visitedIndices.insert(index);
 		}
 	}
 
@@ -654,9 +655,10 @@ void NifFile::PrettySortBlocks() {
 	}
 
 	for (size_t i = 0; i < sortState.newIndices.size(); i++) {
-		if (sortState.visitedIndices.count(i) == 0) {
+		uint32_t index = static_cast<uint32_t>(i);
+		if (sortState.visitedIndices.count(index) == 0) {
 			sortState.newIndices[i] = sortState.newIndex++;
-			sortState.visitedIndices.insert(i);
+			sortState.visitedIndices.insert(index);
 		}
 	}
 
