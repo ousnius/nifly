@@ -631,6 +631,13 @@ void NifFile::PrettySortBlocks() {
 		SetSortIndices(sortState.newIndex, sortState);
 	}
 
+	for (size_t i = 0; i < sortState.newIndices.size(); i++) {
+		if (sortState.visitedIndices.count(i) == 0) {
+			sortState.newIndices[i] = sortState.newIndex++;
+			sortState.visitedIndices.insert(i);
+		}
+	}
+
 	hdr.SetBlockOrder(sortState.newIndices);
 }
 
