@@ -121,6 +121,17 @@ TEST_CASE("Load and save furniture file (SE)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Load and save file with loose blocks (SE)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_LooseBlocks_SE";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
 TEST_CASE("Load and save file with multi bound node (SE)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_MultiBound_SE";
 	const auto[fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
