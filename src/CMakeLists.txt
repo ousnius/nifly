@@ -51,8 +51,9 @@ target_include_directories(nifly PUBLIC
 
 target_include_directories(nifly SYSTEM PUBLIC
     $<BUILD_INTERFACE:${NIFLY_EXTERNAL_DIR}>
-    $<INSTALL_INTERFACE:external>
+    $<INSTALL_INTERFACE:include>
     )
+
 
 target_compile_features(nifly PUBLIC cxx_std_17)
 
@@ -62,8 +63,11 @@ if(MSVC)
 endif()
 
 install(DIRECTORY ${NIFLY_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY ${NIFLY_EXTERNAL_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
-
+install(FILES
+    ${NIFLY_EXTERNAL_DIR}/half.hpp
+    ${NIFLY_EXTERNAL_DIR}/Miniball.hpp
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
+  
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
