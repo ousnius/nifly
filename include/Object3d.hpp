@@ -131,18 +131,18 @@ struct Vector3 {
 		z /= d;
 	}
 
-	uint32_t hash() {
+	uint32_t hash() const {
 		static_assert(sizeof(float) == sizeof(uint32_t));
-		uint32_t* h = reinterpret_cast<uint32_t*>(this);
+		const uint32_t* h = reinterpret_cast<const uint32_t*>(this);
 		uint32_t f = (h[0] + h[1] * 11 - h[2] * 17) & 0x7fffffff;
 		return (f >> 22) ^ (f >> 12) ^ (f);
 	}
 
-	bool operator==(const Vector3& other) {
+	bool operator==(const Vector3& other) const {
 		return FloatsAreNearlyEqual(x, other.x) && FloatsAreNearlyEqual(y, other.y)
 			   && FloatsAreNearlyEqual(z, other.z);
 	}
-	bool operator!=(const Vector3& other) { return !(*this == other); }
+	bool operator!=(const Vector3& other) const { return !(*this == other); }
 
 	Vector3& operator-=(const Vector3& other) {
 		x -= other.x;
@@ -279,7 +279,7 @@ struct Vector3 {
 		return static_cast<float>(std::sqrt(dx * dx + dy * dy + dz * dz));
 	}
 
-	float DistanceSquaredTo(const Vector3& target) {
+	float DistanceSquaredTo(const Vector3& target) const {
 		float dx = target.x - x;
 		float dy = target.y - y;
 		float dz = target.z - z;
@@ -1099,7 +1099,7 @@ struct Triangle {
 		p3 = P3;
 	}
 
-	void trinormal(Vector3* vertref, Vector3* outNormal) const {
+	void trinormal(const Vector3* vertref, Vector3* outNormal) const {
 		outNormal->x = (vertref[p2].y - vertref[p1].y) * (vertref[p3].z - vertref[p1].z)
 					   - (vertref[p2].z - vertref[p1].z) * (vertref[p3].y - vertref[p1].y);
 		outNormal->y = (vertref[p2].z - vertref[p1].z) * (vertref[p3].x - vertref[p1].x)
@@ -1117,18 +1117,18 @@ struct Triangle {
 					   - (vertref[p2].y - vertref[p1].y) * (vertref[p3].x - vertref[p1].x);
 	}
 
-	void midpoint(Vector3* vertref, Vector3& outPoint) {
+	void midpoint(const Vector3* vertref, Vector3& outPoint) {
 		outPoint = vertref[p1];
 		outPoint += vertref[p2];
 		outPoint += vertref[p3];
 		outPoint /= 3;
 	}
 
-	float AxisMidPointY(Vector3* vertref) { return (vertref[p1].y + vertref[p2].y + vertref[p3].y) / 3.0f; }
+	float AxisMidPointY(const Vector3* vertref) const { return (vertref[p1].y + vertref[p2].y + vertref[p3].y) / 3.0f; }
 
-	float AxisMidPointX(Vector3* vertref) { return (vertref[p1].x + vertref[p2].x + vertref[p3].x) / 3.0f; }
+	float AxisMidPointX(const Vector3* vertref) const { return (vertref[p1].x + vertref[p2].x + vertref[p3].x) / 3.0f; }
 
-	float AxisMidPointZ(Vector3* vertref) { return (vertref[p1].z + vertref[p2].z + vertref[p3].z) / 3.0f; }
+	float AxisMidPointZ(const Vector3* vertref) const { return (vertref[p1].z + vertref[p2].z + vertref[p3].z) / 3.0f; }
 
 	Edge GetEdge(int i) const {
 		if (i == 0)
@@ -1137,6 +1137,10 @@ struct Triangle {
 			return Edge(p2, p3);
 		else
 			return Edge(p3, p1);
+	}
+
+	bool HasVertex(uint16_t p) const {
+		return p == p1 || p == p2 || p == p3;
 	}
 
 	bool HasOrientedEdge(const Edge& e) const {
@@ -1154,9 +1158,21 @@ struct Triangle {
 		return Edge(p3, p1);
 	}
 
-	bool IntersectRay(Vector3* vertref,
-					  Vector3& origin,
-					  Vector3& direction,
+	uint16_t ClosestVertex(const Vector3* vertref, const Vector3& p) const {
+		float d1 = p.DistanceTo(vertref[p1]);
+		float d2 = p.DistanceTo(vertref[p2]);
+		float d3 = p.DistanceTo(vertref[p3]);
+		if (d1 <= d2 && d1 <= d3)
+			return p1;
+		else if (d2 <= d3)
+			return p2;
+		else
+			return p3;
+	}
+
+	bool IntersectRay(const Vector3* vertref,
+					  const Vector3& origin,
+					  const Vector3& direction,
 					  float* outDistance = nullptr,
 					  Vector3* worldPos = nullptr) {
 		Vector3 c0(vertref[p1].x, vertref[p1].y, vertref[p1].z);
@@ -1200,7 +1216,7 @@ struct Triangle {
 	// Triangle/Sphere collision psuedocode by Christer Ericson: http://realtimecollisiondetection.net/blog/?p=103
 	//   separating axis test on seven features --  3 points, 3 edges, and the tri plane.  For a sphere, this
 	//   involves finding the minimum distance to each feature from the sphere origin and comparing it to the sphere radius.
-	bool IntersectSphere(Vector3* vertref, Vector3& origin, float radius, float* outDistance = nullptr) {
+	bool IntersectSphere(const Vector3* vertref, const Vector3& origin, float radius, float* outDistance = nullptr) {
 		//A = A - P
 		//B = B - P
 		//C = C - P
