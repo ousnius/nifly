@@ -37,7 +37,7 @@ struct Vector2 {
 	}
 
 	bool operator==(const Vector2& other) {
-		return FloatsAreNearlyEqual(u, other.u) && FloatsAreNearlyEqual(v, other.v);
+		return u == other.u && v == other.v;
 	}
 	bool operator!=(const Vector2& other) { return !(*this == other); }
 
@@ -123,7 +123,7 @@ struct Vector3 {
 
 	void Normalize() {
 		float d = std::sqrt(x * x + y * y + z * z);
-		if (FloatsAreNearlyEqual(d, 0.0f))
+		if (d == 0.0f)
 			d = 1.0f;
 
 		x /= d;
@@ -139,8 +139,7 @@ struct Vector3 {
 	}
 
 	bool operator==(const Vector3& other) const {
-		return FloatsAreNearlyEqual(x, other.x) && FloatsAreNearlyEqual(y, other.y)
-			   && FloatsAreNearlyEqual(z, other.z);
+		return x == other.x && y == other.y && z == other.z;
 	}
 	bool operator!=(const Vector3& other) const { return !(*this == other); }
 
@@ -367,8 +366,7 @@ struct Color3 {
 		, b(b_) {}
 
 	bool operator==(const Color3& other) {
-		return FloatsAreNearlyEqual(r, other.r) && FloatsAreNearlyEqual(g, other.g)
-			   && FloatsAreNearlyEqual(b, other.b);
+		return r == other.r && g == other.g && b == other.b;
 	}
 	bool operator!=(const Color3& other) { return !(*this == other); }
 
@@ -412,8 +410,7 @@ struct Color4 {
 		, a(a_) {}
 
 	bool operator==(const Color4& other) {
-		return FloatsAreNearlyEqual(r, other.r) && FloatsAreNearlyEqual(g, other.g)
-			   && FloatsAreNearlyEqual(b, other.b) && FloatsAreNearlyEqual(a, other.a);
+		return r == other.r && g == other.g && b == other.b && a == other.a;
 	}
 	bool operator!=(const Color4& other) { return !(*this == other); }
 
