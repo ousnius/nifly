@@ -46,13 +46,14 @@ add_library(nifly STATIC
 
 target_include_directories(nifly PUBLIC
     $<BUILD_INTERFACE:${NIFLY_INCLUDE_DIR}>
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/nifly>
     )
 
 target_include_directories(nifly SYSTEM PUBLIC
     $<BUILD_INTERFACE:${NIFLY_EXTERNAL_DIR}>
-    $<INSTALL_INTERFACE:external>
+    $<INSTALL_INTERFACE:include>
     )
+
 
 target_compile_features(nifly PUBLIC cxx_std_17)
 
@@ -61,9 +62,12 @@ if(MSVC)
     target_compile_options(nifly PUBLIC "/EHsc" "/bigobj")
 endif()
 
-install(DIRECTORY ${NIFLY_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY ${NIFLY_EXTERNAL_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
-
+install(DIRECTORY ${NIFLY_INCLUDE_DIR}/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/nifly)
+install(FILES
+    ${NIFLY_EXTERNAL_DIR}/half.hpp
+    ${NIFLY_EXTERNAL_DIR}/Miniball.hpp
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/include/nifly")
+  
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
