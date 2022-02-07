@@ -18,7 +18,7 @@ constexpr float EPSILON = 0.0001f;
 constexpr float PI = 3.141592f;
 constexpr float DEG2RAD = PI / 180.0f;
 
-inline constexpr bool FloatsAreNearlyEqual(float a, float b) {
+inline bool FloatsAreNearlyEqual(float a, float b) {
 	float scale = std::max(std::max(std::fabs(a), std::fabs(b)), 1.0f);
 	return std::fabs(a - b) <= EPSILON * scale;
 }
@@ -251,7 +251,7 @@ struct Vector3 {
 
 	constexpr float dot(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
 
-	constexpr float DistanceTo(const Vector3& target) const {
+	float DistanceTo(const Vector3& target) const {
 		float dx = target.x - x;
 		float dy = target.y - y;
 		float dz = target.z - z;
@@ -291,16 +291,16 @@ struct Vector3 {
 			z = 0.0f;
 	}
 
-	constexpr bool IsNearlyEqualTo(const Vector3& other) const {
+	bool IsNearlyEqualTo(const Vector3& other) const {
 		return FloatsAreNearlyEqual(x, other.x) && FloatsAreNearlyEqual(y, other.y)
 			   && FloatsAreNearlyEqual(z, other.z);
 	}
 
 	constexpr float length2() const { return x * x + y * y + z * z; }
 
-	constexpr float length() const { return std::sqrt(x * x + y * y + z * z); }
+	float length() const { return std::sqrt(x * x + y * y + z * z); }
 
-	constexpr float DistanceToSegment(const Vector3& p1, const Vector3& p2) const {
+	float DistanceToSegment(const Vector3& p1, const Vector3& p2) const {
 		Vector3 segvec(p2 - p1);
 		Vector3 diffp1(*this - p1);
 		float dp = segvec.dot(diffp1);
@@ -567,7 +567,7 @@ public:
 		return canRot;
 	}
 
-	constexpr bool IsNearlyEqualTo(const Matrix3& other) const {
+	bool IsNearlyEqualTo(const Matrix3& other) const {
 		return rows[0].IsNearlyEqualTo(other.rows[0]) && rows[1].IsNearlyEqualTo(other.rows[1])
 			   && rows[2].IsNearlyEqualTo(other.rows[2]);
 	}
@@ -593,9 +593,9 @@ class Matrix4 {
 	float m[16]{};
 
 public:
-	constexpr Matrix4() { Identity(); }
+	constexpr Matrix4(): m{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f} {}
 
-	constexpr Matrix4(const std::vector<Vector3>& mat33) { Set(mat33); }
+	Matrix4(const std::vector<Vector3>& mat33) { Set(mat33); }
 
 	void Set(Vector3 mat33[3]) {
 		m[0] = mat33[0].x;
@@ -1069,7 +1069,7 @@ struct MatTransform {
 	// t3.ApplyTransform(v) == t1.ApplyTransform(t2.ApplyTransform(v)).
 	MatTransform ComposeTransforms(const MatTransform& other) const;
 
-	constexpr bool IsNearlyEqualTo(const MatTransform& other) const {
+	bool IsNearlyEqualTo(const MatTransform& other) const {
 		return translation.IsNearlyEqualTo(other.translation) && rotation.IsNearlyEqualTo(other.rotation)
 			   && FloatsAreNearlyEqual(scale, other.scale);
 	}
