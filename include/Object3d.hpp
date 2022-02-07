@@ -131,7 +131,7 @@ struct Vector3 {
 		z /= d;
 	}
 
-	constexpr uint32_t hash() const {
+	uint32_t hash() const {
 		static_assert(sizeof(float) == sizeof(uint32_t));
 		const uint32_t* h = reinterpret_cast<const uint32_t*>(this);
 		uint32_t f = (h[0] + h[1] * 11 - h[2] * 17) & 0x7fffffff;
