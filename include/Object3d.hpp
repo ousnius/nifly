@@ -207,7 +207,8 @@ struct Vector3 {
 		return (*this);
 	}
 	constexpr Vector3 operator*(int val) const {
-		return Vector3(x * val, y * val, z * val);
+		float v = static_cast<float>(val);
+		return Vector3(x * v, y * v, z * v);
 	}
 	Vector3& operator/=(int val) {
 		auto v = static_cast<float>(val);
@@ -217,7 +218,8 @@ struct Vector3 {
 		return (*this);
 	}
 	constexpr Vector3 operator/(int val) const {
-		return Vector3(x / val, y / val, z / val);
+		float v = static_cast<float>(val);
+		return Vector3(x / v, y / v, z / v);
 	}
 
 	Vector3& operator*=(uint32_t val) {
@@ -228,7 +230,8 @@ struct Vector3 {
 		return (*this);
 	}
 	constexpr Vector3 operator*(uint32_t val) const {
-		return Vector3(x * val, y * val, z * val);
+		float v = static_cast<float>(val);
+		return Vector3(x * v, y * v, z * v);
 	}
 	Vector3& operator/=(uint32_t val) {
 		auto v = static_cast<float>(val);
@@ -238,7 +241,8 @@ struct Vector3 {
 		return (*this);
 	}
 	constexpr Vector3 operator/(uint32_t val) const {
-		return Vector3(x / val, y / val, z / val);
+		float v = static_cast<float>(val);
+		return Vector3(x / v, y / v, z / v);
 	}
 
 	constexpr Vector3 cross(const Vector3& other) const {
