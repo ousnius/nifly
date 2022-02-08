@@ -161,22 +161,44 @@ struct Vector3 {
 	constexpr Vector3 operator+(const Vector3& other) const {
 		return Vector3(x + other.x, y + other.y, z + other.z);
 	}
+	[[deprecated("Replaced by ComponentMultiplyBy; should not have been an operator")]]
 	Vector3& operator*=(const Vector3& other) {
 		x *= other.x;
 		y *= other.y;
 		z *= other.z;
 		return (*this);
 	}
+	Vector3& ComponentMultiplyBy(const Vector3& other) {
+		x *= other.x;
+		y *= other.y;
+		z *= other.z;
+		return (*this);
+	}
+	[[deprecated("Replaced by ComponentMultiply; should not have been an operator")]]
 	constexpr Vector3 operator*(const Vector3& other) const {
 		return Vector3(x * other.x, y * other.y, z * other.z);
 	}
+	constexpr Vector3 ComponentMultiply(const Vector3& other) const {
+		return Vector3(x * other.x, y * other.y, z * other.z);
+	}
+	[[deprecated("Replaced by ComponentDivideBy; should not have been an operator")]]
 	Vector3& operator/=(const Vector3& other) {
 		x /= other.x;
 		y /= other.y;
 		z /= other.z;
 		return (*this);
 	}
+	Vector3& ComponentDivideBy(const Vector3& other) {
+		x /= other.x;
+		y /= other.y;
+		z /= other.z;
+		return (*this);
+	}
+	[[deprecated("Replaced by ComponentDivide; should not have been an operator")]]
 	constexpr Vector3 operator/(const Vector3& other) const {
+		return Vector3(x / other.x, y / other.y, z / other.z);
+	}
+	constexpr Vector3 ComponentDivide(const Vector3& other) const {
 		return Vector3(x / other.x, y / other.y, z / other.z);
 	}
 
@@ -517,6 +539,7 @@ public:
 					   rows[2][0] * v.x + rows[2][1] * v.y + rows[2][2] * v.z);
 	}
 
+	[[deprecated("Should not have been an operator; replace with multiplying by Vector3(f,f,f)")]]
 	constexpr Vector3 operator*(const float f) const {
 		return Vector3(rows[0][0] * f + rows[0][1] * f + rows[0][2] * f,
 					   rows[1][0] * f + rows[1][1] * f + rows[1][2] * f,
@@ -1038,7 +1061,8 @@ struct MatTransform {
 		return m;
 	}
 
-	Vector3 GetVector() const { return translation + rotation * scale; }
+	[[deprecated("Does something nonsensical")]]
+	Vector3 GetVector() const { return translation + rotation * Vector3(scale, scale, scale); }
 
 	// ApplyTransform applies this MatTransform to a position vector v by
 	// first scaling v, then rotating the result of that, and then
