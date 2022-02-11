@@ -118,30 +118,32 @@ public:
 	}
 };
 
+template<typename index_t>
 class kd_query_result {
 public:
 	const Vector3* v;
-	uint32_t vertex_index;
+	index_t vertex_index;
 	float distance;
 	bool operator<(const kd_query_result& other) const { return distance < other.distance; }
 };
 
 // More general purpose KD tree that assembles a tree from input points and allows nearest neighbor and radius searches on the data.
+template<typename index_t>
 class kd_tree {
 public:
 	class kd_node {
 	public:
 		const Vector3* p = nullptr;
-		uint32_t p_i = 0;
+		index_t p_i = 0;
 		std::unique_ptr<kd_node> less;
 		std::unique_ptr<kd_node> more;
 
-		kd_node(const Vector3* point, const uint32_t point_index) {
+		kd_node(const Vector3* point, const index_t point_index) {
 			p = point;
 			p_i = point_index;
 		}
 
-		void add(const Vector3* point, const uint32_t point_index, const uint32_t depth) {
+		void add(const Vector3* point, const index_t point_index, const uint32_t depth) {
 			uint32_t axis = depth % 3;
 			bool domore = false;
 			float dx = p->x - point->x;
@@ -179,11 +181,11 @@ public:
 		// Finds the closest point(s) to "querypoint" within the provided radius. If radius is 0, only the single closest point is found.
 		// On first call, "mindist" should be set to FLT_MAX and depth set to 0.
 		void find_closest(const Vector3* querypoint,
-						  std::vector<kd_query_result>& queryResult,
+						  std::vector<kd_query_result<index_t>>& queryResult,
 						  const float radius,
 						  float& mindist,
 						  const uint32_t depth = 0) {
-			kd_query_result kdqr;
+			kd_query_result<index_t> kdqr;
 			uint32_t axis = depth % 3;		 // Which separating axis to use based on depth
 			float dx = p->x - querypoint->x; // Axis sides
 			float dy = p->y - querypoint->y;
@@ -263,19 +265,19 @@ public:
 	};
 
 	std::unique_ptr<kd_node> root;
-	std::vector<kd_query_result> queryResult;
+	std::vector<kd_query_result<index_t>> queryResult;
 
-	kd_tree(const Vector3* points, const uint32_t count) {
+	kd_tree(const Vector3* points, const index_t count) {
 		if (count <= 0)
 			return;
 
-		uint32_t pointIndex = 0;
+		index_t pointIndex = 0;
 		root = std::make_unique<kd_node>(&points[0], pointIndex);
-		for (uint32_t i = 1; i < count; i++)
+		for (index_t i = 1; i < count; i++)
 			root->add(&points[i], i, 0);
 	}
 
-	uint32_t kd_nn(const Vector3* querypoint, const float radius) {
+	index_t kd_nn(const Vector3* querypoint, const float radius) {
 		float mindist = std::numeric_limits<float>().max();
 		if (radius > 0.0f)
 			mindist = radius;
@@ -284,7 +286,7 @@ public:
 		root->find_closest(querypoint, queryResult, radius, mindist);
 		std::sort(queryResult.begin(), queryResult.end());
 
-		return static_cast<uint32_t>(queryResult.size());
+		return static_cast<index_t>(queryResult.size());
 	}
 };
 } // namespace nifly
