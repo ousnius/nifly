@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10..3.20)
 
 project(nifly)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(NIFLY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(NIFLY_TESTS_DIR ${NIFLY_DIR}/tests)

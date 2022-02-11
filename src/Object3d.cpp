@@ -312,10 +312,6 @@ bool Matrix3::ToEulerAngles(float& y, float& p, float& r) const {
 	return canRot;
 }
 
-Vector3 MatTransform::ApplyTransform(const Vector3& v) const {
-	return translation + rotation * (v * scale);
-}
-
 MatTransform MatTransform::InverseTransform() const {
 	MatTransform inv;
 	inv.rotation = rotation.Inverse();
