@@ -1220,7 +1220,7 @@ struct Triangle {
 		Vector3 pvec = direction.cross(e2);
 		float det = e1.dot(pvec);
 
-		if (det < 0.000001f)
+		if (det <= 0.0f)
 			return false;
 
 		Vector3 tvec = origin - c0;
