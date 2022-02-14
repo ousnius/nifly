@@ -84,6 +84,13 @@ public:
 		if (cnt <= 0)
 			return;
 
+		// Determine overall scale of the point set so we can determine a
+		// good epsilon
+		float scale = 0.0f;
+		for (uint16_t i = 0; i < cnt; ++i)
+			scale = std::max(scale, std::max(std::fabs(pts[i].x), std::max(std::fabs(pts[i].y), std::fabs(pts[i].z))));
+		float epsilon = EPSILON * 0.01f * scale;
+
 		std::vector<uint16_t> inds(cnt);
 		for (uint16_t i = 0; i < cnt; ++i)
 			inds[i] = i;
@@ -97,14 +104,14 @@ public:
 
 			bool matched = false;
 			for (uint16_t mi = si + 1; mi < cnt; ++mi) {
-				if (pts[inds[mi]].x - pts[inds[si]].x >= EPSILON)
+				if (pts[inds[mi]].x - pts[inds[si]].x >= epsilon)
 					break;
 
 				if (used[mi])
 					continue;
-				if (std::fabs(pts[inds[si]].y - pts[inds[mi]].y) >= EPSILON)
+				if (std::fabs(pts[inds[si]].y - pts[inds[mi]].y) >= epsilon)
 					continue;
-				if (std::fabs(pts[inds[si]].z - pts[inds[mi]].z) >= EPSILON)
+				if (std::fabs(pts[inds[si]].z - pts[inds[mi]].z) >= epsilon)
 					continue;
 
 				if (!matched)
