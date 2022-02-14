@@ -677,7 +677,7 @@ bool NifFile::DeleteUnreferencedNodes(int* deletionCount) {
 		if (node == root)
 			continue;
 
-		int blockId = GetBlockID(node);
+		uint32_t blockId = GetBlockID(node);
 		if (blockId == NIF_NPOS)
 			continue;
 
@@ -708,7 +708,7 @@ NiNode* NifFile::AddNode(const std::string& nodeName, const MatTransform& xformT
 	newNode->name.get() = nodeName;
 	newNode->SetTransformToParent(xformToParent);
 
-	int newNodeId = hdr.AddBlock(std::move(newNode));
+	uint32_t newNodeId = hdr.AddBlock(std::move(newNode));
 	if (newNodeId != NIF_NPOS)
 		parent->childRefs.AddBlockRef(newNodeId);
 
