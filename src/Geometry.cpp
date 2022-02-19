@@ -1407,10 +1407,13 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	ReorderTriangles(triInds);
 	// Note that triPart's indexing no longer matches triangle indexing.
 	// triParts uses the old indexing.  triInds maps from new indexing to old.
+	// So triParts[triInds[i]] is now the partition number of triangle i.
 
 	// Find the index of the first triangle of each partition: partTriInds.
-	// The array index of partTriInds is the partition number; each array
-	// value will be the index in tris of the first triangle of that partition.
+	// If p is the partition number, then partTriInds[p] will be the index
+	// in tris of the first triangle of partition p.
+	// The number of triangles in partition p will be
+	// partTriInds[p + 1] - partTriInds[p].
 	std::vector<uint32_t> partTriInds(newPartID + 1);
 	int nextPartID = 0;
 	for (uint32_t i = 0; i < numTris; ++i)
