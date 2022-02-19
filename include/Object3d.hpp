@@ -267,6 +267,29 @@ struct Vector3 {
 		return Vector3(x / v, y / v, z / v);
 	}
 
+	Vector3& operator*=(size_t val) {
+		auto v = static_cast<float>(val);
+		x *= v;
+		y *= v;
+		z *= v;
+		return (*this);
+	}
+	constexpr Vector3 operator*(size_t val) const {
+		float v = static_cast<float>(val);
+		return Vector3(x * v, y * v, z * v);
+	}
+	Vector3& operator/=(size_t val) {
+		auto v = static_cast<float>(val);
+		x /= v;
+		y /= v;
+		z /= v;
+		return (*this);
+	}
+	constexpr Vector3 operator/(size_t val) const {
+		float v = static_cast<float>(val);
+		return Vector3(x / v, y / v, z / v);
+	}
+
 	constexpr Vector3 cross(const Vector3& other) const {
 		Vector3 tmp;
 		tmp.x = y * other.z - z * other.y;
