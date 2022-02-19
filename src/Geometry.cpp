@@ -1379,14 +1379,12 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 	int newPartID = 0;
 	std::vector<int> oldToNewPartIDs;
 	for (const NifSegmentInfo& seg : inf.segs) {
-		auto oldToNewSize = static_cast<int>(oldToNewPartIDs.size());
-		if (seg.partID >= oldToNewSize)
+		if (seg.partID >= static_cast<int>(oldToNewPartIDs.size()))
 			oldToNewPartIDs.resize(seg.partID + 1);
-
 		oldToNewPartIDs[seg.partID] = newPartID++;
+
 		for (const NifSubSegmentInfo& sub : seg.subs) {
-			oldToNewSize = static_cast<int>(oldToNewPartIDs.size());
-			if (sub.partID >= oldToNewSize)
+			if (sub.partID >= static_cast<int>(oldToNewPartIDs.size()))
 				oldToNewPartIDs.resize(sub.partID + 1);
 			oldToNewPartIDs[sub.partID] = newPartID++;
 		}
@@ -1394,10 +1392,10 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 
 	std::vector<int> triParts(numTris);
 	for (uint32_t i = 0; i < numTris; ++i)
-		if (triParts[i] >= 0)
+		if (inTriParts[i] >= 0)
 			triParts[i] = oldToNewPartIDs[inTriParts[i]];
 
-	// Sort triangles by partition ID
+	// Sort triangles (via index) by partition ID
 	std::vector<uint32_t> triInds(numTris);
 	for (uint32_t i = 0; i < numTris; ++i)
 		triInds[i] = i;
@@ -1408,43 +1406,21 @@ void BSSubIndexTriShape::SetSegmentation(const NifSegmentationInfo& inf, const s
 
 	ReorderTriangles(triInds);
 	// Note that triPart's indexing no longer matches triangle indexing.
+	// triParts uses the old indexing.  triInds maps from new indexing to old.
+	// So triParts[triInds[i]] is now the partition number of triangle i.
 
-	// Find first triangle of each partition
-	int j = 0;
-	std::vector<int> partTriInds(newPartID + 1);
-
-	for (int i = 0; i < static_cast<int>(triInds.size()); ++i)
-		while (triParts[triInds[i]] >= j)
-			partTriInds[j++] = i;
-
-	size_t lastFilledPart = 0;
-	for (size_t i = 0; i < partTriInds.size(); i++)
-		if (partTriInds[i] > 0)
-			lastFilledPart = i;
-
-	// Fill gaps for partitions that don't have any tris assigned
-	int maxInd = 0;
-	for (size_t i = 0; i < partTriInds.size(); i++) {
-		int& partTriInd = partTriInds[i];
-
-		if (lastFilledPart > 0 && i > lastFilledPart) {
-			partTriInd = static_cast<int>(triInds.size());
-		}
-		else {
-			if (partTriInd == 0) {
-				if (maxInd != 0) {
-					partTriInd = maxInd;
-				}
-			}
-			else {
-				if (partTriInd > maxInd) {
-					maxInd = partTriInd;
-				}
-			}
-		}
-	}
-
-	partTriInds.back() = static_cast<int>(triInds.size());
+	// Find the index of the first triangle of each partition: partTriInds.
+	// If p is the partition number, then partTriInds[p] will be the index
+	// in tris of the first triangle of partition p.
+	// The number of triangles in partition p will be
+	// partTriInds[p + 1] - partTriInds[p].
+	std::vector<uint32_t> partTriInds(newPartID + 1);
+	int nextPartID = 0;
+	for (uint32_t i = 0; i < numTris; ++i)
+		while (triParts[triInds[i]] >= nextPartID)
+			partTriInds[nextPartID++] = i;
+	while (nextPartID < static_cast<int>(partTriInds.size()))
+		partTriInds[nextPartID++] = numTris;
 
 	segmentation = BSSITSSegmentation();
 	uint32_t parentArrayIndex = 0;
