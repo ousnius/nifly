@@ -267,25 +267,25 @@ struct Vector3 {
 		return Vector3(x / v, y / v, z / v);
 	}
 
-	Vector3& operator*=(size_t val) {
+	Vector3& operator*=(uint64_t val) {
 		auto v = static_cast<float>(val);
 		x *= v;
 		y *= v;
 		z *= v;
 		return (*this);
 	}
-	constexpr Vector3 operator*(size_t val) const {
+	constexpr Vector3 operator*(uint64_t val) const {
 		float v = static_cast<float>(val);
 		return Vector3(x * v, y * v, z * v);
 	}
-	Vector3& operator/=(size_t val) {
+	Vector3& operator/=(uint64_t val) {
 		auto v = static_cast<float>(val);
 		x /= v;
 		y /= v;
 		z /= v;
 		return (*this);
 	}
-	constexpr Vector3 operator/(size_t val) const {
+	constexpr Vector3 operator/(uint64_t val) const {
 		float v = static_cast<float>(val);
 		return Vector3(x / v, y / v, z / v);
 	}
