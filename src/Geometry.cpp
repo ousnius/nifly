@@ -880,8 +880,7 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 
 	// Face normals
 	for (const Triangle& t : tris) {
-		Vector3 tn;
-		t.trinormal(verts, &tn);
+		Vector3 tn = t.trinormal(verts);
 		norms[t.p1] += tn;
 		norms[t.p2] += tn;
 		norms[t.p3] += tn;
