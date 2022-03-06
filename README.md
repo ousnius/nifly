@@ -12,6 +12,7 @@ Created with a clean-room design.
 - NIF blocks unknown to the library are kept untouched
 - Lots of other helper functions
 - Current file support:
+  - Oblivion (not tested a whole lot)
   - Fallout 3
   - Fallout: New Vegas
   - Fallout 4
