@@ -3268,8 +3268,7 @@ void NifFile::SetUvsForShape(NiShape* shape, const std::vector<Vector2>& uvs) {
 	}
 }
 
-void NifFile::SetColorsForShape(const std::string& shapeName, const std::vector<Color4>& colors) {
-	auto shape = FindBlockByName<NiShape>(shapeName);
+void NifFile::SetColorsForShape(NiShape* shape, const std::vector<Color4>& colors) {
 	if (!shape)
 		return;
 
@@ -3302,6 +3301,14 @@ void NifFile::SetColorsForShape(const std::string& shapeName, const std::vector<
 			}
 		}
 	}
+}
+
+void NifFile::SetColorsForShape(const std::string& shapeName, const std::vector<Color4>& colors) {
+	auto shape = FindBlockByName<NiShape>(shapeName);
+	if (!shape)
+		return;
+
+	SetColorsForShape(shape, colors);
 }
 
 void NifFile::SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& tangents) {

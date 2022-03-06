@@ -499,6 +499,8 @@ public:
 	// Sets vertex texture coordinates (UVs) of the shape. Size needs to match the current vertex count.
 	void SetUvsForShape(NiShape* shape, const std::vector<Vector2>& uvs);
 	// Sets vertex colors of the shape. Size needs to match the current vertex count.
+	void SetColorsForShape(NiShape* shape, const std::vector<Color4>& colors);
+	// Sets vertex colors of the shape. Size needs to match the current vertex count.
 	void SetColorsForShape(const std::string& shapeName, const std::vector<Color4>& colors);
 	// Sets vertex tangents of the shape. Size needs to match the current vertex count.
 	void SetTangentsForShape(NiShape* shape, const std::vector<Vector3>& tangents);
