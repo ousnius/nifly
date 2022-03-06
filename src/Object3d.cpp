@@ -1,5 +1,5 @@
 #include "Object3d.hpp"
-#include "Miniball.hpp"
+#include <Miniball.hpp>
 #include <cmath>
 
 namespace nifly {
