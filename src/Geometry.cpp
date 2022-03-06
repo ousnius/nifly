@@ -425,6 +425,7 @@ bool NiShape::ReorderTriangles(const std::vector<uint32_t>& triInds) {
 
 
 BSTriShape::BSTriShape() {
+	flags = 14;
 	vertexDesc.SetFlag(VF_VERTEX);
 	vertexDesc.SetFlag(VF_UV);
 	vertexDesc.SetFlag(VF_NORMAL);
@@ -1096,8 +1097,6 @@ void BSTriShape::Create(NiVersion& version,
 						const std::vector<Triangle>* tris,
 						const std::vector<Vector2>* uvs,
 						const std::vector<Vector3>* normals) {
-	flags = 14;
-
 	constexpr uint16_t maxVertIndex = std::numeric_limits<uint16_t>::max();
 	size_t vertCount = verts->size();
 	if (vertCount > static_cast<size_t>(maxVertIndex))
