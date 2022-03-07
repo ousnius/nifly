@@ -562,11 +562,20 @@ public:
 					   rows[2][0] * v.x + rows[2][1] * v.y + rows[2][2] * v.z);
 	}
 
-	[[deprecated("Should not have been an operator; replace with multiplying by Vector3(f,f,f)")]]
-	constexpr Vector3 operator*(const float f) const {
-		return Vector3(rows[0][0] * f + rows[0][1] * f + rows[0][2] * f,
-					   rows[1][0] * f + rows[1][1] * f + rows[1][2] * f,
-					   rows[2][0] * f + rows[2][1] * f + rows[2][2] * f);
+	constexpr Matrix3 operator*(float f) const {
+		return Matrix3(rows[0] * f, rows[1] * f, rows[2] * f);
+	}
+
+	Matrix3& operator*=(float f) {
+		return *this = *this * f;
+	}
+
+	constexpr Matrix3 operator/(float f) const {
+		return Matrix3(rows[0] / f, rows[1] / f, rows[2] / f);
+	}
+
+	Matrix3& operator/=(float f) {
+		return *this = *this / f;
 	}
 
 	constexpr Matrix3 Transpose() const {
