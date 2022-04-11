@@ -240,3 +240,14 @@ TEST_CASE("Load, optimize (SE to LE, dynamic) and save file", "[NifFile]") {
 
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
+
+TEST_CASE("Load and save file with non-zero index root node", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_RootNonZero";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}

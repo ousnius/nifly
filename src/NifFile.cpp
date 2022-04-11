@@ -648,10 +648,15 @@ void NifFile::PrettySortBlocks() {
 	for (size_t i = 0; i < sortState.newIndices.size(); i++)
 		sortState.newIndices[i] = static_cast<uint32_t>(i);
 
-	auto root = GetRootNode();
-	if (root) {
-		sortState.newIndex = GetBlockID(root);
-		SetSortIndices(sortState.newIndex, sortState);
+	if (sortState.newIndices.empty())
+		return;
+
+	for (auto& node : GetNodes()) {
+		auto parentNode = GetParentNode(node);
+		if (!parentNode) {
+			// No parent, node is at the root level
+			SetSortIndices(GetBlockID(node), sortState);
+		}
 	}
 
 	for (size_t i = 0; i < sortState.newIndices.size(); i++) {
