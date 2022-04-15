@@ -686,7 +686,6 @@ void NiHeader::Get(NiIStream& stream) {
 	}
 
 	valid = true;
-	stream.GetVersion() = version;
 }
 
 void NiHeader::Put(NiOStream& stream) {

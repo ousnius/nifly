@@ -160,17 +160,44 @@ public:
 
 enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
 
-class NiStreamBase {
-private:
+class NiHeaderBase {
+protected:
+	bool valid = false;
+	std::streampos blockSizePos;
+
 	NiVersion version;
+	NiEndian endian = ENDIAN_LITTLE;
 
 public:
-	explicit NiStreamBase() {}
-	explicit NiStreamBase(NiVersion v)
-		: version(std::move(v)) {}
+	virtual ~NiHeaderBase() {}
+
+	bool IsValid() const { return valid; }
 
 	NiVersion& GetVersion() { return version; }
 	const NiVersion& GetVersion() const { return version; }
+
+	void SetVersion(const NiVersion& ver) { version = ver; }
+
+	virtual uint32_t GetStringCount() const = 0;
+	virtual uint32_t FindStringId(const std::string& str) const = 0;
+	virtual uint32_t AddOrFindStringId(const std::string& str, const bool addEmpty = false) = 0;
+	virtual std::string GetStringById(const uint32_t id) const = 0;
+	virtual void SetStringById(const uint32_t id, const std::string& str) = 0;
+};
+
+class NiStreamBase {
+private:
+	NiHeaderBase* header = nullptr;
+
+public:
+	explicit NiStreamBase(NiHeaderBase* hdr)
+		: header(hdr) {}
+
+	NiVersion& GetVersion() { return header->GetVersion(); }
+	const NiVersion& GetVersion() const { return header->GetVersion(); }
+
+	NiHeaderBase& GetHeader() { return *header; }
+	const NiHeaderBase& GetHeader() const { return *header; }
 };
 
 class NiIStream : public NiStreamBase {
@@ -178,11 +205,8 @@ private:
 	std::istream* stream = nullptr;
 
 public:
-	NiIStream(std::istream* s)
-		: stream(s) {}
-
-	NiIStream(std::istream* s, NiVersion v)
-		: NiStreamBase(std::move(v))
+	NiIStream(std::istream* s, NiHeaderBase* hdr)
+		: NiStreamBase(hdr)
 		, stream(s) {}
 
 	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
@@ -202,8 +226,8 @@ private:
 	std::streamsize blockSize = 0;
 
 public:
-	NiOStream(std::ostream* s, NiVersion v)
-		: NiStreamBase(std::move(v))
+	NiOStream(std::ostream* s, NiHeaderBase* hdr)
+		: NiStreamBase(hdr)
 		, stream(s) {}
 
 	void write(const char* ptr, std::streamsize count) {
@@ -258,6 +282,20 @@ public:
 			return istream->GetVersion();
 		else
 			return ostream->GetVersion();
+	}
+
+	NiHeaderBase& GetHeader() {
+		if (mode == Mode::Reading)
+			return istream->GetHeader();
+		else
+			return ostream->GetHeader();
+	}
+
+	const NiHeaderBase& GetHeader() const {
+		if (mode == Mode::Reading)
+			return istream->GetHeader();
+		else
+			return ostream->GetHeader();
 	}
 
 	void Sync(char* ptr, std::streamsize count) {
@@ -880,7 +918,7 @@ private:
 	virtual NiObject* Clone_impl() const = 0;
 };
 
-class NiHeader : public NiCloneable<NiHeader, NiObject> {
+class NiHeader : public NiHeaderBase, public NiCloneable<NiHeader, NiObject> {
 	/*
 	Minimum supported
 	Version:			20.2.0.7
@@ -894,11 +932,6 @@ class NiHeader : public NiCloneable<NiHeader, NiObject> {
 	*/
 
 private:
-	bool valid = false;
-	std::streampos blockSizePos;
-
-	NiVersion version;
-	NiEndian endian = ENDIAN_LITTLE;
 	NiString creator;
 	uint32_t unkInt1 = 0;
 	NiString exportInfo1;
@@ -933,13 +966,6 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 
 	void Clear();
-
-	bool IsValid() const { return valid; }
-
-	NiVersion& GetVersion() { return version; }
-	const NiVersion& GetVersion() const { return version; }
-
-	void SetVersion(const NiVersion& ver) { version = ver; }
 
 	std::string GetCreatorInfo() const;
 	void SetCreatorInfo(const std::string& creatorInfo);
@@ -1077,19 +1103,19 @@ public:
 	std::streampos GetBlockSizeStreamPos() const;
 	void ResetBlockSizeStreamPos();
 
-	uint32_t GetStringCount() const;
-	uint32_t FindStringId(const std::string& str) const;
+	uint32_t GetStringCount() const override;
+	uint32_t FindStringId(const std::string& str) const override;
 
 	// Adds a new string to the header (or finds a matching one).
 	// "addEmpty" allows for adding an empty string, which is usually not required.
 	// Returns the string index that can then be assigned to a block's member.
-	uint32_t AddOrFindStringId(const std::string& str, const bool addEmpty = false);
+	uint32_t AddOrFindStringId(const std::string& str, const bool addEmpty = false) override;
 
 	// Returns string at the specified string index (or empty string)
-	std::string GetStringById(const uint32_t id) const;
+	std::string GetStringById(const uint32_t id) const override;
 
 	// Sets string at the specified string index (or does nothing)
-	void SetStringById(const uint32_t id, const std::string& str);
+	void SetStringById(const uint32_t id, const std::string& str) override;
 
 	void ClearStrings();
 	void UpdateMaxStringLength();

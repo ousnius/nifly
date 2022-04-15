@@ -197,7 +197,7 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 	isTerrain = options.isTerrain;
 
 	if (file) {
-		NiIStream stream(&file);
+		NiIStream stream(&file, &hdr);
 		hdr.Get(stream);
 
 		if (!hdr.IsValid()) {
@@ -205,8 +205,8 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 			return 1;
 		}
 
-		NiVersion& version = stream.GetVersion();
 		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4() || version.IsSpecial())) {
+		NiVersion& version = hdr.GetVersion();
 			// Unsupported file version
 			Clear();
 			return 2;
@@ -1349,7 +1349,7 @@ int NifFile::Save(std::ostream& file, const NifSaveOptions& options) {
 		if (hdr.GetVersion().IsFO76())
 			return 76;
 
-		NiOStream stream(&file, hdr.GetVersion());
+		NiOStream stream(&file, &hdr);
 		FinalizeData();
 
 		if (options.optimize)
