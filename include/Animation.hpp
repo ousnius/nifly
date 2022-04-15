@@ -1073,9 +1073,14 @@ public:
 	NiStringRef interpID;
 
 	void Sync(NiStreamReversible& stream) {
-		interpolatorRef.Sync(stream);
-		controllerRef.Sync(stream);
-		stream.Sync(priority);
+		if (stream.GetVersion().File() >= V10_1_0_106)
+			interpolatorRef.Sync(stream);
+
+		if (stream.GetVersion().File() <= V20_5_0_0)
+			controllerRef.Sync(stream);
+
+		if (stream.GetVersion().File() >= V10_1_0_106 && stream.GetVersion().Stream() > 0)
+			stream.Sync(priority);
 
 		nodeName.Sync(stream);
 		propType.Sync(stream);
