@@ -251,3 +251,14 @@ TEST_CASE("Load and save file with non-zero index root node", "[NifFile]") {
 
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
+
+TEST_CASE("Load and save file (FO76)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_FO76";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}

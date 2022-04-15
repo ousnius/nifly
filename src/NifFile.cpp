@@ -205,8 +205,8 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 			return 1;
 		}
 
-		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4() || version.IsSpecial())) {
 		NiVersion& version = hdr.GetVersion();
+		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4() || version.IsFO76() || version.IsSpecial())) {
 			// Unsupported file version
 			Clear();
 			return 2;
@@ -1346,9 +1346,6 @@ int NifFile::Save(const std::filesystem::path& fileName, const NifSaveOptions& o
 
 int NifFile::Save(std::ostream& file, const NifSaveOptions& options) {
 	if (file) {
-		if (hdr.GetVersion().IsFO76())
-			return 76;
-
 		NiOStream stream(&file, &hdr);
 		FinalizeData();
 
