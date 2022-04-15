@@ -300,16 +300,16 @@ void NifFile::SetSortIndices(uint32_t refIndex, SortState& sortState) {
 	if (!obj)
 		return;
 
-	bool fullySorted = false;
+	bool fullySorted = sortState.visitedIndices.count(refIndex) > 0;
 
-	auto collision = dynamic_cast<NiCollisionObject*>(obj);
-	if (collision) {
-		SortCollision(collision, refIndex, sortState);
-		fullySorted = true;
-	}
-	else {
-		// Assign new sort index
-		if (sortState.visitedIndices.count(refIndex) == 0) {
+	if (!fullySorted) {
+		auto collision = dynamic_cast<NiCollisionObject*>(obj);
+		if (collision) {
+			SortCollision(collision, refIndex, sortState);
+			fullySorted = true;
+		}
+		else {
+			// Assign new sort index
 			sortState.newIndices[refIndex] = sortState.newIndex++;
 			sortState.visitedIndices.insert(refIndex);
 		}
