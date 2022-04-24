@@ -1067,7 +1067,7 @@ void NifFile::TrimTexturePaths() {
 			tex = std::regex_replace(tex, std::regex("^\\\\+"), "");
 
 			if (!hdr.GetVersion().IsOB() && !hdr.GetVersion().IsSpecial()) {
-				std::filesystem::path texPath(tex);
+				auto texPath = std::filesystem::u8path(tex);
 				if (texPath.is_relative()) {
 					// If the path doesn't start with "textures\", add it to the front
 					tex = std::regex_replace(tex,
