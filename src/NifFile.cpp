@@ -1054,37 +1054,28 @@ void NifFile::SetTextureSlot(NiShape* shape, std::string& inTexFile, uint32_t te
 
 void NifFile::TrimTexturePaths() {
 	auto fTrimPath = [&hdr = hdr, &isTerrain = isTerrain](std::string& tex) -> std::string& {
-		if (!tex.empty()) {
-			// Replace multiple slashes or forward slashes with one backslash
-			tex = std::regex_replace(tex, std::regex("/+|\\\\+"), "\\");
+		if (tex.empty())
+			return tex;
 
-			// Remove everything before the first occurence of "\textures\"
+		// Replace multiple slashes or forward slashes with one backslash
+		tex = std::regex_replace(tex, std::regex("/+|\\\\+"), "\\");
+
+		// Remove everything before the first occurence of "\textures\"
+		tex = std::regex_replace(tex, std::regex(R"(^(.*?)\\textures\\)", std::regex_constants::icase), "");
+
+		// Remove all backslashes from the front
+		tex = std::regex_replace(tex, std::regex("^\\\\+"), "");
+
+		if (!hdr.GetVersion().IsOB() && !hdr.GetVersion().IsSpecial() && is_relative_path(tex)) {
+			// If the path doesn't start with "textures\", add it to the front
 			tex = std::regex_replace(tex,
-									 std::regex(R"(^(.*?)\\textures\\)", std::regex_constants::icase),
-									 "");
+									 std::regex("^(?!^textures\\\\)", std::regex_constants::icase),
+									 "textures\\");
+		}
 
-			// Remove all backslashes from the front
-			tex = std::regex_replace(tex, std::regex("^\\\\+"), "");
-
-			if (!hdr.GetVersion().IsOB() && !hdr.GetVersion().IsSpecial()) {
-				auto texPath = std::filesystem::u8path(tex);
-				if (texPath.is_relative()) {
-					// If the path doesn't start with "textures\", add it to the front
-					tex = std::regex_replace(tex,
-											 std::regex("^(?!^textures\\\\)", std::regex_constants::icase),
-											 "textures\\");
-				}
-			}
-
-			// If the path doesn't start with "Data\", add it to the front
-			if (isTerrain) {
-				std::filesystem::path texPath(tex);
-				if (texPath.is_relative()) {
-					tex = std::regex_replace(tex,
-											 std::regex("^(?!^Data\\\\)", std::regex_constants::icase),
-											 "Data\\");
-				}
-			}
+		// If the path doesn't start with "Data\", add it to the front
+		if (isTerrain && is_relative_path(tex)) {
+			tex = std::regex_replace(tex, std::regex("^(?!^Data\\\\)", std::regex_constants::icase), "Data\\");
 		}
 		return tex;
 	};
