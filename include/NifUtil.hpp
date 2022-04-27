@@ -8,7 +8,9 @@ See the included GPLv3 LICENSE file
 
 #include "Object3d.hpp"
 
+#include <filesystem>
 #include <memory>
+#include <string_view>
 
 namespace nifly {
 // Applies a vertex index renumbering map to p1, p2, and p3 of a vector of triangles.
@@ -176,6 +178,18 @@ std::vector<Triangle> GenerateTrianglesFromStrips(const std::vector<std::vector<
 	}
 
 	return tris;
+}
+
+// Helper to check if a potentially non valid UTF8 path is relative
+inline bool is_relative_path(std::string_view path) noexcept {
+	try {
+		return std::filesystem::u8path(path).is_relative();
+	}
+	catch (const std::exception&) {
+		// ignore the exception
+		// the path is invalid, but might be readable by the game
+		return false;
+	}
 }
 
 // Convenience wrapper for std::find
