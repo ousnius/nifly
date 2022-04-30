@@ -140,7 +140,7 @@ public:
 	// Check if file has a Skyrim (SE) version range
 	bool IsSSE() const { return file == V20_2_0_7 && stream == 100; }
 	// Check if file has a Fallout 4 version range
-	bool IsFO4() const { return file == V20_2_0_7 && stream == 130; }
+	bool IsFO4() const { return file == V20_2_0_7 && stream >= 130 && stream <= 139; }
 	// Check if file has a Fallout 76 version range
 	bool IsFO76() const { return file == V20_2_0_7 && stream == 155; }
 

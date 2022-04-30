@@ -66,6 +66,28 @@ TEST_CASE("Load and save static file (FO4)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Load and save static file (FO4, Version 132)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Static_FO4_132";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
+TEST_CASE("Load and save static file (FO4, Version 139)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Static_FO4_139";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
 TEST_CASE("Load and save skinned file (OB)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_Skinned_OB";
 	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);

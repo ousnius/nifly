@@ -10,7 +10,7 @@ See the included GPLv3 LICENSE file
 using namespace nifly;
 
 void NiObjectNET::Sync(NiStreamReversible& stream) {
-	if (bBSLightingShaderProperty && stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() <= 130)
+	if (bBSLightingShaderProperty && stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() <= 139)
 		stream.Sync(bslspShaderType);
 
 	name.Sync(stream);
