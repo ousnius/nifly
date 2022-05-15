@@ -16,17 +16,6 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-template<class T>
-T* NifFile::FindBlockByName(const std::string& name) const {
-	for (auto& block : blocks) {
-		auto namedBlock = dynamic_cast<T*>(block.get());
-		if (namedBlock && namedBlock->name == name)
-			return namedBlock;
-	}
-
-	return nullptr;
-}
-
 uint32_t NifFile::GetBlockID(NiObject* block) const {
 	auto it = find_if(blocks, [&block](const auto& ptr) { return ptr.get() == block; });
 
