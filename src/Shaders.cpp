@@ -473,11 +473,15 @@ void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 		stream.Sync(finalExposureMin);
 		stream.Sync(finalExposureMax);
 		stream.Sync(doTranslucency);
-		stream.Sync(subsurfaceColor);
-		stream.Sync(transmissiveScale);
-		stream.Sync(turbulence);
-		stream.Sync(thickObject);
-		stream.Sync(mixAlbedo);
+
+		if (doTranslucency) {
+			stream.Sync(subsurfaceColor);
+			stream.Sync(transmissiveScale);
+			stream.Sync(turbulence);
+			stream.Sync(thickObject);
+			stream.Sync(mixAlbedo);
+		}
+
 		stream.Sync(hasTextureArrays);
 
 		if (hasTextureArrays) {
