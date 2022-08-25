@@ -31,7 +31,7 @@ NiNode* NifFile::GetParentNode(NiObject* childBlock) const {
 		for (auto& block : blocks) {
 			auto node = dynamic_cast<NiNode*>(block.get());
 			if (node) {
-				auto children = node->childRefs;
+				auto& children = node->childRefs;
 				for (auto& c : children) {
 					if (c == childId)
 						return node;
@@ -1925,17 +1925,17 @@ void NifFile::FinalizeData() {
 					}
 				}
 			}
-		}
 
-		if (hdr.GetVersion().IsOB()) {
-			// Move tangents and bitangents from shape back to binary extra data
-			if (shape->HasTangents()) {
-				auto tangents = GetTangentsForShape(shape);
-				auto bitangents = GetBitangentsForShape(shape);
-				SetBinaryTangentData(shape, tangents, bitangents);
+			if (hdr.GetVersion().IsOB()) {
+				// Move tangents and bitangents from shape back to binary extra data
+				if (shape->HasTangents()) {
+					auto tangents = GetTangentsForShape(shape);
+					auto bitangents = GetBitangentsForShape(shape);
+					SetBinaryTangentData(shape, tangents, bitangents);
+				}
+				else
+					DeleteBinaryTangentData(shape);
 			}
-			else
-				DeleteBinaryTangentData(shape);
 		}
 	}
 
@@ -3647,7 +3647,7 @@ int NifFile::ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName)
 	if (norms->size() != srcNorms->size())
 		return -6;
 
-	auto workNorms = (*norms);
+	auto workNorms(*norms);
 
 	// Copy locked normals of the source into the target
 	for (auto& i : lockedNormalIndices) {
@@ -3663,7 +3663,9 @@ int NifFile::ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName)
 			hdr.DeleteBlock(extraDataRef);
 	}
 
-	AssignExtraData(shape, integersExtraData->Clone());
+	if (integersExtraData)
+		AssignExtraData(shape, integersExtraData->Clone());
+
 	return 0;
 }
 
@@ -4053,7 +4055,7 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 	for (auto& extraDataRef : shape->extraDataRefs) {
 		auto integersExtraData = hdr.GetBlock<NiIntegersExtraData>(extraDataRef);
 		if (integersExtraData && integersExtraData->name == "LOCKEDNORM") {
-			auto integersData = integersExtraData->integersData;
+			auto integersData(integersExtraData->integersData);
 			std::sort(integersData.begin(), integersData.end());
 
 			uint16_t highestRemoved = indices.back();
