@@ -12,11 +12,11 @@ using namespace nifly;
 
 void BgmFile::CopyFrom(const BgmFile& other) {
 	Clear();
-
-	if (auto m = GetShaderMaterial())
-		material = std::make_unique<BgShaderMaterial>(*m);
-	else if (auto m = GetEffectMaterial())
-		material = std::make_unique<BgEffectMaterial>(*m);
+	hdr.Clear();
+	if (other.material)
+		material = other.material->Clone();
+	else
+		material.reset();
 }
 
 int BgmFile::Load(const std::filesystem::path& fileName, const BgmLoadOptions& options) {
@@ -28,7 +28,13 @@ int BgmFile::Load(std::istream& file, const BgmLoadOptions& options) {
 	Clear();
 
 	if (file) {
-		IStream stream(&file);
+		BgmIStream stream(&file, &hdr);
+		hdr.Get(stream);
+
+		if (!hdr.IsValid()) {
+			Clear();
+			return 1;
+		}
 
 		isEffect = options.isEffect;
 		if (isEffect)
@@ -36,7 +42,7 @@ int BgmFile::Load(std::istream& file, const BgmLoadOptions& options) {
 		else
 			material = std::make_unique<BgShaderMaterial>();
 
-		material->Sync(StreamReversible(&stream, nullptr, StreamReversible::Mode::Reading));
+		material->Get(stream);
 	}
 	else {
 		return 1;
@@ -55,8 +61,9 @@ int BgmFile::Save(std::ostream& file, const BgmSaveOptions& options) {
 	Clear();
 
 	if (file && material) {
-		OStream stream(&file);
-		material->Sync(StreamReversible(nullptr, &stream, StreamReversible::Mode::Writing));
+		BgmOStream stream(&file, &hdr);
+		hdr.Put(stream);
+		material->Put(stream);
 	}
 	else
 		return 1;
@@ -64,18 +71,16 @@ int BgmFile::Save(std::ostream& file, const BgmSaveOptions& options) {
 	return 0;
 }
 
-void BgmFile::Create(BgMaterialVersion version, BgMaterialType type) {
+void BgmFile::Create(BgmVersion version, BgmType type) {
 	Clear();
 
 	switch (type) {
-		case BgMaterialType::BGSM:
+		case BgmType::BGSM:
 			material = std::make_unique<BgShaderMaterial>();
-			material->version = version;
 			isValid = true;
 			break;
-		case BgMaterialType::BGEM:
+		case BgmType::BGEM:
 			material = std::make_unique<BgEffectMaterial>();
-			material->version = version;
 			isValid = true;
 			isEffect = true;
 			break;

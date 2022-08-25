@@ -127,10 +127,8 @@ public:
 
 	// Check if file has an Oblivion version range
 	bool IsOB() const {
-		return
-			((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11) ||
-			(file == V20_0_0_4 && (user == 10 || user == 11)) ||
-			(file == V20_0_0_5 && user == 11);
+		return ((file == V10_1_0_106 || file == V10_2_0_0) && user >= 3 && user < 11)
+			   || (file == V20_0_0_4 && (user == 10 || user == 11)) || (file == V20_0_0_5 && user == 11);
 	}
 
 	// Check if file has a Fallout 3 version range
@@ -160,12 +158,52 @@ public:
 
 enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
 
-class IStream {
-public:
-	IStream(std::istream* s)
-		: stream(s) {}
+template<typename Version>
+class HeaderBase {
+protected:
+	Version version = Version();
+	bool valid = false;
 
-	virtual ~IStream() = default;
+public:
+	virtual ~HeaderBase() = default;
+
+	Version& GetVersion() { return version; }
+	const Version& GetVersion() const { return version; }
+
+	void SetVersion(const Version& ver) { version = ver; }
+
+	bool IsValid() const { return valid; }
+};
+
+template<typename Header, typename Version>
+class StreamBase {
+protected:
+	Header* header = nullptr;
+
+public:
+	explicit StreamBase(Header* hdr)
+		: header(hdr) {}
+
+	virtual ~StreamBase() = default;
+
+	Header& GetHeader() { return *header; }
+	const Header& GetHeader() const { return *header; }
+
+	Version& GetVersion() { return header->GetVersion(); }
+	const Version& GetVersion() const { return header->GetVersion(); }
+};
+
+template<typename Header, typename Version>
+class IStream : public StreamBase<Header, Version> {
+protected:
+	std::istream* stream = nullptr;
+
+public:
+	IStream(std::istream* s, Header* hdr)
+		: StreamBase<Header, Version>(hdr)
+		, stream(s) {}
+
+	~IStream() override = default;
 
 	virtual void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
 	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
@@ -176,17 +214,19 @@ public:
 		read((char*) &t, sizeof(T));
 		return *this;
 	}
-
-protected:
-	std::istream* stream = nullptr;
 };
 
-class OStream {
-public:
-	OStream(std::ostream* s)
-		: stream(s) {}
+template<typename Header, typename Version>
+class OStream : public StreamBase<Header, Version> {
+protected:
+	std::ostream* stream = nullptr;
 
-	virtual ~OStream() = default;
+public:
+	OStream(std::ostream* s, Header* hdr)
+		: StreamBase<Header, Version>(hdr)
+		, stream(s) {}
+
+	~OStream() override = default;
 
 	virtual void write(const char* ptr, std::streamsize count) { stream->write(ptr, count); }
 
@@ -203,16 +243,14 @@ public:
 		write((const char*) &t, sizeof(T));
 		return *this;
 	}
-
-protected:
-	std::ostream* stream = nullptr;
 };
 
+template<typename Header, typename Version>
 class StreamReversible {
 public:
 	enum class Mode { Reading, Writing };
 
-	explicit StreamReversible(IStream* is, OStream* os, Mode mode_)
+	explicit StreamReversible(IStream<Header, Version>* is, OStream<Header, Version>* os, Mode mode_)
 		: istream(is)
 		, ostream(os)
 		, mode(mode_) {}
@@ -253,35 +291,202 @@ public:
 			fl = halfData;
 	}
 
-	OStream* asWrite() { return ostream; }
-	const OStream* asWrite() const { return ostream; }
+	Version& GetVersion() {
+		if (mode == Mode::Reading)
+			return asRead()->GetVersion();
+		else
+			return asWrite()->GetVersion();
+	}
 
-	IStream* asRead() { return istream; }
-	const IStream* asRead() const { return istream; }
+	const Version& GetVersion() const {
+		if (mode == Mode::Reading)
+			return asRead()->GetVersion();
+		else
+			return asWrite()->GetVersion();
+	}
+
+	Header& GetHeader() {
+		if (mode == Mode::Reading)
+			return asRead()->GetHeader();
+		else
+			return asWrite()->GetHeader();
+	}
+
+	const Header& GetHeader() const {
+		if (mode == Mode::Reading)
+			return asRead()->GetHeader();
+		else
+			return asWrite()->GetHeader();
+	}
+
+	OStream<Header, Version>* asWrite() { return ostream; }
+	const OStream<Header, Version>* asWrite() const { return ostream; }
+
+	IStream<Header, Version>* asRead() { return istream; }
+	const IStream<Header, Version>* asRead() const { return istream; }
 
 protected:
-	IStream* istream;
-	OStream* ostream;
+	IStream<Header, Version>* istream;
+	OStream<Header, Version>* ostream;
 	Mode mode;
 };
 
-class NiHeaderBase {
-protected:
-	bool valid = false;
-	std::streampos blockSizePos;
+template<typename Derived, typename Base>
+class Cloneable : public Base {
+public:
+	~Cloneable() override = default;
 
-	NiVersion version;
+	std::unique_ptr<Derived> Clone() const {
+		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
+	}
+
+private:
+	virtual Cloneable* Clone_impl() const override { return new Derived(asDer()); }
+
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
+};
+
+template<typename IStream, typename OStream, typename StreamReversible, typename Derived, typename Base>
+class Streamable : public Base {
+public:
+	void Get(IStream& stream) override {
+		Base::Get(stream);
+		StreamReversible s(&stream, nullptr, StreamReversible::Mode::Reading);
+		asDer().Sync(s);
+	}
+
+	void Put(OStream& stream) override {
+		Base::Put(stream);
+		StreamReversible s(nullptr, &stream, StreamReversible::Mode::Writing);
+		asDer().Sync(s);
+	}
+
+private:
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
+};
+
+template<typename IStream, typename OStream, typename StreamReversible, typename Derived, typename Base>
+class CloneableStreamable : public Base {
+public:
+	~CloneableStreamable() override = default;
+
+	std::unique_ptr<Derived> Clone() const {
+		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
+	}
+
+	void Get(IStream& stream) override {
+		Base::Get(stream);
+		StreamReversible s(&stream, nullptr, StreamReversible::Mode::Reading);
+		asDer().Sync(s);
+	}
+
+	void Put(OStream& stream) override {
+		Base::Put(stream);
+		StreamReversible s(nullptr, &stream, StreamReversible::Mode::Writing);
+		asDer().Sync(s);
+	}
+
+private:
+	CloneableStreamable* Clone_impl() const override { return new Derived(asDer()); }
+
+	Derived& asDer() { return static_cast<Derived&>(*this); }
+	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
+};
+
+enum BgmType : uint32_t {
+	BGSM = 0x4D454742,
+	BGEM = 0x4D534742,
+};
+
+enum BgmVersion : uint32_t {
+	V1 = 0x01,
+	V2 = 0x02,
+	V3 = 0x03,
+	V6 = 0x06,
+	V7 = 0x08,
+	V8 = 0x08,
+	V9 = 0x09,
+	V10 = 0x0A,
+	V12 = 0x0C,
+	V13 = 0x0D,
+	V15 = 0x0F,
+	V16 = 0x10,
+	V17 = 0x11,
+	V20 = 0x14,
+};
+
+class BgmHeaderBase : public HeaderBase<BgmVersion> {
+protected:
+	BgmType type = {};
+
+public:
+	using Version = BgmVersion;
+
+	~BgmHeaderBase() override = default;
+
+	BgmType GetType() { return type; }
+	BgmType GetType() const { return type; }
+
+	void SetType(BgmType typ) { type = typ; }
+};
+
+using BgmIStream = IStream<BgmHeaderBase, BgmHeaderBase::Version>;
+using BgmOStream = OStream<BgmHeaderBase, BgmHeaderBase::Version>;
+using BgmStreamReversible = StreamReversible<BgmHeaderBase, BgmHeaderBase::Version>;
+
+template<typename Derived, typename Base>
+class BgmCloneable : public Cloneable<Derived, Base> {};
+
+template<typename Derived, typename Base>
+class BgmStreamable : public Streamable<BgmIStream, BgmOStream, BgmStreamReversible, Derived, Base> {};
+
+template<typename Derived, typename Base>
+class BgmCloneableStreamable
+	: public CloneableStreamable<BgmIStream, BgmOStream, BgmStreamReversible, Derived, Base> {};
+
+
+class BgmObject {
+public:
+	virtual ~BgmObject() = default;
+
+	virtual void Get(BgmIStream& stream) = 0;
+
+	virtual void Put(BgmOStream& stream) = 0;
+
+	std::unique_ptr<BgmObject> Clone() const {
+		return std::unique_ptr<BgmObject>(static_cast<BgmObject*>(this->Clone_impl()));
+	}
+
+	template<typename T>
+	bool HasType() const {
+		return dynamic_cast<const T*>(this) != nullptr;
+	}
+
+private:
+	virtual BgmObject* Clone_impl() const = 0;
+};
+
+class BgmHeader : public BgmHeaderBase, public BgmCloneable<BgmHeader, BgmObject> {
+public:
+	~BgmHeader() override = default;
+
+	void Clear();
+
+	void Get(BgmIStream& stream) override;
+	void Put(BgmOStream& stream) override;
+};
+
+class NiHeaderBase : public HeaderBase<NiVersion> {
+protected:
+	std::streampos blockSizePos;
 	NiEndian endian = ENDIAN_LITTLE;
 
 public:
-	virtual ~NiHeaderBase() {}
+	using Version = NiVersion;
 
-	bool IsValid() const { return valid; }
-
-	NiVersion& GetVersion() { return version; }
-	const NiVersion& GetVersion() const { return version; }
-
-	void SetVersion(const NiVersion& ver) { version = ver; }
+	~NiHeaderBase() override = default;
 
 	virtual uint32_t GetStringCount() const = 0;
 	virtual uint32_t FindStringId(const std::string& str) const = 0;
@@ -290,41 +495,14 @@ public:
 	virtual void SetStringById(const uint32_t id, const std::string& str) = 0;
 };
 
-class NiStreamBase {
-private:
-	NiHeaderBase* header = nullptr;
+using NiIStream = IStream<NiHeaderBase, NiHeaderBase::Version>;
 
-public:
-	explicit NiStreamBase(NiHeaderBase* hdr)
-		: header(hdr) {}
-
-	virtual ~NiStreamBase() = default;
-
-	NiVersion& GetVersion() { return header->GetVersion(); }
-	const NiVersion& GetVersion() const { return header->GetVersion(); }
-
-	NiHeaderBase& GetHeader() { return *header; }
-	const NiHeaderBase& GetHeader() const { return *header; }
-};
-
-class NiIStream : public IStream, public NiStreamBase {
-public:
-	using IStream::operator>>;
-
-	NiIStream(std::istream* s, NiHeaderBase* hdr)
-		: IStream(s)
-		, NiStreamBase(hdr) {}
-
-	~NiIStream() override = default;
-};
-
-class NiOStream : public OStream, public NiStreamBase {
+class NiOStream : public OStream<NiHeaderBase, NiHeaderBase::Version> {
 public:
 	using OStream::operator<<;
 
 	NiOStream(std::ostream* s, NiHeaderBase* hdr)
-		: OStream(s)
-		, NiStreamBase(hdr) {}
+		: OStream<NiHeaderBase, NiHeaderBase::Version>(s, hdr) {}
 
 	~NiOStream() override = default;
 
@@ -340,111 +518,26 @@ private:
 	std::streamsize blockSize = 0;
 };
 
-class NiStreamReversible : public StreamReversible {
+class NiStreamReversible : public StreamReversible<NiHeaderBase, NiHeaderBase::Version> {
 public:
 	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode_)
 		: StreamReversible(is, os, mode_) {}
 
 	~NiStreamReversible() override = default;
 
-	NiVersion& GetVersion() {
-		if (mode == Mode::Reading)
-			return asRead()->GetVersion();
-		else
-			return asWrite()->GetVersion();
-	}
-
-	const NiVersion& GetVersion() const {
-		if (mode == Mode::Reading)
-			return asRead()->GetVersion();
-		else
-			return asWrite()->GetVersion();
-	}
-
-	NiHeaderBase& GetHeader() {
-		if (mode == Mode::Reading)
-			return asRead()->GetHeader();
-		else
-			return asWrite()->GetHeader();
-	}
-
-	const NiHeaderBase& GetHeader() const {
-		if (mode == Mode::Reading)
-			return asRead()->GetHeader();
-		else
-			return asWrite()->GetHeader();
-	}
-
 	NiOStream* asWrite() { return static_cast<NiOStream*>(ostream); }
 	const NiOStream* asWrite() const { return static_cast<NiOStream*>(ostream); }
-
-	NiIStream* asRead() { return static_cast<NiIStream*>(istream); }
-	const NiIStream* asRead() const { return static_cast<NiIStream*>(istream); }
 };
 
 template<typename Derived, typename Base>
-class NiCloneable : public Base {
-public:
-	virtual ~NiCloneable() override = default;
-
-	std::unique_ptr<Derived> Clone() const {
-		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
-	}
-
-private:
-	virtual NiCloneable* Clone_impl() const override { return new Derived(asDer()); }
-
-	Derived& asDer() { return static_cast<Derived&>(*this); }
-	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
-};
+class NiCloneable : public Cloneable<Derived, Base> {};
 
 template<typename Derived, typename Base>
-class NiStreamable : public Base {
-public:
-	void Get(NiIStream& stream) override {
-		Base::Get(stream);
-		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
-		asDer().Sync(s);
-	}
-
-	void Put(NiOStream& stream) override {
-		Base::Put(stream);
-		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
-		asDer().Sync(s);
-	}
-
-private:
-	Derived& asDer() { return static_cast<Derived&>(*this); }
-	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
-};
+class NiStreamable : public Streamable<NiIStream, NiOStream, NiStreamReversible, Derived, Base> {};
 
 template<typename Derived, typename Base>
-class NiCloneableStreamable : public Base {
-public:
-	virtual ~NiCloneableStreamable() override = default;
-
-	std::unique_ptr<Derived> Clone() const {
-		return std::unique_ptr<Derived>(static_cast<Derived*>(this->Clone_impl()));
-	}
-
-	void Get(NiIStream& stream) override {
-		Base::Get(stream);
-		NiStreamReversible s(&stream, nullptr, NiStreamReversible::Mode::Reading);
-		asDer().Sync(s);
-	}
-
-	void Put(NiOStream& stream) override {
-		Base::Put(stream);
-		NiStreamReversible s(nullptr, &stream, NiStreamReversible::Mode::Writing);
-		asDer().Sync(s);
-	}
-
-private:
-	virtual NiCloneableStreamable* Clone_impl() const override { return new Derived(asDer()); }
-
-	Derived& asDer() { return static_cast<Derived&>(*this); }
-	const Derived& asDer() const { return static_cast<const Derived&>(*this); }
-};
+class NiCloneableStreamable
+	: public CloneableStreamable<NiIStream, NiOStream, NiStreamReversible, Derived, Base> {};
 
 class NiString {
 private:

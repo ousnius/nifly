@@ -32,6 +32,7 @@ struct BgmSaveOptions {};
 namespace nifly {
 class BgmFile {
 private:
+	BgmHeader hdr;
 	std::unique_ptr<BgMaterial> material;
 	bool isValid = false;
 	bool isEffect = false;
@@ -52,6 +53,8 @@ public:
 		return *this;
 	}
 
+	BgmHeader& GetHeader() { return hdr; }
+	const BgmHeader& GetHeader() const { return hdr; }
 	void CopyFrom(const BgmFile& other);
 
 	int Load(const std::filesystem::path& fileName, const BgmLoadOptions& options = BgmLoadOptions());
@@ -66,7 +69,7 @@ public:
 	bool IsEffect() const { return isEffect; }
 
 	// Creates a new file with with the specified version, and material type.
-	void Create(BgMaterialVersion version, BgMaterialType type);
+	void Create(BgmVersion version, BgmType type);
 
 	// Deletes all underlying data, and resets the valid status.
 	void Clear();

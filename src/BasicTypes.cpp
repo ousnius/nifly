@@ -155,6 +155,22 @@ void NiStringRef::Write(NiOStream& stream) {
 }
 
 
+void BgmHeader::Clear() {
+	type = BgmType::BGSM;
+	version = BgmVersion::V1;
+	valid = false;
+}
+
+void BgmHeader::Get(BgmIStream& stream) {
+	stream >> type >> version;
+	valid = type == BgmType::BGSM || type == BgmType::BGEM;
+}
+
+void BgmHeader::Put(BgmOStream& stream) {
+	stream << type << version;
+}
+
+
 void NiHeader::Clear() {
 	numBlockTypes = 0;
 	numStrings = 0;

@@ -8,10 +8,7 @@ See the included GPLv3 LICENSE file
 
 using namespace nifly;
 
-void BgMaterial::Sync(StreamReversible& stream) {
-	stream.Sync(type);
-	stream.Sync(version);
-
+void BgMaterial::Sync(BgmStreamReversible& stream) {
 	int32_t tileFlags = (tileU << 1) | (tileV << 0);
 	stream.Sync(tileFlags);
 	tileU = tileFlags & 0x2;
@@ -43,23 +40,23 @@ void BgMaterial::Sync(StreamReversible& stream) {
 	stream.Sync(refractionPower);
 
 	stream.Sync(environmentMapping);
-	if (version < 10)
+	if (stream.GetVersion() < 10)
 		stream.Sync(environmentMappingMaskScale);
 
-	if (version >= 6)
+	if (stream.GetVersion() >= 6)
 		stream.Sync(grayscaleToPaletteColor);
 
 	stream.Sync(maskWrites);
 
-	switch (type) {
-		case BgMaterialType::BGSM:
-			if (version >= 17)
+	switch (stream.GetHeader().GetType()) {
+		case BgmType::BGSM:
+			if (stream.GetVersion() >= 17)
 				SyncTextures(stream, 10);
 			else
 				SyncTextures(stream, 9);
 			break;
-		case BgMaterialType::BGEM:
-			if (version >= 10)
+		case BgmType::BGEM:
+			if (stream.GetVersion() >= 10)
 				SyncTextures(stream, 8);
 			else
 				SyncTextures(stream, 5);
@@ -67,20 +64,21 @@ void BgMaterial::Sync(StreamReversible& stream) {
 	}
 }
 
-void BgMaterial::SyncTextures(StreamReversible& stream, size_t count) {
+void BgMaterial::SyncTextures(BgmStreamReversible& stream, size_t count) {
 	textures.resize(count);
 
-	for (BgString& str : textures) {
+	for (BgmString& str : textures) {
 		str.Sync(stream);
 	}
 }
 
-void BgShaderMaterial::Sync(StreamReversible& stream) {
+
+void BgShaderMaterial::Sync(BgmStreamReversible& stream) {
 	BgMaterial::Sync(stream);
 
 	stream.Sync(enableEditorAlphaRef);
 
-	if (version >= 8) {
+	if (stream.GetVersion() >= 8) {
 		stream.Sync(translucency);
 		stream.Sync(translucencyThickObject);
 		stream.Sync(translucencyMixAlbedoWithSubsurfaceCol);
@@ -105,15 +103,15 @@ void BgShaderMaterial::Sync(StreamReversible& stream) {
 	stream.Sync(wetnessControlSpecScale);
 	stream.Sync(wetnessControlSpecPowerScale);
 	stream.Sync(wetnessControlSpecMinvar);
-	if (version < 10)
+	if (stream.GetVersion() < 10)
 		stream.Sync(wetnessControlEnvMapScale);
 	stream.Sync(wetnessControlFresnelPower);
 	stream.Sync(wetnessControlMetalness);
 
-	if (version > 2)
+	if (stream.GetVersion() > 2)
 		stream.Sync(pbr);
 
-	if (version >= 9)
+	if (stream.GetVersion() >= 9)
 		stream.Sync(customPorosity);
 	stream.Sync(porosityValue);
 
@@ -130,17 +128,17 @@ void BgShaderMaterial::Sync(StreamReversible& stream) {
 
 	stream.Sync(externalEmittance);
 
-	if (version >= 12)
+	if (stream.GetVersion() >= 12)
 		stream.Sync(lumEmittance);
 
-	if (version >= 13) {
+	if (stream.GetVersion() >= 13) {
 		stream.Sync(useAdaptativeEmissive);
 		stream.Sync(adaptativeEmissiveExposureOffset);
 		stream.Sync(adaptativeEmissiveFinalExposureMin);
 		stream.Sync(adaptativeEmissiveFinalExposureMax);
 	}
 
-	if (version < 8)
+	if (stream.GetVersion() < 8)
 		stream.Sync(backLighting);
 
 	stream.Sync(receiveShadows);
@@ -150,7 +148,7 @@ void BgShaderMaterial::Sync(StreamReversible& stream) {
 	stream.Sync(assumeShadowmask);
 	stream.Sync(glowmap);
 
-	if (version < 7) {
+	if (stream.GetVersion() < 7) {
 		stream.Sync(environmentMappingWindow);
 		stream.Sync(environmentMappingEye);
 	}
@@ -163,7 +161,7 @@ void BgShaderMaterial::Sync(StreamReversible& stream) {
 	stream.Sync(skinTint);
 	stream.Sync(tessellate);
 
-	if (version == 1)
+	if (stream.GetVersion() == 1)
 		stream.Sync(displacementTextureBias);
 	stream.Sync(displacementTextureScale);
 
@@ -175,11 +173,11 @@ void BgShaderMaterial::Sync(StreamReversible& stream) {
 	stream.Sync(skewSpecularAlpha);
 
 
-	if (version >= 3) {
+	if (stream.GetVersion() >= 3) {
 		stream.Sync(terrain);
 
 		if (terrain) {
-			if (version == 3) {
+			if (stream.GetVersion() == 3) {
 				uint32_t unused = 0;
 				stream.Sync(unused);
 			}
@@ -191,10 +189,11 @@ void BgShaderMaterial::Sync(StreamReversible& stream) {
 	}
 }
 
-void BgEffectMaterial::Sync(StreamReversible& stream) {
+
+void BgEffectMaterial::Sync(BgmStreamReversible& stream) {
 	BgMaterial::Sync(stream);
 
-	if (version >= 10) {
+	if (stream.GetVersion() >= 10) {
 		stream.Sync(environmentMapping);
 		stream.Sync(environmentMappingMaskScale);
 	}
@@ -220,18 +219,18 @@ void BgEffectMaterial::Sync(StreamReversible& stream) {
 	stream.Sync(envmapMinLOD);
 	stream.Sync(softDepth);
 
-	if (version >= 11) {
+	if (stream.GetVersion() >= 11) {
 		stream.Sync(emittanceColor);
 
-		if (version >= 15) {
+		if (stream.GetVersion() >= 15) {
 			stream.Sync(adaptativeEmissiveExposureOffset);
 			stream.Sync(adaptativeEmissiveFinalExposureMin);
 			stream.Sync(adaptativeEmissiveFinalExposureMax);
 
-			if (version >= 16)
+			if (stream.GetVersion() >= 16)
 				stream.Sync(glowmap);
 
-			if (version >= 20)
+			if (stream.GetVersion() >= 20)
 				stream.Sync(effectPbrSpecular);
 		}
 	}
