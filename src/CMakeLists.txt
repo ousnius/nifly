@@ -6,11 +6,13 @@ set(external_headers
 set(headers
     ${NIFLY_INCLUDE_DIR}/Animation.hpp
     ${NIFLY_INCLUDE_DIR}/BasicTypes.hpp
+    ${NIFLY_INCLUDE_DIR}/BgmFile.hpp
     ${NIFLY_INCLUDE_DIR}/bhk.hpp
     ${NIFLY_INCLUDE_DIR}/ExtraData.hpp
     ${NIFLY_INCLUDE_DIR}/Factory.hpp
     ${NIFLY_INCLUDE_DIR}/Geometry.hpp
     ${NIFLY_INCLUDE_DIR}/Keys.hpp
+    ${NIFLY_INCLUDE_DIR}/Materials.hpp
     ${NIFLY_INCLUDE_DIR}/NifFile.hpp
     ${NIFLY_INCLUDE_DIR}/NifUtil.hpp
     ${NIFLY_INCLUDE_DIR}/Nodes.hpp
@@ -26,10 +28,12 @@ set(headers
 set(sources
     Animation.cpp
     BasicTypes.cpp
+    BgmFile.cpp
     bhk.cpp
     ExtraData.cpp
     Factory.cpp
     Geometry.cpp
+    Materials.cpp
     NifFile.cpp
     Nodes.cpp
     Objects.cpp

@@ -160,6 +160,111 @@ public:
 
 enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
 
+class IStream {
+public:
+	IStream(std::istream* s)
+		: stream(s) {}
+
+	virtual ~IStream() = default;
+
+	virtual void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
+	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
+
+	// Be careful with sizes of structs and classes
+	template<typename T>
+	IStream& operator>>(T& t) {
+		read((char*) &t, sizeof(T));
+		return *this;
+	}
+
+protected:
+	std::istream* stream = nullptr;
+};
+
+class OStream {
+public:
+	OStream(std::ostream* s)
+		: stream(s) {}
+
+	virtual ~OStream() = default;
+
+	virtual void write(const char* ptr, std::streamsize count) { stream->write(ptr, count); }
+
+	void writeline(const char* ptr, std::streamsize count) {
+		write(ptr, count);
+		write("\n", 1);
+	}
+
+	std::streampos tellp() { return stream->tellp(); }
+
+	// Be careful with sizes of structs and classes
+	template<typename T>
+	OStream& operator<<(const T& t) {
+		write((const char*) &t, sizeof(T));
+		return *this;
+	}
+
+protected:
+	std::ostream* stream = nullptr;
+};
+
+class StreamReversible {
+public:
+	enum class Mode { Reading, Writing };
+
+	explicit StreamReversible(IStream* is, OStream* os, Mode mode_)
+		: istream(is)
+		, ostream(os)
+		, mode(mode_) {}
+
+	virtual ~StreamReversible() = default;
+
+	void SetMode(Mode m) { mode = m; }
+	Mode GetMode() const { return mode; }
+
+	template<typename T>
+	void Sync(T& t) {
+		Sync(reinterpret_cast<char*>(&t), sizeof(T));
+	}
+
+	void Sync(char* ptr, std::streamsize count) {
+		if (mode == Mode::Reading)
+			istream->read(ptr, count);
+		else
+			ostream->write(ptr, count);
+	}
+
+	void SyncLine(char* ptr, std::streamsize count) {
+		if (mode == Mode::Reading)
+			istream->getline(ptr, count);
+		else
+			ostream->writeline(ptr, count);
+	}
+
+	void SyncHalf(float& fl) {
+		half_float::half halfData;
+
+		if (mode == Mode::Writing)
+			halfData = fl;
+
+		Sync(reinterpret_cast<char*>(&halfData), 2);
+
+		if (mode == Mode::Reading)
+			fl = halfData;
+	}
+
+	OStream* asWrite() { return ostream; }
+	const OStream* asWrite() const { return ostream; }
+
+	IStream* asRead() { return istream; }
+	const IStream* asRead() const { return istream; }
+
+protected:
+	IStream* istream;
+	OStream* ostream;
+	Mode mode;
+};
+
 class NiHeaderBase {
 protected:
 	bool valid = false;
@@ -193,6 +298,8 @@ public:
 	explicit NiStreamBase(NiHeaderBase* hdr)
 		: header(hdr) {}
 
+	virtual ~NiStreamBase() = default;
+
 	NiVersion& GetVersion() { return header->GetVersion(); }
 	const NiVersion& GetVersion() const { return header->GetVersion(); }
 
@@ -200,138 +307,79 @@ public:
 	const NiHeaderBase& GetHeader() const { return *header; }
 };
 
-class NiIStream : public NiStreamBase {
-private:
-	std::istream* stream = nullptr;
-
+class NiIStream : public IStream, public NiStreamBase {
 public:
+	using IStream::operator>>;
+
 	NiIStream(std::istream* s, NiHeaderBase* hdr)
-		: NiStreamBase(hdr)
-		, stream(s) {}
+		: IStream(s)
+		, NiStreamBase(hdr) {}
 
-	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
-	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
-
-	// Be careful with sizes of structs and classes
-	template<typename T>
-	NiIStream& operator>>(T& t) {
-		read((char*) &t, sizeof(T));
-		return *this;
-	}
+	~NiIStream() override = default;
 };
 
-class NiOStream : public NiStreamBase {
-private:
-	std::ostream* stream = nullptr;
-	std::streamsize blockSize = 0;
-
+class NiOStream : public OStream, public NiStreamBase {
 public:
+	using OStream::operator<<;
+
 	NiOStream(std::ostream* s, NiHeaderBase* hdr)
-		: NiStreamBase(hdr)
-		, stream(s) {}
+		: OStream(s)
+		, NiStreamBase(hdr) {}
 
-	void write(const char* ptr, std::streamsize count) {
-		stream->write(ptr, count);
+	~NiOStream() override = default;
+
+	void write(const char* ptr, std::streamsize count) override {
+		OStream::write(ptr, count);
 		blockSize += count;
-	}
-
-	void writeline(const char* ptr, std::streamsize count) {
-		stream->write(ptr, count);
-		stream->write("\n", 1);
-		blockSize += count + 1;
-	}
-	std::streampos tellp() { return stream->tellp(); }
-
-	// Be careful with sizes of structs and classes
-	template<typename T>
-	NiOStream& operator<<(const T& t) {
-		write((const char*) &t, sizeof(T));
-		return *this;
 	}
 
 	void InitBlockSize() { blockSize = 0; }
 	std::streamsize GetBlockSize() { return blockSize; }
+
+private:
+	std::streamsize blockSize = 0;
 };
 
-class NiStreamReversible {
+class NiStreamReversible : public StreamReversible {
 public:
-	enum class Mode { Reading, Writing };
-
 	explicit NiStreamReversible(NiIStream* is, NiOStream* os, Mode mode_)
-		: istream(is)
-		, ostream(os)
-		, mode(mode_) {}
+		: StreamReversible(is, os, mode_) {}
 
-	void SetMode(Mode m) { mode = m; }
-	Mode GetMode() const { return mode; }
-
-	template<typename T>
-	void Sync(T& t) {
-		Sync(reinterpret_cast<char*>(&t), sizeof(T));
-	}
+	~NiStreamReversible() override = default;
 
 	NiVersion& GetVersion() {
 		if (mode == Mode::Reading)
-			return istream->GetVersion();
+			return asRead()->GetVersion();
 		else
-			return ostream->GetVersion();
+			return asWrite()->GetVersion();
 	}
 
 	const NiVersion& GetVersion() const {
 		if (mode == Mode::Reading)
-			return istream->GetVersion();
+			return asRead()->GetVersion();
 		else
-			return ostream->GetVersion();
+			return asWrite()->GetVersion();
 	}
 
 	NiHeaderBase& GetHeader() {
 		if (mode == Mode::Reading)
-			return istream->GetHeader();
+			return asRead()->GetHeader();
 		else
-			return ostream->GetHeader();
+			return asWrite()->GetHeader();
 	}
 
 	const NiHeaderBase& GetHeader() const {
 		if (mode == Mode::Reading)
-			return istream->GetHeader();
+			return asRead()->GetHeader();
 		else
-			return ostream->GetHeader();
+			return asWrite()->GetHeader();
 	}
 
-	void Sync(char* ptr, std::streamsize count) {
-		if (mode == Mode::Reading)
-			istream->read(ptr, count);
-		else
-			ostream->write(ptr, count);
-	}
+	NiOStream* asWrite() { return static_cast<NiOStream*>(ostream); }
+	const NiOStream* asWrite() const { return static_cast<NiOStream*>(ostream); }
 
-	void SyncLine(char* ptr, std::streamsize count) {
-		if (mode == Mode::Reading)
-			istream->getline(ptr, count);
-		else
-			ostream->writeline(ptr, count);
-	}
-
-	void SyncHalf(float& fl) {
-		half_float::half halfData;
-
-		if (mode == Mode::Writing)
-			halfData = fl;
-
-		Sync(reinterpret_cast<char*>(&halfData), 2);
-
-		if (mode == Mode::Reading)
-			fl = halfData;
-	}
-
-	NiOStream* asWrite() { return ostream; }
-	NiIStream* asRead() { return istream; }
-
-
-private:
-	NiIStream* istream;
-	NiOStream* ostream;
-	Mode mode;
+	NiIStream* asRead() { return static_cast<NiIStream*>(istream); }
+	const NiIStream* asRead() const { return static_cast<NiIStream*>(istream); }
 };
 
 template<typename Derived, typename Base>
