@@ -36,11 +36,14 @@ int BgmFile::Load(std::istream& file, const BgmLoadOptions& options) {
 			return 1;
 		}
 
-		isEffect = options.isEffect;
-		if (isEffect)
-			material = std::make_unique<BgEffectMaterial>();
-		else
+		if (IsShader())
 			material = std::make_unique<BgShaderMaterial>();
+		else if (IsEffect())
+			material = std::make_unique<BgEffectMaterial>();
+		else {
+			Clear();
+			return 1;
+		}
 
 		material->Get(stream);
 	}
@@ -74,21 +77,18 @@ int BgmFile::Save(std::ostream& file, const BgmSaveOptions& options) {
 void BgmFile::Create(BgmVersion version, BgmType type) {
 	Clear();
 
-	switch (type) {
-		case BgmType::BGSM:
-			material = std::make_unique<BgShaderMaterial>();
-			isValid = true;
-			break;
-		case BgmType::BGEM:
-			material = std::make_unique<BgEffectMaterial>();
-			isValid = true;
-			isEffect = true;
-			break;
-	}
+	if (type == BgmType::BGSM)
+		material = std::make_unique<BgShaderMaterial>();
+	else if (type == BgmType::BGEM)
+		material = std::make_unique<BgEffectMaterial>();
+	else
+		return;
+
+	isValid = true;
+}
 }
 
 void BgmFile::Clear() {
 	material.reset();
 	isValid = false;
-	isEffect = false;
 }

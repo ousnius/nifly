@@ -35,7 +35,6 @@ private:
 	BgmHeader hdr;
 	std::unique_ptr<BgMaterial> material;
 	bool isValid = false;
-	bool isEffect = false;
 
 public:
 	BgmFile() = default;
@@ -65,8 +64,11 @@ public:
 	// Indicates that the file was fully loaded or otherwise initialized.
 	bool IsValid() const { return isValid; }
 
+	// Indicates if the file was loaded as a shader material.
+	bool IsShader() const { return hdr.GetType() == BgmType::BGSM; }
+
 	// Indicates if the file was loaded as an effect material.
-	bool IsEffect() const { return isEffect; }
+	bool IsEffect() const { return hdr.GetType() == BgmType::BGEM; }
 
 	// Creates a new file with with the specified version, and material type.
 	void Create(BgmVersion version, BgmType type);
