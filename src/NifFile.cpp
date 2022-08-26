@@ -135,15 +135,16 @@ void NifFile::LoadMaterials() {
 		auto shader = GetShader(shape);
 
 		if (shader && std::regex_match(shader->name.get(), std::regex("^.*\\.bg(s|e)m$", std::regex::icase))) {
-			if (materials.find(shader->name.get()) != materials.end())
-				continue;
+			auto material = materials.find(shader->name.get());
 
-			if (file.Load(projectRoot / shader->name.get()) != 0)
-				continue;
+			if (material == materials.end()) {
+				if (file.Load(projectRoot / shader->name.get()) != 0)
+					continue;
 
-			auto material = file.GetMaterial()->Clone();
-			shader->SetMaterial(material.get());
-			materials.emplace(shader->name.get(), std::move(material));
+				material = materials.insert_or_assign(shader->name.get(), file.GetMaterial()->Clone()).first;
+			}
+
+			shader->SetMaterial(material->second.get());
 		}
 	}
 }
