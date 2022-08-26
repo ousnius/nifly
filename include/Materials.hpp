@@ -35,7 +35,7 @@ public:
 			str = std::string(buffer.data(), size - 1);
 		}
 		else if (auto ostream = stream.asWrite()) {
-			const uint32_t size(str.length() + 1);
+			const auto size = static_cast<uint32_t>(str.length()) + 1;
 			*ostream << size;
 			ostream->write(str.c_str(), size);
 		}
@@ -67,29 +67,29 @@ public:
 	bool zBufferWrite = true;
 	bool zBufferTest = true;
 
-	bool screenSpaceReflections = false;
-	bool wetnessControlScreenSpaceReflections = false;
+	bool useSSR = false;
+	bool wetnessUseSSR = false;
 	bool decal = false;
-	bool twoSided = false;
+	bool doubleSided = false;
 	bool decalNoFade = false;
 	bool nonOccluder = false;
 
-	bool refraction = false;
+	bool useRefraction = false;
 	bool refractionFalloff = false;
-	float refractionPower = 0.0f;
+	float refractionStrength = 0.0f;
 
 	bool environmentMapping = false;
-	float environmentMappingMaskScale = 1.0f;
+	float envMapScale = 1.0f;
 
 	bool grayscaleToPaletteColor = 1.0f;
 	uint8_t maskWrites = 63;
-	Color3 emittanceColor;
+	Vector3 emissiveColor;
 	bool glowmap = false;
 	float lumEmittance = 100.0f;
 
-	float adaptativeEmissiveExposureOffset = 13.5f;
-	float adaptativeEmissiveFinalExposureMin = 2.0f;
-	float adaptativeEmissiveFinalExposureMax = 3.0f;
+	float adaptiveEmissiveExposureOffset = 13.5f;
+	float adaptiveEmissiveFinalExposureMin = 2.0f;
+	float adaptiveEmissiveFinalExposureMax = 3.0f;
 
 	std::vector<BgmString> textures;
 
@@ -105,32 +105,32 @@ public:
 
 	bool enableEditorAlphaRef = false;
 
-	bool rimLighting = false;
-	float rimPower = 0.0f;
+	bool useRimLighting = false;
+	float rimlightPower = 0.0f;
 	float backlightPower = 0.0f;
 
-	bool subsurfaceLighting = false;
-	float subsurfaceLightingRolloff = 0.0f;
+	bool useSubsurfaceLighting = false;
+	float subsurfaceRolloff = 0.0f;
 
-	bool specularEnabled = true;
+	bool useSpecular = true;
 	Vector3 specular;
-	Color3 specularColor = {1.0f, 1.0f, 1.0f};
-	float specularMult = 0.0f;
+	Vector3 specularColor = {1.0f, 1.0f, 1.0f};
+	float specularStrength = 0.0f;
 
-	float smoothness = 0.0f;
+	float glossiness = 0.0f;
 	float fresnelPower = 0.0f;
 
-	float wetnessControlSpecScale = 0.0f;
-	float wetnessControlSpecPowerScale = 0.0f;
-	float wetnessControlSpecMinvar = 0.0f;
-	float wetnessControlEnvMapScale = 0.0f;
-	float wetnessControlFresnelPower = 0.0f;
-	float wetnessControlMetalness = 0.0f;
+	float wetnessSpecScale = 0.0f;
+	float wetnessSpecPower = 0.0f;
+	float wetnessMinVar = 0.0f;
+	float wetnessEnvmapScale = 0.0f;
+	float wetnessFresnelPower = 0.0f;
+	float wetnessMetalness = 0.0f;
 
-	BgmString rootMaterialPath;
+	BgmString rootMaterialName;
 	bool anisoLighting = false;
-	bool emitEnabled = false;
-	float emittanceMult = 0.0f;
+	bool emmissive = false;
+	float emissiveMultiple = 0.0f;
 	bool modelSpaceNormals = false;
 	bool externalEmittance = false;
 	bool backLighting = false;
@@ -143,13 +143,13 @@ public:
 	bool environmentMappingWindow = false;
 	bool environmentMappingEye = false;
 
-	bool hair = false;
+	bool isHair = false;
 	Vector3 hairColor;
-	Color3 hairTintColor;
+	Vector3 hairTintColor;
 
-	bool tree = false;
-	bool facegen = false;
-	bool skinTint = false;
+	bool isTree = false;
+	bool isFace = false;
+	bool isSkinTint = false;
 	bool tessellate = false;
 
 	float displacementTextureBias = 0.0f;
@@ -161,21 +161,21 @@ public:
 
 	float grayscaleToPaletteScale = 0.0f;
 	bool skewSpecularAlpha = false;
-	bool pbr = false;
+	bool isPbr = false;
 
-	bool translucency = false;
+	bool useTranslucency = false;
 	bool translucencyThickObject = false;
-	bool translucencyMixAlbedoWithSubsurfaceCol = false;
-	Color3 translucencySubsurfaceColor;
+	bool translucencyMixAlbedoWithSubsurfaceColor = false;
+	Vector3 translucencySubsurfaceColor;
 	float translucencyTransmissiveScale = 0.0f;
 	float translucencyTurbulence = 0.0f;
 
-	bool customPorosity = false;
+	bool useCustomPorosity = false;
 	float porosityValue = 0.0f;
 
-	bool useAdaptativeEmissive = false;
+	bool useAdaptiveEmissive = false;
 
-	bool terrain = false;
+	bool isTerrain = false;
 	float terrainThresholdFalloff = 0.0f;
 	float terrainTilingDistance = 0.0f;
 	float terrainRotationAngle = 0.0f;
@@ -196,7 +196,7 @@ public:
 	bool grayscaleToPaletteAlpha = false;
 	bool softEnabled = false;
 
-	Color3 baseColor = {1.0f, 1.0f, 1.0f};
+	Vector3 baseColor = {1.0f, 1.0f, 1.0f};
 	float baseColorScale = 1.0f;
 
 	float falloffStartAngle = 1.0f;

@@ -7,6 +7,7 @@ See the included GPLv3 LICENSE file
 #pragma once
 
 #include "BasicTypes.hpp"
+#include "Materials.hpp"
 #include "Objects.hpp"
 
 namespace nifly {
@@ -272,6 +273,11 @@ public:
 	virtual NiBlockRef<BSShaderTextureSet>* TextureSetRef() { return nullptr; }
 	virtual const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const { return nullptr; }
 
+	virtual bool HasMaterial() const { return false; }
+	virtual BgMaterial* GetMaterial() { return nullptr; }
+	virtual const BgMaterial* GetMaterial() const { return nullptr; }
+	virtual void SetMaterial(BgMaterial* mat) {}
+
 	virtual bool IsSkinTinted() const { return false; }
 	virtual bool IsFaceTinted() const { return false; }
 	virtual bool IsSkinned() const { return false; }
@@ -410,6 +416,7 @@ public:
 class BSLightingShaderProperty : public NiCloneableStreamable<BSLightingShaderProperty, BSShaderProperty> {
 public:
 	NiBlockRef<BSShaderTextureSet> textureSetRef;
+	BgMaterial* material = nullptr;
 
 	Vector3 emissiveColor;
 	float emissiveMultiple = 1.0f;
@@ -488,6 +495,11 @@ public:
 	NiBlockRef<BSShaderTextureSet>* TextureSetRef() override { return &textureSetRef; }
 	const NiBlockRef<BSShaderTextureSet>* TextureSetRef() const override { return &textureSetRef; }
 
+	bool HasMaterial() const override { return material != nullptr; }
+	BgMaterial* GetMaterial() override { return material; }
+	const BgMaterial* GetMaterial() const override { return material; }
+	void SetMaterial(BgMaterial* mat) override { material = mat; }
+
 	bool IsSkinTinted() const override;
 	bool IsFaceTinted() const override;
 	bool HasGlowmap() const override;
@@ -524,7 +536,7 @@ public:
 	float falloffStopAngle = 1.0f;
 	float falloffStartOpacity = 0.0f;
 	float falloffStopOpacity = 0.0f;
-	float refractionPower = 0.0f; // User Version == 12, User Version 2 == 155
+	float refractionStrength = 0.0f; // User Version == 12, User Version 2 == 155
 	Color4 baseColor;
 	float baseColorScale = 1.0f;
 	float softFalloffDepth = 0.0f;
@@ -537,7 +549,7 @@ public:
 
 	NiString reflectanceTexture;  // User Version == 12, User Version 2 == 155
 	NiString lightingTexture;	  // User Version == 12, User Version 2 == 155
-	Color3 emittanceColor;		  // User Version == 12, User Version 2 == 155
+	Color3 emissiveColor;		  // User Version == 12, User Version 2 == 155
 	NiString emitGradientTexture; // User Version == 12, User Version 2 == 155
 
 	float lumEmittance = 100.0f;   // User Version == 12, User Version 2 == 155

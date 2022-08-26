@@ -51,21 +51,27 @@ struct BoneWeightsSort {
 // NifFile load options
 struct NifLoadOptions {
 	bool isTerrain = false; // Load as terrain file. Affects texture path cleanup and shape names.
+	bool loadMaterials = false;	// Load related (bgsm, bgem) materials. Required to fully load most FO76 nifs.
+	std::filesystem::path projectRoot; // Project path. Used to load supplementary files.
 };
 
 // NifFile save options
 struct NifSaveOptions {
 	bool optimize = true;	// Update bounds and delete unreferenced blocks (see NifFile::Optimize)
 	bool sortBlocks = true; // Sorts all blocks in a logical order (see NifFile::PrettySortBlocks)
+	bool saveMaterials = false;	// Save any modifications to (bgsm, bgem) materials.
 };
 
 class NifFile {
 private:
 	NiHeader hdr;
 	std::vector<std::unique_ptr<NiObject>> blocks;
+	std::unordered_map<std::string, std::unique_ptr<BgMaterial>> materials;
 	bool isValid = false;
 	bool hasUnknown = false;
 	bool isTerrain = false;
+	bool loadMaterials = false;
+	std::filesystem::path projectRoot;
 
 public:
 	NifFile() = default;
@@ -133,6 +139,9 @@ public:
 	// Link NiGeometryData pointer to NiGeometry.
 	// Doesn't affect BSTriShape blocks.
 	void LinkGeomData();
+
+	// Loads material files (bgsm/bgem).
+	void LoadMaterials();
 
 	// Removes triangles with vertex indices that don't exist
 	void RemoveInvalidTris() const;
@@ -261,6 +270,7 @@ public:
 	// 1 if the texture is found in a BSShaderTextureSet block
 	// 2 if the texture is found in a BSEffectShaderProperty block
 	// 3 if the texture is found in a NiTexturingProperty block
+	// 4 if the texture is found in a material
 	uint32_t GetTextureSlot(NiShape* shape, std::string& outTexFile, uint32_t texIndex = 0) const;
 
 	// Sets texture path in the specified slot.

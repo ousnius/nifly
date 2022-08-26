@@ -27,21 +27,21 @@ void BgMaterial::Sync(BgmStreamReversible& stream) {
 	stream.Sync(zBufferWrite);
 	stream.Sync(zBufferTest);
 
-	stream.Sync(screenSpaceReflections);
-	stream.Sync(wetnessControlScreenSpaceReflections);
+	stream.Sync(useSSR);
+	stream.Sync(wetnessUseSSR);
 
 	stream.Sync(decal);
-	stream.Sync(twoSided);
+	stream.Sync(doubleSided);
 	stream.Sync(decalNoFade);
 	stream.Sync(nonOccluder);
 
-	stream.Sync(refraction);
+	stream.Sync(useRefraction);
 	stream.Sync(refractionFalloff);
-	stream.Sync(refractionPower);
+	stream.Sync(refractionStrength);
 
 	stream.Sync(environmentMapping);
 	if (stream.GetVersion() < 10)
-		stream.Sync(environmentMappingMaskScale);
+		stream.Sync(envMapScale);
 
 	stream.Sync(grayscaleToPaletteColor);
 
@@ -77,51 +77,51 @@ void BgShaderMaterial::Sync(BgmStreamReversible& stream) {
 	stream.Sync(enableEditorAlphaRef);
 
 	if (stream.GetVersion() > 7) {
-		stream.Sync(translucency);
+		stream.Sync(useTranslucency);
 		stream.Sync(translucencyThickObject);
-		stream.Sync(translucencyMixAlbedoWithSubsurfaceCol);
+		stream.Sync(translucencyMixAlbedoWithSubsurfaceColor);
 		stream.Sync(translucencySubsurfaceColor);
 		stream.Sync(translucencyTransmissiveScale);
 		stream.Sync(translucencyTurbulence);
 	}
 	else {
-		stream.Sync(rimLighting);
-		stream.Sync(rimPower);
+		stream.Sync(useRimLighting);
+		stream.Sync(rimlightPower);
 		stream.Sync(backlightPower);
-		stream.Sync(subsurfaceLighting);
-		stream.Sync(subsurfaceLightingRolloff);
+		stream.Sync(useSubsurfaceLighting);
+		stream.Sync(subsurfaceRolloff);
 	}
 
-	stream.Sync(specularEnabled);
+	stream.Sync(useSpecular);
 	stream.Sync(specularColor);
-	stream.Sync(specularMult);
-	stream.Sync(smoothness);
+	stream.Sync(specularStrength);
+	stream.Sync(glossiness);
 	stream.Sync(fresnelPower);
 
-	stream.Sync(wetnessControlSpecScale);
-	stream.Sync(wetnessControlSpecPowerScale);
-	stream.Sync(wetnessControlSpecMinvar);
+	stream.Sync(wetnessSpecScale);
+	stream.Sync(wetnessSpecPower);
+	stream.Sync(wetnessMinVar);
 	if (stream.GetVersion() < 10)
-		stream.Sync(wetnessControlEnvMapScale);
-	stream.Sync(wetnessControlFresnelPower);
-	stream.Sync(wetnessControlMetalness);
+		stream.Sync(wetnessEnvmapScale);
+	stream.Sync(wetnessFresnelPower);
+	stream.Sync(wetnessMetalness);
 
 	if (stream.GetVersion() > 2)
-		stream.Sync(pbr);
+		stream.Sync(isPbr);
 
 	if (stream.GetVersion() > 9) {
-		stream.Sync(customPorosity);
+		stream.Sync(useCustomPorosity);
 		stream.Sync(porosityValue);
 	}
 
-	rootMaterialPath.Sync(stream);
+	rootMaterialName.Sync(stream);
 
 	stream.Sync(anisoLighting);
 
-	stream.Sync(emitEnabled);
-	if (emitEnabled)
-		stream.Sync(emittanceColor);
-	stream.Sync(emittanceMult);
+	stream.Sync(emmissive);
+	if (emmissive)
+		stream.Sync(emissiveColor);
+	stream.Sync(emissiveMultiple);
 
 	stream.Sync(modelSpaceNormals);
 	stream.Sync(externalEmittance);
@@ -130,10 +130,10 @@ void BgShaderMaterial::Sync(BgmStreamReversible& stream) {
 		stream.Sync(lumEmittance);
 
 	if (stream.GetVersion() > 12) {
-		stream.Sync(useAdaptativeEmissive);
-		stream.Sync(adaptativeEmissiveExposureOffset);
-		stream.Sync(adaptativeEmissiveFinalExposureMin);
-		stream.Sync(adaptativeEmissiveFinalExposureMax);
+		stream.Sync(useAdaptiveEmissive);
+		stream.Sync(adaptiveEmissiveExposureOffset);
+		stream.Sync(adaptiveEmissiveFinalExposureMin);
+		stream.Sync(adaptiveEmissiveFinalExposureMax);
 	}
 
 	if (stream.GetVersion() < 8)
@@ -151,12 +151,12 @@ void BgShaderMaterial::Sync(BgmStreamReversible& stream) {
 		stream.Sync(environmentMappingEye);
 	}
 
-	stream.Sync(hair);
+	stream.Sync(isHair);
 	stream.Sync(hairTintColor);
 
-	stream.Sync(tree);
-	stream.Sync(facegen);
-	stream.Sync(skinTint);
+	stream.Sync(isTree);
+	stream.Sync(isFace);
+	stream.Sync(isSkinTint);
 	stream.Sync(tessellate);
 
 	if (stream.GetVersion() == 1) {
@@ -172,9 +172,9 @@ void BgShaderMaterial::Sync(BgmStreamReversible& stream) {
 	stream.Sync(skewSpecularAlpha);
 
 	if (stream.GetVersion() > 2) {
-		stream.Sync(terrain);
+		stream.Sync(isTerrain);
 
-		if (terrain) {
+		if (isTerrain) {
 			if (stream.GetVersion() == 3) {
 				uint32_t unused = 0;
 				stream.Sync(unused);
@@ -191,7 +191,7 @@ void BgShaderMaterial::Sync(BgmStreamReversible& stream) {
 void BgEffectMaterial::Sync(BgmStreamReversible& stream) {
 	if (stream.GetVersion() > 9) {
 		stream.Sync(environmentMapping);
-		stream.Sync(environmentMappingMaskScale);
+		stream.Sync(envMapScale);
 	}
 
 	stream.Sync(bloodEnabled);
@@ -216,12 +216,12 @@ void BgEffectMaterial::Sync(BgmStreamReversible& stream) {
 	stream.Sync(softDepth);
 
 	if (stream.GetVersion() > 10) {
-		stream.Sync(emittanceColor);
+		stream.Sync(emissiveColor);
 
 		if (stream.GetVersion() > 14) {
-			stream.Sync(adaptativeEmissiveExposureOffset);
-			stream.Sync(adaptativeEmissiveFinalExposureMin);
-			stream.Sync(adaptativeEmissiveFinalExposureMax);
+			stream.Sync(adaptiveEmissiveExposureOffset);
+			stream.Sync(adaptiveEmissiveFinalExposureMin);
+			stream.Sync(adaptiveEmissiveFinalExposureMax);
 
 			if (stream.GetVersion() > 15)
 				stream.Sync(glowmap);

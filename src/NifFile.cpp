@@ -5,14 +5,15 @@ See the included GPLv3 LICENSE file
 */
 
 #include "NifFile.hpp"
-#include "bhk.hpp"
 #include "NifUtil.hpp"
+#include "bhk.hpp"
 
 #include <fstream>
 #include <regex>
 #include <set>
 #include <unordered_set>
 #include <queue>
+#include <BgmFile.hpp>
 
 using namespace nifly;
 
@@ -124,6 +125,29 @@ void NifFile::LinkGeomData() {
 	}
 }
 
+void NifFile::LoadMaterials() {
+	if (!loadMaterials || projectRoot.empty())
+		return;
+
+	BgmFile file;
+
+	for (auto& shape : GetShapes()) {
+		auto shader = GetShader(shape);
+
+		if (shader && std::regex_match(shader->name.get(), std::regex("^.*\\.bg(s|e)m$", std::regex::icase))) {
+			if (materials.find(shader->name.get()) != materials.end())
+				continue;
+
+			if (file.Load(projectRoot / shader->name.get()) != 0)
+				continue;
+
+			auto material = file.GetMaterial()->Clone();
+			shader->SetMaterial(material.get());
+			materials.emplace(shader->name.get(), std::move(material));
+		}
+	}
+}
+
 void NifFile::RemoveInvalidTris() const {
 	for (auto& shape : GetShapes()) {
 		std::vector<Triangle> tris;
@@ -170,7 +194,10 @@ void NifFile::Clear() {
 	isValid = false;
 	hasUnknown = false;
 	isTerrain = false;
+	loadMaterials = false;
+	projectRoot.clear();
 
+	materials.clear();
 	blocks.clear();
 	hdr.Clear();
 }
@@ -184,6 +211,8 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 	Clear();
 
 	isTerrain = options.isTerrain;
+	loadMaterials = options.loadMaterials;
+	projectRoot = options.projectRoot;
 
 	if (file) {
 		NiIStream stream(&file, &hdr);
@@ -195,7 +224,8 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 		}
 
 		NiVersion& version = hdr.GetVersion();
-		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4() || version.IsFO76() || version.IsSpecial())) {
+		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4()
+			  || version.IsFO76() || version.IsSpecial())) {
 			// Unsupported file version
 			Clear();
 			return 2;
@@ -894,6 +924,12 @@ uint32_t NifFile::GetTextureSlot(NiShape* shape, std::string& outTexFile, uint32
 
 				return 2;
 			}
+
+			auto material = dynamic_cast<BgMaterial*>(shader->GetMaterial());
+			if (material && texIndex + 1 <= material->textures.size()) {
+				outTexFile = material->textures[texIndex].get();
+				return 4;
+			}
 		}
 	}
 
@@ -978,6 +1014,12 @@ void NifFile::SetTextureSlot(NiShape* shape, std::string& inTexFile, uint32_t te
 					case 4: effectShader->envMapTexture.get() = inTexFile; break;
 					case 5: effectShader->envMaskTexture.get() = inTexFile; break;
 				}
+				return;
+			}
+
+			auto material = dynamic_cast<BgMaterial*>(shader->GetMaterial());
+			if (material && texIndex + 1 <= material->textures.size()) {
+				material->textures[texIndex].get() = inTexFile;
 				return;
 			}
 		}
@@ -1132,6 +1174,13 @@ void NifFile::TrimTexturePaths() {
 				trimSourceTexturePath(texturingProp->decalTex2.sourceRef);
 			if (texturingProp->hasDecalTex3)
 				trimSourceTexturePath(texturingProp->decalTex3.sourceRef);
+		}
+	}
+
+	for (auto& material : materials) {
+		for (auto& sourceTexture : material.second.get()->textures) {
+			std::string tex = sourceTexture.get();
+			sourceTexture.get() = fTrimPath(tex);
 		}
 	}
 }
@@ -1841,6 +1890,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 void NifFile::PrepareData() {
 	hdr.FillStringRefs();
 	LinkGeomData();
+	LoadMaterials();
 	TrimTexturePaths();
 
 	for (auto& shape : GetShapes()) {

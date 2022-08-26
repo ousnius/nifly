@@ -562,18 +562,30 @@ void BSLightingShaderProperty::GetChildIndices(std::vector<uint32_t>& indices) {
 }
 
 bool BSLightingShaderProperty::IsSkinTinted() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->isSkinTint;
+
 	return bslspShaderType == BSLSP_SKINTINT;
 }
 
 bool BSLightingShaderProperty::IsFaceTinted() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->isFace;
+
 	return bslspShaderType == BSLSP_FACE;
 }
 
 bool BSLightingShaderProperty::HasGlowmap() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->glowmap;
+
 	return bslspShaderType == BSLSP_GLOWMAP && BSShaderProperty::HasGlowmap();
 }
 
 bool BSLightingShaderProperty::HasEnvironmentMapping() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->environmentMapping;
+
 	return bslspShaderType == BSLSP_ENVMAP && BSShaderProperty::HasEnvironmentMapping();
 }
 
@@ -586,64 +598,111 @@ void BSLightingShaderProperty::SetShaderType(const uint32_t type) {
 }
 
 Vector3 BSLightingShaderProperty::GetSpecularColor() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->specularColor;
+
 	return specularColor;
 }
 
 void BSLightingShaderProperty::SetSpecularColor(const Vector3& color) {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		shader->specularColor = color;
+
 	specularColor = color;
 }
 
 float BSLightingShaderProperty::GetSpecularStrength() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->specularStrength;
+
 	return specularStrength;
 }
 
 void BSLightingShaderProperty::SetSpecularStrength(const float strength) {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		shader->specularStrength = strength;
+
 	specularStrength = strength;
 }
 
 float BSLightingShaderProperty::GetGlossiness() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->glossiness;
+
 	return glossiness;
 }
 
 void BSLightingShaderProperty::SetGlossiness(const float gloss) {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		shader->glossiness = gloss;
+
 	glossiness = gloss;
 }
 
 Color4 BSLightingShaderProperty::GetEmissiveColor() const {
 	Color4 color;
-	color.r = emissiveColor.x;
-	color.g = emissiveColor.y;
-	color.b = emissiveColor.z;
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material)) {
+		color.r = shader->emissiveColor.x;
+		color.g = shader->emissiveColor.y;
+		color.b = shader->emissiveColor.z;
+	}
+	else {
+		color.r = emissiveColor.x;
+		color.g = emissiveColor.y;
+		color.b = emissiveColor.z;
+	}
 	return color;
 }
 
 void BSLightingShaderProperty::SetEmissiveColor(const Color4& color) {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material)) {
+		shader->emissiveColor.x = color.r;
+		shader->emissiveColor.y = color.g;
+		shader->emissiveColor.z = color.b;
+	}
+
 	emissiveColor.x = color.r;
 	emissiveColor.y = color.g;
 	emissiveColor.z = color.b;
 }
 
 float BSLightingShaderProperty::GetEmissiveMultiple() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->emissiveMultiple;
+
 	return emissiveMultiple;
 }
 
 void BSLightingShaderProperty::SetEmissiveMultiple(const float emissive) {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		shader->emissiveMultiple = emissive;
+
 	emissiveMultiple = emissive;
 }
 
 float BSLightingShaderProperty::GetAlpha() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->alpha;
+
 	return alpha;
 }
 
 void BSLightingShaderProperty::SetAlpha(const float alphaValue) {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		shader->alpha = alphaValue;
+
 	alpha = alphaValue;
 }
 
 float BSLightingShaderProperty::GetBacklightPower() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->backlightPower;
 	return backlightPower;
 }
 
 float BSLightingShaderProperty::GetRimlightPower() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->rimlightPower;
 	return rimlightPower;
 }
 
@@ -652,22 +711,32 @@ float BSLightingShaderProperty::GetSoftlight() const {
 }
 
 float BSLightingShaderProperty::GetSubsurfaceRolloff() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->subsurfaceRolloff;
 	return subsurfaceRolloff;
 }
 
 float BSLightingShaderProperty::GetGrayscaleToPaletteScale() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->grayscaleToPaletteScale;
 	return grayscaleToPaletteScale;
 }
 
 float BSLightingShaderProperty::GetFresnelPower() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->fresnelPower;
 	return fresnelPower;
 }
 
 std::string BSLightingShaderProperty::GetWetMaterialName() const {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		return shader->rootMaterialName.get();
 	return rootMaterialName.get();
 }
 
 void BSLightingShaderProperty::SetWetMaterialName(const std::string& matName) {
+	if (auto shader = dynamic_cast<BgShaderMaterial*>(material))
+		shader->rootMaterialName.get() = matName;
 	rootMaterialName.get() = matName;
 }
 
@@ -713,7 +782,7 @@ void BSEffectShaderProperty::Sync(NiStreamReversible& stream) {
 	stream.Sync(falloffStopOpacity);
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155)
-		stream.Sync(refractionPower);
+		stream.Sync(refractionStrength);
 
 	stream.Sync(baseColor);
 	stream.Sync(baseColorScale);
@@ -730,7 +799,7 @@ void BSEffectShaderProperty::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() == 155) {
 		reflectanceTexture.Sync(stream, 4);
 		lightingTexture.Sync(stream, 4);
-		stream.Sync(emittanceColor);
+		stream.Sync(emissiveColor);
 		emitGradientTexture.Sync(stream, 4);
 
 		stream.Sync(lumEmittance);
