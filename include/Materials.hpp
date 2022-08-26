@@ -50,7 +50,7 @@ public:
 
 class BgMaterial : public BgmCloneableStreamable<BgMaterial, BgmObject> {
 public:
-	virtual ~BgMaterial() = default;
+	~BgMaterial() override = default;
 
 	bool tileU = false;
 	bool tileV = false;
@@ -93,7 +93,7 @@ public:
 
 	std::vector<BgmString> textures;
 
-	virtual void Sync(BgmStreamReversible& stream);
+	void Sync(BgmStreamReversible& stream);
 
 protected:
 	void SyncTextures(BgmStreamReversible& stream, size_t count);
@@ -101,7 +101,7 @@ protected:
 
 class BgShaderMaterial : public BgmCloneableStreamable<BgShaderMaterial, BgMaterial> {
 public:
-	virtual ~BgShaderMaterial() = default;
+	~BgShaderMaterial() override = default;
 
 	bool enableEditorAlphaRef = false;
 
@@ -180,12 +180,12 @@ public:
 	float terrainTilingDistance = 0.0f;
 	float terrainRotationAngle = 0.0f;
 
-	void Sync(BgmStreamReversible& stream) override;
+	void Sync(BgmStreamReversible& stream);
 };
 
 class BgEffectMaterial : public BgmCloneableStreamable<BgEffectMaterial, BgMaterial> {
 public:
-	virtual ~BgEffectMaterial() = default;
+	~BgEffectMaterial() override = default;
 
 	bool bloodEnabled = false;
 	bool effectLightingEnabled = false;
@@ -209,6 +209,6 @@ public:
 	float softDepth = 100.0f;
 	bool effectPbrSpecular = false;
 
-	void Sync(BgmStreamReversible& stream) override;
+	void Sync(BgmStreamReversible& stream);
 };
 } // namespace nifly

@@ -396,8 +396,8 @@ private:
 };
 
 enum BgmType : uint32_t {
-	BGSM = 0x4D454742,
-	BGEM = 0x4D534742,
+	BGSM = 0x4D534742,
+	BGEM = 0x4D454742,
 };
 
 enum BgmVersion : uint32_t {
@@ -451,9 +451,9 @@ class BgmObject {
 public:
 	virtual ~BgmObject() = default;
 
-	virtual void Get(BgmIStream& stream) = 0;
+	virtual void Get(BgmIStream& stream) {}
 
-	virtual void Put(BgmOStream& stream) = 0;
+	virtual void Put(BgmOStream& stream) {}
 
 	std::unique_ptr<BgmObject> Clone() const {
 		return std::unique_ptr<BgmObject>(static_cast<BgmObject*>(this->Clone_impl()));

@@ -86,7 +86,6 @@ void BgmFile::Create(BgmVersion version, BgmType type) {
 
 	isValid = true;
 }
-}
 
 void BgmFile::Clear() {
 	material.reset();
