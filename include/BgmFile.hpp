@@ -22,9 +22,7 @@ using namespace std::experimental::filesystem;
 #endif
 
 // BgmFile load options
-struct BgmLoadOptions {
-	bool isEffect = false; // Load as effect file. Affects underlying material data.
-};
+struct BgmLoadOptions {};
 
 // BgmFile load options
 struct BgmSaveOptions {};
