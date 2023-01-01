@@ -46,6 +46,146 @@ enum BSLightingShaderPropertyShaderType : uint32_t {
 	BSLSP_LAST = BSLSP_DISMEMBERMENT
 };
 
+enum SkyrimShaderPropertyFlags1 : uint32_t {
+	SLSF1_SPECULAR = 1 << 0,					// Enables specularity
+	SLSF1_SKINNED = 1 << 1,						// Required for skinned meshes
+	SLSF1_TEMP_REFRACTION = 1 << 2,
+	SLSF1_VERTEX_ALPHA = 1 << 3,				// Enables using alpha component of vertex colors
+	SLSF1_GREYSCALETOPALETTE_COLOR = 1 << 4,	// For effect shader property
+	SLSF1_GREYSCALETOPALETTE_ALPHA = 1 << 5,	// For effect shader property
+	SLSF1_USE_FALLOFF = 1 << 6,					// Use falloff value in effect shader property
+	SLSF1_ENVIRONMENT_MAPPING = 1 << 7,			// Enables environment mapping (uses environment map scale)
+	SLSF1_RECEIVE_SHADOWS = 1 << 8,				// Can receive shadows
+	SLSF1_CAST_SHADOWS = 1 << 9,				// Can cast shadows
+	SLSF1_FACEGEN_DETAIL_MAP = 1 << 10,			// Use a face detail map in the fourth texture slot
+	SLSF1_PARALLAX = 1 << 11,
+	SLSF1_MODEL_SPACE_NORMALS = 1 << 12,		// Use model space normals and an external specular map
+	SLSF1_NON_PROJECTIVE_SHADOWS = 1 << 13,
+	SLSF1_LANDSCAPE = 1 << 14,
+	SLSF1_REFRACTION = 1 << 15,					// Use normal map for refraction effect
+	SLSF1_FIRE_REFRACTION = 1 << 16,
+	SLSF1_EYE_ENVIRONMENT_MAPPING = 1 << 17,	// Enables eye environment mapping (must use the eye shader and the model must be skinned)
+	SLSF1_HAIR_SOFT_LIGHTING = 1 << 18,			// Keeps from going too bright under lights (hair shader only)
+	SLSF1_SCREENDOOR_ALPHA_FADE = 1 << 19,
+	SLSF1_LOCALMAP_HIDE_SECRET = 1 << 20,		// Object and anything it is positioned above will not render on local map view
+	SLSF1_FACEGEN_RGB_TINT = 1 << 21,			// Use tint mask for face
+	SLSF1_OWN_EMIT = 1 << 22,					// Provides its own emittance color (will not absorb light/ambient color?)
+	SLSF1_PROJECTED_UV = 1 << 23,				// Used for decalling?
+	SLSF1_MULTIPLE_TEXTURES = 1 << 24,
+	SLSF1_REMAPPABLE_TEXTURES = 1 << 25,
+	SLSF1_DECAL = 1 << 26,
+	SLSF1_DYNAMIC_DECAL = 1 << 27,
+	SLSF1_PARALLAX_OCCLUSION = 1 << 28,
+	SLSF1_EXTERNAL_EMITTANCE = 1 << 29,
+	SLSF1_SOFT_EFFECT = 1 << 30,
+	SLSF1_ZBUFFER_TEST = static_cast<uint32_t>(1) << 31				// Enables Z-Buffer testing
+};
+
+enum SkyrimShaderPropertyFlags2 : uint32_t {
+	SLSF2_ZBUFFER_WRITE = 1 << 0,				// Enables writing to the Z-Buffer
+	SLSF2_LOD_LANDSCAPE = 1 << 1,
+	SLSF2_LOD_OBJECTS = 1 << 2,
+	SLSF2_NO_FADE = 1 << 3,
+	SLSF2_DOUBLE_SIDED = 1 << 4,				// Enables double-sided rendering
+	SLSF2_VERTEX_COLORS = 1 << 5,				// Enables vertex color rendering
+	SLSF2_GLOW_MAP = 1 << 6,					// Use glow map in the third texture slot
+	SLSF2_ASSUME_SHADOWMASK = 1 << 7,
+	SLSF2_PACKED_TANGENT = 1 << 8,
+	SLSF2_MULTI_INDEX_SNOW = 1 << 9,
+	SLSF2_VERTEX_LIGHTING = 1 << 10,
+	SLSF2_UNIFORM_SCALE = 1 << 11,
+	SLSF2_FIT_SLOPE = 1 << 12,
+	SLSF2_BILLBOARD = 1 << 13,
+	SLSF2_NO_LOD_LAND_BLEND = 1 << 14,
+	SLSF2_ENVMAP_LIGHT_FADE = 1 << 15,
+	SLSF2_WIREFRAME = 1 << 16,
+	SLSF2_WEAPON_BLODD = 1 << 17,				// Used for blood decals on weapons
+	SLSF2_HIDE_ON_LOCAL_MAP = 1 << 18,			// Similar to hide secret, but only for self?
+	SLSF2_PREMULT_ALPHA = 1 << 19,				// Has premultiplied alpha
+	SLSF2_CLOUD_LOD = 1 << 20,
+	SLSF2_ANISOTROPIC_LIGHTING = 1 << 21,		// Hair only?
+	SLSF2_NO_TRANSPARENCY_MULTISAMPLING = 1 << 22,
+	SLSF2_UNUSED01 = 1 << 23,
+	SLSF2_MULTI_LAYER_PARALLAX = 1 << 24,		// Use multilayer (inner-layer) map
+	SLSF2_SOFT_LIGHTING = 1 << 25,				// Use soft lighting map
+	SLSF2_RIM_LIGHTING = 1 << 26,				// Use rim lighting map
+	SLSF2_BACK_LIGHTING = 1 << 27,				// Use back lighting map
+	SLSF2_UNUSED02 = 1 << 28,
+	SLSF2_TREE_ANIM = 1 << 29,					// Enables vertex animation, flutter animation
+	SLSF2_EFFECT_LIGHTING = 1 << 30,
+	SLSF2_HD_LOD_OBJECTS = static_cast<uint32_t>(1) << 31
+};
+
+enum Fallout4ShaderPropertyFlags1 : uint32_t {
+	F4SF1_SPECULAR = 1 << 0,					// Enables specularity
+	F4SF1_SKINNED = 1 << 1,						// Required for skinned meshes
+	F4SF1_TEMP_REFRACTION = 1 << 2,
+	F4SF1_VERTEX_ALPHA = 1 << 3,				// Enables using alpha component of vertex colors
+	F4SF1_GREYSCALETOPALETTE_COLOR = 1 << 4,	// For effect shader property
+	F4SF1_GREYSCALETOPALETTE_ALPHA = 1 << 5,	// For effect shader property
+	F4SF1_USE_FALLOFF = 1 << 6,					// Use falloff value in effect shader property
+	F4SF1_ENVIRONMENT_MAPPING = 1 << 7,			// Enables environment mapping (uses environment map scale)
+	F4SF1_RGB_FALLOFF = 1 << 8,
+	F4SF1_CAST_SHADOWS = 1 << 9,				// Can cast shadows
+	F4SF1_FACE = 1 << 10,
+	F4SF1_UI_MASK_RECTS = 1 << 11,
+	F4SF1_MODEL_SPACE_NORMALS = 1 << 12,
+	F4SF1_NON_PROJECTIVE_SHADOWS = 1 << 13,
+	F4SF1_LANDSCAPE = 1 << 14,
+	F4SF1_REFRACTION = 1 << 15,
+	F4SF1_FIRE_REFRACTION = 1 << 16,
+	F4SF1_EYE_ENVIRONMENT_MAPPING = 1 << 17,
+	F4SF1_HAIR = 1 << 18,
+	F4SF1_SCREENDOOR_ALPHA_FADE = 1 << 19,
+	F4SF1_LOCALMAP_HIDE_SECRET = 1 << 20,
+	F4SF1_SKIN_TINT = 1 << 21,
+	F4SF1_OWN_EMIT = 1 << 22,
+	F4SF1_PROJECTED_UV = 1 << 23,				// Used for decalling?
+	F4SF1_MULTIPLE_TEXTURES = 1 << 24,
+	F4SF1_TESSELLATE = 1 << 25,
+	F4SF1_DECAL = 1 << 26,
+	F4SF1_DYNAMIC_DECAL = 1 << 27,
+	F4SF1_CHARACTER_LIGHTING = 1 << 28,
+	F4SF1_EXTERNAL_EMITTANCE = 1 << 29,
+	F4SF1_SOFT_EFFECT = 1 << 30,
+	F4SF1_ZBUFFER_TEST = static_cast<uint32_t>(1) << 31				// Enables Z-Buffer testing
+};
+
+enum Fallout4ShaderPropertyFlags2 : uint32_t {
+	F4SF2_ZBUFFER_WRITE = 1 << 0,				// Enables writing to the Z-Buffer
+	F4SF2_LOD_LANDSCAPE = 1 << 1,
+	F4SF2_LOD_OBJECTS = 1 << 2,
+	F4SF2_NO_FADE = 1 << 3,
+	F4SF2_DOUBLE_SIDED = 1 << 4,				// Enables double-sided rendering
+	F4SF2_VERTEX_COLORS = 1 << 5,				// Enables vertex color rendering
+	F4SF2_GLOW_MAP = 1 << 6,
+	F4SF2_TRANSFORM_CHANGED = 1 << 7,
+	F4SF2_DISMEMBERMENT_MEATCUFF = 1 << 8,
+	F4SF2_TINT = 1 << 9,
+	F4SF2_GRASS_VERTEX_LIGHTING = 1 << 10,
+	F4SF2_GRASS_UNIFORM_SCALE = 1 << 11,
+	F4SF2_GRASS_FIT_SLOPE = 1 << 12,
+	F4SF2_GRASS_BILLBOARD = 1 << 13,
+	F4SF2_NO_LOD_LAND_BLEND = 1 << 14,
+	F4SF2_DISMEMBERMENT = 1 << 15,
+	F4SF2_WIREFRAME = 1 << 16,
+	F4SF2_WEAPON_BLODD = 1 << 17,
+	F4SF2_HIDE_ON_LOCAL_MAP = 1 << 18,
+	F4SF2_PREMULT_ALPHA = 1 << 19,
+	F4SF2_VATS_TARGET = 1 << 20,
+	F4SF2_ANISOTROPIC_LIGHTING = 1 << 21,
+	F4SF2_SKEW_SPECULAR_ALPHA = 1 << 22,
+	F4SF2_MENU_SCREEN = 1 << 23,
+	F4SF2_MULTI_LAYER_PARALLAX = 1 << 24,
+	F4SF2_ALPHA_TEST = 1 << 25,
+	F4SF2_GRADIENT_REMAP = 1 << 26,
+	F4SF2_VATS_TARGET_DRAW_ALL = 1 << 27,
+	F4SF2_PIPBOY_SCREEN = 1 << 28,
+	F4SF2_TREE_ANIM = 1 << 29,
+	F4SF2_EFFECT_LIGHTING = 1 << 30,
+	F4SF2_REFRACTION_WRITES_DEPTH = static_cast<uint32_t>(1) << 31
+};
+
 class NiProperty : public NiCloneable<NiProperty, NiObjectNET> {};
 
 class NiShadeProperty : public NiCloneableStreamable<NiShadeProperty, NiProperty> {

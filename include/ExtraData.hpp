@@ -121,6 +121,19 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
+enum BSXFlagsEnum : uint32_t {
+	BSX_ANIMATED = 1 << 0,
+	BSX_HAVOK = 1 << 1,
+	BSX_RAGDOLL = 1 << 2,
+	BSX_COMPLEX = 1 << 3,
+	BSX_ADDON = 1 << 4,
+	BSX_EDITOR_MARKER = 1 << 5,
+	BSX_DYNAMIC = 1 << 6,
+	BSX_ARTICULATED = 1 << 7,
+	BSX_NEEDS_TRANSFORM_UPDATES = 1 << 8,
+	BSX_EXTERNAL_EMITTANCE = 1 << 9
+};
+
 class BSXFlags : public NiCloneable<BSXFlags, NiIntegerExtraData> {
 public:
 	static constexpr const char* BlockName = "BSXFlags";
