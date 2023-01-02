@@ -284,3 +284,51 @@ TEST_CASE("Load and save file (FO76)", "[NifFile]") {
 
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
+
+TEST_CASE("FixBSXFlags (remove external emittance)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_FixBSXFlags_RemoveExtEmit";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	nif.FixBSXFlags();
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
+TEST_CASE("FixBSXFlags (add external emittance)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_FixBSXFlags_AddExtEmit";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	nif.FixBSXFlags();
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
+TEST_CASE("FixShaderFlags (remove environment mapping)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_FixShaderFlags_RemoveEnvMap";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	nif.FixShaderFlags();
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
+TEST_CASE("FixShaderFlags (add environment mapping)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_FixShaderFlags_AddEnvMap";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	nif.FixShaderFlags();
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}

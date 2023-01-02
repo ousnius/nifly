@@ -30,6 +30,8 @@ struct OptOptions {
 	bool headParts = false;		// Use mesh formats required for head parts (use ONLY for head parts!)
 	bool removeParallax = true; // Remove parallax shader flags and texture paths
 	bool calcBounds = true;		// Recalculate bounding spheres for unskinned meshes
+	bool fixBSXFlags = true;	// Fix BSX flag values based on file contents
+	bool fixShaderFlags = true;	// Fix shader flag values based on file contents
 };
 
 // OptimizeFor function result
@@ -190,6 +192,12 @@ public:
 	// Sorts all blocks in a logical order.
 	// Order is based on child references, block types and version.
 	void PrettySortBlocks();
+
+	// Fixes the flag values in "BSXFlags" blocks based on file contents.
+	void FixBSXFlags();
+
+	// Fixes the flag values in shader blocks based on file contents.
+	void FixShaderFlags();
 
 	// Deletes all unreferenced (loose) blocks of the given type.
 	// Use default template type "NiObject" for all block types.

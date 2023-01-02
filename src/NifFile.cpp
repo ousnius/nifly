@@ -659,6 +659,68 @@ void NifFile::PrettySortBlocks() {
 	hdr.SetBlockOrder(sortState.newIndices);
 }
 
+void NifFile::FixBSXFlags() {
+	auto bsx = FindBlockByName<BSXFlags>("BSX");
+	if (bsx) {
+		if (bsx->integerData & BSX_EXTERNAL_EMITTANCE) {
+			// BSXFlags external emittance = on. Check if any shaders require that.
+			bool flagUnnecessary = true;
+
+			for (auto& block : blocks) {
+				auto bssp = dynamic_cast<BSShaderProperty*>(block.get());
+				if (bssp) {
+					if (bssp->shaderFlags1 & SLSF1_EXTERNAL_EMITTANCE) { // Same flag in SK and FO4
+						flagUnnecessary = false;
+						break;
+					}
+				}
+			}
+
+			if (flagUnnecessary)
+			{
+				// Unset unnecessary external emittance flag on BSXFlags
+				bsx->integerData &= (~BSX_EXTERNAL_EMITTANCE);
+			}
+		}
+		else {
+			// BSXFlags external emittance = off. Check if any shaders have it set regardless.
+			bool flagMissing = false;
+
+			for (auto& block : blocks) {
+				auto bssp = dynamic_cast<BSShaderProperty*>(block.get());
+				if (bssp) {
+					if (bssp->shaderFlags1 & SLSF1_EXTERNAL_EMITTANCE) { // Same flag in SK and FO4
+						flagMissing = true;
+						break;
+					}
+				}
+			}
+
+			if (flagMissing)
+			{
+				// Set missing external emittance flag on BSXFlags
+				bsx->integerData |= BSX_EXTERNAL_EMITTANCE;
+			}
+		}
+	}
+}
+
+void NifFile::FixShaderFlags() {
+	for (auto& block : blocks) {
+		auto bslsp = dynamic_cast<BSLightingShaderProperty*>(block.get());
+		if (bslsp) {
+			if (bslsp->bslspShaderType != BSLSP_ENVMAP && (bslsp->shaderFlags1 & SLSF1_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
+				// Shader is no environment shader, remove unused shader flag
+				bslsp->shaderFlags1 &= (~SLSF1_ENVIRONMENT_MAPPING);
+			}
+			else if (bslsp->bslspShaderType == BSLSP_ENVMAP && !(bslsp->shaderFlags1 & SLSF1_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
+				// Shader is environment shader, add missing shader flag
+				bslsp->shaderFlags1 |= SLSF1_ENVIRONMENT_MAPPING;
+			}
+		}
+	}
+}
+
 bool NifFile::DeleteUnreferencedNodes(int* deletionCount) {
 	if (hasUnknown)
 		return false;
@@ -1834,6 +1896,12 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 		DeleteUnreferencedBlocks();
 		PrettySortBlocks();
 	}
+
+	if (options.fixBSXFlags)
+		FixBSXFlags();
+
+	if (options.fixShaderFlags)
+		FixShaderFlags();
 
 	return result;
 }
