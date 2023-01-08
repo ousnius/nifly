@@ -35,14 +35,19 @@ void NiSkinData::Sync(NiStreamReversible& stream) {
 
 		stream.Sync(numVerts);
 
+		if (!hasVertWeights)
+			numVerts = 0;
+
 		if (stream.GetMode() == NiStreamReversible::Mode::Reading)
 			boneData.numVertices = numVerts;
 
-		boneData.vertexWeights.resize(numVerts);
+		if (hasVertWeights) {
+			boneData.vertexWeights.resize(numVerts);
 
-		// Num Verts * 6 bytes (index + weight)
-		stream.Sync((char*) boneData.vertexWeights.data(),
-					static_cast<std::streamsize>(numVerts) * sizeof(SkinWeight));
+			// Num Verts * 6 bytes (index + weight)
+			stream.Sync((char*) boneData.vertexWeights.data(),
+						static_cast<std::streamsize>(numVerts) * sizeof(SkinWeight));
+		}
 	}
 }
 

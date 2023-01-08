@@ -2736,6 +2736,8 @@ void NifFile::SetShapeBoneWeights(const std::string& shapeName,
 	if (boneIndex >= skinData->numBones)
 		return;
 
+	skinData->hasVertWeights = true;
+
 	NiSkinData::BoneData* bone = &skinData->bones[boneIndex];
 	bone->vertexWeights.clear();
 	for (auto& sw : inWeights)

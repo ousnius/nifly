@@ -121,6 +121,17 @@ TEST_CASE("Load and save skinned, dynamic file (SE)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Load and save file without weights in NiSkinData", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Skinned_NoNiSkinDataWeights";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
 TEST_CASE("Load and save skinned file (FO4)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_Skinned_FO4";
 	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
