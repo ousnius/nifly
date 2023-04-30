@@ -1214,6 +1214,8 @@ void NifFile::CloneChildren(NiObject* block, NifFile* srcNif) {
 				auto destChildS = srcChild->Clone();
 				auto destChild = destChildS.get();
 				uint32_t destId = hdr.AddBlock(std::move(destChildS));
+
+				uint32_t oldId = r->index;
 				r->index = destId;
 
 				std::vector<NiStringRef*> strRefs;
@@ -1235,7 +1237,7 @@ void NifFile::CloneChildren(NiObject* block, NifFile* srcNif) {
 					cloneBlock(destChild, parentOldId, parentNewId);
 				}
 				else
-					cloneBlock(destChild, r->index, destId);
+					cloneBlock(destChild, oldId, destId);
 			}
 		}
 	};
