@@ -499,7 +499,7 @@ public:
 
 	constexpr const Vector3& operator[](int index) const { return rows[index]; }
 
-	constexpr bool operator==(const Matrix3& other) {
+	constexpr bool operator==(const Matrix3& other) const {
 		return rows[0] == other[0] && rows[1] == other[1] && rows[2] == other[2];
 	}
 
@@ -703,7 +703,7 @@ public:
 	constexpr float& operator[](int index) { return m[index]; }
 	constexpr float operator[](int index) const { return m[index]; }
 
-	bool operator==(const Matrix4& other) { return (std::equal(m, m + sizeof m / sizeof *m, other.m)); }
+	bool operator==(const Matrix4& other) const { return (std::equal(m, m + sizeof m / sizeof *m, other.m)); }
 
 	bool IsIdentity() { return *this == Matrix4(); }
 
