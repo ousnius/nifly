@@ -1774,6 +1774,11 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 						bslsp->SetVertexAlpha(false);
 					}
 
+					// this flag breaks LE headparts
+					if (options.headParts) {
+						bslsp->shaderFlags2 &= ~SLSF2_PACKED_TANGENT;
+					}
+
 					if (options.removeParallax) {
 						if (bslsp->GetShaderType() == BSLSP_PARALLAX) {
 							// Change type from parallax to default
