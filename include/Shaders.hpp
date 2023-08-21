@@ -417,6 +417,7 @@ public:
 	virtual bool IsSkinned() const { return false; }
 	virtual void SetSkinned(const bool) {}
 	virtual bool IsDoubleSided() const { return false; }
+	virtual void SetDoubleSided(const bool) {}
 	virtual bool IsModelSpace() const { return false; }
 	virtual bool IsEmissive() const { return false; }
 	virtual bool HasSpecular() const { return true; }
@@ -482,6 +483,7 @@ public:
 	bool IsSkinned() const override;
 	void SetSkinned(const bool enable) override;
 	bool IsDoubleSided() const override;
+	void SetDoubleSided(const bool enable) override;
 	bool IsModelSpace() const override;
 	bool IsEmissive() const override;
 	bool HasSpecular() const override;

@@ -255,6 +255,13 @@ bool BSShaderProperty::IsDoubleSided() const {
 	return (shaderFlags2 & (1 << 4)) != 0;
 }
 
+void BSShaderProperty::SetDoubleSided(const bool enable) {
+	if (enable)
+		shaderFlags2 |= 1 << 4;
+	else
+		shaderFlags2 &= ~(1 << 4);
+}
+
 bool BSShaderProperty::IsModelSpace() const {
 	return (shaderFlags1 & (1 << 12)) != 0;
 }
