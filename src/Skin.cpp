@@ -548,6 +548,8 @@ void BSSkinBoneData::Sync(NiStreamReversible& stream) {
 
 
 void BSSkinInstance::Sync(NiStreamReversible& stream) {
+	boneRefs.SetKeepEmptyRefs(stream.GetVersion().IsSF());
+
 	targetRef.Sync(stream);
 	dataRef.Sync(stream);
 	boneRefs.Sync(stream);

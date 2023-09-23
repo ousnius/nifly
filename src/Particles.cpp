@@ -62,7 +62,7 @@ void NiParticleMeshesData::GetChildIndices(std::vector<uint32_t>& indices) {
 
 
 void NiPSysData::Sync(NiStreamReversible& stream) {
-	if (stream.GetVersion().Stream() == 155)
+	if (stream.GetVersion().Stream() > 130)
 		stream.Sync(unknownVector);
 
 	stream.Sync(hasRotationSpeeds);
@@ -179,7 +179,7 @@ void BSPSysSimpleColorModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(color2);
 	stream.Sync(color3);
 
-	if (stream.GetVersion().Stream() == 155) {
+	if (stream.GetVersion().Stream() > 130) {
 		for (uint16_t& unknownShort : unknownShorts)
 			stream.Sync(unknownShort);
 	}
@@ -190,7 +190,7 @@ void NiPSysRotationModifier::Sync(NiStreamReversible& stream) {
 	stream.Sync(initialSpeed);
 	stream.Sync(initialSpeedVariation);
 
-	if (stream.GetVersion().Stream() == 155) {
+	if (stream.GetVersion().Stream() > 130) {
 		stream.Sync(unknownVector);
 		stream.Sync(unknownByte);
 	}
@@ -460,7 +460,7 @@ void NiParticleSystem::Sync(NiStreamReversible& stream) {
 	if (stream.GetVersion().Stream() >= 100) {
 		stream.Sync(bounds);
 
-		if (stream.GetVersion().Stream() == 155)
+		if (stream.GetVersion().Stream() > 139)
 			for (float& i : boundMinMax)
 				stream.Sync(i);
 

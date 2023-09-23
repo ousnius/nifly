@@ -179,6 +179,57 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
+struct BSResourceID {
+    uint32_t fileHash = 0;
+    char extension[4];
+    uint32_t dirHash = 0;
+};
+
+struct UnkMaterialStruct {
+	uint32_t unkInt1 = 0;
+	uint32_t dirHash = 0;
+	uint32_t fileHash = 0;
+	std::string mat; // mat\0
+
+	void Sync(NiStreamReversible& stream);
+};
+
+struct UnkWeakRefStruct {
+    Matrix4 transform;
+    BSResourceID resourceID;
+    uint32_t unkInt1 = 0;
+    NiString material;
+
+	void Sync(NiStreamReversible& stream);
+};
+
+struct WeakReference {
+	BSResourceID resourceID;
+
+	uint32_t numTransforms = 0;
+	std::vector<Matrix4> transforms;
+
+	uint32_t numUnk1;
+	std::vector<UnkMaterialStruct> unkMaterials;
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class BSWeakReferenceNode : public NiCloneableStreamable<BSWeakReferenceNode, NiNode> {
+public:
+	uint32_t numWeakRefs = 0;
+	std::vector<WeakReference> weakRefs;
+
+	uint32_t unkInt1 = 0;
+	uint32_t numUnk2 = 0;
+	std::vector<UnkWeakRefStruct> unkWeakRefStructs;
+
+	static constexpr const char* BlockName = "BSWeakReferenceNode";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
 enum BillboardMode : uint16_t {
 	ALWAYS_FACE_CAMERA,
 	ROTATE_ABOUT_UP,

@@ -125,6 +125,47 @@ void BSRangeNode::Sync(NiStreamReversible& stream) {
 }
 
 
+void UnkMaterialStruct::Sync(NiStreamReversible& stream) {
+	stream.Sync(unkInt1);
+	stream.Sync(dirHash);
+	stream.Sync(fileHash);
+	stream.SyncString(mat);
+}
+
+void UnkWeakRefStruct::Sync(NiStreamReversible& stream) {
+	stream.Sync(transform);
+	stream.Sync(resourceID);
+	stream.Sync(unkInt1);
+	material.Sync(stream, 4);
+}
+
+void WeakReference::Sync(NiStreamReversible& stream) {
+	stream.Sync(resourceID);
+	stream.Sync(numTransforms);
+	transforms.resize(numTransforms);
+	for (uint32_t i = 0; i < numTransforms; i++)
+		stream.Sync(transforms[i]);
+
+	stream.Sync(numUnk1);
+	unkMaterials.resize(numUnk1);
+	for (uint32_t i = 0; i < numUnk1; i++)
+		unkMaterials[i].Sync(stream);
+}
+
+void BSWeakReferenceNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(numWeakRefs);
+	weakRefs.resize(numWeakRefs);
+	for (uint32_t i = 0; i < numWeakRefs; i++)
+		weakRefs[i].Sync(stream);
+
+	stream.Sync(unkInt1);
+	stream.Sync(numUnk2);
+	unkWeakRefStructs.resize(numUnk2);
+	for (uint32_t i = 0; i < numUnk2; i++)
+		unkWeakRefStructs[i].Sync(stream);
+}
+
+
 void NiBillboardNode::Sync(NiStreamReversible& stream) {
 	stream.Sync(billboardMode);
 }

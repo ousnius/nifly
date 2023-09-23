@@ -534,6 +534,36 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
+
+struct BSGeometryMesh {
+	uint32_t triSize = 0;
+	uint32_t numVerts = 0;
+	uint32_t flags = 0;		// Often 64
+	NiString meshName;		// Always(?) 41
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class BSGeometry : public NiCloneableStreamable<BSGeometry, NiShape> {
+protected:
+	BoundingSphere bounds;
+	float boundMinMax[6]{};
+
+	NiBlockRef<NiBoneContainer> skinInstanceRef;
+	NiBlockRef<NiShader> shaderPropertyRef;
+	NiBlockRef<NiAlphaProperty> alphaPropertyRef;
+
+	std::vector<BSGeometryMesh> meshes;
+
+public:
+	static constexpr const char* BlockName = "BSGeometry";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+};
+
 class NiSkinInstance;
 
 class NiGeometry : public NiCloneableStreamable<NiGeometry, NiShape> {

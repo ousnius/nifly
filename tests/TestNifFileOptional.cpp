@@ -1,10 +1,59 @@
+#define CATCH_CONFIG_MAIN
+
 #include "TestNifFile.hpp"
+#include "TestUtil.hpp"
 
 #include <catch2/catch.hpp>
 
 #include <NifFile.hpp>
 
 using namespace nifly;
+
+TEST_CASE("Load all files", "[NifFile]") {
+	constexpr auto dirName = "scaninput";
+
+	if (!std::filesystem::exists(dirName))
+	{
+		WARN("Input directory missing.");
+		return;
+	}
+
+	const std::filesystem::path scanPath{dirName};
+
+	auto countIter = std::filesystem::recursive_directory_iterator{scanPath};
+	size_t fileCount = std::count_if(
+		begin(countIter),
+		end(countIter),
+		[](auto& entry) { return entry.is_regular_file() && entry.path().extension() == ".nif"; }
+	);
+
+	size_t n = 0;
+	int oldPercent = 0;
+
+	for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{scanPath}) 
+	{
+		if (dir_entry.is_regular_file())
+		{
+			auto const& path = dir_entry.path();
+			if (path.extension() == ".nif")
+			{
+				NifFile nif;
+				REQUIRE(nif.Load(path) == 0);
+
+				//std::cout << path << " loaded!" << std::endl;
+
+				n++;
+
+				int percent = (int)((n / (double)fileCount) * 100.0);
+				if (percent != oldPercent)
+				{
+					std::cout << percent << "% processed..." << std::endl;
+				}
+				oldPercent = percent;
+			}
+		}
+	}
+}
 
 TEST_CASE("Scan files for mismatching BSX flags (external emittance)", "[NifFile]") {
 	constexpr auto dirName = "scaninput";

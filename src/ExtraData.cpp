@@ -421,3 +421,18 @@ bool BSClothExtraData::FromHKX(const std::string& fileName) {
 	file.read(data.data(), numBytes);
 	return true;
 }
+
+
+void SkinAttach::Sync(NiStreamReversible& stream) {
+	bones.Sync(stream);
+}
+
+
+void BoneTranslations::Sync(NiStreamReversible& stream) {
+	stream.Sync(numTranslations);
+	translations.resize(numTranslations);
+	for (uint32_t i = 0; i < numTranslations; i++) {
+		translations[i].bone.Sync(stream, 4);
+		stream.Sync(translations[i].trans);
+	}
+}

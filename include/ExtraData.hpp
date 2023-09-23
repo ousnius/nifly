@@ -423,4 +423,30 @@ public:
 	bool ToHKX(const std::string& fileName);
 	bool FromHKX(const std::string& fileName);
 };
+
+class SkinAttach : public NiCloneableStreamable<SkinAttach, NiExtraData> {
+public:
+	NiStringVector<> bones;
+
+	static constexpr const char* BlockName = "SkinAttach";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+struct BoneTranslation {
+	NiString bone;
+	Vector3 trans;
+};
+
+class BoneTranslations : public NiCloneableStreamable<BoneTranslations, NiExtraData> {
+public:
+	uint32_t numTranslations = 0;
+	std::vector<BoneTranslation> translations;
+
+	static constexpr const char* BlockName = "BoneTranslations";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
 } // namespace nifly

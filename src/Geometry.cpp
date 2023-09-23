@@ -443,7 +443,7 @@ void BSTriShape::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(bounds);
 
-	if (stream.GetVersion().Stream() == 155)
+	if (stream.GetVersion().Stream() > 139)
 		for (float& i : boundMinMax)
 			stream.Sync(i);
 
@@ -1554,6 +1554,57 @@ void BSDynamicTriShape::Create(NiVersion& version,
 		dynamicData[i].z = (*verts)[i].z;
 		dynamicData[i].w = 0.0f;
 	}
+}
+
+
+void BSGeometryMesh::Sync(NiStreamReversible& stream) {
+	stream.Sync(triSize);
+	stream.Sync(numVerts);
+	stream.Sync(flags);
+	meshName.Sync(stream, 4);
+}
+
+void BSGeometry::Sync(NiStreamReversible& stream) {
+	stream.Sync(bounds);
+
+	for (float& i : boundMinMax)
+		stream.Sync(i);
+
+	skinInstanceRef.Sync(stream);
+	shaderPropertyRef.Sync(stream);
+	alphaPropertyRef.Sync(stream);
+
+	if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+		meshes.clear();
+
+	size_t meshCount = meshes.size();
+	for (uint32_t i = 0; i < 4; i++) {
+		uint8_t testByte = i < meshCount;
+		stream.Sync(testByte);
+		if (testByte) {
+			if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+				BSGeometryMesh mesh{};
+				meshes.push_back(mesh);
+			}
+			meshes[i].Sync(stream);
+		}
+	}
+}
+
+void BSGeometry::GetChildRefs(std::set<NiRef*>& refs) {
+	NiAVObject::GetChildRefs(refs);
+
+	refs.insert(&skinInstanceRef);
+	refs.insert(&shaderPropertyRef);
+	refs.insert(&alphaPropertyRef);
+}
+
+void BSGeometry::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiAVObject::GetChildIndices(indices);
+
+	indices.push_back(skinInstanceRef.index);
+	indices.push_back(shaderPropertyRef.index);
+	indices.push_back(alphaPropertyRef.index);
 }
 
 

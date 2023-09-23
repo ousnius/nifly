@@ -143,6 +143,8 @@ public:
 	bool IsFO4() const { return file == V20_2_0_7 && stream >= 130 && stream <= 139; }
 	// Check if file has a Fallout 76 version range
 	bool IsFO76() const { return file == V20_2_0_7 && stream == 155; }
+	// Check if file has a Starfield version range
+	bool IsSF() const { return file == V20_2_0_7 && stream == 172; }
 
 	// Return an Oblivion file version
 	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 11); }
@@ -211,6 +213,7 @@ public:
 
 	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
 	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
+	void getstring(std::string& str) { std::getline(*stream, str, '\0'); }
 
 	// Be careful with sizes of structs and classes
 	template<typename T>
@@ -240,6 +243,14 @@ public:
 		stream->write("\n", 1);
 		blockSize += count + 1;
 	}
+
+	void writestring(const std::string& str) {
+		size_t count = str.size();
+		stream->write(str.data(), count);
+		stream->write("\0", 1);
+		blockSize += count + 1;
+	}
+
 	std::streampos tellp() { return stream->tellp(); }
 
 	// Be careful with sizes of structs and classes
@@ -310,6 +321,13 @@ public:
 			istream->getline(ptr, count);
 		else
 			ostream->writeline(ptr, count);
+	}
+
+	void SyncString(std::string& str) {
+		if (mode == Mode::Reading)
+			istream->getstring(str);
+		else
+			ostream->writestring(str);
 	}
 
 	void SyncHalf(float& fl) {
