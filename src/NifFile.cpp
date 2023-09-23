@@ -4351,7 +4351,7 @@ void NifFile::UpdateSkinPartitions(NiShape* shape) {
 		part.bones.reserve(part.numBones);
 
 		for (auto& b : partBones[partInd]) {
-			part.bones.push_back(b);
+			part.bones.push_back(static_cast<uint16_t>(b));
 			boneLookup[b] = static_cast<uint8_t>(part.bones.size() - 1);
 		}
 

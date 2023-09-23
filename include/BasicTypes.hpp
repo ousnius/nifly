@@ -245,7 +245,7 @@ public:
 	}
 
 	void writestring(const std::string& str) {
-		size_t count = str.size();
+		auto count = static_cast<std::streamsize>(str.size());
 		stream->write(str.data(), count);
 		stream->write("\0", 1);
 		blockSize += count + 1;
