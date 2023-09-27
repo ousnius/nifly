@@ -158,6 +158,8 @@ public:
 	static NiVersion getFO4() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 130); }
 	// Return a Fallout 76 file version
 	static NiVersion getFO76() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 155); }
+	// Return a Starfield file version
+	static NiVersion getSF() { return NiVersion(NiFileVersion::V20_2_0_7, 12, 172); }
 };
 
 enum NiEndian : uint8_t { ENDIAN_BIG, ENDIAN_LITTLE };
