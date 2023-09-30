@@ -34,6 +34,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<BSBlastNode>();
 	RegisterFactory<BSDamageStage>();
 	RegisterFactory<BSWeakReferenceNode>();
+	RegisterFactory<BSFaceGenNiNode>();
 	RegisterFactory<NiBone>();
 	RegisterFactory<NiSortAdjustNode>();
 	RegisterFactory<NiRangeLODData>();

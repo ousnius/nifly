@@ -166,6 +166,11 @@ void BSWeakReferenceNode::Sync(NiStreamReversible& stream) {
 }
 
 
+void BSFaceGenNiNode::Sync(NiStreamReversible& stream) {
+	stream.Sync(unkShort);
+}
+
+
 void NiBillboardNode::Sync(NiStreamReversible& stream) {
 	stream.Sync(billboardMode);
 }

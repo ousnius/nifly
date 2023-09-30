@@ -230,6 +230,16 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
+class BSFaceGenNiNode : public NiCloneableStreamable<BSFaceGenNiNode, NiNode> {
+public:
+	uint16_t unkShort = 0;
+
+	static constexpr const char* BlockName = "BSFaceGenNiNode";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
 enum BillboardMode : uint16_t {
 	ALWAYS_FACE_CAMERA,
 	ROTATE_ABOUT_UP,
