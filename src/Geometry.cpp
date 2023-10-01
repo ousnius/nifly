@@ -1579,6 +1579,11 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	numVertices = (uint16_t)nVertices;
 	vertices.resize(nVertices);
 	for(uint32_t v=0; v< nVertices; v++) {
+		// Traditional scale based on havok to unit transform used in skyrim, fallout, etc. In Starfield mesh files are normalized to metric units, 
+		// this scale makes default vertex positions closely match the older games
+		float havokScale = 69.969;
+		// experimentally, the below scale produced very accurate values to SSE mesh sizes (comparing markerxheading.nif)
+		// float havokScale = 69.9866;
 		auto unpack = [&](float posScale) -> float {
 			int16_t val;
 			stream.Sync(val);
@@ -1598,13 +1603,13 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 			stream.Sync(val);
 		};
 		if(stream.GetMode() == NiStreamReversible::Mode::Reading) {
-			vertices[v].x = unpack(64.0);
-			vertices[v].y = unpack(64.0);
-			vertices[v].z = unpack(64.0);
+			vertices[v].x = unpack(havokScale);
+			vertices[v].y = unpack(havokScale);
+			vertices[v].z = unpack(havokScale);
 		} else {
-			pack(vertices[v].x, 64.0);
-			pack(vertices[v].y, 64.0);
-			pack(vertices[v].z, 64.0);
+			pack(vertices[v].x, havokScale);
+			pack(vertices[v].y, havokScale);
+			pack(vertices[v].z, havokScale);
 		}
 	}
 
@@ -1642,7 +1647,9 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	}
 	
 	stream.Sync(nTotalWeights);
-	skinWeights.resize(nTotalWeights/nWeightsPerVert);
+	if (nWeightsPerVert > 0) {
+		skinWeights.resize(nTotalWeights / nWeightsPerVert);
+	}
 	for(auto &vw: skinWeights) {
 		vw.resize(nWeightsPerVert);
 		for(uint32_t w=0;w<nWeightsPerVert;w++) {
