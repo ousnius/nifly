@@ -648,7 +648,7 @@ public:
 	bool GetTriangles(std::vector<Triangle>& tris) const override;
 	void SetTriangles(const std::vector<Triangle>& tris) override;
 
-	uint8_t MeshCount() { return meshes.size();	}
+	uint8_t MeshCount() { return (uint8_t) meshes.size();	}
 
 	// SelectMesh provides a way to choose which mesh from the BSGeometryMesh list data accesessors will use.
 	// If this is not called, functions to retrieve vertices, triangles, etc will default to the first mesh.

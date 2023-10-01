@@ -121,11 +121,8 @@ void NifFile::LinkGeomData() {
 			if (geomData)
 				geom->SetGeomData(geomData);
 			
-		} else if(auto geom = dynamic_cast<BSGeometry*>(block.get())) {
-			// BSGeometry refers to external geometry data identified in BSGeometryMesh substructure
-			int a = 0;
-			
 		}
+		// NOTE: BSGeometry is it's own geometry data... need explicit linking here?
 	}
 }
 

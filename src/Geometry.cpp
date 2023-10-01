@@ -1583,9 +1583,9 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 			int16_t val;
 			stream.Sync(val);
 			if(val<0) {
-				return (val / 32768.0) * scale * posScale;
+				return static_cast<float>((val / 32768.0) * scale * posScale);
 			} else {				
-				return (val / 32767.0) * scale * posScale;
+				return static_cast<float>((val / 32767.0) * scale * posScale);
 			}
 		};
 		auto pack = [&](float component, float posScale) {
@@ -1656,7 +1656,7 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	stream.Sync(nLODS);
 	lodTris.resize(nLODS);
 	for(uint32_t lod=0; lod<nLODS; lod++) {		
-		uint32_t nLodTriIndices = lodTris[lod].size();		
+		uint32_t nLodTriIndices = (uint32_t)lodTris[lod].size();		
 		stream.Sync(nLodTriIndices);
 		lodTris[lod].resize(nLodTriIndices);
 		for(uint32_t t=0; t<nLodTriIndices/3; t++) {
