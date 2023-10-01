@@ -10,11 +10,8 @@ See the included GPLv3 LICENSE file
 
 #include "KDMatcher.hpp"
 #include "NifUtil.hpp"
-#include "glm/gtc/packing.inl"
 
 #include <array>
-#include <fstream>
-#include <wx/language.h>
 
 using namespace nifly;
 
