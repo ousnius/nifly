@@ -489,6 +489,7 @@ public:
 	const std::vector<Vector2>* GetUvsForShape(NiShape* shape);
 	// Gets pointer to vertex colors of the shape (can be nullptr or empty)
 	const std::vector<Color4>* GetColorsForShape(const std::string& shapeName);
+	const std::vector<Color4>* GetColorsForShape(NiShape* shape);
 	// Gets pointer to vertex tangents of the shape (can be nullptr or empty)
 	const std::vector<Vector3>* GetTangentsForShape(NiShape* shape);
 	// Gets pointer to vertex bitangents of the shape (can be nullptr or empty)
