@@ -3064,6 +3064,10 @@ const std::vector<Vector2>* NifFile::GetUvsForShape(NiShape* shape) {
 
 const std::vector<Color4>* NifFile::GetColorsForShape(const std::string& shapeName) {
 	auto shape = FindBlockByName<NiShape>(shapeName);
+	return GetColorsForShape(shape);
+}
+
+const std::vector<Color4>* NifFile::GetColorsForShape(NiShape* shape) {
 	if (!shape)
 		return nullptr;
 
