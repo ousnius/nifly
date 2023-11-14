@@ -534,13 +534,89 @@ public:
 				const std::vector<Vector3>* normals = nullptr) override;
 };
 
+// BSGeometryMeshData is not a nif block object.  In order to be able to use the data as if it were a block
+// data object for reading and modifying geometry data, we inherit the NiGeometryData interface, and override
+// the Sync function.  The stream provided to sync for this object is not the same stream that is working with
+// a nif file.  
+class BSGeometryMeshData: public NiCloneableStreamable<BSGeometryMeshData, NiGeometryData> {
+	
+public:
+
+	struct boneweight {
+		uint16_t boneIndex;
+		uint16_t weight;
+	};
+	
+	struct meshlet {
+		uint32_t vertCount;
+		uint32_t vertOffset;
+		uint32_t primCount;
+		uint32_t primOffset;
+	};
+
+	struct culldata {
+		Vector4 boundSphere;
+		ByteColor4 normalCone;			// abusing color4 as a 4 byte structure
+		float apexOffset;		
+	};
+	
+	uint32_t version;
+
+	uint32_t nTriIndices;
+	std::vector<Triangle> tris;
+
+	float scale;
+	uint32_t nWeightsPerVert;
+
+	// Vert count is a full 32 bits, versus the 16 bit count in NiGeometryData
+	uint32_t nVertices;
+	std::vector<uint16_t> packedVerts;
+	// vertices from NIGeometryData
+
+	uint32_t nUV1;
+	//std::vector<Vector2> uvs1;
+	uint32_t nUV2;
+	//std::vector<Vector2> uvs2;
+	// uvSets from NiGeometryData  -- read/write interspersed with nUV1, nUV2
+
+	uint32_t nColors;
+	std::vector<ByteColor4> vColors;
+	// vertexColors from NiGeometryData
+
+	uint32_t nNormals;
+	std::vector<uint32_t> packedNormals;
+	// normals from NiGeometryData  (UDEC3 packed in file)
+	
+	uint32_t nTangents;
+	std::vector<uint32_t> packedTangents;
+	// tangents from NiGeometryData  (UDEC3 packed in file)
+	
+	uint32_t nTotalWeights;
+	std::vector < std::vector<boneweight> > skinWeights;
+
+	uint32_t nLODS;	
+	std::vector< std::vector<Triangle> > lodTris;
+
+	uint32_t nMeshlets;
+	std::vector<meshlet> meshletList;
+
+	uint32_t nCullData;
+	std::vector<culldata> cullDataList;		
+	
+	void Sync(NiStreamReversible& stream);
+};
 
 struct BSGeometryMesh {
 	uint32_t triSize = 0;
 	uint32_t numVerts = 0;
 	uint32_t flags = 0;		// Often 64
-	NiString meshName;		// Always(?) 41
 
+	// in official files, this is 41 characters: hex characters from sha1 of the mesh data split into 2 parts
+	// with a path separator. The game does not seem to check the digest, so the same name can be used for
+	// replacement, or probably a human-readable one
+	NiString meshName;		
+
+	BSGeometryMeshData meshData;
 	void Sync(NiStreamReversible& stream);
 };
 
@@ -555,6 +631,10 @@ protected:
 
 	std::vector<BSGeometryMesh> meshes;
 
+	// A currently selected BSGeometryMesh in the list of meshes. All get/set data accessors use this to
+	// address a desired mesh
+	uint8_t selectedMesh = 0;
+
 public:
 	static constexpr const char* BlockName = "BSGeometry";
 	const char* GetBlockName() override { return BlockName; }
@@ -562,6 +642,33 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
+		
+	NiGeometryData* GetGeomData() const override;
+
+	bool GetTriangles(std::vector<Triangle>& tris) const override;
+	void SetTriangles(const std::vector<Triangle>& tris) override;
+
+	uint8_t MeshCount() { return (uint8_t) meshes.size();	}
+
+	// SelectMesh provides a way to choose which mesh from the BSGeometryMesh list data accesessors will use.
+	// If this is not called, functions to retrieve vertices, triangles, etc will default to the first mesh.
+	// Returns a pointer to the mesh data selected.
+	// TODO: this is not thread safe.  A mutex should be set in SelectMesh and released in ReleaseMesh to
+	// avoid synchronization issues.  Alternatively, Get/Set data functions could be changed to take a
+	// selector option, but that's a significant API change.
+	BSGeometryMesh* SelectMesh(uint8_t whichMesh) {
+		if (whichMesh < meshes.size()) {
+			selectedMesh = whichMesh;
+			return &meshes[selectedMesh];
+		}
+		return nullptr;
+	}
+	// ReleaseMesh resets the selected mesh data to default.  This is a stand in for a mutex unlock operation
+	// so should always be called as soon after SelectMesh as possble.
+	void ReleaseMesh() {
+		selectedMesh = 0;
+		return;
+	}
 };
 
 class NiSkinInstance;
