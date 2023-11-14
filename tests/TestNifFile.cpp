@@ -280,6 +280,17 @@ TEST_CASE("Load and save file (FO76)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Load and save file (SF)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_SF";
+	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
 TEST_CASE("FixBSXFlags (remove external emittance)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_FixBSXFlags_RemoveExtEmit";
 	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);
