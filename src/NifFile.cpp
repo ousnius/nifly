@@ -893,7 +893,7 @@ std::vector<std::reference_wrapper<std::string>> NifFile::GetExternalGeometryPat
 	return meshPaths;
 }
 
-bool NifFile::LoadExternalShapeData(NiShape* shape, std::fstream& infile, uint8_t shapeIndex) {
+bool NifFile::LoadExternalShapeData(NiShape* shape, std::istream& infile, uint8_t shapeIndex) {
 	auto bsgeo = dynamic_cast<BSGeometry*>(shape);
 	if (bsgeo && (shapeIndex < bsgeo->MeshCount())) {
 		NiIStream meshStream(&infile, nullptr);
@@ -905,7 +905,7 @@ bool NifFile::LoadExternalShapeData(NiShape* shape, std::fstream& infile, uint8_
 	return true;
 }
 
-bool NifFile::SaveExternalShapeData(NiShape* shape, std::fstream& outfile, uint8_t shapeIndex) {
+bool NifFile::SaveExternalShapeData(NiShape* shape, std::ostream& outfile, uint8_t shapeIndex) {
 	auto bsgeo = dynamic_cast<BSGeometry*>(shape);
 	if (bsgeo && (shapeIndex < bsgeo->MeshCount())) {
 		NiOStream meshStream(&outfile, nullptr);

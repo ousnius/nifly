@@ -267,10 +267,10 @@ public:
 	// Returns a list of mesh names useful for locating external mesh data eg data/geometry/<meshname>
 	std::vector<std::reference_wrapper<std::string>> GetExternalGeometryPathRefs(NiShape* shape) const;
 
-	// Loads external shape data from the provided fstream, storing data in the provided shape
-	bool LoadExternalShapeData(NiShape* shape, std::fstream& stream, uint8_t shapeIndex);
-	// Saves external shape data from the provided shape, storing data in the provided fstream
-	bool SaveExternalShapeData(NiShape* shape, std::fstream& outfile, uint8_t shapeIndex);
+	// Loads external shape data from the provided istream, storing data in the provided shape
+	bool LoadExternalShapeData(NiShape* shape, std::istream& stream, uint8_t shapeIndex);
+	// Saves external shape data from the provided shape, storing data in the provided ostream
+	bool SaveExternalShapeData(NiShape* shape, std::ostream& outfile, uint8_t shapeIndex);
 
 	// Returns references to all texture path strings of the shape
 	std::vector<std::reference_wrapper<std::string>> GetTexturePathRefs(NiShape* shape) const;
