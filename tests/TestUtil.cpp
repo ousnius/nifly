@@ -9,7 +9,7 @@ bool CompareBinaryFiles(const std::filesystem::path& fileName1, const std::files
 
 	// Compare file size to start with
 	std::streampos fileSize1 = fileStream1.tellg();
-	std::streampos fileSize2 = fileStream1.tellg();
+	std::streampos fileSize2 = fileStream2.tellg();
 
 	UNSCOPED_INFO("File size '" << fileName1.filename() << "': " << fileSize1);
 	UNSCOPED_INFO("File size '" << fileName2.filename() << "': " << fileSize2);
