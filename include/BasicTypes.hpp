@@ -343,6 +343,26 @@ public:
 		if (mode == Mode::Reading)
 			fl = halfData;
 	}
+	
+	void SyncUDEC3(Vector3& vec) {
+		uint32_t data;
+
+		if (mode == Mode::Writing) {
+			data =  (((uint32_t)((vec.z+1.0)*511.5)) & 1023) << 20;
+			data &= (((uint32_t)((vec.y+1.0)*511.5)) & 1023) << 10;
+			data &= (((uint32_t)((vec.x+1.0)*511.5)) & 1023);			
+		}
+
+		Sync(data);
+
+		if (mode == Mode::Reading) {
+			vec.x = (float)(((data & 1023) / 511.5) - 1.0);
+			vec.y = (float)((((data >> 10) & 1023) / 511.5) - 1.0);
+			vec.z = (float)((((data >> 20) & 1023) / 511.5) - 1.0);
+		}		
+	}
+
+	
 
 	NiOStream* asWrite() { return ostream; }
 	NiIStream* asRead() { return istream; }
