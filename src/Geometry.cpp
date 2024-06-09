@@ -1583,7 +1583,7 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 		// this scale makes default vertex positions closely match the older games
 		float havokScale = 69.969f;
 		// experimentally, the below scale produced very accurate values to SSE mesh sizes (comparing markerxheading.nif)
-		// float havokScale = 69.9866;
+		// float havokScale = 69.9866f;
 		auto unpack = [&](float posScale) -> float {
 			int16_t val;
 			stream.Sync(val);

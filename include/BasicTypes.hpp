@@ -144,7 +144,7 @@ public:
 	// Check if file has a Fallout 76 version range
 	bool IsFO76() const { return file == V20_2_0_7 && stream == 155; }
 	// Check if file has a Starfield version range
-	bool IsSF() const { return file == V20_2_0_7 && stream == 172; }
+	bool IsSF() const { return file == V20_2_0_7 && stream >= 172 && stream <= 173; }
 
 	// Return an Oblivion file version
 	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 11); }
