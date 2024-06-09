@@ -1581,7 +1581,7 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	for(uint32_t v=0; v< nVertices; v++) {
 		// Traditional scale based on havok to unit transform used in skyrim, fallout, etc. In Starfield mesh files are normalized to metric units, 
 		// this scale makes default vertex positions closely match the older games
-		float havokScale = 69.969;
+		float havokScale = 69.969f;
 		// experimentally, the below scale produced very accurate values to SSE mesh sizes (comparing markerxheading.nif)
 		// float havokScale = 69.9866;
 		auto unpack = [&](float posScale) -> float {
