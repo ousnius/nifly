@@ -201,9 +201,9 @@ void NiHeader::SetExportInfo(const std::string& exportInfo) {
 	exportStrings[2] = &exportInfo3;
 
 	auto it = exportStrings.begin();
-	for (size_t i = 0; i < exportInfo.length() && it < exportStrings.end(); i += 256, ++it) {
-		if (i + 256 <= exportInfo.length())
-			(*it)->get() = exportInfo.substr(i, 256);
+	for (size_t i = 0; i < exportInfo.length() && it < exportStrings.end(); i += 254, ++it) {
+		if (i + 254 <= exportInfo.length())
+			(*it)->get() = exportInfo.substr(i, 254);
 		else
 			(*it)->get() = exportInfo.substr(i, exportInfo.length() - i);
 	}

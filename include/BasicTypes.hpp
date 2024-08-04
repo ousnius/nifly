@@ -1012,7 +1012,7 @@ public:
 
 	std::string GetExportInfo() const;
 
-	// Sets export info string (automatically split into three members after 256 characters each)
+	// Sets export info string (automatically split into three members after 254 characters each)
 	void SetExportInfo(const std::string& exportInfo);
 
 	// Sets pointer to all blocks in the file
