@@ -341,7 +341,7 @@ void NiHeader::SetBlockOrder(std::vector<uint32_t>& newOrder) {
 		b->GetChildRefs(refs);
 
 		for (auto& r : refs) {
-			if (!r->IsEmpty())
+			if (!r->IsEmpty() && r->index < newOrder.size())
 				r->index = newOrder[r->index];
 		}
 
@@ -349,7 +349,7 @@ void NiHeader::SetBlockOrder(std::vector<uint32_t>& newOrder) {
 		b->GetPtrs(ptrs);
 
 		for (auto& p : ptrs) {
-			if (!p->IsEmpty())
+			if (!p->IsEmpty() && p->index < newOrder.size())
 				p->index = newOrder[p->index];
 		}
 	}
