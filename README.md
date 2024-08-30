@@ -16,13 +16,15 @@ Created with a clean-room design.
   - Fallout: New Vegas
   - Fallout 4
   - Fallout 4 VR
-  - The Elder Scrolls IV: Oblivion (not tested a whole lot)
+  - Fallout 76 (mostly untested)
+  - The Elder Scrolls IV: Oblivion (works, but mostly untested)
   - The Elder Scrolls V: Skyrim
   - The Elder Scrolls V: Skyrim Special Edition
   - The Elder Scrolls V: Skyrim VR
+  - Starfield (initial support, mostly untested)
 
 ### Building
-- C++ 17 compiler required
+- C++ 17 compiler support required
 - Use the included CMake lists for building - or simply include the headers and source in your project
 - (optional) To get Catch2 for running the tests, install its [CMake package](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository) (or get it via vcpkg):
 ```bash
