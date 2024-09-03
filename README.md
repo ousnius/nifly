@@ -1,8 +1,10 @@
-# nifly
+## nifly by [ousnius](https://github.com/ousnius)
 C++ NIF library for the NetImmerse File Format (NetImmerse, Gamebryo, Creation Engine).  
 Created with a clean-room design.
 
 [![CMake](https://github.com/ousnius/nifly/actions/workflows/cmake.yml/badge.svg)](https://github.com/ousnius/nifly/actions/workflows/cmake.yml)
+
+Also check out [NiflySharp](https://github.com/ousnius/NiflySharp) for a native C# / .NET version of nifly that uses source generation based on [nifxml](https://github.com/niftools/nifxml).
 
 ### Features
 - Reading and writing NIF files (NetImmerse, Gamebryo, Creation Engine)
@@ -49,4 +51,4 @@ cmake --build build/ --target install  #with admin elevation (or sudo) depending
 - [ousnius](https://github.com/ousnius)
 - [jonwd7](https://github.com/jonwd7)
 - [Caliente](https://github.com/Caliente8)
-- [NifTools team](https://www.niftools.org/)
+- [NifTools team and contributors](https://www.niftools.org/)
