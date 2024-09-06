@@ -323,6 +323,13 @@ bool BSShaderProperty::HasEnvironmentMapping() const {
 	return (shaderFlags1 & (1 << 7)) != 0;
 }
 
+void BSShaderProperty::SetEnvironmentMapping(const bool enable) {
+	if (enable)
+		shaderFlags1 |= 1 << 7;
+	else
+		shaderFlags1 &= ~(1 << 7);
+}
+
 float BSShaderProperty::GetEnvironmentMapScale() const {
 	return environmentMapScale;
 }

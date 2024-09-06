@@ -431,6 +431,7 @@ public:
 	virtual bool HasGlowmap() const { return false; }
 	virtual bool HasGreyscaleColor() const { return false; }
 	virtual bool HasEnvironmentMapping() const { return false; }
+	virtual void SetEnvironmentMapping(const bool) {}
 	virtual uint32_t GetShaderType() const { return 0; }
 	virtual void SetShaderType(const uint32_t) {}
 	virtual Vector2 GetUVOffset() const { return Vector2(); }
@@ -497,6 +498,7 @@ public:
 	bool HasGlowmap() const override;
 	bool HasGreyscaleColor() const override;
 	bool HasEnvironmentMapping() const override;
+	void SetEnvironmentMapping(const bool enable) override;
 	float GetEnvironmentMapScale() const override;
 	Vector2 GetUVOffset() const override;
 	Vector2 GetUVScale() const override;
