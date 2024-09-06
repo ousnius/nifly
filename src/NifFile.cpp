@@ -2959,7 +2959,7 @@ void NifFile::SetShapePartitions(NiShape* shape,
 
 	// Set BSDismemberSkinInstance partition list
 	auto bsdSkinInst = hdr.GetBlock<BSDismemberSkinInstance>(shape->SkinInstanceRef());
-	if (!bsdSkinInst && convertSkinInstance) {
+	if (!bsdSkinInst && convertSkinInstance && hdr.GetVersion().File() == NiFileVersion::V20_2_0_7) {
 		auto newBsdSkinInst = std::make_unique<BSDismemberSkinInstance>();
 		bsdSkinInst = newBsdSkinInst.get();
 
@@ -4454,35 +4454,29 @@ void NifFile::UpdatePartitionFlags(NiShape* shape) {
 }
 
 void NifFile::CreateSkinning(NiShape* shape) {
-	if (shape->HasType<NiTriShape>()) {
+	if (shape->HasType<NiTriShape>() || shape->HasType<NiTriStrips>()) {
 		if (shape->SkinInstanceRef()->IsEmpty()) {
 			int skinDataID = hdr.AddBlock(std::make_unique<NiSkinData>());
 			int partID = hdr.AddBlock(std::make_unique<NiSkinPartition>());
 
-			auto [nifDismemberInstS, nifDismemberInst] = make_unique<BSDismemberSkinInstance>();
-			int dismemberID = hdr.AddBlock(std::move(nifDismemberInstS));
+			NiSkinInstance* skinInst;
+			int skinInstID;
 
-			nifDismemberInst->dataRef.index = skinDataID;
-			nifDismemberInst->skinPartitionRef.index = partID;
-			nifDismemberInst->targetRef.index = GetBlockID(GetRootNode());
-			shape->SkinInstanceRef()->index = dismemberID;
-			shape->SetSkinned(true);
+			if (hdr.GetVersion().File() == NiFileVersion::V20_2_0_7) {
+				auto [nifDismemberInstS, nifDismemberInst] = make_unique<BSDismemberSkinInstance>();
+				skinInstID = hdr.AddBlock(std::move(nifDismemberInstS));
+				skinInst = nifDismemberInst;
+			}
+			else {
+				auto [nifSkinInstS, nifSkinInst] = make_unique<NiSkinInstance>();
+				skinInstID = hdr.AddBlock(std::move(nifSkinInstS));
+				skinInst = nifSkinInst;
+			}
 
-			SetDefaultPartition(shape);
-		}
-	}
-	else if (shape->HasType<NiTriStrips>()) {
-		if (shape->SkinInstanceRef()->IsEmpty()) {
-			int skinDataID = hdr.AddBlock(std::make_unique<NiSkinData>());
-			int partID = hdr.AddBlock(std::make_unique<NiSkinPartition>());
-
-			auto [nifDismemberInstS, nifDismemberInst] = make_unique<BSDismemberSkinInstance>();
-			int skinID = hdr.AddBlock(std::move(nifDismemberInstS));
-
-			nifDismemberInst->dataRef.index = skinDataID;
-			nifDismemberInst->skinPartitionRef.index = partID;
-			nifDismemberInst->targetRef.index = GetBlockID(GetRootNode());
-			shape->SkinInstanceRef()->index = skinID;
+			skinInst->dataRef.index = skinDataID;
+			skinInst->skinPartitionRef.index = partID;
+			skinInst->targetRef.index = GetBlockID(GetRootNode());
+			shape->SkinInstanceRef()->index = skinInstID;
 			shape->SetSkinned(true);
 
 			SetDefaultPartition(shape);
