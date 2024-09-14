@@ -97,9 +97,10 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 
 			vertData.resize(numVertices);
 
+			uint32_t vertexMainSize = vertexDesc.GetVertexMainSize();
 			for (uint32_t i = 0; i < numVertices; i++) {
 				auto& vertex = vertData[i];
-				if (HasVertices()) {
+				if (HasVertices() && vertexMainSize <= 16) {
 					if (IsFullPrecision()) {
 						// Full precision (vert + bitangentX = 16 bytes)
 						stream.Sync((char*) &vertex.vert, sizeof(vertex.vert) + sizeof(vertex.bitangentX));
@@ -112,6 +113,21 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 
 						stream.SyncHalf(vertex.bitangentX);
 					}
+				}
+				else if (vertexMainSize > 16) {
+					// Full precision (vert = 12 bytes)
+					stream.Sync((char*) &vertex.vert, sizeof(vertex.vert));
+
+					// Variable length extra float elements
+					uint8_t vertexExtraCount = (vertexMainSize - 16) / 4;
+					if (vertexExtraCount > 0) {
+						vertex.extra.resize(vertexExtraCount);
+						for (uint8_t i = 0; i < vertexExtraCount; i++)
+							stream.Sync(vertex.extra[i]);
+					}
+
+					// BitangentX after extra floats (bitangentX = 4 bytes)
+					stream.Sync(vertex.bitangentX);
 				}
 
 				if (HasUVs()) {

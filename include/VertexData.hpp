@@ -57,6 +57,11 @@ public:
 	// Checks for a specific flag
 	bool HasFlag(VertexFlags flag) const { return ((desc >> 44) & flag) != 0; }
 
+	// Gets the size of just the main vertex data (position, extra data, bitangentX)
+	uint32_t GetVertexMainSize() {
+		return ((desc & 0xFF00) >> 8) * 4;
+	}
+
 	// Sets the vertex size
 	void SetSize(uint32_t size) {
 		desc &= DESC_MASK_VERT;
@@ -95,8 +100,7 @@ private:
 };
 
 struct BSVertexData {
-	// Single- or half-precision depending on IsFullPrecision() being true
-	Vector3 vert;
+	Vector3 vert; // Single- or half-precision depending on IsFullPrecision() being true
 	float bitangentX = 0.0f; // Maybe the dot product of the vert normal and the z-axis?
 
 	Vector2 uv;
@@ -112,5 +116,6 @@ struct BSVertexData {
 	uint8_t weightBones[4]{};
 
 	float eyeData = 0.0f;
+	std::vector<float> extra; // Variable length extra float data for vertex. Aligned before bitangentX in file.
 };
 } // namespace nifly
