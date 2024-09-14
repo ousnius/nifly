@@ -538,15 +538,20 @@ public:
 // data object for reading and modifying geometry data, we inherit the NiGeometryData interface, and override
 // the Sync function.  The stream provided to sync for this object is not the same stream that is working with
 // a nif file.  
-class BSGeometryMeshData: public NiCloneableStreamable<BSGeometryMeshData, NiGeometryData> {
-	
-public:
+class BSGeometryMeshData : public NiCloneableStreamable<BSGeometryMeshData, NiGeometryData> {
+private:
+	// Traditional scale based on havok to unit transform used in skyrim, fallout, etc. In Starfield mesh files are normalized to metric units,
+	// this scale makes default vertex positions closely match the older games
+	const float havokScale = 69.969f;
+	// experimentally, the below scale produced very accurate values to SSE mesh sizes (comparing markerxheading.nif)
+	// const float havokScale = 69.9866f;
 
+public:
 	struct boneweight {
 		uint16_t boneIndex;
 		uint16_t weight;
 	};
-	
+
 	struct meshlet {
 		uint32_t vertCount;
 		uint32_t vertOffset;
@@ -556,53 +561,53 @@ public:
 
 	struct culldata {
 		Vector4 boundSphere;
-		ByteColor4 normalCone;			// abusing color4 as a 4 byte structure
-		float apexOffset;		
+		ByteColor4 normalCone; // abusing color4 as a 4 byte structure
+		float apexOffset;
 	};
-	
-	uint32_t version;
 
-	uint32_t nTriIndices;
+	uint32_t version = 0;
+
+	uint32_t nTriIndices = 0;
 	std::vector<Triangle> tris;
 
-	float scale;
-	uint32_t nWeightsPerVert;
+	float scale = 0.0f;
+	uint32_t nWeightsPerVert = 0;
 
 	// Vert count is a full 32 bits, versus the 16 bit count in NiGeometryData
-	uint32_t nVertices;
+	uint32_t nVertices = 0;
 	std::vector<uint16_t> packedVerts;
 	// vertices from NIGeometryData
 
-	uint32_t nUV1;
+	uint32_t nUV1 = 0;
 	//std::vector<Vector2> uvs1;
-	uint32_t nUV2;
+	uint32_t nUV2 = 0;
 	//std::vector<Vector2> uvs2;
 	// uvSets from NiGeometryData  -- read/write interspersed with nUV1, nUV2
 
-	uint32_t nColors;
+	uint32_t nColors = 0;
 	std::vector<ByteColor4> vColors;
 	// vertexColors from NiGeometryData
 
-	uint32_t nNormals;
+	uint32_t nNormals = 0;
 	std::vector<uint32_t> packedNormals;
 	// normals from NiGeometryData  (UDEC3 packed in file)
-	
-	uint32_t nTangents;
+
+	uint32_t nTangents = 0;
 	std::vector<uint32_t> packedTangents;
 	// tangents from NiGeometryData  (UDEC3 packed in file)
-	
-	uint32_t nTotalWeights;
-	std::vector < std::vector<boneweight> > skinWeights;
 
-	uint32_t nLODS;	
-	std::vector< std::vector<Triangle> > lodTris;
+	uint32_t nTotalWeights = 0;
+	std::vector<std::vector<boneweight>> skinWeights;
 
-	uint32_t nMeshlets;
+	uint32_t nLODS = 0;
+	std::vector<std::vector<Triangle>> lodTris;
+
+	uint32_t nMeshlets = 0;
 	std::vector<meshlet> meshletList;
 
-	uint32_t nCullData;
-	std::vector<culldata> cullDataList;		
-	
+	uint32_t nCullData = 0;
+	std::vector<culldata> cullDataList;
+
 	void Sync(NiStreamReversible& stream);
 };
 

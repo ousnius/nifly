@@ -1557,56 +1557,58 @@ void BSDynamicTriShape::Create(NiVersion& version,
 }
 
 void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
-	// verts,normals, vertcolors are always present, though it's possible the counts are 0
-	hasVertices = true;	
+	// verts, normals, vertcolors are always present, though it's possible the counts are 0
+	hasVertices = true;
 	hasNormals = true;
 	hasVertexColors = true;
-	
+
 	stream.Sync(version);
-	
+	if (version > 2)
+		return;
+
 	stream.Sync(nTriIndices);
-	tris.resize(nTriIndices/3);
-	for(uint32_t t=0; t<nTriIndices/3; t++) {
-		stream.Sync(tris[t]);		
-	}
+	tris.resize(nTriIndices / 3);
+	for (uint32_t t = 0; t < nTriIndices / 3; t++)
+		stream.Sync(tris[t]);
 
 	stream.Sync(scale);
+	if (scale <= 0.0f)
+		return;
+
 	stream.Sync(nWeightsPerVert);
 
 	stream.Sync(nVertices);
 	// maybe not a good idea to do the below, in case some meshes have over 65k verts, however since
 	// triangles still use 16 bit indices, the total count must still fit under that limit ...
-	numVertices = (uint16_t)nVertices;
+	numVertices = (uint16_t) nVertices;
 	vertices.resize(nVertices);
-	for(uint32_t v=0; v< nVertices; v++) {
-		// Traditional scale based on havok to unit transform used in skyrim, fallout, etc. In Starfield mesh files are normalized to metric units, 
-		// this scale makes default vertex positions closely match the older games
-		float havokScale = 69.969f;
-		// experimentally, the below scale produced very accurate values to SSE mesh sizes (comparing markerxheading.nif)
-		// float havokScale = 69.9866f;
-		auto unpack = [&](float posScale) -> float {
-			int16_t val;
-			stream.Sync(val);
-			if(val<0) {
-				return static_cast<float>((val / 32768.0) * scale * posScale);
-			} else {				
-				return static_cast<float>((val / 32767.0) * scale * posScale);
-			}
-		};
-		auto pack = [&](float component, float posScale) {
-			uint16_t val;
-			uint16_t factor = 32767;	
-			if (component<0) {
-				factor = 32768;
-			} 
-			val = (uint16_t) ((component / (scale * posScale)) * factor);
-			stream.Sync(val);
-		};
-		if(stream.GetMode() == NiStreamReversible::Mode::Reading) {
+	for (uint32_t v = 0; v < nVertices; v++) {
+		if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+			auto unpack = [&](const float posScale) -> float {
+				int16_t val;
+				stream.Sync(val);
+				if (val < 0)
+					return static_cast<float>((val / 32768.0) * scale * posScale);
+				else
+					return static_cast<float>((val / 32767.0) * scale * posScale);
+			};
+
 			vertices[v].x = unpack(havokScale);
 			vertices[v].y = unpack(havokScale);
 			vertices[v].z = unpack(havokScale);
-		} else {
+		}
+		else {
+			auto pack = [&](float component, float posScale) {
+				uint16_t factor;
+				if (component < 0)
+					factor = 32768;
+				else
+					factor = 32767;
+
+				uint16_t val = (uint16_t) ((component / (scale * posScale)) * factor);
+				stream.Sync(val);
+			};
+
 			pack(vertices[v].x, havokScale);
 			pack(vertices[v].y, havokScale);
 			pack(vertices[v].z, havokScale);
@@ -1616,43 +1618,42 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	uvSets.resize(2);
 	stream.Sync(nUV1);
 	uvSets[0].resize(nUV1);
-	for(uint32_t uv=0; uv<nUV1; uv++) {
+	for (uint32_t uv = 0; uv < nUV1; uv++) {
 		stream.SyncHalf(uvSets[0][uv].u);
 		stream.SyncHalf(uvSets[0][uv].v);
 	}
+
 	stream.Sync(nUV2);
 	uvSets[1].resize(nUV2);
-	for(uint32_t uv=0; uv<nUV2; uv++) {
+	for (uint32_t uv = 0; uv < nUV2; uv++) {
 		stream.SyncHalf(uvSets[1][uv].u);
-		stream.SyncHalf(uvSets[0][uv].v);
+		stream.SyncHalf(uvSets[1][uv].v);
 	}
 
 	stream.Sync(nColors);
 	vColors.resize(nColors);
-	for(uint32_t c=0; c<nColors; c++) {
+	for (uint32_t c = 0; c < nColors; c++)
 		stream.Sync(vColors[c]);
-	}
 
 	stream.Sync(nNormals);
 	normals.resize(nNormals);
-	for(uint32_t n=0; n<nNormals; n++) {
+	for (uint32_t n = 0; n < nNormals; n++)
 		stream.SyncUDEC3(normals[n]);
-	}
 
 	stream.Sync(nTangents);
 	tangents.resize(nTangents);
-	for(uint32_t t=0; t<nTangents; t++) {
+	for (uint32_t t = 0; t < nTangents; t++) {
 		stream.SyncUDEC3(tangents[t]);
 		// need to calculate tangent basis and bitangents on read?
 	}
-	
+
 	stream.Sync(nTotalWeights);
-	if (nWeightsPerVert > 0) {
+	if (nWeightsPerVert > 0)
 		skinWeights.resize(nTotalWeights / nWeightsPerVert);
-	}
-	for(auto &vw: skinWeights) {
+
+	for (auto& vw : skinWeights) {
 		vw.resize(nWeightsPerVert);
-		for(uint32_t w=0;w<nWeightsPerVert;w++) {
+		for (uint32_t w = 0; w < nWeightsPerVert; w++) {
 			boneweight bw;
 			bw = vw[w];
 			stream.Sync(bw);
@@ -1662,18 +1663,18 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(nLODS);
 	lodTris.resize(nLODS);
-	for(uint32_t lod=0; lod<nLODS; lod++) {		
-		uint32_t nLodTriIndices = (uint32_t)lodTris[lod].size();		
+	for (uint32_t lod = 0; lod < nLODS; lod++) {
+		uint32_t nLodTriIndices = (uint32_t) lodTris[lod].size();
 		stream.Sync(nLodTriIndices);
 		lodTris[lod].resize(nLodTriIndices);
-		for(uint32_t t=0; t<nLodTriIndices/3; t++) {
+		for (uint32_t t = 0; t < nLodTriIndices / 3; t++) {
 			stream.Sync(lodTris[lod][t]);
 		}
 	}
 
 	stream.Sync(nMeshlets);
 	meshletList.resize(nMeshlets);
-	for(uint32_t mi=0; mi<nMeshlets; mi++) {
+	for (uint32_t mi = 0; mi < nMeshlets; mi++) {
 		meshlet m = meshletList[mi];
 		stream.Sync(m.vertCount);
 		stream.Sync(m.vertOffset);
@@ -1681,16 +1682,16 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 		stream.Sync(m.primOffset);
 		meshletList[mi] = m;
 	}
-	
+
 	stream.Sync(nCullData);
 	cullDataList.resize(nCullData);
-	for(uint32_t ci=0; ci<nCullData; ci++) {
+	for (uint32_t ci = 0; ci < nCullData; ci++) {
 		culldata c = cullDataList[ci];
 		stream.Sync(c.boundSphere);
 		stream.Sync(c.normalCone);
 		stream.Sync(c.apexOffset);
 		cullDataList[ci] = c;
-	}	
+	}
 }
 
 void BSGeometryMesh::Sync(NiStreamReversible& stream) {
