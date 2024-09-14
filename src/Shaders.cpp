@@ -405,8 +405,19 @@ void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 			return;
 	}
 
-	if (stream.GetVersion().Stream() > 139)
+	if (stream.GetVersion().Stream() > 139) {
 		stream.Sync(bslspShaderType);
+
+		// Adjust shader type to old value internally due to removed Height/Parallax enum value (3)
+		if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+			if (bslspShaderType > 3)
+				bslspShaderType += 1;
+		}
+		else {
+			if (bslspShaderType >= 3)
+				bslspShaderType -= 1;
+		}
+	}
 
 	if (stream.GetVersion().Stream() >= 132) {
 		stream.Sync(numSF1);
@@ -519,33 +530,21 @@ void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 
 	switch (bslspShaderType) {
 		case 1:
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 139)
-				stream.Sync(environmentMapScale);
+			stream.Sync(environmentMapScale);
 
 			if (stream.GetVersion().IsFO4()) {
 				stream.Sync(useSSR);
 				stream.Sync(wetnessUseSSR);
 			}
 			break;
-		case 4:
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() > 139) {
-				stream.Sync(skinTintColor);
-				stream.Sync(skinTintAlpha);
-			}
-			break;
 		case 5:
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() > 139)
-				stream.Sync(hairTintColor);
-
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 139)
-				stream.Sync(skinTintColor);
+			stream.Sync(skinTintColor);
 
 			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() >= 130)
 				stream.Sync(skinTintAlpha);
 			break;
 		case 6:
-			if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() <= 139)
-				stream.Sync(hairTintColor);
+			stream.Sync(hairTintColor);
 			break;
 		case 7:
 			stream.Sync(maxPasses);
