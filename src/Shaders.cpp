@@ -460,7 +460,7 @@ void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 		stream.Sync(subsurfaceRolloff);
 		stream.Sync(rimlightPower2);
 
-		if (stream.GetVersion().Stream() == 130 && rimlightPower2 == NiFloatMax)
+		if (rimlightPower2 >= NiFloatMax && rimlightPower2 < NiFloatInf)
 			stream.Sync(backlightPower);
 	}
 
@@ -471,16 +471,16 @@ void BSLightingShaderProperty::Sync(NiStreamReversible& stream) {
 		stream.Sync(wetnessSpecPower);
 		stream.Sync(wetnessMinVar);
 
-		if (stream.GetVersion().Stream() <= 130)
+		if (stream.GetVersion().Stream() == 130)
 			stream.Sync(wetnessEnvmapScale);
 
 		stream.Sync(wetnessFresnelPower);
 		stream.Sync(wetnessMetalness);
 
-		if (stream.GetVersion().Stream() > 130) {
+		if (stream.GetVersion().Stream() > 130)
 			stream.Sync(wetnessUnknown1);
+		if (stream.GetVersion().Stream() >= 155)
 			stream.Sync(wetnessUnknown2);
-		}
 	}
 
 	if (stream.GetVersion().User() == 12 && stream.GetVersion().Stream() > 139) {

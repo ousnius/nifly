@@ -33,6 +33,7 @@ constexpr auto NiUIntMin = std::numeric_limits<uint32_t>::min();
 constexpr auto NiUIntMax = std::numeric_limits<uint32_t>::max();
 constexpr auto NiFloatMin = std::numeric_limits<float>::lowest();
 constexpr auto NiFloatMax = std::numeric_limits<float>::max();
+constexpr auto NiFloatInf = std::numeric_limits<float>::infinity();
 constexpr auto NiVec3Min = Vector3(NiFloatMin, NiFloatMin, NiFloatMin);
 constexpr auto NiVec4Min = Vector4(NiFloatMin, NiFloatMin, NiFloatMin, NiFloatMin);
 
