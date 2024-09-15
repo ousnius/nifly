@@ -245,6 +245,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<NiPosData>();
 	RegisterFactory<NiBoolData>();
 	RegisterFactory<NiFloatData>();
+	RegisterFactory<NiExtraData>();
 	RegisterFactory<NiBinaryExtraData>();
 	RegisterFactory<NiFloatExtraData>();
 	RegisterFactory<NiFloatsExtraData>();

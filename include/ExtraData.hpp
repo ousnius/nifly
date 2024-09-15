@@ -16,6 +16,9 @@ class NiExtraData : public NiCloneableStreamable<NiExtraData, NiObject> {
 public:
 	NiStringRef name;
 
+	static constexpr const char* BlockName = "NiExtraData";
+	const char* GetBlockName() override { return BlockName; }
+
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
 };
