@@ -519,11 +519,11 @@ void BSTriShape::Sync(NiStreamReversible& stream) {
 					stream.Sync((char*) &vertex.vert, sizeof(vertex.vert));
 
 					// Variable length extra float elements
-					uint8_t vertexExtraCount = (vertexMainSize - 16) / 4;
+					uint32_t vertexExtraCount = (vertexMainSize - 16) / 4;
 					if (vertexExtraCount > 0) {
 						vertex.extra.resize(vertexExtraCount);
-						for (uint8_t i = 0; i < vertexExtraCount; i++)
-							stream.Sync(vertex.extra[i]);
+						for (uint32_t e = 0; e < vertexExtraCount; e++)
+							stream.Sync(vertex.extra[e]);
 					}
 
 					// BitangentX after extra floats (bitangentX = 4 bytes)

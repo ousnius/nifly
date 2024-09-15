@@ -335,7 +335,7 @@ public:
 	bool HasUVs() const override { return vertexDesc.HasFlag(VF_UV); }
 
 	void SetSecondUVs(const bool enable);
-	bool HasSecondUVs() { return vertexDesc.HasFlag(VF_UV_2); }
+	bool HasSecondUVs() const { return vertexDesc.HasFlag(VF_UV_2); }
 
 	void SetNormals(const bool enable) override;
 	bool HasNormals() const override { return vertexDesc.HasFlag(VF_NORMAL); }
@@ -548,21 +548,21 @@ private:
 
 public:
 	struct boneweight {
-		uint16_t boneIndex;
-		uint16_t weight;
+		uint16_t boneIndex = 0;
+		uint16_t weight = 0;
 	};
 
 	struct meshlet {
-		uint32_t vertCount;
-		uint32_t vertOffset;
-		uint32_t primCount;
-		uint32_t primOffset;
+		uint32_t vertCount = 0;
+		uint32_t vertOffset = 0;
+		uint32_t primCount = 0;
+		uint32_t primOffset = 0;
 	};
 
 	struct culldata {
 		Vector4 boundSphere;
 		ByteColor4 normalCone; // abusing color4 as a 4 byte structure
-		float apexOffset;
+		float apexOffset = 0.0f;
 	};
 
 	uint32_t version = 0;
