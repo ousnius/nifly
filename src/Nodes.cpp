@@ -126,29 +126,32 @@ void BSRangeNode::Sync(NiStreamReversible& stream) {
 
 
 void UnkMaterialStruct::Sync(NiStreamReversible& stream) {
-	stream.Sync(unkInt1);
+	stream.Sync(biomeFormID);
 	stream.Sync(dirHash);
 	stream.Sync(fileHash);
 	stream.SyncString(mat);
 }
 
-void UnkWeakRefStruct::Sync(NiStreamReversible& stream) {
+void BSWaterReferenceStruct::Sync(NiStreamReversible& stream) {
 	stream.Sync(transform);
 	stream.Sync(resourceID);
 	stream.Sync(unkInt1);
 	material.Sync(stream, 4);
 }
 
-void WeakReference::Sync(NiStreamReversible& stream) {
+void BSWeakReference::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().Stream() >= 173)
+		stream.Sync(formID);
+
 	stream.Sync(resourceID);
 	stream.Sync(numTransforms);
 	transforms.resize(numTransforms);
 	for (uint32_t i = 0; i < numTransforms; i++)
 		stream.Sync(transforms[i]);
 
-	stream.Sync(numUnk1);
-	unkMaterials.resize(numUnk1);
-	for (uint32_t i = 0; i < numUnk1; i++)
+	stream.Sync(numMaterials);
+	unkMaterials.resize(numMaterials);
+	for (uint32_t i = 0; i < numMaterials; i++)
 		unkMaterials[i].Sync(stream);
 }
 
@@ -159,10 +162,10 @@ void BSWeakReferenceNode::Sync(NiStreamReversible& stream) {
 		weakRefs[i].Sync(stream);
 
 	stream.Sync(unkInt1);
-	stream.Sync(numUnk2);
-	unkWeakRefStructs.resize(numUnk2);
-	for (uint32_t i = 0; i < numUnk2; i++)
-		unkWeakRefStructs[i].Sync(stream);
+	stream.Sync(numWaterRefs);
+	waterRefs.resize(numWaterRefs);
+	for (uint32_t i = 0; i < numWaterRefs; i++)
+		waterRefs[i].Sync(stream);
 }
 
 

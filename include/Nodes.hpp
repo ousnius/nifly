@@ -186,7 +186,7 @@ struct BSResourceID {
 };
 
 struct UnkMaterialStruct {
-	uint32_t unkInt1 = 0;
+	uint32_t biomeFormID = 0;
 	uint32_t dirHash = 0;
 	uint32_t fileHash = 0;
 	std::string mat; // mat\0
@@ -194,7 +194,7 @@ struct UnkMaterialStruct {
 	void Sync(NiStreamReversible& stream);
 };
 
-struct UnkWeakRefStruct {
+struct BSWaterReferenceStruct {
     Matrix4 transform;
     BSResourceID resourceID;
     uint32_t unkInt1 = 0;
@@ -203,13 +203,14 @@ struct UnkWeakRefStruct {
 	void Sync(NiStreamReversible& stream);
 };
 
-struct WeakReference {
+struct BSWeakReference {
+	uint32_t formID = 0;
 	BSResourceID resourceID;
 
 	uint32_t numTransforms = 0;
 	std::vector<Matrix4> transforms;
 
-	uint32_t numUnk1;
+	uint32_t numMaterials;
 	std::vector<UnkMaterialStruct> unkMaterials;
 
 	void Sync(NiStreamReversible& stream);
@@ -218,11 +219,11 @@ struct WeakReference {
 class BSWeakReferenceNode : public NiCloneableStreamable<BSWeakReferenceNode, NiNode> {
 public:
 	uint32_t numWeakRefs = 0;
-	std::vector<WeakReference> weakRefs;
+	std::vector<BSWeakReference> weakRefs;
 
 	uint32_t unkInt1 = 0;
-	uint32_t numUnk2 = 0;
-	std::vector<UnkWeakRefStruct> unkWeakRefStructs;
+	uint32_t numWaterRefs = 0;
+	std::vector<BSWaterReferenceStruct> waterRefs;
 
 	static constexpr const char* BlockName = "BSWeakReferenceNode";
 	const char* GetBlockName() override { return BlockName; }
