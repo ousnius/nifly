@@ -54,38 +54,36 @@ void NiVersion::SetFile(NiFileVersion fileVer) {
 
 
 void NiString::Read(NiIStream& stream, const int szSize) {
-	std::array<char, 2048 + 1> buf{};
+	std::unique_ptr<char[]> buf;
 
 	if (szSize == 1) {
 		uint8_t smSize = 0;
 		stream >> smSize;
-		stream.read(buf.data(), smSize);
+
+		buf = std::make_unique<char[]>(smSize + 1);
+		stream.read(buf.get(), smSize);
 		buf[smSize] = 0;
 	}
 	else if (szSize == 2) {
 		uint16_t medSize = 0;
 		stream >> medSize;
-		if (medSize < buf.size())
-			stream.read(buf.data(), medSize);
-		else
-			medSize = static_cast<uint16_t>(buf.size() - 1);
 
+		buf = std::make_unique<char[]>(medSize + 1);
+		stream.read(buf.get(), medSize);
 		buf[medSize] = 0;
 	}
 	else if (szSize == 4) {
 		uint32_t bigSize = 0;
 		stream >> bigSize;
-		if (bigSize < buf.size())
-			stream.read(buf.data(), bigSize);
-		else
-			bigSize = static_cast<uint32_t>(buf.size() - 1);
 
+		buf = std::make_unique<char[]>(bigSize + 1);
+		stream.read(buf.get(), bigSize);
 		buf[bigSize] = 0;
 	}
 	else
 		return;
 
-	str = buf.data();
+	str = buf.get();
 }
 
 void NiString::Write(NiOStream& stream, const int szSize) {
