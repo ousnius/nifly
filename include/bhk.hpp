@@ -641,6 +641,22 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
+class bhkCylinderShape : public NiCloneableStreamable<bhkCylinderShape, bhkConvexShape> {
+private:
+	uint8_t unused1[8]{};
+	uint8_t unused2[12]{};
+
+public:
+	Vector4 vertexA;
+	Vector4 vertexB;
+	float cylinderRadius = 0.0f;
+
+	static constexpr const char* BlockName = "bhkCylinderShape";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
 class bhkTransformShape : public NiCloneableStreamable<bhkTransformShape, bhkShape> {
 private:
 	uint64_t padding = 0;

@@ -292,6 +292,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<bhkConvexVerticesShape>();
 	RegisterFactory<bhkBoxShape>();
 	RegisterFactory<bhkSphereShape>();
+	RegisterFactory<bhkCylinderShape>();
 	RegisterFactory<bhkTransformShape>();
 	RegisterFactory<bhkConvexTransformShape>();
 	RegisterFactory<bhkCapsuleShape>();

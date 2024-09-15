@@ -163,6 +163,15 @@ void bhkBoxShape::Sync(NiStreamReversible& stream) {
 }
 
 
+void bhkCylinderShape::Sync(NiStreamReversible& stream) {
+	stream.Sync(reinterpret_cast<char*>(unused1), 8);
+	stream.Sync(vertexA);
+	stream.Sync(vertexB);
+	stream.Sync(cylinderRadius);
+	stream.Sync(reinterpret_cast<char*>(unused2), 12);
+}
+
+
 void bhkTransformShape::Sync(NiStreamReversible& stream) {
 	shapeRef.Sync(stream);
 	stream.Sync(material);
