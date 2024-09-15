@@ -262,6 +262,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<BSEyeCenterExtraData>();
 	RegisterFactory<BSPackedCombinedSharedGeomDataExtra>();
 	RegisterFactory<BSInvMarker>();
+	RegisterFactory<BSFurnitureMarker>();
 	RegisterFactory<BSFurnitureMarkerNode>();
 	RegisterFactory<BSDecalPlacementVectorExtraData>();
 	RegisterFactory<BSBehaviorGraphExtraData>();

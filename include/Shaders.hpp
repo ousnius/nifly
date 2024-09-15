@@ -383,9 +383,21 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
+enum TestFunction : uint32_t {
+	TEST_ALWAYS,
+	TEST_LESS,
+	TEST_EQUAL,
+	TEST_LESS_EQUAL,
+	TEST_GREATER,
+	TEST_NOT_EQUAL,
+	TEST_GREATER_EQUAL,
+	TEST_NEVER
+};
+
 class NiZBufferProperty : public NiCloneableStreamable<NiZBufferProperty, NiProperty> {
 public:
 	uint16_t flags = 3;
+	TestFunction testFunction = TEST_LESS_EQUAL;
 
 	static constexpr const char* BlockName = "NiZBufferProperty";
 	const char* GetBlockName() override { return BlockName; }

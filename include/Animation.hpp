@@ -237,6 +237,8 @@ class NiBlendTransformInterpolator
 public:
 	static constexpr const char* BlockName = "NiBlendTransformInterpolator";
 	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible&) {}
 };
 
 class NiKeyBasedInterpolator : public NiInterpolator {};
@@ -622,7 +624,10 @@ public:
 	GeomMorpherFlags morpherFlags = GM_UPDATE_NORMALS_DISABLED;
 	NiBlockRef<NiMorphData> dataRef;
 	bool alwaysUpdate = false;
+	NiBlockRefArray<NiInterpolator> interpolatorRefs;
 	NiSyncVector<MorphWeight> interpWeights;
+
+	NiVector<uint32_t> unknownInts;
 
 	static constexpr const char* BlockName = "NiGeomMorpherController";
 	const char* GetBlockName() override { return BlockName; }
@@ -1062,9 +1067,21 @@ public:
 
 class ControllerLink {
 public:
+	NiString targetName;
 	NiBlockRef<NiInterpolator> interpolatorRef;
 	NiBlockRef<NiTimeController> controllerRef;
+
+	NiBlockRef<NiBlendInterpolator> blendInterpolatorRef;
+	uint16_t blendIndex = 0;
+
 	uint8_t priority = 0;
+
+	NiBlockRef<NiStringPalette> stringPaletteRef;
+	uint32_t nodeNameOffset = 0;
+	uint32_t propertyTypeOffset = 0;
+	uint32_t controllerTypeOffset = 0;
+	uint32_t controllerIDOffset = 0;
+	uint32_t interpIDOffset = 0;
 
 	NiStringRef nodeName;
 	NiStringRef propType;
@@ -1073,20 +1090,40 @@ public:
 	NiStringRef interpID;
 
 	void Sync(NiStreamReversible& stream) {
+		if (stream.GetVersion().File() < V10_1_0_104)
+			targetName.Sync(stream, 4);
+
 		if (stream.GetVersion().File() >= V10_1_0_106)
 			interpolatorRef.Sync(stream);
 
 		if (stream.GetVersion().File() <= V20_5_0_0)
 			controllerRef.Sync(stream);
 
+		if (stream.GetVersion().File() >= V10_1_0_104 && stream.GetVersion().File() <= V10_1_0_110) {
+			blendInterpolatorRef.Sync(stream);
+			stream.Sync(blendIndex);
+		}
+
 		if (stream.GetVersion().File() >= V10_1_0_106 && stream.GetVersion().Stream() > 0)
 			stream.Sync(priority);
 
-		nodeName.Sync(stream);
-		propType.Sync(stream);
-		ctrlType.Sync(stream);
-		ctrlID.Sync(stream);
-		interpID.Sync(stream);
+		if ((stream.GetVersion().File() >= V10_1_0_104 && stream.GetVersion().File() < V10_1_0_114) ||
+			(stream.GetVersion().File() >= V20_1_0_1)) {
+			nodeName.Sync(stream);
+			propType.Sync(stream);
+			ctrlType.Sync(stream);
+			ctrlID.Sync(stream);
+			interpID.Sync(stream);
+		}
+
+		if (stream.GetVersion().File() >= V10_2_0_0 && stream.GetVersion().File() < V20_1_0_1) {
+			stringPaletteRef.Sync(stream);
+			stream.Sync(nodeNameOffset);
+			stream.Sync(propertyTypeOffset);
+			stream.Sync(controllerTypeOffset);
+			stream.Sync(controllerIDOffset);
+			stream.Sync(interpIDOffset);
+		}
 	}
 
 	void GetStringRefs(std::vector<NiStringRef*>& refs) {
@@ -1100,11 +1137,15 @@ public:
 	void GetChildRefs(std::set<NiRef*>& refs) {
 		refs.insert(&interpolatorRef);
 		refs.insert(&controllerRef);
+		refs.insert(&blendInterpolatorRef);
+		refs.insert(&stringPaletteRef);
 	}
 
 	void GetChildIndices(std::vector<uint32_t>& indices) {
 		indices.push_back(interpolatorRef.index);
 		indices.push_back(controllerRef.index);
+		indices.push_back(blendInterpolatorRef.index);
+		indices.push_back(stringPaletteRef.index);
 	}
 };
 
@@ -1166,6 +1207,8 @@ public:
 	float stopTime = 0.0f;
 	NiBlockPtr<NiControllerManager> managerRef;
 	NiStringRef accumRootName;
+
+	NiBlockRef<NiStringPalette> stringPaletteRef;
 
 	NiBlockRef<BSAnimNotes> animNotesRef;
 	NiBlockRefShortArray<BSAnimNotes> animNotesRefs;

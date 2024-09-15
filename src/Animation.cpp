@@ -297,13 +297,23 @@ void NiGeomMorpherController::Sync(NiStreamReversible& stream) {
 	stream.Sync(morpherFlags);
 	dataRef.Sync(stream);
 	stream.Sync(alwaysUpdate);
-	interpWeights.Sync(stream);
+
+	if (stream.GetVersion().File() >= V10_1_0_106 && stream.GetVersion().File() <= V20_1_0_3)
+		interpolatorRefs.Sync(stream);
+
+	if (stream.GetVersion().File() >= V10_2_0_0 && stream.GetVersion().File() <= V20_0_0_5 && stream.GetVersion().Stream() > 9)
+		unknownInts.Sync(stream);
+
+	if (stream.GetVersion().File() >= V20_1_0_3)
+		interpWeights.Sync(stream);
 }
 
 void NiGeomMorpherController::GetChildRefs(std::set<NiRef*>& refs) {
 	NiInterpController::GetChildRefs(refs);
 
 	refs.insert(&dataRef);
+
+	interpolatorRefs.GetIndexPtrs(refs);
 
 	for (auto& m : interpWeights)
 		m.GetChildRefs(refs);
@@ -313,6 +323,8 @@ void NiGeomMorpherController::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiInterpController::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
+
+	interpolatorRefs.GetIndices(indices);
 
 	for (auto& m : interpWeights)
 		m.GetChildIndices(indices);
@@ -826,6 +838,9 @@ void NiControllerSequence::Sync(NiStreamReversible& stream) {
 	managerRef.Sync(stream);
 	accumRootName.Sync(stream);
 
+	if (stream.GetVersion().File() >= V10_1_0_113 && stream.GetVersion().File() < V20_1_0_1)
+		stringPaletteRef.Sync(stream);
+
 	if (stream.GetVersion().Stream() >= 24 && stream.GetVersion().Stream() <= 28)
 		animNotesRef.Sync(stream);
 	else if (stream.GetVersion().Stream() > 28)
@@ -842,6 +857,7 @@ void NiControllerSequence::GetChildRefs(std::set<NiRef*>& refs) {
 	NiSequence::GetChildRefs(refs);
 
 	refs.insert(&textKeyRef);
+	refs.insert(&stringPaletteRef);
 	refs.insert(&animNotesRef);
 	animNotesRefs.GetIndexPtrs(refs);
 }
@@ -850,6 +866,7 @@ void NiControllerSequence::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiSequence::GetChildIndices(indices);
 
 	indices.push_back(textKeyRef.index);
+	indices.push_back(stringPaletteRef.index);
 	indices.push_back(animNotesRef.index);
 	animNotesRefs.GetIndices(indices);
 }

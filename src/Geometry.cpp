@@ -44,7 +44,7 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(hasVertices);
 
-	if (hasVertices && !isPSys) {
+	if (hasVertices && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		vertices.resize(numVertices);
 		for (uint16_t i = 0; i < numVertices; i++)
 			stream.Sync(vertices[i]);
@@ -66,7 +66,7 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 		stream.Sync(materialCRC);
 
 	stream.Sync(hasNormals);
-	if (hasNormals && !isPSys) {
+	if (hasNormals && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		normals.resize(numVertices);
 
 		for (uint16_t i = 0; i < numVertices; i++)
@@ -87,13 +87,13 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 	stream.Sync(bounds);
 
 	stream.Sync(hasVertexColors);
-	if (hasVertexColors && !isPSys) {
+	if (hasVertexColors && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		vertexColors.resize(numVertices);
 		for (uint16_t i = 0; i < numVertices; i++)
 			stream.Sync(vertexColors[i]);
 	}
 
-	if (numTextureSets > 0 && !isPSys) {
+	if (numTextureSets > 0 && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		uvSets.resize(numTextureSets);
 		for (uint32_t i = 0; i < numTextureSets; i++) {
 			uvSets[i].resize(numVertices);

@@ -197,6 +197,9 @@ void NiWireframeProperty::Sync(NiStreamReversible& stream) {
 
 void NiZBufferProperty::Sync(NiStreamReversible& stream) {
 	stream.Sync(flags);
+
+	if (stream.GetVersion().File() >= V4_1_0_12 && stream.GetVersion().File() <= V20_0_0_5)
+		stream.Sync(testFunction);
 }
 
 

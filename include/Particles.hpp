@@ -38,11 +38,22 @@ public:
 class NiParticlesData : public NiCloneableStreamable<NiParticlesData, NiGeometryData> {
 public:
 	bool hasRadii = false;
+	std::vector<float> radii;
+
 	uint16_t numActive = 0;
+
 	bool hasSizes = false;
+	std::vector<float> sizes;
+
 	bool hasRotations = false;
+	std::vector<Quaternion> rotations;
+
 	bool hasRotationAngles = false;
+	std::vector<float> rotationAngles;
+
 	bool hasRotationAxes = false;
+	std::vector<Vector3> rotationAxes;
+
 	bool hasTextureIndices = false;
 
 	NiVector<Vector4> subtexOffsets;
@@ -85,10 +96,42 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
+struct NiParticleInfo {
+	Vector3 velocity;
+	Vector3 rotationAxis;
+	float age = 0.0f;
+	float lifeSpan = 0.0f;
+	float lastUpdate = 0.0f;
+	uint16_t spawnGeneration = 0;
+	uint16_t code = 0;
+
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(velocity);
+
+		if (stream.GetVersion().File() <= V10_4_0_1)
+			stream.Sync(rotationAxis);
+
+		stream.Sync(age);
+		stream.Sync(lifeSpan);
+		stream.Sync(lastUpdate);
+		stream.Sync(spawnGeneration);
+		stream.Sync(code);
+	}
+};
+
 class NiPSysData : public NiCloneableStreamable<NiPSysData, NiRotatingParticlesData> {
 public:
+	std::vector<NiParticleInfo> particleInfo;
+
 	Vector3 unknownVector;
+	uint8_t unknownQQSpeedByte1 = 0;
 	bool hasRotationSpeeds = false;
+
+	std::vector<float> rotationSpeeds;
+	uint16_t numAddedParticles = 0;
+	uint16_t addedParticlesBase = 0;
+
+	uint8_t unknownQQSpeedByte2 = 0;
 
 	static constexpr const char* BlockName = "NiPSysData";
 	const char* GetBlockName() override { return BlockName; }
@@ -550,6 +593,10 @@ public:
 	NiBlockRef<NiObject> skinInstanceRef;
 	NiBlockRef<NiProperty> shaderPropertyRef;
 	NiBlockRef<NiProperty> alphaPropertyRef;
+
+	bool hasShader = false;
+	NiStringRef shaderName;
+	int shaderExtraData = 0;
 
 	NiSyncVector<NiStringRef> materialNames;
 	NiVector<uint32_t> materialExtraData;
