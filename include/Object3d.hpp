@@ -1009,12 +1009,6 @@ struct QuaternionXYZW {
 };
 
 
-struct QuatTransform {
-	Vector3 translation;
-	Quaternion rotation;
-	float scale = 1.0f;
-};
-
 struct MatTransform {
 	/* On MatTransform and coordinate-system (CS) transformations:
 

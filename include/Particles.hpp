@@ -179,6 +179,34 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
+class NiPSysEmitterCtlr : public NiCloneableStreamable<NiPSysEmitterCtlr, NiPSysModifierCtlr> {
+public:
+	NiBlockRef<NiPSysEmitterCtlrData> dataRef;
+	NiBlockRef<NiInterpolator> visInterpolatorRef;
+
+	static constexpr const char* BlockName = "NiPSysEmitterCtlr";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+};
+
+class BSMasterParticleSystem;
+
+class BSPSysMultiTargetEmitterCtlr
+	: public NiCloneableStreamable<BSPSysMultiTargetEmitterCtlr, NiPSysEmitterCtlr> {
+public:
+	uint16_t maxEmitters = 0;
+	NiBlockPtr<BSMasterParticleSystem> masterParticleSystemRef;
+
+	static constexpr const char* BlockName = "BSPSysMultiTargetEmitterCtlr";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetPtrs(std::set<NiPtr*>& ptrs) override;
+};
+
 class NiParticleSystem;
 
 class NiPSysModifier : public NiCloneableStreamable<NiPSysModifier, NiObject> {

@@ -162,6 +162,40 @@ void NiPSysEmitterCtlrData::Sync(NiStreamReversible& stream) {
 }
 
 
+void NiPSysEmitterCtlr::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() < V10_1_0_104)
+		dataRef.Sync(stream);
+	else
+		visInterpolatorRef.Sync(stream);
+}
+
+void NiPSysEmitterCtlr::GetChildRefs(std::set<NiRef*>& refs) {
+	NiPSysModifierCtlr::GetChildRefs(refs);
+
+	refs.insert(&dataRef);
+	refs.insert(&visInterpolatorRef);
+}
+
+void NiPSysEmitterCtlr::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiPSysModifierCtlr::GetChildIndices(indices);
+
+	indices.push_back(dataRef.index);
+	indices.push_back(visInterpolatorRef.index);
+}
+
+
+void BSPSysMultiTargetEmitterCtlr::Sync(NiStreamReversible& stream) {
+	stream.Sync(maxEmitters);
+	masterParticleSystemRef.Sync(stream);
+}
+
+void BSPSysMultiTargetEmitterCtlr::GetPtrs(std::set<NiPtr*>& ptrs) {
+	NiPSysEmitterCtlr::GetPtrs(ptrs);
+
+	ptrs.insert(&masterParticleSystemRef);
+}
+
+
 void NiPSysModifier::Sync(NiStreamReversible& stream) {
 	name.Sync(stream);
 

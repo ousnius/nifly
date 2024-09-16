@@ -315,7 +315,7 @@ enum CoordGenType : uint32_t {
 
 class NiDynamicEffect : public NiCloneableStreamable<NiDynamicEffect, NiAVObject> {
 public:
-	bool switchState = false;
+	bool switchState = true;
 	NiBlockPtrArray<NiNode> affectedNodes;
 
 	void Sync(NiStreamReversible& stream);

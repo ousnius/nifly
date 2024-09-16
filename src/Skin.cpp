@@ -512,7 +512,10 @@ void NiSkinPartition::PrepareTriParts(const std::vector<Triangle>& shapeTris) {
 
 void NiSkinInstance::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
-	skinPartitionRef.Sync(stream);
+
+	if (stream.GetVersion().File() >= V10_1_0_101)
+		skinPartitionRef.Sync(stream);
+
 	targetRef.Sync(stream);
 	boneRefs.Sync(stream);
 }

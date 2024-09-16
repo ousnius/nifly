@@ -293,6 +293,12 @@ void NiMorphData::SetMorphs(const uint32_t numVerts, const std::vector<Morph>& m
 }
 
 
+void NiInterpController::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() >= V10_1_0_104 && stream.GetVersion().File() <= V10_1_0_108)
+		stream.Sync(managerControlled);
+}
+
+
 void NiGeomMorpherController::Sync(NiStreamReversible& stream) {
 	stream.Sync(morpherFlags);
 	dataRef.Sync(stream);
@@ -412,6 +418,24 @@ void NiTextureTransformController::Sync(NiStreamReversible& stream) {
 }
 
 
+void NiKeyframeController::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() < V10_1_0_104)
+		dataRef.Sync(stream);
+}
+
+void NiKeyframeController::GetChildRefs(std::set<NiRef*>& refs) {
+	NiSingleInterpController::GetChildRefs(refs);
+
+	refs.insert(&dataRef);
+}
+
+void NiKeyframeController::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiSingleInterpController::GetChildIndices(indices);
+
+	indices.push_back(dataRef.index);
+}
+
+
 void BSLightingShaderPropertyColorController::Sync(NiStreamReversible& stream) {
 	stream.Sync(typeOfControlledColor);
 }
@@ -457,35 +481,6 @@ void NiPSysModifierCtlr::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiSingleInterpController::GetStringRefs(refs);
 
 	refs.emplace_back(&modifierName);
-}
-
-
-void NiPSysEmitterCtlr::Sync(NiStreamReversible& stream) {
-	visInterpolatorRef.Sync(stream);
-}
-
-void NiPSysEmitterCtlr::GetChildRefs(std::set<NiRef*>& refs) {
-	NiPSysModifierCtlr::GetChildRefs(refs);
-
-	refs.insert(&visInterpolatorRef);
-}
-
-void NiPSysEmitterCtlr::GetChildIndices(std::vector<uint32_t>& indices) {
-	NiPSysModifierCtlr::GetChildIndices(indices);
-
-	indices.push_back(visInterpolatorRef.index);
-}
-
-
-void BSPSysMultiTargetEmitterCtlr::Sync(NiStreamReversible& stream) {
-	stream.Sync(maxEmitters);
-	masterParticleSystemRef.Sync(stream);
-}
-
-void BSPSysMultiTargetEmitterCtlr::GetPtrs(std::set<NiPtr*>& ptrs) {
-	NiPSysEmitterCtlr::GetPtrs(ptrs);
-
-	ptrs.insert(&masterParticleSystemRef);
 }
 
 
@@ -556,30 +551,116 @@ void InterpBlendItem::Sync(NiStreamReversible& stream) {
 	interpolatorRef.Sync(stream);
 	stream.Sync(weight);
 	stream.Sync(normalizedWeight);
-	stream.Sync(priority);
+	if (stream.GetVersion().File() < V10_1_0_110)
+		stream.Sync(priorityInt);
+	else
+		stream.Sync(priority);
 	stream.Sync(easeSpinner);
 }
 
 
 void NiBlendInterpolator::Sync(NiStreamReversible& stream) {
-	stream.Sync(flags);
-	stream.Sync(arraySize);
-	stream.Sync(weightThreshold);
+	if (stream.GetVersion().File() >= V10_1_0_112)
+		stream.Sync(flags);
 
-	if ((flags & INTERP_BLEND_MANAGER_CONTROLLED) == 0) {
-		stream.Sync(interpCount);
-		stream.Sync(singleIndex);
-		stream.Sync(highPriority);
-		stream.Sync(nextHighPriority);
-		stream.Sync(singleTime);
-		stream.Sync(highWeightsSum);
-		stream.Sync(nextHighWeightsSum);
-		stream.Sync(highEaseSpinner);
+	if (stream.GetVersion().File() < V10_1_0_110) {
+		stream.Sync(arraySize);
+	}
+	else {
+		uint8_t arraySizeByte = 0;
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+			arraySizeByte = static_cast<uint8_t>(arraySize);
 
+		stream.Sync(arraySizeByte);
+
+		if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+			arraySize = arraySizeByte;
+	}
+
+	if (stream.GetVersion().File() < V10_1_0_110)
+		stream.Sync(arrayGrowBy);
+
+	if (stream.GetVersion().File() >= V10_1_0_112)
+		stream.Sync(weightThreshold);
+
+	if (stream.GetVersion().File() >= V10_1_0_112) {
+		if ((flags & INTERP_BLEND_MANAGER_CONTROLLED) == 0) {
+			uint8_t interpCountByte = 0;
+			if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+				interpCountByte = static_cast<uint8_t>(interpCount);
+
+			stream.Sync(interpCountByte);
+
+			if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+				interpCount = interpCountByte;
+
+			stream.Sync(singleIndex);
+			stream.Sync(highPriority);
+			stream.Sync(nextHighPriority);
+			stream.Sync(singleTime);
+			stream.Sync(highWeightsSum);
+			stream.Sync(nextHighWeightsSum);
+			stream.Sync(highEaseSpinner);
+
+			interpItems.resize(arraySize);
+			for (auto& item : interpItems)
+				item.Sync(stream);
+		}
+	}
+	else {
 		interpItems.resize(arraySize);
 		for (auto& item : interpItems)
 			item.Sync(stream);
+
+		stream.Sync(managerControlled);
+		stream.Sync(weightThreshold);
+		stream.Sync(onlyUseHighestWeight);
 	}
+
+	if (stream.GetVersion().File() < V10_1_0_110) {
+		stream.Sync(interpCount);
+		stream.Sync(singleIndexShort);
+	}
+
+	if (stream.GetVersion().File() >= V10_1_0_110 && stream.GetVersion().File() < V10_1_0_112) {
+		uint8_t interpCountByte = 0;
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+			interpCountByte = static_cast<uint8_t>(interpCount);
+
+		stream.Sync(interpCountByte);
+
+		if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+			interpCount = interpCountByte;
+
+		stream.Sync(singleIndex);
+	}
+
+	if (stream.GetVersion().File() >= V10_1_0_108 && stream.GetVersion().File() < V10_1_0_112) {
+		singleInterpolatorRef.Sync(stream);
+		stream.Sync(singleTime);
+	}
+
+	if (stream.GetVersion().File() < V10_1_0_110) {
+		stream.Sync(highPriorityInt);
+		stream.Sync(nextHighPriorityInt);
+	}
+
+	if (stream.GetVersion().File() >= V10_1_0_110 && stream.GetVersion().File() < V10_1_0_112) {
+		stream.Sync(highPriority);
+		stream.Sync(nextHighPriority);
+	}
+}
+
+void NiBlendInterpolator::GetChildRefs(std::set<NiRef*>& refs) {
+	NiInterpolator::GetChildRefs(refs);
+
+	refs.insert(&singleInterpolatorRef);
+}
+
+void NiBlendInterpolator::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiInterpolator::GetChildIndices(indices);
+
+	indices.push_back(singleInterpolatorRef.index);
 }
 
 
@@ -595,6 +676,12 @@ void NiBlendFloatInterpolator::Sync(NiStreamReversible& stream) {
 
 void NiBlendPoint3Interpolator::Sync(NiStreamReversible& stream) {
 	stream.Sync(point);
+}
+
+
+void NiBlendTransformInterpolator::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() < V10_1_0_110)
+		value.Sync(stream);
 }
 
 
@@ -701,7 +788,7 @@ void NiLookAtInterpolator::Sync(NiStreamReversible& stream) {
 	stream.Sync(flags);
 	lookAtRef.Sync(stream);
 	lookAtName.Sync(stream);
-	stream.Sync(transform);
+	transform.Sync(stream);
 	translateInterpRef.Sync(stream);
 	rollInterpRef.Sync(stream);
 	scaleInterpRef.Sync(stream);
@@ -772,7 +859,9 @@ void NiSequence::Sync(NiStreamReversible& stream) {
 	name.Sync(stream);
 
 	uint32_t sz = controlledBlocks.SyncSize(stream);
-	stream.Sync(arrayGrowBy);
+
+	if (stream.GetVersion().File() >= V10_1_0_106)
+		stream.Sync(arrayGrowBy);
 
 	controlledBlocks.SyncData(stream, sz);
 }
@@ -829,14 +918,24 @@ void BSAnimNotes::GetChildIndices(std::vector<uint32_t>& indices) {
 
 
 void NiControllerSequence::Sync(NiStreamReversible& stream) {
-	stream.Sync(weight);
-	textKeyRef.Sync(stream);
-	stream.Sync(cycleType);
-	stream.Sync(frequency);
-	stream.Sync(startTime);
-	stream.Sync(stopTime);
-	managerRef.Sync(stream);
-	accumRootName.Sync(stream);
+	if (stream.GetVersion().File() >= V10_1_0_106) {
+		stream.Sync(weight);
+		textKeyRef.Sync(stream);
+		stream.Sync(cycleType);
+		stream.Sync(frequency);
+
+		if (stream.GetVersion().File() <= V10_4_0_1)
+			stream.Sync(phase);
+
+		stream.Sync(startTime);
+		stream.Sync(stopTime);
+
+		if (stream.GetVersion().File() == V10_1_0_106)
+			stream.Sync(playBackwards);
+
+		managerRef.Sync(stream);
+		accumRootName.Sync(stream);
+	}
 
 	if (stream.GetVersion().File() >= V10_1_0_113 && stream.GetVersion().File() < V20_1_0_1)
 		stringPaletteRef.Sync(stream);
