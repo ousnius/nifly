@@ -94,6 +94,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<VolumetricFogShaderProperty>();
 	RegisterFactory<SkyShaderProperty>();
 	RegisterFactory<TileShaderProperty>();
+	RegisterFactory<BSShaderNoLightingProperty>();
 	RegisterFactory<BSShaderPPLightingProperty>();
 	RegisterFactory<Lighting30ShaderProperty>();
 	RegisterFactory<BSLightingShaderProperty>();
