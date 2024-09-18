@@ -204,7 +204,9 @@ public:
 						const std::vector<Triangle>* tris,
 						const std::vector<Vector2>* uvs,
 						const std::vector<Vector3>* norms);
-	virtual void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f);
+	virtual void RecalcNormals(const bool smooth = true,
+							   const float smoothThres = 60.0f,
+							   std::unordered_set<uint32_t>* lockedIndices = nullptr);
 	virtual void CalcTangentSpace();
 };
 
@@ -769,7 +771,9 @@ public:
 	bool GetTriangles(std::vector<Triangle>& tris) const override;
 	void SetTriangles(const std::vector<Triangle>& tris) override;
 
-	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f) override;
+	void RecalcNormals(const bool smooth = true,
+					   const float smoothThres = 60.0f,
+					   std::unordered_set<uint32_t>* lockedIndices = nullptr) override;
 	void CalcTangentSpace() override;
 };
 
@@ -809,7 +813,9 @@ public:
 	void SetTriangles(const std::vector<Triangle>& tris) override;
 	std::vector<Triangle> StripsToTris() const;
 
-	void RecalcNormals(const bool smooth = true, const float smoothThres = 60.0f) override;
+	void RecalcNormals(const bool smooth = true,
+					   const float smoothThres = 60.0f,
+					   std::unordered_set<uint32_t>* lockedIndices = nullptr) override;
 	void CalcTangentSpace() override;
 };
 

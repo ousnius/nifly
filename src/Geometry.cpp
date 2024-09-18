@@ -254,7 +254,7 @@ void NiGeometryData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndic
 		EraseVectorIndices(uvSet, vertIndices);
 }
 
-void NiGeometryData::RecalcNormals(const bool, const float) {
+void NiGeometryData::RecalcNormals(const bool, const float, std::unordered_set<uint32_t>*) {
 	SetNormals(true);
 }
 
@@ -889,11 +889,11 @@ void BSTriShape::SetEyeData(const std::vector<float>& in) {
 
 static void CalculateNormals(const std::vector<Vector3>& verts,
 							 const std::vector<Triangle>& tris,
-							 std::vector<Vector3>& norms,
+							 std::vector<Vector3>& outNorms,
 							 const bool smooth,
-							 float smoothThresh) {
-	// Zero norms
-	norms.clear();
+							 float smoothThresh,
+							 std::unordered_set<uint32_t>* lockedIndices = nullptr) {
+	std::vector<Vector3> norms;
 	norms.resize(verts.size());
 
 	// Face normals
@@ -932,6 +932,18 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 				norms[matchset[j]] = seamNorms[j];
 		}
 	}
+
+	if (lockedIndices) {
+		outNorms.resize(norms.size());
+
+		// Move normals of indices that aren't locked only
+		for (uint32_t i = 0; i < static_cast<uint32_t>(norms.size()); i++) {
+			if (lockedIndices->find(i) == lockedIndices->end())
+				outNorms[i] = std::move(norms[i]);
+		}
+	}
+	else
+		outNorms = std::move(norms);
 }
 
 void BSTriShape::RecalcNormals(const bool smooth,
@@ -940,7 +952,7 @@ void BSTriShape::RecalcNormals(const bool smooth,
 	UpdateRawVertices();
 	SetNormals(true);
 
-	CalculateNormals(rawVertices, triangles, rawNormals, smooth, smoothThresh);
+	CalculateNormals(rawVertices, triangles, rawNormals, smooth, smoothThresh, lockedIndices);
 
 	for (uint16_t i = 0; i < numVertices; i++) {
 		if (lockedIndices) {
@@ -1966,13 +1978,15 @@ void NiTriShapeData::SetTriangles(const std::vector<Triangle>& tris) {
 	numTrianglePoints = numTriangles * 3;
 }
 
-void NiTriShapeData::RecalcNormals(const bool smooth, const float smoothThresh) {
+void NiTriShapeData::RecalcNormals(const bool smooth,
+								   const float smoothThresh,
+								   std::unordered_set<uint32_t>* lockedIndices) {
 	if (!HasNormals())
 		return;
 
 	NiTriBasedGeomData::RecalcNormals();
 
-	CalculateNormals(vertices, triangles, normals, smooth, smoothThresh);
+	CalculateNormals(vertices, triangles, normals, smooth, smoothThresh, lockedIndices);
 }
 
 void NiTriShapeData::CalcTangentSpace() {
@@ -2133,7 +2147,9 @@ std::vector<Triangle> NiTriStripsData::StripsToTris() const {
 	return GenerateTrianglesFromStrips(stripsInfo.points);
 }
 
-void NiTriStripsData::RecalcNormals(const bool smooth, const float smoothThresh) {
+void NiTriStripsData::RecalcNormals(const bool smooth,
+									const float smoothThresh,
+									std::unordered_set<uint32_t>* lockedIndices) {
 	if (!HasNormals())
 		return;
 
@@ -2141,7 +2157,7 @@ void NiTriStripsData::RecalcNormals(const bool smooth, const float smoothThresh)
 
 	std::vector<Triangle> tris = StripsToTris();
 
-	CalculateNormals(vertices, tris, normals, smooth, smoothThresh);
+	CalculateNormals(vertices, tris, normals, smooth, smoothThresh, lockedIndices);
 }
 
 void NiTriStripsData::CalcTangentSpace() {

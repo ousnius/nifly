@@ -3695,12 +3695,12 @@ void NifFile::CalcNormalsForShape(NiShape* shape,
 
 	if (auto geomData = GetGeometryData(shape)) {
 		if (geomData)
-			geomData->RecalcNormals(smooth, smoothThresh);
+			geomData->RecalcNormals(smooth, smoothThresh, lockedIndices.empty() ? nullptr : &lockedIndices);
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 		if (bsTriShape)
-			bsTriShape->RecalcNormals(smooth, smoothThresh, &lockedIndices);
+			bsTriShape->RecalcNormals(smooth, smoothThresh, lockedIndices.empty() ? nullptr : &lockedIndices);
 	}
 }
 
