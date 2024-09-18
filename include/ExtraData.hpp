@@ -377,6 +377,17 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
+class BSDistantObjectExtraData
+	: public NiCloneableStreamable<BSDistantObjectExtraData, NiExtraData> {
+public:
+	uint32_t distantObjectFlags = 0;
+
+	static constexpr const char* BlockName = "BSDistantObjectExtraData";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
 class BSConnectPoint {
 public:
 	NiString root;
@@ -425,6 +436,16 @@ public:
 
 	bool ToHKX(const std::string& fileName);
 	bool FromHKX(const std::string& fileName);
+};
+
+class BSCollisionQueryProxyExtraData : public NiCloneableStreamable<BSCollisionQueryProxyExtraData, BSExtraData> {
+public:
+	NiVector<char> data;
+
+	static constexpr const char* BlockName = "BSCollisionQueryProxyExtraData";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
 };
 
 class SkinAttach : public NiCloneableStreamable<SkinAttach, NiExtraData> {

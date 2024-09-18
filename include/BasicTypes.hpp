@@ -523,11 +523,6 @@ public:
 	bool operator!=(const std::string& rhs) const { return !operator==(rhs); }
 };
 
-struct NiPlane {
-	Vector3 normal;
-	float constant = 0.0f;
-};
-
 class NiRef {
 public:
 	uint32_t index = NIF_NPOS;
@@ -1179,6 +1174,18 @@ public:
 
 	void Get(NiIStream& stream) override;
 	void Put(NiOStream& stream) override;
+};
+
+struct NiPlane {
+	Vector3 normal;
+	float constant = 0.0f;
+};
+
+class BSTextureArray {
+public:
+	NiStringVector<> textureArray;
+
+	void Sync(NiStreamReversible& stream) { textureArray.Sync(stream); }
 };
 
 // Used for all unknown block types

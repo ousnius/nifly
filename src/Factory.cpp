@@ -30,6 +30,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<BSTreeNode>();
 	RegisterFactory<BSOrderedNode>();
 	RegisterFactory<BSMultiBoundNode>();
+	RegisterFactory<BSDistantObjectInstancedNode>();
 	RegisterFactory<BSDebrisNode>();
 	RegisterFactory<BSBlastNode>();
 	RegisterFactory<BSDamageStage>();
@@ -212,6 +213,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<NiPSysInitialRotAngleVarCtlr>();
 	RegisterFactory<NiPSysEmitterPlanarAngleCtlr>();
 	RegisterFactory<NiPSysEmitterPlanarAngleVarCtlr>();
+	RegisterFactory<NiPSysRotDampeningCtlr>();
 	RegisterFactory<NiPSysEmitterCtlr>();
 	RegisterFactory<BSPSysMultiTargetEmitterCtlr>();
 	RegisterFactory<NiControllerManager>();
@@ -271,7 +273,9 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<BSBoneLODExtraData>();
 	RegisterFactory<NiTextKeyExtraData>();
 	RegisterFactory<BSDistantObjectLargeRefExtraData>();
+	RegisterFactory<BSDistantObjectExtraData>();
 	RegisterFactory<BSClothExtraData>();
+	RegisterFactory<BSCollisionQueryProxyExtraData>();
 	RegisterFactory<BSConnectPointParents>();
 	RegisterFactory<BSConnectPointChildren>();
 	RegisterFactory<BSMultiBound>();

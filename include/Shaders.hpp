@@ -556,13 +556,6 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class BSTextureArray {
-public:
-	NiStringVector<> textureArray;
-
-	void Sync(NiStreamReversible& stream) { textureArray.Sync(stream); }
-};
-
 class BSLightingShaderProperty : public NiCloneableStreamable<BSLightingShaderProperty, BSShaderProperty> {
 public:
 	NiBlockRef<BSShaderTextureSet> textureSetRef;

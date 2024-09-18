@@ -370,6 +370,11 @@ void BSDistantObjectLargeRefExtraData::Sync(NiStreamReversible& stream) {
 }
 
 
+void BSDistantObjectExtraData::Sync(NiStreamReversible& stream) {
+	stream.Sync(distantObjectFlags);
+}
+
+
 void BSConnectPoint::Sync(NiStreamReversible& stream) {
 	root.Sync(stream, 4);
 	variableName.Sync(stream, 4);
@@ -420,6 +425,11 @@ bool BSClothExtraData::FromHKX(const std::string& fileName) {
 	data.resize(numBytes);
 	file.read(data.data(), numBytes);
 	return true;
+}
+
+
+void BSCollisionQueryProxyExtraData::Sync(NiStreamReversible& stream) {
+	data.SyncByteArray(stream);
 }
 
 

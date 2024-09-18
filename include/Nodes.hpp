@@ -149,6 +149,52 @@ public:
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
+struct BSResourceID {
+    uint32_t fileHash = 0;
+    char extension[4];
+    uint32_t dirHash = 0;
+};
+
+#pragma pack(push, 1)
+struct BSDistantObjectUnknown {
+	uint64_t unknown1 = 0;
+	uint32_t unknown2 = 0;
+};
+#pragma pack(pop)
+
+struct BSDistantObjectInstance {
+	BSResourceID resourceID;
+	NiVector<BSDistantObjectUnknown> unknownData;
+	NiVector<Matrix4> transforms;
+
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(resourceID);
+		unknownData.Sync(stream);
+		transforms.Sync(stream);
+	}
+};
+
+struct BSShaderTextureArray {
+	uint8_t unknownByte = 1;
+	NiSyncVector<BSTextureArray> textureArrays;
+
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(unknownByte);
+		textureArrays.Sync(stream);
+	}
+};
+
+class BSDistantObjectInstancedNode : public NiCloneableStreamable<BSDistantObjectInstancedNode, BSMultiBoundNode> {
+public:
+	NiSyncVector<BSDistantObjectInstance> instances;
+	BSShaderTextureArray textureArrays[3]{};
+
+	static constexpr const char* BlockName = "BSDistantObjectInstancedNode";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
 class BSRangeNode : public NiCloneableStreamable<BSRangeNode, NiNode> {
 public:
 	uint8_t min = 0;
@@ -177,12 +223,6 @@ class BSDamageStage : public NiCloneable<BSDamageStage, BSBlastNode> {
 public:
 	static constexpr const char* BlockName = "BSDamageStage";
 	const char* GetBlockName() override { return BlockName; }
-};
-
-struct BSResourceID {
-    uint32_t fileHash = 0;
-    char extension[4];
-    uint32_t dirHash = 0;
 };
 
 struct UnkMaterialStruct {

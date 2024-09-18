@@ -1073,6 +1073,13 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
+class NiPSysRotDampeningCtlr
+	: public NiCloneable<NiPSysRotDampeningCtlr, NiPSysModifierFloatCtlr> {
+public:
+	static constexpr const char* BlockName = "NiPSysRotDampeningCtlr";
+	const char* GetBlockName() override { return BlockName; }
+};
+
 class NiStringPalette : public NiCloneableStreamable<NiStringPalette, NiObject> {
 public:
 	NiString palette;

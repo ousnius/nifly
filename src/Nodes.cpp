@@ -118,6 +118,14 @@ void BSMultiBoundNode::GetChildIndices(std::vector<uint32_t>& indices) {
 }
 
 
+void BSDistantObjectInstancedNode::Sync(NiStreamReversible& stream) {
+	instances.Sync(stream);
+
+	for (int i = 0; i < 3; i++)
+		textureArrays[i].Sync(stream);
+}
+
+
 void BSRangeNode::Sync(NiStreamReversible& stream) {
 	stream.Sync(min);
 	stream.Sync(max);
