@@ -4117,12 +4117,14 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 	if (!shape)
 		return false;
 
+	bool allVertsDeleted = false;
+
 	auto geomData = hdr.GetBlock<NiTriBasedGeomData>(shape->DataRef());
 	if (geomData) {
 		geomData->notifyVerticesDelete(indices);
 		if (geomData->GetNumVertices() == 0 || geomData->GetNumTriangles() == 0) {
 			// Deleted all verts or tris
-			return true;
+			allVertsDeleted = true;
 		}
 	}
 
@@ -4131,7 +4133,7 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 		bsTriShape->notifyVerticesDelete(indices);
 		if (bsTriShape->GetNumVertices() == 0 || bsTriShape->GetNumTriangles() == 0) {
 			// Deleted all verts or tris
-			return true;
+			allVertsDeleted = true;
 		}
 	}
 
@@ -4182,7 +4184,7 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 		}
 	}
 
-	return false;
+	return allVertsDeleted;
 }
 
 int NifFile::CalcShapeDiff(NiShape* shape,
