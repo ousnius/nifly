@@ -18,16 +18,16 @@ Also check out [NiflySharp](https://github.com/ousnius/NiflySharp) for a native 
   - Fallout: New Vegas
   - Fallout 4
   - Fallout 4 VR
-  - Fallout 76 (mostly untested)
-  - The Elder Scrolls IV: Oblivion (works, but mostly untested)
+  - Fallout 76
+  - The Elder Scrolls IV: Oblivion
   - The Elder Scrolls V: Skyrim
   - The Elder Scrolls V: Skyrim Special Edition
   - The Elder Scrolls V: Skyrim VR
-  - Starfield (initial support, mostly untested)
+  - Starfield (initial support, no mesh/morph files)
 
 ### Building
 - C++ 17 compiler support required
-- Use the included CMake lists for building - or simply include the headers and source in your project
+- Use the included [CMake](https://cmake.org/) lists for building - or simply include the headers and source in your project
 - (optional) To get Catch2 for running the tests, install its [CMake package](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository) (or get it via vcpkg):
 ```bash
 git clone -b v2.x https://github.com/catchorg/Catch2.git
@@ -35,6 +35,7 @@ cd Catch2
 cmake -Bbuild -H. -DBUILD_TESTING=OFF
 cmake --build build/ --target install  #with admin elevation (or sudo) depending on your cmake prefix path
 ```
+- Support for [xmake](https://xmake.io/) added with https://github.com/ousnius/nifly/pull/48
 
 ### Libraries used
 - [half - IEEE 754-based half-precision floating point library (v1.12.0)](http://half.sourceforge.net/) for 16-bit floats
