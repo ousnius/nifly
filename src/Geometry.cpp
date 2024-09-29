@@ -1594,9 +1594,10 @@ void BSDynamicTriShape::Create(NiVersion& version,
 
 void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	// verts, normals, vertcolors are always present, though it's possible the counts are 0
-	hasVertices = true;
-	hasNormals = true;
-	hasVertexColors = true;
+	SetVertices(true);
+	SetNormals(true);
+	SetTangents(true);
+	SetVertexColors(true);
 
 	stream.Sync(version);
 	if (version > 2)
@@ -1651,8 +1652,12 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 		}
 	}
 
-	uvSets.resize(2);
 	stream.Sync(nUV1);
+	if (nUV1 > 0)
+		SetUVs(true);
+
+	uvSets.resize(2);
+
 	uvSets[0].resize(nUV1);
 	for (uint32_t uv = 0; uv < nUV1; uv++) {
 		stream.SyncHalf(uvSets[0][uv].u);
