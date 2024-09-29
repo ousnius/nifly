@@ -1793,8 +1793,10 @@ NiGeometryData* BSGeometry::GetGeomData() const {
 
 bool BSGeometry::GetTriangles(std::vector<Triangle>& tris) const {
 	if (meshes.size() > selectedMesh) {
-		tris = meshes[selectedMesh].meshData.tris;	
+		tris = meshes[selectedMesh].meshData.tris;
+		return true;
 	}
+
 	return false;
 }
 
