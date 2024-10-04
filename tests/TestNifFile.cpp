@@ -39,6 +39,30 @@ TEST_CASE("Load and save static file (SE)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("Trim texture paths", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Static_SE";
+	std::string fileInput = folderInput + "/" + fileName + nifSuffix;
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+
+	auto shapes = nif.GetShapes();
+	REQUIRE(!shapes.empty());
+
+	auto shader = nif.GetShader(shapes.front());
+	REQUIRE(shader);
+	REQUIRE(shader->HasTextureSet());
+
+	auto textureSet = nif.GetHeader().GetBlock<BSShaderTextureSet>(shader->TextureSetRef());
+	REQUIRE(textureSet);
+	REQUIRE(textureSet->textures.size() == 9);
+
+	textureSet->textures[0].get() = " \\Data\\\\Textures//white.dds\r\n  ";
+
+	nif.TrimTexturePaths();
+	REQUIRE(textureSet->textures[0] == "textures\\white.dds");
+}
+
 TEST_CASE("Load and save static file (FO4)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_Static_FO4";
 	const auto [fileInput, fileOutput, fileExpected] = GetNifFileTuple(fileName);

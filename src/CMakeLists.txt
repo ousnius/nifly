@@ -31,6 +31,7 @@ set(sources
     Factory.cpp
     Geometry.cpp
     NifFile.cpp
+    NifUtil.cpp
     Nodes.cpp
     Objects.cpp
     Particles.cpp
