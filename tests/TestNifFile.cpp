@@ -58,9 +58,11 @@ TEST_CASE("Trim texture paths", "[NifFile]") {
 	REQUIRE(textureSet->textures.size() == 9);
 
 	textureSet->textures[0].get() = " \\Data\\\\Textures//white.dds\r\n  ";
+	textureSet->textures[1].get() = " ";
 
 	nif.TrimTexturePaths();
 	REQUIRE(textureSet->textures[0] == "textures\\white.dds");
+	REQUIRE(textureSet->textures[1] == "");
 }
 
 TEST_CASE("Load and save static file (FO4)", "[NifFile]") {

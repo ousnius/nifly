@@ -20,8 +20,10 @@ void trim_whitespace(std::string& str) {
 	while (i < str.size() && isspace(str[i]))
 		++i;
 
-	if (i == str.size())
+	if (i == str.size()) {
 		str.clear();
+		return;
+	}
 
 	j = str.size() - 1;
 

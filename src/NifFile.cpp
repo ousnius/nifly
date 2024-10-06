@@ -1162,6 +1162,9 @@ void NifFile::TrimTexturePaths() {
 		// Trim whitespace characters (including newlines)
 		trim_whitespace(tex);
 
+		if (tex.empty())
+			return tex;
+
 		// Replace multiple slashes or forward slashes with one backslash
 		tex = std::regex_replace(tex, std::regex("/+|\\\\+"), "\\");
 
