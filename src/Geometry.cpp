@@ -1694,44 +1694,35 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 
 	for (auto& vw : skinWeights) {
 		vw.resize(nWeightsPerVert);
-		for (uint32_t w = 0; w < nWeightsPerVert; w++) {
-			boneweight bw;
-			bw = vw[w];
+		for (auto& bw : vw)
 			stream.Sync(bw);
-			vw[w] = bw;
-		}
 	}
 
 	stream.Sync(nLODS);
-	lodTris.resize(nLODS);
-	for (uint32_t lod = 0; lod < nLODS; lod++) {
-		uint32_t nLodTriIndices = (uint32_t) lodTris[lod].size();
+	lods.resize(nLODS);
+	for (auto& lod : lods) {
+		uint32_t nLodTriIndices = static_cast<uint32_t>(lod.size() * 3);
 		stream.Sync(nLodTriIndices);
-		lodTris[lod].resize(nLodTriIndices);
-		for (uint32_t t = 0; t < nLodTriIndices / 3; t++) {
-			stream.Sync(lodTris[lod][t]);
-		}
+
+		lod.resize(nLodTriIndices / 3);
+		for (auto& lodTri : lod)
+			stream.Sync(lodTri);
 	}
 
 	stream.Sync(nMeshlets);
 	meshletList.resize(nMeshlets);
-	for (uint32_t mi = 0; mi < nMeshlets; mi++) {
-		meshlet m = meshletList[mi];
-		stream.Sync(m.vertCount);
-		stream.Sync(m.vertOffset);
-		stream.Sync(m.primCount);
-		stream.Sync(m.primOffset);
-		meshletList[mi] = m;
+	for (auto& meshlet : meshletList) {
+		stream.Sync(meshlet.vertCount);
+		stream.Sync(meshlet.vertOffset);
+		stream.Sync(meshlet.primCount);
+		stream.Sync(meshlet.primOffset);
 	}
 
 	stream.Sync(nCullData);
 	cullDataList.resize(nCullData);
-	for (uint32_t ci = 0; ci < nCullData; ci++) {
-		culldata c = cullDataList[ci];
-		stream.Sync(c.boundSphere);
-		stream.Sync(c.normalCone);
-		stream.Sync(c.apexOffset);
-		cullDataList[ci] = c;
+	for (auto& cullData : cullDataList) {
+		stream.Sync(cullData.center);
+		stream.Sync(cullData.expand);
 	}
 }
 

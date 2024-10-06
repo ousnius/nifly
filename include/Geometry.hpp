@@ -549,22 +549,21 @@ private:
 	// const float havokScale = 69.9866f;
 
 public:
-	struct boneweight {
+	struct BoneWeight {
 		uint16_t boneIndex = 0;
 		uint16_t weight = 0;
 	};
 
-	struct meshlet {
+	struct Meshlet {
 		uint32_t vertCount = 0;
 		uint32_t vertOffset = 0;
 		uint32_t primCount = 0;
 		uint32_t primOffset = 0;
 	};
 
-	struct culldata {
-		Vector4 boundSphere;
-		ByteColor4 normalCone; // abusing color4 as a 4 byte structure
-		float apexOffset = 0.0f;
+	struct CullData {
+		Vector3 center;
+		Vector3 expand;
 	};
 
 	uint32_t version = 0;
@@ -599,16 +598,16 @@ public:
 	// tangents from NiGeometryData  (UDEC3 packed in file)
 
 	uint32_t nTotalWeights = 0;
-	std::vector<std::vector<boneweight>> skinWeights;
+	std::vector<std::vector<BoneWeight>> skinWeights;
 
 	uint32_t nLODS = 0;
-	std::vector<std::vector<Triangle>> lodTris;
+	std::vector<std::vector<Triangle>> lods;
 
 	uint32_t nMeshlets = 0;
-	std::vector<meshlet> meshletList;
+	std::vector<Meshlet> meshletList;
 
 	uint32_t nCullData = 0;
-	std::vector<culldata> cullDataList;
+	std::vector<CullData> cullDataList;
 
 	void Sync(NiStreamReversible& stream);
 };
