@@ -1168,8 +1168,12 @@ void NifFile::TrimTexturePaths() {
 		// Replace multiple slashes or forward slashes with one backslash
 		tex = std::regex_replace(tex, std::regex("/+|\\\\+"), "\\");
 
-		// Remove everything before the first occurence of "\textures\"
-		tex = std::regex_replace(tex, std::regex(R"(^(.*?)\\textures\\)", std::regex_constants::icase), "");
+		// Search for the first occurrence of "\textures\" (only if "textures\" isn't at the start)
+		std::smatch match;
+		std::regex pattern(R"(^(?!textures\\).*?\\textures\\)", std::regex_constants::icase);
+	
+		if (std::regex_search(tex, match, pattern))
+			tex = tex.substr(match[0].length()); // Remove matched string
 
 		// Remove all backslashes from the front
 		tex = std::regex_replace(tex, std::regex("^\\\\+"), "");
