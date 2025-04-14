@@ -1005,6 +1005,34 @@ private:
 	uint32_t numGroups = 0;
 	std::vector<uint32_t> groupSizes;
 
+	template<class T>
+	bool DeleteUnreferencedBlocksInternal(uint32_t& rootId, uint32_t* deletionCount) {
+		if (rootId == NIF_NPOS)
+			return false;
+	
+		bool anyBlockDeleted = false;
+	
+		for (uint32_t i = 0; i < numBlocks; i++) {
+			if (i != rootId) {
+				// Only check blocks of provided template type
+				auto block = GetBlock<T>(i);
+				if (block && !IsBlockReferenced(i, false)) {
+					DeleteBlock(i);
+
+					anyBlockDeleted = true;
+	
+					if (deletionCount)
+						(*deletionCount)++;
+	
+					if (rootId > i)
+						rootId--;
+				}
+			}
+		}
+	
+		return anyBlockDeleted;
+	}
+
 public:
 	static constexpr const char* BlockName = "NiHeader";
 	const char* GetBlockName() override { return BlockName; }
@@ -1116,27 +1144,16 @@ public:
 	// Use template type "NiObject" for all block types.
 	// Sets the amount of deleted blocks (or 0) in "deletionCount".
 	template<class T>
-	bool DeleteUnreferencedBlocks(const uint32_t rootId, uint32_t* deletionCount = nullptr) {
-		if (rootId == NIF_NPOS)
-			return false;
-
-		for (uint32_t i = 0; i < numBlocks; i++) {
-			if (i != rootId) {
-				// Only check blocks of provided template type
-				auto block = GetBlock<T>(i);
-				if (block && !IsBlockReferenced(i)) {
-					DeleteBlock(i);
-
-					if (deletionCount)
-						(*deletionCount)++;
-
-					// Deleting a block can cause others to become unreferenced
-					return DeleteUnreferencedBlocks<T>(rootId > i ? rootId - 1 : rootId, deletionCount);
-				}
-			}
-		}
-
-		return true;
+	bool DeleteUnreferencedBlocks(const uint32_t rootId, uint32_t* deletionCount) {
+		bool anyBlockDeleted = false;
+		uint32_t newRootId = rootId;
+	
+		do {
+			// Deleting a block can cause others to become unreferenced
+			anyBlockDeleted = DeleteUnreferencedBlocksInternal<T>(newRootId, deletionCount);
+		} while (anyBlockDeleted);
+	
+		return anyBlockDeleted;
 	}
 
 	uint16_t AddOrFindBlockTypeId(const std::string& blockTypeName);
