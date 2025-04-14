@@ -576,13 +576,10 @@ public:
 
 	// Vert count is a full 32 bits, versus the 16 bit count in NiGeometryData
 	uint32_t nVertices = 0;
-	std::vector<uint16_t> packedVerts;
 	// vertices from NIGeometryData
 
 	uint32_t nUV1 = 0;
-	//std::vector<Vector2> uvs1;
 	uint32_t nUV2 = 0;
-	//std::vector<Vector2> uvs2;
 	// uvSets from NiGeometryData  -- read/write interspersed with nUV1, nUV2
 
 	uint32_t nColors = 0;
@@ -590,11 +587,9 @@ public:
 	// vertexColors from NiGeometryData
 
 	uint32_t nNormals = 0;
-	std::vector<uint32_t> packedNormals;
 	// normals from NiGeometryData  (UDEC3 packed in file)
 
 	uint32_t nTangents = 0;
-	std::vector<uint32_t> packedTangents;
 	// tangents from NiGeometryData  (UDEC3 packed in file)
 
 	uint32_t nTotalWeights = 0;

@@ -1688,6 +1688,13 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 		// need to calculate tangent basis and bitangents on read?
 	}
 
+	/*
+	FIXME: Normal and tangent data is in a 10:10:10:2 bits packed X,Y,Z,W format.
+	Each channel should be normalized from unsigned integers to -1.0 to 1.0.
+	The bitangent can be calculated with this formula:
+	bitangent.xyz = normal.xyz x tangent.xyz * tangent.w (the 'x' means cross product).
+	*/
+
 	stream.Sync(nTotalWeights);
 	if (nWeightsPerVert > 0)
 		skinWeights.resize(nTotalWeights / nWeightsPerVert);
