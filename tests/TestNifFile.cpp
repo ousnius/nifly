@@ -364,3 +364,11 @@ TEST_CASE("FixShaderFlags (add environment mapping)", "[NifFile]") {
 
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
+
+TEST_CASE("Load corrupted file", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_Corrupted";
+	std::string fileInput = folderInput + "/" + fileName + nifSuffix;
+
+	NifFile nif;
+	REQUIRE_THROWS(nif.Load(fileInput) == 0);
+}

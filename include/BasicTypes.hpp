@@ -19,9 +19,13 @@ See the included GPLv3 LICENSE file
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <stdexcept>
 
 namespace nifly {
 constexpr auto NIF_NPOS = static_cast<uint32_t>(-1);
+constexpr auto NIF_ARRAY_SIZE_LIMIT = 1024 * 1024 * 8; // arbitrary limit for file IO validation
+constexpr auto NIF_BLOCK_INDEX_LIMIT = 1024 * 1024; // arbitrary limit for file IO validation
+constexpr auto NIF_STRING_INDEX_LIMIT = 1024 * 1024; // arbitrary limit for file IO validation
 
 constexpr auto NiCharMin = std::numeric_limits<char>::min();
 constexpr auto NiCharMax = std::numeric_limits<char>::max();
@@ -772,7 +776,12 @@ public:
 	NiBlockRef() {}
 	NiBlockRef(const uint32_t id) { NiRef::index = id; }
 
-	void Sync(NiStreamReversible& stream) { stream.Sync(base::index); }
+	void Sync(NiStreamReversible& stream) {
+		stream.Sync(base::index);
+
+		if (base::index != NIF_NPOS && base::index > NIF_BLOCK_INDEX_LIMIT)
+			throw std::length_error("IO: Block index is too high.");
+	}
 };
 
 template<typename T>
@@ -847,6 +856,10 @@ public:
 			CleanInvalidRefs();
 
 		stream.Sync(arraySize);
+
+		if (arraySize > NIF_ARRAY_SIZE_LIMIT)
+			throw std::length_error("IO: Array size is too large.");
+
 		refs.resize(arraySize);
 
 		for (auto& r : refs)

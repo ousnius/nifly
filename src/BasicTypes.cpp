@@ -136,8 +136,12 @@ void NiStringRef::Read(NiIStream& stream) {
 		buf[sz] = 0;
 		str = buf.data();
 	}
-	else
+	else {
 		stream >> index;
+		
+		if (index != NIF_NPOS && index > NIF_STRING_INDEX_LIMIT)
+			throw std::length_error("Read: String index is too high.");
+	}
 }
 
 void NiStringRef::Write(NiOStream& stream) {
@@ -148,8 +152,12 @@ void NiStringRef::Write(NiOStream& stream) {
 		stream << sz;
 		stream.write(str.c_str(), str.length());
 	}
-	else
+	else {
+		if (index != NIF_NPOS && index > NIF_STRING_INDEX_LIMIT)
+			throw std::length_error("Write: String index is too high.");
+
 		stream << index;
+	}
 }
 
 
