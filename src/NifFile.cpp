@@ -4008,6 +4008,7 @@ void NifFile::RemoveAlphaProperty(NiShape* shape) {
 		alpha = hdr.GetBlock<NiAlphaProperty>(shape->propertyRefs.GetBlockRef(i));
 		if (alpha) {
 			hdr.DeleteBlock(shape->propertyRefs.GetBlockRef(i));
+			shape->propertyRefs.RemoveBlockRef(i);
 			i--;
 			continue;
 		}
@@ -4025,14 +4026,20 @@ void NifFile::DeleteShape(NiShape* shape) {
 		if (hdr.GetBlockRefCount(shape->ShaderPropertyRef()->index, false) == 1)
 			DeleteShader(shape);
 	}
+	else
+		DeleteShader(shape); // Call anyway (for shaders in property refs)
 
 	DeleteSkinning(shape);
 
-	for (int i = shape->propertyRefs.GetSize() - 1; i >= 0; --i)
+	for (int i = shape->propertyRefs.GetSize() - 1; i >= 0; --i) {
 		hdr.DeleteBlock(shape->propertyRefs.GetBlockRef(i));
+		shape->propertyRefs.RemoveBlockRef(i);
+	}
 
-	for (int i = shape->extraDataRefs.GetSize() - 1; i >= 0; --i)
+	for (int i = shape->extraDataRefs.GetSize() - 1; i >= 0; --i) {
 		hdr.DeleteBlock(shape->extraDataRefs.GetBlockRef(i));
+		shape->extraDataRefs.RemoveBlockRef(i);
+	}
 
 	int shapeID = GetBlockID(shape);
 	hdr.DeleteBlock(shapeID);
@@ -4064,6 +4071,7 @@ void NifFile::DeleteShader(NiShape* shape) {
 
 				hdr.DeleteBlock(shader->controllerRef);
 				hdr.DeleteBlock(shape->propertyRefs.GetBlockRef(i));
+				shape->propertyRefs.RemoveBlockRef(i);
 				i--;
 				continue;
 			}
