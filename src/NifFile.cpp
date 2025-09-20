@@ -1460,6 +1460,8 @@ int NifFile::Save(std::ostream& file, const NifSaveOptions& options) {
 		if (options.sortBlocks)
 			PrettySortBlocks();
 
+		hdr.UpdateHeaderStrings(hasUnknown);
+
 		hdr.Put(stream);
 		stream.InitBlockSize();
 
@@ -2074,8 +2076,6 @@ void NifFile::FinalizeData() {
 				DeleteBinaryTangentData(shape);
 		}
 	}
-
-	hdr.UpdateHeaderStrings(hasUnknown);
 }
 
 bool NifFile::IsSSECompatible() const {
