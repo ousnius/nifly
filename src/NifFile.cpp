@@ -711,13 +711,26 @@ void NifFile::FixShaderFlags() {
 	for (auto& block : blocks) {
 		auto bslsp = dynamic_cast<BSLightingShaderProperty*>(block.get());
 		if (bslsp) {
-			if (bslsp->bslspShaderType != BSLSP_ENVMAP && (bslsp->shaderFlags1 & SLSF1_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
+			if (bslsp->bslspShaderType != BSLSP_ENVMAP
+				&& (bslsp->shaderFlags1 & SLSF1_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
 				// Shader is no environment shader, remove unused shader flag
 				bslsp->shaderFlags1 &= (~SLSF1_ENVIRONMENT_MAPPING);
 			}
-			else if (bslsp->bslspShaderType == BSLSP_ENVMAP && !(bslsp->shaderFlags1 & SLSF1_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
+			else if (bslsp->bslspShaderType == BSLSP_ENVMAP
+					 && !(bslsp->shaderFlags1 & SLSF1_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
 				// Shader is environment shader, add missing shader flag
 				bslsp->shaderFlags1 |= SLSF1_ENVIRONMENT_MAPPING;
+			}
+
+			if (bslsp->bslspShaderType != BSLSP_EYE
+				&& (bslsp->shaderFlags1 & SLSF1_EYE_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
+				// Shader is no eye environment shader, remove unused shader flag
+				bslsp->shaderFlags1 &= (~SLSF1_EYE_ENVIRONMENT_MAPPING);
+			}
+			else if (bslsp->bslspShaderType == BSLSP_EYE
+					 && !(bslsp->shaderFlags1 & SLSF1_EYE_ENVIRONMENT_MAPPING)) { // Same flag in SK and FO4
+				// Shader is eye environment shader, add missing shader flag
+				bslsp->shaderFlags1 |= SLSF1_EYE_ENVIRONMENT_MAPPING;
 			}
 		}
 	}
@@ -1560,7 +1573,7 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 				auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
 				if (bslsp) {
 					// Remember eyes flag for later
-					if ((bslsp->shaderFlags1 & (1 << 17)) != 0)
+					if (bslsp->GetShaderType() == BSLSP_EYE || (bslsp->shaderFlags1 & (1 << 17)) != 0)
 						headPartEyes = true;
 
 					// No normals and tangents with model space maps
