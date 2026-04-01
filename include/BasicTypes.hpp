@@ -358,12 +358,13 @@ public:
 	}
 	
 	void SyncUDEC3(Vector3& vec) {
-		uint32_t data;
+		uint32_t data = 0;
 
 		if (mode == Mode::Writing) {
-			data =  (((uint32_t)((vec.z+1.0)*511.5)) & 1023) << 20;
-			data &= (((uint32_t)((vec.y+1.0)*511.5)) & 1023) << 10;
-			data &= (((uint32_t)((vec.x+1.0)*511.5)) & 1023);			
+			data  = (static_cast<uint32_t>((vec.x + 1.0f) * 511.5f) & 1023);
+			data |= (static_cast<uint32_t>((vec.y + 1.0f) * 511.5f) & 1023) << 10;
+			data |= (static_cast<uint32_t>((vec.z + 1.0f) * 511.5f) & 1023) << 20;
+			data |= static_cast<uint32_t>(1) << 30;
 		}
 
 		Sync(data);

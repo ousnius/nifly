@@ -12,6 +12,7 @@ See the included GPLv3 LICENSE file
 #include "NifUtil.hpp"
 
 #include <array>
+#include <cmath>
 
 using namespace nifly;
 
@@ -1599,6 +1600,24 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	SetTangents(true);
 	SetVertexColors(true);
 
+	// When writing, update counts from actual data sizes
+	if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
+		nTriIndices = static_cast<uint32_t>(tris.size()) * 3;
+		nVertices = static_cast<uint32_t>(vertices.size());
+		numVertices = static_cast<uint16_t>(std::min(nVertices, static_cast<uint32_t>(0xFFFF)));
+		nUV1 = uvSets.size() > 0 ? static_cast<uint32_t>(uvSets[0].size()) : 0;
+		nUV2 = uvSets.size() > 1 ? static_cast<uint32_t>(uvSets[1].size()) : 0;
+		nColors = static_cast<uint32_t>(vColors.size());
+		nNormals = static_cast<uint32_t>(normals.size());
+		nTangents = static_cast<uint32_t>(tangents.size());
+		nTotalWeights = 0;
+		for (auto& vw : skinWeights)
+			nTotalWeights += static_cast<uint32_t>(vw.size());
+		nLODS = static_cast<uint32_t>(lods.size());
+		nMeshlets = static_cast<uint32_t>(meshletList.size());
+		nCullData = static_cast<uint32_t>(cullDataList.size());
+	}
+
 	stream.Sync(version);
 	if (version > 2)
 		return;
@@ -1636,13 +1655,11 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 		}
 		else {
 			auto pack = [&](float component, float posScale) {
-				uint16_t factor;
+				int16_t val;
 				if (component < 0)
-					factor = 32768;
+					val = static_cast<int16_t>(std::round((component / (scale * posScale)) * 32768.0f));
 				else
-					factor = 32767;
-
-				uint16_t val = (uint16_t) ((component / (scale * posScale)) * factor);
+					val = static_cast<int16_t>(std::round((component / (scale * posScale)) * 32767.0f));
 				stream.Sync(val);
 			};
 

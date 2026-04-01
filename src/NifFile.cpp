@@ -922,9 +922,9 @@ bool NifFile::SaveExternalShapeData(NiShape* shape, std::ostream& outfile, uint8
 	auto bsgeo = dynamic_cast<BSGeometry*>(shape);
 	if (bsgeo && (shapeIndex < bsgeo->MeshCount())) {
 		NiOStream meshStream(&outfile, nullptr);
-		NiStreamReversible s(nullptr, &meshStream,NiStreamReversible::Mode::Reading);
+		NiStreamReversible s(nullptr, &meshStream, NiStreamReversible::Mode::Writing);
 		auto mesh = bsgeo->SelectMesh(shapeIndex);
-		mesh->Sync(s);
+		mesh->meshData.Sync(s);
 		bsgeo->ReleaseMesh();
 	}
 	return true;
@@ -2075,6 +2075,18 @@ void NifFile::FinalizeData() {
 						}
 					}
 				}
+			}
+		}
+
+		auto bsgeo = dynamic_cast<BSGeometry*>(shape);
+		if (bsgeo) {
+			for (uint8_t i = 0; i < bsgeo->MeshCount(); i++) {
+				auto mesh = bsgeo->SelectMesh(i);
+				if (mesh) {
+					mesh->triSize = static_cast<uint32_t>(mesh->meshData.tris.size()) * 3;
+					mesh->numVerts = static_cast<uint32_t>(mesh->meshData.vertices.size());
+				}
+				bsgeo->ReleaseMesh();
 			}
 		}
 
