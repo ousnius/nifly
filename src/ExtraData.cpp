@@ -405,7 +405,7 @@ void BSClothExtraData::Sync(NiStreamReversible& stream) {
 }
 
 
-bool BSClothExtraData::ToHKX(const std::string& fileName) {
+bool BSClothExtraData::ToHKX(const std::filesystem::path& fileName) {
 	std::ofstream file(fileName, std::ios_base::binary);
 	if (!file)
 		return false;
@@ -414,7 +414,7 @@ bool BSClothExtraData::ToHKX(const std::string& fileName) {
 	return true;
 }
 
-bool BSClothExtraData::FromHKX(const std::string& fileName) {
+bool BSClothExtraData::FromHKX(const std::filesystem::path& fileName) {
 	std::ifstream file(fileName, std::ios::binary | std::ios::ate);
 	if (!file)
 		return false;

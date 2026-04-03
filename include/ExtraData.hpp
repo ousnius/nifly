@@ -11,6 +11,8 @@ See the included GPLv3 LICENSE file
 #include "VertexData.hpp"
 #include "half.hpp"
 
+#include <filesystem>
+
 namespace nifly {
 class NiExtraData : public NiCloneableStreamable<NiExtraData, NiObject> {
 public:
@@ -434,8 +436,8 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
-	bool ToHKX(const std::string& fileName);
-	bool FromHKX(const std::string& fileName);
+	bool ToHKX(const std::filesystem::path& fileName);
+	bool FromHKX(const std::filesystem::path& fileName);
 };
 
 class BSCollisionQueryProxyExtraData : public NiCloneableStreamable<BSCollisionQueryProxyExtraData, BSExtraData> {
