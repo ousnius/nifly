@@ -30,7 +30,7 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-26-intel]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
 
     - name: Install dependencies
       shell: bash
@@ -73,7 +73,7 @@ jobs:
       
     - name: Upload test output files
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: test-output-files-${{ matrix.os }}-${{ matrix.version }}
         path: ${{github.workspace}}/tests/output/*.nif
