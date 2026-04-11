@@ -591,6 +591,7 @@ public:
 
 	uint32_t nTangents = 0;
 	// tangents from NiGeometryData  (UDEC3 packed in file)
+	std::vector<uint8_t> tangentWs; // 2-bit W component of each tangent (bitangent sign)
 
 	uint32_t nTotalWeights = 0;
 	std::vector<std::vector<BoneWeight>> skinWeights;
@@ -612,10 +613,12 @@ struct BSGeometryMesh {
 	uint32_t numVerts = 0;
 	uint32_t flags = 0;		// Often 64
 
-	// in official files, this is 41 characters: hex characters from sha1 of the mesh data split into 2 parts
-	// with a path separator. The game does not seem to check the digest, so the same name can be used for
-	// replacement, or probably a human-readable one
-	NiString meshName;		
+	// When internalGeom is false (default), meshName holds the external .mesh path
+	// (41 hex chars from sha1, or a human-readable name). When true, mesh data is
+	// serialized inline in the NIF and meshName is unused.
+	bool internalGeom = false;
+
+	NiString meshName;
 
 	BSGeometryMeshData meshData;
 	void Sync(NiStreamReversible& stream);
@@ -650,6 +653,16 @@ public:
 	void SetTriangles(const std::vector<Triangle>& tris) override;
 
 	uint8_t MeshCount() { return (uint8_t) meshes.size();	}
+
+	// Flag 0x200 (512) on BSGeometry controls whether mesh data is embedded inline
+	// in the NIF (internal) or stored as separate .mesh files (external).
+	bool HasInternalGeomData() const { return (flags & 0x200) != 0; }
+	void SetInternalGeomData(bool internal) {
+		if (internal)
+			flags |= 0x200;
+		else
+			flags &= ~uint32_t(0x200);
+	}
 
 	// SelectMesh provides a way to choose which mesh from the BSGeometryMesh list data accesessors will use.
 	// If this is not called, functions to retrieve vertices, triangles, etc will default to the first mesh.

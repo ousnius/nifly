@@ -21,7 +21,7 @@ void ApplyMapToTriangles(std::vector<Triangle>& tris,
 						 const std::vector<IndexType1>& map,
 						 std::vector<IndexType2>* deletedTris = nullptr) {
 	const size_t mapsz = map.size();
-	int di = 0;
+	size_t di = 0;
 	for (IndexType2 si = 0; si < static_cast<IndexType2>(tris.size()); ++si) {
 		const Triangle& stri = tris[si];
 		// Triangle's indices are unsigned, but IndexType might be signed.
@@ -194,6 +194,9 @@ inline bool is_relative_path(std::string_view path) noexcept {
 
 // Helper to trim whitespace characters including newlines from the start and end of a string
 void trim_whitespace(std::string& str);
+
+std::unique_ptr<std::istream> GetBinaryInputFileStream(const std::filesystem::path& path);
+std::unique_ptr<std::ostream> GetBinaryOutputFileStream(const std::filesystem::path& path);
 
 // Convenience wrapper for std::find
 template<typename Container, typename Value = typename Container::value>

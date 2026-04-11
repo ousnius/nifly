@@ -12,6 +12,7 @@ See the included GPLv3 LICENSE file
 #include "NifUtil.hpp"
 
 #include <array>
+#include <cmath>
 
 using namespace nifly;
 
@@ -1599,6 +1600,24 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	SetTangents(true);
 	SetVertexColors(true);
 
+	// When writing, update counts from actual data sizes
+	if (stream.GetMode() == NiStreamReversible::Mode::Writing) {
+		nTriIndices = static_cast<uint32_t>(tris.size()) * 3;
+		nVertices = static_cast<uint32_t>(vertices.size());
+		numVertices = static_cast<uint16_t>(std::min(nVertices, static_cast<uint32_t>(0xFFFF)));
+		nUV1 = uvSets.size() > 0 ? static_cast<uint32_t>(uvSets[0].size()) : 0;
+		nUV2 = uvSets.size() > 1 ? static_cast<uint32_t>(uvSets[1].size()) : 0;
+		nColors = static_cast<uint32_t>(vColors.size());
+		nNormals = static_cast<uint32_t>(normals.size());
+		nTangents = static_cast<uint32_t>(tangents.size());
+		nTotalWeights = 0;
+		for (auto& vw : skinWeights)
+			nTotalWeights += static_cast<uint32_t>(vw.size());
+		nLODS = static_cast<uint32_t>(lods.size());
+		nMeshlets = static_cast<uint32_t>(meshletList.size());
+		nCullData = static_cast<uint32_t>(cullDataList.size());
+	}
+
 	stream.Sync(version);
 	if (version > 2)
 		return;
@@ -1615,9 +1634,10 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	stream.Sync(nWeightsPerVert);
 
 	stream.Sync(nVertices);
-	// maybe not a good idea to do the below, in case some meshes have over 65k verts, however since
-	// triangles still use 16 bit indices, the total count must still fit under that limit ...
-	numVertices = (uint16_t) nVertices;
+	if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+		numVertices = static_cast<uint16_t>(nVertices);
+	else
+		numVertices = static_cast<uint16_t>(std::min(nVertices, static_cast<uint32_t>(0xFFFF)));
 	vertices.resize(nVertices);
 	for (uint32_t v = 0; v < nVertices; v++) {
 		if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
@@ -1636,13 +1656,11 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 		}
 		else {
 			auto pack = [&](float component, float posScale) {
-				uint16_t factor;
+				int16_t val;
 				if (component < 0)
-					factor = 32768;
+					val = static_cast<int16_t>(std::round((component / (scale * posScale)) * 32768.0f));
 				else
-					factor = 32767;
-
-				uint16_t val = (uint16_t) ((component / (scale * posScale)) * factor);
+					val = static_cast<int16_t>(std::round((component / (scale * posScale)) * 32767.0f));
 				stream.Sync(val);
 			};
 
@@ -1683,9 +1701,9 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(nTangents);
 	tangents.resize(nTangents);
+	tangentWs.resize(nTangents, 1);
 	for (uint32_t t = 0; t < nTangents; t++) {
-		stream.SyncUDEC3(tangents[t]);
-		// need to calculate tangent basis and bitangents on read?
+		stream.SyncUDEC3(tangents[t], tangentWs[t]);
 	}
 
 	/*
@@ -1737,7 +1755,15 @@ void BSGeometryMesh::Sync(NiStreamReversible& stream) {
 	stream.Sync(triSize);
 	stream.Sync(numVerts);
 	stream.Sync(flags);
-	meshName.Sync(stream, 4);
+
+	if (internalGeom) {
+		// Mesh data is embedded inline in the NIF (flag 0x200 on BSGeometry)
+		meshData.Sync(stream);
+	}
+	else {
+		// External .mesh file path reference
+		meshName.Sync(stream, 4);
+	}
 }
 
 void BSGeometry::Sync(NiStreamReversible& stream) {
@@ -1753,6 +1779,8 @@ void BSGeometry::Sync(NiStreamReversible& stream) {
 	if (stream.GetMode() == NiStreamReversible::Mode::Reading)
 		meshes.clear();
 
+	bool internal = HasInternalGeomData();
+
 	size_t meshCount = meshes.size();
 	for (uint32_t i = 0; i < 4; i++) {
 		uint8_t testByte = i < meshCount;
@@ -1762,6 +1790,7 @@ void BSGeometry::Sync(NiStreamReversible& stream) {
 				BSGeometryMesh mesh{};
 				meshes.push_back(mesh);
 			}
+			meshes[i].internalGeom = internal;
 			meshes[i].Sync(stream);
 		}
 	}
