@@ -21,7 +21,7 @@ void ApplyMapToTriangles(std::vector<Triangle>& tris,
 						 const std::vector<IndexType1>& map,
 						 std::vector<IndexType2>* deletedTris = nullptr) {
 	const size_t mapsz = map.size();
-	int di = 0;
+	size_t di = 0;
 	for (IndexType2 si = 0; si < static_cast<IndexType2>(tris.size()); ++si) {
 		const Triangle& stri = tris[si];
 		// Triangle's indices are unsigned, but IndexType might be signed.
