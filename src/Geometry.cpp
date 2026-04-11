@@ -1754,7 +1754,15 @@ void BSGeometryMesh::Sync(NiStreamReversible& stream) {
 	stream.Sync(triSize);
 	stream.Sync(numVerts);
 	stream.Sync(flags);
-	meshName.Sync(stream, 4);
+
+	if (internalGeom) {
+		// Mesh data is embedded inline in the NIF (flag 0x200 on BSGeometry)
+		meshData.Sync(stream);
+	}
+	else {
+		// External .mesh file path reference
+		meshName.Sync(stream, 4);
+	}
 }
 
 void BSGeometry::Sync(NiStreamReversible& stream) {
@@ -1770,6 +1778,8 @@ void BSGeometry::Sync(NiStreamReversible& stream) {
 	if (stream.GetMode() == NiStreamReversible::Mode::Reading)
 		meshes.clear();
 
+	bool internal = HasInternalGeomData();
+
 	size_t meshCount = meshes.size();
 	for (uint32_t i = 0; i < 4; i++) {
 		uint8_t testByte = i < meshCount;
@@ -1779,6 +1789,7 @@ void BSGeometry::Sync(NiStreamReversible& stream) {
 				BSGeometryMesh mesh{};
 				meshes.push_back(mesh);
 			}
+			meshes[i].internalGeom = internal;
 			meshes[i].Sync(stream);
 		}
 	}
