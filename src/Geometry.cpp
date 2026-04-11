@@ -1701,9 +1701,9 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(nTangents);
 	tangents.resize(nTangents);
+	tangentWs.resize(nTangents, 1);
 	for (uint32_t t = 0; t < nTangents; t++) {
-		stream.SyncUDEC3(tangents[t]);
-		// need to calculate tangent basis and bitangents on read?
+		stream.SyncUDEC3(tangents[t], tangentWs[t]);
 	}
 
 	/*

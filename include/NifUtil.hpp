@@ -195,6 +195,9 @@ inline bool is_relative_path(std::string_view path) noexcept {
 // Helper to trim whitespace characters including newlines from the start and end of a string
 void trim_whitespace(std::string& str);
 
+std::unique_ptr<std::istream> GetBinaryInputFileStream(const std::filesystem::path& path);
+std::unique_ptr<std::ostream> GetBinaryOutputFileStream(const std::filesystem::path& path);
+
 // Convenience wrapper for std::find
 template<typename Container, typename Value = typename Container::value>
 auto find(Container& cont, Value&& val) {

@@ -361,9 +361,9 @@ public:
 		uint32_t data = 0;
 
 		if (mode == Mode::Writing) {
-			data  = (static_cast<uint32_t>((vec.x + 1.0f) * 511.5f) & 1023);
-			data |= (static_cast<uint32_t>((vec.y + 1.0f) * 511.5f) & 1023) << 10;
-			data |= (static_cast<uint32_t>((vec.z + 1.0f) * 511.5f) & 1023) << 20;
+			data  = (static_cast<uint32_t>(std::round((vec.x + 1.0) * 511.5)) & 1023);
+			data |= (static_cast<uint32_t>(std::round((vec.y + 1.0) * 511.5)) & 1023) << 10;
+			data |= (static_cast<uint32_t>(std::round((vec.z + 1.0) * 511.5)) & 1023) << 20;
 			data |= static_cast<uint32_t>(1) << 30;
 		}
 
@@ -373,7 +373,27 @@ public:
 			vec.x = (float)(((data & 1023) / 511.5) - 1.0);
 			vec.y = (float)((((data >> 10) & 1023) / 511.5) - 1.0);
 			vec.z = (float)((((data >> 20) & 1023) / 511.5) - 1.0);
-		}		
+		}
+	}
+
+	void SyncUDEC3(Vector3& vec, uint8_t& w) {
+		uint32_t data = 0;
+
+		if (mode == Mode::Writing) {
+			data  = (static_cast<uint32_t>(std::round((vec.x + 1.0) * 511.5)) & 1023);
+			data |= (static_cast<uint32_t>(std::round((vec.y + 1.0) * 511.5)) & 1023) << 10;
+			data |= (static_cast<uint32_t>(std::round((vec.z + 1.0) * 511.5)) & 1023) << 20;
+			data |= static_cast<uint32_t>(w & 3) << 30;
+		}
+
+		Sync(data);
+
+		if (mode == Mode::Reading) {
+			vec.x = (float)(((data & 1023) / 511.5) - 1.0);
+			vec.y = (float)((((data >> 10) & 1023) / 511.5) - 1.0);
+			vec.z = (float)((((data >> 20) & 1023) / 511.5) - 1.0);
+			w = static_cast<uint8_t>((data >> 30) & 3);
+		}
 	}
 
 	

@@ -591,6 +591,7 @@ public:
 
 	uint32_t nTangents = 0;
 	// tangents from NiGeometryData  (UDEC3 packed in file)
+	std::vector<uint8_t> tangentWs; // 2-bit W component of each tangent (bitangent sign)
 
 	uint32_t nTotalWeights = 0;
 	std::vector<std::vector<BoneWeight>> skinWeights;
