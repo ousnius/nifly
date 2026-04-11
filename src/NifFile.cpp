@@ -896,7 +896,7 @@ NiGeometryData* NifFile::GetGeometryData(NiShape* shape) const {
 std::vector<std::reference_wrapper<std::string>> NifFile::GetExternalGeometryPathRefs(NiShape* shape) const {
 	std::vector<std::reference_wrapper<std::string>> meshPaths;
 	auto bsgeo = dynamic_cast<BSGeometry*>(shape);
-	if (bsgeo) {
+	if (bsgeo && !bsgeo->HasInternalGeomData()) {
 		for (uint8_t i = 0; i < bsgeo->MeshCount(); i++) {
 			auto mesh = bsgeo->SelectMesh(i);
 			meshPaths.push_back(mesh->meshName.get());
