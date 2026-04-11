@@ -1634,9 +1634,10 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	stream.Sync(nWeightsPerVert);
 
 	stream.Sync(nVertices);
-	// maybe not a good idea to do the below, in case some meshes have over 65k verts, however since
-	// triangles still use 16 bit indices, the total count must still fit under that limit ...
-	numVertices = (uint16_t) nVertices;
+	if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+		numVertices = static_cast<uint16_t>(nVertices);
+	else
+		numVertices = static_cast<uint16_t>(std::min(nVertices, static_cast<uint32_t>(0xFFFF)));
 	vertices.resize(nVertices);
 	for (uint32_t v = 0; v < nVertices; v++) {
 		if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
