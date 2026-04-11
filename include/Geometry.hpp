@@ -660,7 +660,7 @@ public:
 		if (internal)
 			flags |= 0x200;
 		else
-			flags &= ~0x200;
+			flags &= ~uint32_t(0x200);
 	}
 
 	// SelectMesh provides a way to choose which mesh from the BSGeometryMesh list data accesessors will use.
