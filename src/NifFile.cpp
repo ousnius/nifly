@@ -2082,7 +2082,7 @@ void NifFile::FinalizeData() {
 		if (bsgeo) {
 			for (uint8_t i = 0; i < bsgeo->MeshCount(); i++) {
 				auto mesh = bsgeo->SelectMesh(i);
-				if (mesh) {
+				if (mesh && !mesh->meshData.vertices.empty()) {
 					mesh->triSize = static_cast<uint32_t>(mesh->meshData.tris.size()) * 3;
 					mesh->numVerts = static_cast<uint32_t>(mesh->meshData.vertices.size());
 				}
