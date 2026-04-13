@@ -638,7 +638,7 @@ public:
 	float emissiveMultiple = 1.0f;
 	NiStringRef rootMaterialName;
 	float unkFloat = 0.0f;
-	uint32_t textureClampMode = 3;
+	TexClampMode textureClampMode = WRAP_S_WRAP_T;
 	float alpha = 1.0f;
 	float refractionStrength = 0.0f;
 	float glossiness = 1.0f;
@@ -813,7 +813,7 @@ public:
 
 class BSShaderLightingProperty : public NiCloneableStreamable<BSShaderLightingProperty, BSShaderProperty> {
 public:
-	uint32_t textureClampMode = 3; // User Version <= 11
+	TexClampMode textureClampMode = WRAP_S_WRAP_T; // User Version <= 11
 
 	void Sync(NiStreamReversible& stream);
 };
