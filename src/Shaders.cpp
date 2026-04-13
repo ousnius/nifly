@@ -9,7 +9,8 @@ See the included GPLv3 LICENSE file
 using namespace nifly;
 
 void NiShadeProperty::Sync(NiStreamReversible& stream) {
-	stream.Sync(flags);
+	if (stream.GetVersion().User() <= 11)
+		stream.Sync(shadingFlags);
 }
 
 
@@ -211,7 +212,6 @@ void BSShaderProperty::Sync(NiStreamReversible& stream) {
 	}
 
 	if (stream.GetVersion().User() <= 11) {
-		stream.Sync(shaderFlags);
 		stream.Sync(shaderType);
 		stream.Sync(shaderFlags1);
 		stream.Sync(shaderFlags2);

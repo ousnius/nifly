@@ -186,6 +186,11 @@ enum Fallout4ShaderPropertyFlags2 : uint32_t {
 	F4SF2_REFRACTION_WRITES_DEPTH = static_cast<uint32_t>(1) << 31
 };
 
+enum FO3ShadingFlags : uint16_t {
+	SHADING_HARD = 0,
+	SHADING_SMOOTH = 1
+};
+
 enum FO3ShaderFlags : uint32_t {
 	F3SF1_SPECULAR = 1 << 0,
 	F3SF1_SKINNED = 1 << 1,
@@ -257,16 +262,6 @@ enum FO3ShaderFlags2 : uint32_t {
 };
 
 class NiProperty : public NiCloneable<NiProperty, NiObjectNET> {};
-
-class NiShadeProperty : public NiCloneableStreamable<NiShadeProperty, NiProperty> {
-public:
-	uint16_t flags = 0;
-
-	static constexpr const char* BlockName = "NiShadeProperty";
-	const char* GetBlockName() override { return BlockName; }
-
-	void Sync(NiStreamReversible& stream);
-};
 
 class NiSpecularProperty : public NiCloneableStreamable<NiSpecularProperty, NiProperty> {
 public:
@@ -541,9 +536,18 @@ public:
 	virtual void SetWetMaterialName(const std::string&) {}
 };
 
-class BSShaderProperty : public NiCloneableStreamable<BSShaderProperty, NiShader> {
+class NiShadeProperty : public NiCloneableStreamable<NiShadeProperty, NiShader> {
 public:
-	uint16_t shaderFlags = 1;
+	FO3ShadingFlags shadingFlags = SHADING_SMOOTH;
+
+	static constexpr const char* BlockName = "NiShadeProperty";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class BSShaderProperty : public NiCloneableStreamable<BSShaderProperty, NiShadeProperty> {
+public:
 	BSShaderType shaderType = SHADER_DEFAULT;
 	uint32_t shaderFlags1 = 0x82000000;
 	uint32_t shaderFlags2 = 1;
