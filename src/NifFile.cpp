@@ -2561,6 +2561,22 @@ uint32_t NifFile::GetShapeBoneWeights(NiShape* shape,
 		return static_cast<uint32_t>(outWeights.size());
 	}
 
+	auto bsGeom = dynamic_cast<BSGeometry*>(shape);
+	if (bsGeom) {
+		auto* geomData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData());
+		if (geomData && !geomData->skinWeights.empty()) {
+			outWeights.reserve(geomData->skinWeights.size());
+			for (uint16_t vid = 0; vid < geomData->skinWeights.size(); vid++) {
+				for (auto& bw : geomData->skinWeights[vid]) {
+					if (bw.boneIndex == boneIndex && bw.weight != 0) {
+						outWeights.emplace(vid, bw.weight / 65535.0f);
+					}
+				}
+			}
+			return static_cast<uint32_t>(outWeights.size());
+		}
+	}
+
 	auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
 	if (!skinInst)
 		return 0;
