@@ -2445,13 +2445,24 @@ uint32_t NifFile::GetShapeBoneList(NiShape* shape, std::vector<std::string>& out
 		return 0;
 
 	auto skinInst = hdr.GetBlock<NiBoneContainer>(shape->SkinInstanceRef());
-	if (!skinInst)
-		return 0;
+	if (skinInst) {
+		for (auto& bone : skinInst->boneRefs) {
+			auto node = hdr.GetBlock(bone);
+			if (node)
+				outList.push_back(node->name.get());
+		}
+	}
 
-	for (auto& bone : skinInst->boneRefs) {
-		auto node = hdr.GetBlock(bone);
-		if (node)
-			outList.push_back(node->name.get());
+	// SF NIFs store bone names in SkinAttach extra data instead of NiNode refs
+	if (outList.empty()) {
+		for (auto& extraDataRef : shape->extraDataRefs) {
+			auto skinAttach = hdr.GetBlock<SkinAttach>(extraDataRef);
+			if (skinAttach) {
+				for (auto& bone : skinAttach->bones)
+					outList.push_back(bone.get());
+				break;
+			}
+		}
 	}
 
 	return static_cast<uint32_t>(outList.size());

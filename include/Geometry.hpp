@@ -652,6 +652,20 @@ public:
 	bool GetTriangles(std::vector<Triangle>& tris) const override;
 	void SetTriangles(const std::vector<Triangle>& tris) override;
 
+	bool IsSkinned() const override { return !skinInstanceRef.IsEmpty(); }
+
+	bool HasSkinInstance() const override { return !skinInstanceRef.IsEmpty(); }
+	NiBlockRef<NiBoneContainer>* SkinInstanceRef() override { return &skinInstanceRef; }
+	const NiBlockRef<NiBoneContainer>* SkinInstanceRef() const override { return &skinInstanceRef; }
+
+	bool HasShaderProperty() const override { return !shaderPropertyRef.IsEmpty(); }
+	NiBlockRef<NiShader>* ShaderPropertyRef() override { return &shaderPropertyRef; }
+	const NiBlockRef<NiShader>* ShaderPropertyRef() const override { return &shaderPropertyRef; }
+
+	bool HasAlphaProperty() const override { return !alphaPropertyRef.IsEmpty(); }
+	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
+	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
+
 	uint8_t MeshCount() { return (uint8_t) meshes.size();	}
 
 	// Flag 0x200 (512) on BSGeometry controls whether mesh data is embedded inline
