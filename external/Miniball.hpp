@@ -367,30 +367,30 @@ namespace Miniball {
     // --------------------------------------------------------------
     // from B. Gaertner, Fast and Robust Smallest Enclosing Balls, ESA 1999,
     // http://www.inf.ethz.ch/personal/gaertner/texts/own_work/esa99_final.pdf  
-    const NT*   c;
+    const NT*   center;
     Pit         pivot, k;
-    NT          e, max_e, sqr_r;
+    NT          e, max_e, previous_sqr_r;
     Cit p;
     unsigned int loops_without_progress = 0;
     NT best_sqr_r =  current_sqr_r;
     do {
-      sqr_r = current_sqr_r;
+      previous_sqr_r = current_sqr_r;
 
       pivot = points_begin;
       max_e = nt0;
       for (k = points_begin; k != n; ++k) {
 	p = coord_accessor(k);
-	e = -sqr_r;
-	c = current_c;
+    e = -previous_sqr_r;
+    center = current_c;
 	for (int j=0; j<d; ++j)
-	  e += mb_sqr<NT>(*p++-*c++);
+      e += mb_sqr<NT>(*p++-*center++);
 	if (e > max_e) {
 	  max_e = e;
 	  pivot = k;
 	}
       }
 
-      if (sqr_r < nt0 || max_e > nt0) {
+      if (previous_sqr_r < nt0 || max_e > nt0) {
 	// check if the pivot is already contained in the support set
 	if (std::find(L.begin(), support_end, pivot) == support_end) {
 	  assert (fsize == 0);
@@ -424,9 +424,9 @@ namespace Miniball {
   {
     Cit p = coord_accessor(pit);
     NT e = -current_sqr_r;
-    NT* c = current_c;
+    NT const* center = current_c;
     for (int k=0; k<d; ++k){
-      e += mb_sqr<NT>(*p++-*c++);
+      e += mb_sqr<NT>(*p++-*center++);
     }
     return e;
   }
