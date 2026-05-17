@@ -361,7 +361,7 @@ TEST_CASE("Load and save file (SF)", "[NifFile]") {
 
 TEST_CASE("BSGeometry bone weights are normalized (SF)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_SF";
-	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, nifSuffix);
+	const auto fileInput = std::get<0>(GetFileTuple(fileName, nifSuffix));
 
 	NifFile nif;
 	REQUIRE(nif.Load(fileInput) == 0);
@@ -376,11 +376,14 @@ TEST_CASE("BSGeometry bone weights are normalized (SF)", "[NifFile]") {
 		REQUIRE(bsGeom != nullptr);
 
 		auto meshPaths = nif.GetExternalGeometryPathRefs(s);
+		REQUIRE(!meshPaths.empty());
+
 		uint8_t meshIndex = 0;
 		for (auto meshPath : meshPaths) {
 			std::string meshPathStr = meshPath.get();
-			const auto [meshFileInput, meshFileOutput, meshFileExpected]
-				= GetFileTuple(meshPathStr.c_str(), meshSuffix);
+			REQUIRE(!meshPathStr.empty());
+
+			const auto meshFileInput = std::get<0>(GetFileTuple(meshPathStr.c_str(), meshSuffix));
 			const std::filesystem::path meshInputPath = std::filesystem::u8path(meshFileInput);
 			auto meshStream = GetBinaryInputFileStream(meshInputPath);
 			REQUIRE(meshStream);
