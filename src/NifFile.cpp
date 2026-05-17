@@ -2561,6 +2561,29 @@ uint32_t NifFile::GetShapeBoneWeights(NiShape* shape,
 		return static_cast<uint32_t>(outWeights.size());
 	}
 
+	auto bsGeom = dynamic_cast<BSGeometry*>(shape);
+	if (bsGeom) {
+		auto* geomData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData());
+		if (geomData && !geomData->skinWeights.empty()) {
+			// outWeights is keyed by uint16_t, so vertex indices are capped at
+			// 0xFFFF; iterate with a wide index to avoid overflowing the loop
+			// counter on meshes with more than 65535 vertices.
+			constexpr size_t maxVerts = static_cast<size_t>(std::numeric_limits<uint16_t>::max()) + 1;
+			constexpr float maxWeightValue = static_cast<float>(std::numeric_limits<uint16_t>::max());
+
+			size_t vertCount = std::min(geomData->skinWeights.size(), maxVerts);
+			outWeights.reserve(vertCount);
+			for (size_t vid = 0; vid < vertCount; vid++) {
+				for (auto& bw : geomData->skinWeights[vid]) {
+					if (bw.boneIndex == boneIndex && bw.weight != 0) {
+						outWeights.emplace(static_cast<uint16_t>(vid), bw.weight / maxWeightValue);
+					}
+				}
+			}
+			return static_cast<uint32_t>(outWeights.size());
+		}
+	}
+
 	auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
 	if (!skinInst)
 		return 0;
