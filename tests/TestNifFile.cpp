@@ -359,6 +359,57 @@ TEST_CASE("Load and save file (SF)", "[NifFile]") {
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
 }
 
+TEST_CASE("BSGeometry bone weights are normalized (SF)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_SF";
+	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, nifSuffix);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+
+	auto shapes = nif.GetShapes();
+	REQUIRE(!shapes.empty());
+
+	size_t weightedVertices = 0;
+
+	for (auto& s : shapes) {
+		auto* bsGeom = dynamic_cast<BSGeometry*>(s);
+		REQUIRE(bsGeom != nullptr);
+
+		auto meshPaths = nif.GetExternalGeometryPathRefs(s);
+		uint8_t meshIndex = 0;
+		for (auto meshPath : meshPaths) {
+			std::string meshPathStr = meshPath.get();
+			const auto [meshFileInput, meshFileOutput, meshFileExpected]
+				= GetFileTuple(meshPathStr.c_str(), meshSuffix);
+			const std::filesystem::path meshInputPath = std::filesystem::u8path(meshFileInput);
+			auto meshStream = GetBinaryInputFileStream(meshInputPath);
+			REQUIRE(meshStream);
+			REQUIRE(nif.LoadExternalShapeData(s, *meshStream, meshIndex));
+			meshStream.reset();
+			meshIndex++;
+		}
+
+		std::vector<std::string> bones;
+		nif.GetShapeBoneList(s, bones);
+
+		for (uint32_t boneIndex = 0; boneIndex < bones.size(); boneIndex++) {
+			std::unordered_map<uint16_t, float> weights;
+			nif.GetShapeBoneWeights(s, boneIndex, weights);
+
+			for (const auto& [vid, weight] : weights) {
+				REQUIRE(weight >= 0.0f);
+				REQUIRE(weight <= 1.0f);
+			}
+
+			weightedVertices += weights.size();
+		}
+	}
+
+	// The Starfield mesh fixture is skinned, so the BSGeometry path must
+	// actually return per-vertex weights (regression for the new code path).
+	REQUIRE(weightedVertices > 0);
+}
+
 TEST_CASE("Load external and save as internal mesh data (SF)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_ToInternalMesh_SF";
 	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, nifSuffix);

@@ -2566,10 +2566,16 @@ uint32_t NifFile::GetShapeBoneWeights(NiShape* shape,
 		auto* geomData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData());
 		if (geomData && !geomData->skinWeights.empty()) {
 			outWeights.reserve(geomData->skinWeights.size());
-			for (uint16_t vid = 0; vid < geomData->skinWeights.size(); vid++) {
+			// outWeights is keyed by uint16_t, so vertex indices are capped at
+			// 0xFFFF; iterate with a wide index to avoid overflowing the loop
+			// counter on meshes with more than 65535 vertices.
+			size_t vertCount = geomData->skinWeights.size();
+			if (vertCount > 0x10000)
+				vertCount = 0x10000;
+			for (size_t vid = 0; vid < vertCount; vid++) {
 				for (auto& bw : geomData->skinWeights[vid]) {
 					if (bw.boneIndex == boneIndex && bw.weight != 0) {
-						outWeights.emplace(vid, bw.weight / 65535.0f);
+						outWeights.emplace(static_cast<uint16_t>(vid), bw.weight / 65535.0f);
 					}
 				}
 			}
