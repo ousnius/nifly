@@ -17,6 +17,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  CATCH2_VERSION: v3.15.0
 
 jobs:
   build:
@@ -35,10 +36,9 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        git clone -b v2.x https://github.com/catchorg/Catch2.git
+        git clone --depth 1 -b $CATCH2_VERSION https://github.com/catchorg/Catch2.git
         cd Catch2
-        mkdir build
-        cmake -Bbuild -H. -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX:PATH=$GITHUB_WORKSPACE/install
+        cmake -S . -B build -DCATCH_BUILD_TESTING=OFF -DCATCH_INSTALL_DOCS=OFF -DCATCH_INSTALL_EXTRAS=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX:PATH=$GITHUB_WORKSPACE/install
         cmake --build build/ --target install --config $BUILD_TYPE
 
 
@@ -56,7 +56,7 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX:PATH=$GITHUB_WORKSPACE/install
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH:PATH=$GITHUB_WORKSPACE/install -DCMAKE_INSTALL_PREFIX:PATH=$GITHUB_WORKSPACE/install
 
     - name: Build
       working-directory: ${{github.workspace}}/build
@@ -75,6 +75,6 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v6
       with:
-        name: test-output-files-${{ matrix.os }}-${{ matrix.version }}
+        name: test-output-files-${{ matrix.os }}
         path: ${{github.workspace}}/tests/output/*.nif
         retention-days: 2

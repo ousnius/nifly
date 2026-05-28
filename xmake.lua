@@ -10,7 +10,7 @@ option("tests", { default = false, description = "Enable tests" })
 add_requires("half", "miniball")
 
 if has_config("tests") then
-    add_requires("catch2 v2.13.10")
+    add_requires("catch2 >=3.0.0 <4.0.0")
 end
 
 -- define targets
@@ -37,7 +37,7 @@ if has_config("tests") then
         add_deps("nifly")
 
         -- bind package dependencies
-        add_packages("catch2")
+        add_packages("catch2", { components = { "main", "lib" } })
 
         -- add all source files, except TestNifFileOptional
         add_files("tests/*.cpp|TestNifFileOptional.cpp")

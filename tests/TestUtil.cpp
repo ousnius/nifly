@@ -3,7 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <iomanip>
-#include <catch2/catch.hpp>
+#include <catch2/catch_message.hpp>
 
 bool CompareBinaryFiles(const std::filesystem::path& fileName1, const std::filesystem::path& fileName2) {
 	// Open file streams at the end of each file

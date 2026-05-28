@@ -30,9 +30,9 @@ Also check out [NiflySharp](https://github.com/ousnius/NiflySharp) for a native 
 - Use the included [CMake](https://cmake.org/) lists for building - or simply include the headers and source in your project
 - (optional) To get Catch2 for running the tests, install its [CMake package](https://github.com/catchorg/Catch2/blob/devel/docs/cmake-integration.md#installing-catch2-from-git-repository) (or get it via vcpkg):
 ```bash
-git clone -b v2.x https://github.com/catchorg/Catch2.git
+git clone --depth 1 -b v3.15.0 https://github.com/catchorg/Catch2.git
 cd Catch2
-cmake -Bbuild -H. -DBUILD_TESTING=OFF
+cmake -S . -B build -DCATCH_BUILD_TESTING=OFF -DCATCH_INSTALL_DOCS=OFF -DCATCH_INSTALL_EXTRAS=ON
 cmake --build build/ --target install  #with admin elevation (or sudo) depending on your cmake prefix path
 ```
 - Support for [xmake](https://xmake.io/) added with https://github.com/ousnius/nifly/pull/48
@@ -40,7 +40,7 @@ cmake --build build/ --target install  #with admin elevation (or sudo) depending
 ### Libraries used
 - [half - IEEE 754-based half-precision floating point library (v1.12.0)](http://half.sourceforge.net/) for 16-bit floats
 - [Miniball (v3.0)](https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html) for generating bounding spheres
-- [Catch2 (v2.x branch)](https://github.com/catchorg/Catch2/tree/v2.x) for running tests
+- [Catch2 v3](https://github.com/catchorg/Catch2/tree/v3.15.0) for running tests
 
 ### nifly is used by
 - [BodySlide and Outfit Studio](https://github.com/ousnius/BodySlide-and-Outfit-Studio)

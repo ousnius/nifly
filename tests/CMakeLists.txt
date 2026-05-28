@@ -1,4 +1,5 @@
-find_package(Catch2 REQUIRED)
+find_package(Catch2 3 REQUIRED)
+include(Catch)
 
 set(TARGETS
     TestNifFile
@@ -7,7 +8,7 @@ set(TARGETS
 
 foreach(name ${TARGETS})
     add_executable(${name} ${NIFLY_TESTS_DIR}/TestUtil.cpp ${NIFLY_TESTS_DIR}/${name}.cpp)
-    target_link_libraries(${name} PRIVATE nifly Catch2::Catch2)
+    target_link_libraries(${name} PRIVATE nifly Catch2::Catch2WithMain)
     set_target_properties(${name} PROPERTIES CXX_EXTENSIONS OFF)
 
     # Add warnings. -Werror disabled for now
@@ -19,6 +20,5 @@ foreach(name ${TARGETS})
         $<$<CXX_COMPILER_ID:MSVC>: /WX /W4 /w44265>
         )
 
-    include(Catch)
     catch_discover_tests(${name} WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 endforeach()
