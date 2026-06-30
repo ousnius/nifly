@@ -609,7 +609,7 @@ public:
 
 	bool HasMeshlets() const { return !meshletList.empty(); }
 
-	void GenerateMeshlets(uint32_t maxVerts = 96, uint32_t maxPrims = 128);
+	void GenerateMeshlets(uint32_t maxVerts = 128, uint32_t maxPrims = 128);
 };
 
 struct BSGeometryMesh {
@@ -688,7 +688,7 @@ public:
 	}
 
 	// Generate Starfield mesh-shader meshlets + cull data for every mesh slot that has triangle data. 
-	void GenerateMeshlets(uint32_t maxVerts = 96, uint32_t maxPrims = 128, bool onlyIfMissing = true) {
+	void GenerateMeshlets(uint32_t maxVerts = 128, uint32_t maxPrims = 128, bool onlyIfMissing = true) {
 		for (auto& mesh : meshes) {
 			if (onlyIfMissing && mesh.meshData.HasMeshlets())
 				continue;
