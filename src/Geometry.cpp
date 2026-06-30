@@ -12,6 +12,7 @@ See the included GPLv3 LICENSE file
 #include "NifUtil.hpp"
 
 #include <array>
+#include <cfloat>
 #include <cmath>
 
 using namespace nifly;
