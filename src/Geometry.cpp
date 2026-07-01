@@ -12,6 +12,7 @@ See the included GPLv3 LICENSE file
 #include "NifUtil.hpp"
 
 #include <array>
+#include <cfloat>
 #include <cmath>
 
 using namespace nifly;
@@ -1751,6 +1752,95 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	}
 }
 
+void BSGeometryMeshData::GenerateMeshlets(uint32_t maxVerts, uint32_t maxPrims) {
+	meshletList.clear();
+	cullDataList.clear();
+	nMeshlets = 0;
+	nCullData = 0;
+
+	if (tris.empty() || vertices.empty()) {
+		return;
+	}
+
+	// A single triangle needs three distinct vertex slots; never go below that.
+	if (maxVerts < 3)
+		maxVerts = 3;
+	if (maxPrims < 1)
+		maxPrims = 1;
+
+	uint32_t startTri = 0;             // first triangle of the meshlet being built
+	uint32_t vertOffsetAccum = 0;      // running sum of emitted vertCounts (= vertOffset)
+	std::unordered_set<uint16_t> cur;  // distinct vertices in the meshlet being built
+
+	auto flush = [&](uint32_t endTri) {
+		if (endTri <= startTri)
+			return;
+
+		Meshlet m;
+		m.vertCount = static_cast<uint32_t>(cur.size());
+		m.vertOffset = vertOffsetAccum;
+		m.primCount = endTri - startTri;
+		m.primOffset = startTri;   // primOffset is in TRIANGLE units (matches vanilla SF meshlets)
+		meshletList.push_back(m);
+		vertOffsetAccum += m.vertCount;
+
+		// Per-meshlet AABB over the meshlet's vertices. Stored in metric units (NIF units divided by havokScale), matching how the game decodes positions for culling.
+		Vector3 mn(FLT_MAX, FLT_MAX, FLT_MAX);
+		Vector3 mx(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+		for (uint16_t vi : cur) {
+			const Vector3& p = vertices[vi];
+			mn.x = std::min(mn.x, p.x);
+			mn.y = std::min(mn.y, p.y);
+			mn.z = std::min(mn.z, p.z);
+			mx.x = std::max(mx.x, p.x);
+			mx.y = std::max(mx.y, p.y);
+			mx.z = std::max(mx.z, p.z);
+		}
+
+		CullData cd;
+		cd.center = Vector3((mn.x + mx.x) * 0.5f, (mn.y + mx.y) * 0.5f, (mn.z + mx.z) * 0.5f) / havokScale;
+		cd.expand = Vector3((mx.x - mn.x) * 0.5f, (mx.y - mn.y) * 0.5f, (mx.z - mn.z) * 0.5f) / havokScale;
+		cullDataList.push_back(cd);
+
+		startTri = endTri;
+		cur.clear();
+	};
+
+	for (uint32_t t = 0; t < static_cast<uint32_t>(tris.size()); t++) {
+		const Triangle& tri = tris[t];
+		const uint16_t tv[3] = {tri.p1, tri.p2, tri.p3};
+
+		// Count how many distinct vertices this triangle would add to the current meshlet, ignoring vertices already present and degenerate repeats within the triangle.
+		uint32_t add = 0;
+		for (int a = 0; a < 3; a++) {
+			if (cur.count(tv[a]))
+				continue;
+			bool seenEarlier = false;
+			for (int b = 0; b < a; b++) {
+				if (tv[b] == tv[a]) {
+					seenEarlier = true;
+					break;
+				}
+			}
+			if (!seenEarlier)
+				add++;
+		}
+
+		uint32_t curPrims = t - startTri;
+		if (curPrims > 0 && (cur.size() + add > maxVerts || curPrims + 1 > maxPrims))
+			flush(t);
+
+		cur.insert(tri.p1);
+		cur.insert(tri.p2);
+		cur.insert(tri.p3);
+	}
+	flush(static_cast<uint32_t>(tris.size()));
+
+	nMeshlets = static_cast<uint32_t>(meshletList.size());
+	nCullData = static_cast<uint32_t>(cullDataList.size());
+	version = 2;
+}
+
 void BSGeometryMesh::Sync(NiStreamReversible& stream) {
 	stream.Sync(triSize);
 	stream.Sync(numVerts);
@@ -1834,7 +1924,21 @@ bool BSGeometry::GetTriangles(std::vector<Triangle>& tris) const {
 
 void BSGeometry::SetTriangles(const std::vector<Triangle>& tris) {
 	if (meshes.size() > selectedMesh) {
-		meshes[selectedMesh].meshData.tris = tris;
+		auto& meshData = meshes[selectedMesh].meshData;
+
+		// Detect whether the triangle topology actually changes.
+		bool changed = meshData.tris.size() != tris.size();
+		for (size_t i = 0; !changed && i < tris.size(); ++i) {
+			changed = meshData.tris[i].p1 != tris[i].p1 || meshData.tris[i].p2 != tris[i].p2 || meshData.tris[i].p3 != tris[i].p3;
+		}
+
+		meshData.tris = tris;
+
+		//If triangles changed, we want to drop the meshlets so export re-generates them. (only want to strip on invalidation, not if no changes occured)
+		if (changed) {
+			meshData.meshletList.clear();
+			meshData.cullDataList.clear();
+		}
 	}
 }
 

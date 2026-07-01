@@ -2882,6 +2882,36 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 	if (!shape)
 		return;
 
+
+	// For starfield BSGeometry, per-vertex weights live in BSGeometryMeshData::skinWeights as nWeightsPerVert pairs of {u16 boneIndex, u16 quantized weight}
+	// boneids index into shapes BSSkin::Instance boneRefs
+	if(auto* bsGeom = dynamic_cast<BSGeometry*>(shape)) {
+		auto* geomData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData());
+		if(!geomData || vertIndex >= geomData->skinWeights.size()) {
+			return;
+		}
+
+		uint32_t wpv = geomData->nWeightsPerVert ? geomData->nWeightsPerVert : 4;
+
+		float sum = 0.0f;
+		for(auto weight : weights) {
+			sum += weight;
+		}
+		if(sum <= 0.f) {
+			sum = 1.f;
+		}
+
+		auto& vw = geomData->skinWeights[vertIndex];
+		vw.assign(wpv, BSGeometryMeshData::BoneWeight{});
+		uint32_t num = std::min<uint32_t>(static_cast<uint32_t>(weights.size()), wpv);
+		for(uint32_t i = 0; i< num; i++) {
+			vw[i].boneIndex = boneids[i];
+			vw[i].weight = static_cast<uint16_t>(std::lround((weights[i] / sum) * 65535.0f));
+		}
+		return;
+	} 
+
+
 	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 	if (!bsTriShape)
 		return;
@@ -2910,6 +2940,20 @@ void NifFile::ClearShapeVertWeights(const std::string& shapeName) const {
 	auto shape = FindBlockByName<NiShape>(shapeName);
 	if (!shape)
 		return;
+
+
+	// For Starfield BSGeometry: reset skinWeights to one zeroed nWeightsPerVert-slot entry per vertex, SetShapeVertWeights will fill them and the .mesh writer writes good weights
+	if (auto* bsGeom = dynamic_cast<BSGeometry*>(shape)) {
+		auto* geomData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData());
+		if (!geomData) {
+			return;
+		}
+		if (geomData->nWeightsPerVert == 0) {
+			geomData->nWeightsPerVert = 4;
+		}
+		geomData->skinWeights.assign(geomData->vertices.size(), std::vector<BSGeometryMeshData::BoneWeight>(geomData->nWeightsPerVert));
+		return;
+	}
 
 	auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
 	if (!bsTriShape)

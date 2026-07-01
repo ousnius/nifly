@@ -606,6 +606,10 @@ public:
 	std::vector<CullData> cullDataList;
 
 	void Sync(NiStreamReversible& stream);
+
+	bool HasMeshlets() const { return !meshletList.empty(); }
+
+	void GenerateMeshlets(uint32_t maxVerts = 128, uint32_t maxPrims = 128);
 };
 
 struct BSGeometryMesh {
@@ -667,6 +671,32 @@ public:
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
 
 	uint8_t MeshCount() { return (uint8_t) meshes.size();	}
+
+	BSGeometryMesh* AddMesh() {
+		meshes.emplace_back();
+		selectedMesh = static_cast<uint8_t>(meshes.size() - 1);
+		return &meshes.back();
+	}
+
+	bool HasMeshlets() const {
+		for (auto& mesh : meshes) {
+			if(mesh.meshData.HasMeshlets()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Generate Starfield mesh-shader meshlets + cull data for every mesh slot that has triangle data. 
+	void GenerateMeshlets(uint32_t maxVerts = 128, uint32_t maxPrims = 128, bool onlyIfMissing = true) {
+		for (auto& mesh : meshes) {
+			if (onlyIfMissing && mesh.meshData.HasMeshlets())
+				continue;
+			if (mesh.meshData.tris.empty())
+				continue;
+			mesh.meshData.GenerateMeshlets(maxVerts, maxPrims);
+		}
+	}
 
 	// Flag 0x200 (512) on BSGeometry controls whether mesh data is embedded inline
 	// in the NIF (internal) or stored as separate .mesh files (external).
