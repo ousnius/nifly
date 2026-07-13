@@ -4258,6 +4258,29 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 		}
 	}
 
+	auto bsGeometry = dynamic_cast<BSGeometry*>(shape);
+	if (bsGeometry) {
+		// Only the currently selected mesh is affected. 
+		// Other mesh slots (LODs) have independent vertex buffers that these indices don't apply to, 
+		// so their geometry is left as-is and can diverge from the edited mesh.
+		auto meshData = dynamic_cast<BSGeometryMeshData*>(bsGeometry->GetGeomData());
+		if (!meshData) {
+			return false;
+		}
+
+		// Vertex indices are 16-bit; meshes beyond that limit can't be indexed safely,
+		// so the deletion is skipped entirely rather than applied partially.
+		if (meshData->vertices.size() > std::numeric_limits<uint16_t>::max()) {
+			return false;
+		}
+
+		meshData->notifyVerticesDelete(indices);
+		if (meshData->vertices.empty() || meshData->tris.empty()) {
+			// Deleted all verts or tris
+			allVertsDeleted = true;
+		}
+	}
+
 	auto skinInst = hdr.GetBlock<NiSkinInstance>(shape->SkinInstanceRef());
 	if (skinInst) {
 		auto skinData = hdr.GetBlock(skinInst->dataRef);

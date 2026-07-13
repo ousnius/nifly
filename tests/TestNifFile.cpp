@@ -22,6 +22,25 @@ std::tuple<std::string, std::string, std::string> GetFileTuple(const char* fileN
 	return std::make_tuple(fileInput, fileOutput, fileExpected);
 }
 
+// Loads every external .mesh file referenced by a BSGeometry shape into its mesh slots.
+static void LoadAllExternalMeshData(NifFile& nif, NiShape* shape) {
+	auto meshPaths = nif.GetExternalGeometryPathRefs(shape);
+	REQUIRE(!meshPaths.empty());
+
+	uint8_t meshIndex = 0;
+	for (auto meshPath : meshPaths) {
+		std::string meshPathStr = meshPath.get();
+		REQUIRE(!meshPathStr.empty());
+
+		const auto meshFileInput = std::get<0>(GetFileTuple(meshPathStr.c_str(), meshSuffix));
+		auto meshStream = GetBinaryInputFileStream(std::filesystem::u8path(meshFileInput));
+		REQUIRE(meshStream);
+		REQUIRE(nif.LoadExternalShapeData(shape, *meshStream, meshIndex));
+		meshStream.reset();
+		meshIndex++;
+	}
+}
+
 TEST_CASE("Load not existing file", "[NifFile]") {
 	constexpr auto fileName = "not_existing.nif";
 
@@ -373,22 +392,7 @@ TEST_CASE("BSGeometry bone weights are normalized (SF)", "[NifFile]") {
 		auto* bsGeom = dynamic_cast<BSGeometry*>(s);
 		REQUIRE(bsGeom != nullptr);
 
-		auto meshPaths = nif.GetExternalGeometryPathRefs(s);
-		REQUIRE(!meshPaths.empty());
-
-		uint8_t meshIndex = 0;
-		for (auto meshPath : meshPaths) {
-			std::string meshPathStr = meshPath.get();
-			REQUIRE(!meshPathStr.empty());
-
-			const auto meshFileInput = std::get<0>(GetFileTuple(meshPathStr.c_str(), meshSuffix));
-			const std::filesystem::path meshInputPath = std::filesystem::u8path(meshFileInput);
-			auto meshStream = GetBinaryInputFileStream(meshInputPath);
-			REQUIRE(meshStream);
-			REQUIRE(nif.LoadExternalShapeData(s, *meshStream, meshIndex));
-			meshStream.reset();
-			meshIndex++;
-		}
+		LoadAllExternalMeshData(nif, s);
 
 		std::vector<std::string> bones;
 		nif.GetShapeBoneList(s, bones);
@@ -411,6 +415,84 @@ TEST_CASE("BSGeometry bone weights are normalized (SF)", "[NifFile]") {
 	REQUIRE(weightedVertices > 0);
 }
 
+TEST_CASE("Delete vertices for shape (SF)", "[NifFile]") {
+	constexpr auto fileName = "TestNifFile_SF";
+	const auto fileInput = std::get<0>(GetFileTuple(fileName, nifSuffix));
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+
+	auto shapes = nif.GetShapes();
+	REQUIRE(!shapes.empty());
+
+	for (auto& s : shapes) {
+		auto* bsGeom = dynamic_cast<BSGeometry*>(s);
+		REQUIRE(bsGeom != nullptr);
+
+		LoadAllExternalMeshData(nif, s);
+
+		auto* meshData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData());
+		REQUIRE(meshData != nullptr);
+
+		const uint32_t vertCountBefore = meshData->nVertices;
+		REQUIRE(vertCountBefore > 4);
+
+		const bool hadMeshlets = meshData->HasMeshlets();
+		const bool hadWeights = !meshData->skinWeights.empty();
+		const bool hadColors = !meshData->vColors.empty();
+		const bool hadNormals = meshData->normals.size() == vertCountBefore;
+		const bool hadTangents = meshData->tangents.size() == vertCountBefore;
+
+		// Delete a few vertices spread across the mesh (sorted ascending)
+		const std::vector<uint16_t> delIndices = {0,
+												  static_cast<uint16_t>(vertCountBefore / 2),
+												  static_cast<uint16_t>(vertCountBefore - 1)};
+
+		// Not all vertices were deleted, so the shape must not be flagged for removal
+		REQUIRE(!nif.DeleteVertsForShape(s, delIndices));
+
+		const uint32_t vertCountAfter = vertCountBefore - static_cast<uint32_t>(delIndices.size());
+		REQUIRE(meshData->nVertices == vertCountAfter);
+		REQUIRE(meshData->vertices.size() == vertCountAfter);
+		REQUIRE(s->GetNumVertices() == vertCountAfter);
+
+		if (hadWeights)
+			REQUIRE(meshData->skinWeights.size() == vertCountAfter);
+
+		if (hadColors)
+			REQUIRE(meshData->vColors.size() == vertCountAfter);
+
+		if (hadNormals)
+			REQUIRE(meshData->normals.size() == vertCountAfter);
+
+		if (hadTangents) {
+			REQUIRE(meshData->tangents.size() == vertCountAfter);
+			REQUIRE(meshData->tangentWs.size() == vertCountAfter);
+		}
+
+		// All triangles (including LODs) must only reference remaining vertices
+		REQUIRE(!meshData->tris.empty());
+
+		for (const auto& t : meshData->tris) {
+			REQUIRE(t.p1 < vertCountAfter);
+			REQUIRE(t.p2 < vertCountAfter);
+			REQUIRE(t.p3 < vertCountAfter);
+		}
+
+		for (const auto& lod : meshData->lods) {
+			for (const auto& t : lod) {
+				REQUIRE(t.p1 < vertCountAfter);
+				REQUIRE(t.p2 < vertCountAfter);
+				REQUIRE(t.p3 < vertCountAfter);
+			}
+		}
+
+		// Meshlets and cull data were rebuilt if the mesh had them before
+		REQUIRE(meshData->HasMeshlets() == hadMeshlets);
+		REQUIRE(meshData->meshletList.size() == meshData->cullDataList.size());
+	}
+}
+
 TEST_CASE("Load external and save as internal mesh data (SF)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_ToInternalMesh_SF";
 	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, nifSuffix);
@@ -423,23 +505,7 @@ TEST_CASE("Load external and save as internal mesh data (SF)", "[NifFile]") {
 	REQUIRE(!shapes.empty());
 
 	for (auto& s : shapes) {
-		auto meshPaths = nif.GetExternalGeometryPathRefs(s);
-		REQUIRE(!meshPaths.empty());
-
-		uint8_t meshIndex = 0;
-		for (auto meshPath : meshPaths) {
-			std::string meshPathStr = meshPath.get();
-			REQUIRE(!meshPathStr.empty());
-
-			const auto [meshFileInput, meshFileOutput, meshFileExpected] = GetFileTuple(meshPathStr.c_str(), meshSuffix);
-			const std::filesystem::path meshInputPath = std::filesystem::u8path(meshFileInput);
-			auto meshStream = GetBinaryInputFileStream(meshInputPath);
-			REQUIRE(meshStream);
-
-			REQUIRE(nif.LoadExternalShapeData(s, *meshStream, meshIndex));
-			meshStream.reset();
-			meshIndex++;
-		}
+		LoadAllExternalMeshData(nif, s);
 
 		// Switch from external to internal mesh data
 		auto bsgeo = dynamic_cast<nifly::BSGeometry*>(s);
