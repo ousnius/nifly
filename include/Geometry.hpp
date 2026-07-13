@@ -607,6 +607,8 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 
+	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
+
 	bool HasMeshlets() const { return !meshletList.empty(); }
 
 	void GenerateMeshlets(uint32_t maxVerts = 128, uint32_t maxPrims = 128);
@@ -615,7 +617,7 @@ public:
 struct BSGeometryMesh {
 	uint32_t triSize = 0;
 	uint32_t numVerts = 0;
-	uint32_t flags = 0;		// Often 64
+	uint32_t flags = 0; // Often 64
 
 	// When internalGeom is false (default), meshName holds the external .mesh path
 	// (41 hex chars from sha1, or a human-readable name). When true, mesh data is
@@ -650,7 +652,7 @@ public:
 	void Sync(NiStreamReversible& stream);
 	void GetChildRefs(std::set<NiRef*>& refs) override;
 	void GetChildIndices(std::vector<uint32_t>& indices) override;
-		
+
 	NiGeometryData* GetGeomData() const override;
 
 	bool GetTriangles(std::vector<Triangle>& tris) const override;
@@ -670,7 +672,7 @@ public:
 	NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() override { return &alphaPropertyRef; }
 	const NiBlockRef<NiAlphaProperty>* AlphaPropertyRef() const override { return &alphaPropertyRef; }
 
-	uint8_t MeshCount() { return (uint8_t) meshes.size();	}
+	uint8_t MeshCount() { return (uint8_t) meshes.size(); }
 
 	BSGeometryMesh* AddMesh() {
 		meshes.emplace_back();
@@ -680,14 +682,14 @@ public:
 
 	bool HasMeshlets() const {
 		for (auto& mesh : meshes) {
-			if(mesh.meshData.HasMeshlets()) {
+			if (mesh.meshData.HasMeshlets()) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	// Generate Starfield mesh-shader meshlets + cull data for every mesh slot that has triangle data. 
+	// Generate Starfield mesh-shader meshlets + cull data for every mesh slot that has triangle data.
 	void GenerateMeshlets(uint32_t maxVerts = 128, uint32_t maxPrims = 128, bool onlyIfMissing = true) {
 		for (auto& mesh : meshes) {
 			if (onlyIfMissing && mesh.meshData.HasMeshlets())

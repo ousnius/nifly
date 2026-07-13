@@ -189,7 +189,7 @@ uint32_t NiGeometryData::GetNumTriangles() const {
 bool NiGeometryData::GetTriangles(std::vector<Triangle>&) const {
 	return false;
 }
-void NiGeometryData::SetTriangles(const std::vector<Triangle>&){};
+void NiGeometryData::SetTriangles(const std::vector<Triangle>&) {};
 
 void NiGeometryData::UpdateBounds() {
 	bounds = BoundingSphere(vertices);
@@ -343,7 +343,7 @@ bool NiShape::HasVertexColors() const {
 	return false;
 };
 
-void NiShape::SetSkinned(const bool){};
+void NiShape::SetSkinned(const bool) {};
 bool NiShape::IsSkinned() const {
 	return false;
 };
@@ -1752,6 +1752,54 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	}
 }
 
+void BSGeometryMeshData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
+	if (vertIndices.empty()) {
+		return;
+	}
+
+	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, vertices.size());
+
+	// Base handles vertices, normals, tangents and uvSets
+	NiGeometryData::notifyVerticesDelete(vertIndices);
+	nVertices = static_cast<uint32_t>(vertices.size());
+	nNormals = static_cast<uint32_t>(normals.size());
+	nTangents = static_cast<uint32_t>(tangents.size());
+	nUV1 = uvSets.size() > 0 ? static_cast<uint32_t>(uvSets[0].size()) : 0;
+	nUV2 = uvSets.size() > 1 ? static_cast<uint32_t>(uvSets[1].size()) : 0;
+
+	//Erase Starfield specific per-vertex arrays (vColors, tangentWs, skinWeights)
+	EraseVectorIndices(vColors, vertIndices);
+	nColors = static_cast<uint32_t>(vColors.size());
+
+	EraseVectorIndices(tangentWs, vertIndices);
+
+	EraseVectorIndices(skinWeights, vertIndices);
+	nTotalWeights = 0;
+	for (auto& vw : skinWeights) {
+		nTotalWeights += static_cast<uint32_t>(vw.size());
+	}
+
+	// Remap the main triangle list with the index collapse map
+	ApplyMapToTriangles(tris, indexCollapse);
+	nTriIndices = static_cast<uint32_t>(tris.size()) * 3;
+
+	//Also need to remap all lod triangle lists
+	for (auto& lod : lods) {
+		ApplyMapToTriangles(lod, indexCollapse);
+	}
+
+	// Need to rebuild Meshlets and cull data (if had any)
+	bool hadMeshlets = !meshletList.empty();
+	meshletList.clear();
+	cullDataList.clear();
+	nMeshlets = 0;
+	nCullData = 0;
+
+	if (hadMeshlets) {
+		GenerateMeshlets();
+	}
+}
+
 void BSGeometryMeshData::GenerateMeshlets(uint32_t maxVerts, uint32_t maxPrims) {
 	meshletList.clear();
 	cullDataList.clear();
@@ -1768,9 +1816,9 @@ void BSGeometryMeshData::GenerateMeshlets(uint32_t maxVerts, uint32_t maxPrims) 
 	if (maxPrims < 1)
 		maxPrims = 1;
 
-	uint32_t startTri = 0;             // first triangle of the meshlet being built
-	uint32_t vertOffsetAccum = 0;      // running sum of emitted vertCounts (= vertOffset)
-	std::unordered_set<uint16_t> cur;  // distinct vertices in the meshlet being built
+	uint32_t startTri = 0;			  // first triangle of the meshlet being built
+	uint32_t vertOffsetAccum = 0;	  // running sum of emitted vertCounts (= vertOffset)
+	std::unordered_set<uint16_t> cur; // distinct vertices in the meshlet being built
 
 	auto flush = [&](uint32_t endTri) {
 		if (endTri <= startTri)
@@ -1780,7 +1828,7 @@ void BSGeometryMeshData::GenerateMeshlets(uint32_t maxVerts, uint32_t maxPrims) 
 		m.vertCount = static_cast<uint32_t>(cur.size());
 		m.vertOffset = vertOffsetAccum;
 		m.primCount = endTri - startTri;
-		m.primOffset = startTri;   // primOffset is in TRIANGLE units (matches vanilla SF meshlets)
+		m.primOffset = startTri; // primOffset is in TRIANGLE units (matches vanilla SF meshlets)
 		meshletList.push_back(m);
 		vertOffsetAccum += m.vertCount;
 
@@ -1906,7 +1954,7 @@ void BSGeometry::GetChildIndices(std::vector<uint32_t>& indices) {
 NiGeometryData* BSGeometry::GetGeomData() const {
 	if (meshes.size() > selectedMesh) {
 		// Breaking const correctness here to cast to the desired level of the class heirarchy.
-		//   Perhaps NiShape GetGeomData should return a const* or it shouldn't be a const function? 
+		//   Perhaps NiShape GetGeomData should return a const* or it shouldn't be a const function?
 		return dynamic_cast<NiGeometryData*>(const_cast<BSGeometryMeshData*>(&meshes[selectedMesh].meshData));
 	}
 	return nullptr;
@@ -1929,7 +1977,8 @@ void BSGeometry::SetTriangles(const std::vector<Triangle>& tris) {
 		// Detect whether the triangle topology actually changes.
 		bool changed = meshData.tris.size() != tris.size();
 		for (size_t i = 0; !changed && i < tris.size(); ++i) {
-			changed = meshData.tris[i].p1 != tris[i].p1 || meshData.tris[i].p2 != tris[i].p2 || meshData.tris[i].p3 != tris[i].p3;
+			changed = meshData.tris[i].p1 != tris[i].p1 || meshData.tris[i].p2 != tris[i].p2
+					  || meshData.tris[i].p3 != tris[i].p3;
 		}
 
 		meshData.tris = tris;
