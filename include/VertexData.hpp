@@ -82,8 +82,9 @@ public:
 	// Set offset to a specific vertex attribute in the description
 	void SetAttributeOffset(VertexAttribute attr, uint32_t offset) {
 		if (attr != VA_POSITION) {
+			// Shift the mask as 64-bit, as the shift count can exceed 32 bits
 			const uint64_t lhs = static_cast<uint64_t>(offset) << (4 * static_cast<uint8_t>(attr) + 2);
-			const uint64_t rhs = desc & ~static_cast<uint64_t>(15 << (4 * static_cast<uint8_t>(attr) + 4));
+			const uint64_t rhs = desc & ~(static_cast<uint64_t>(15) << (4 * static_cast<uint8_t>(attr) + 4));
 			desc = lhs | rhs;
 		}
 	}

@@ -899,7 +899,11 @@ static void CalculateNormals(const std::vector<Vector3>& verts,
 	norms.resize(verts.size());
 
 	// Face normals
+	const size_t numVerts = verts.size();
 	for (const Triangle& t : tris) {
+		if (t.p1 >= numVerts || t.p2 >= numVerts || t.p3 >= numVerts)
+			continue;
+
 		Vector3 tn = t.trinormal(verts);
 		norms[t.p1] += tn;
 		norms[t.p2] += tn;
@@ -1397,10 +1401,14 @@ void BSSubIndexTriShape::GetSegmentation(NifSegmentationInfo& inf, std::vector<i
 			inf.segs[i].subs[j].partID = partID++;
 			arrayIndex++;
 
-			const BSSITSSubSegmentDataRecord& rec = segmentation.subSegmentData.dataRecords[arrayIndex];
-			inf.segs[i].subs[j].userSlotID = rec.userSlotID < 30 ? 0 : rec.userSlotID;
-			inf.segs[i].subs[j].material = rec.material;
-			inf.segs[i].subs[j].extraData = rec.extraData;
+			// Data records are only present in the file if numSegments < numTotalSegments
+			const auto& dataRecords = segmentation.subSegmentData.dataRecords;
+			if (static_cast<size_t>(arrayIndex) < dataRecords.size()) {
+				const BSSITSSubSegmentDataRecord& rec = dataRecords[arrayIndex];
+				inf.segs[i].subs[j].userSlotID = rec.userSlotID < 30 ? 0 : rec.userSlotID;
+				inf.segs[i].subs[j].material = rec.material;
+				inf.segs[i].subs[j].extraData = rec.extraData;
+			}
 		}
 		arrayIndex++;
 	}
@@ -1928,8 +1936,12 @@ void BSGeometry::Sync(NiStreamReversible& stream) {
 				BSGeometryMesh mesh{};
 				meshes.push_back(mesh);
 			}
-			meshes[i].internalGeom = internal;
-			meshes[i].Sync(stream);
+
+			// While reading, use the last added mesh instead of indexing with "i".
+			// The file data can have gaps in the mesh presence bytes.
+			auto& mesh = stream.GetMode() == NiStreamReversible::Mode::Reading ? meshes.back() : meshes[i];
+			mesh.internalGeom = internal;
+			mesh.Sync(stream);
 		}
 	}
 }
@@ -2301,13 +2313,14 @@ void NiTriStripsData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 	// This is not a healthy way to delete strip data. Probably need to restrip the shape.
 	for (uint16_t i = 0; i < stripsInfo.stripLengths.size(); i++) {
 		for (uint16_t j = 0; j < stripsInfo.stripLengths[i]; j++) {
-			if (indexCollapse[stripsInfo.points[i][j]] == -1) {
+			uint16_t p = stripsInfo.points[i][j];
+			if (p >= indexCollapse.size() || indexCollapse[p] == -1) {
 				stripsInfo.points[i].erase(stripsInfo.points[i].begin() + j);
 				stripsInfo.stripLengths[i]--;
 				--j;
 			}
 			else
-				stripsInfo.points[i][j] = static_cast<uint16_t>(indexCollapse[stripsInfo.points[i][j]]);
+				stripsInfo.points[i][j] = static_cast<uint16_t>(indexCollapse[p]);
 		}
 	}
 

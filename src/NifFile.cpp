@@ -1681,7 +1681,9 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			if (bsOptShape->GetNumVertices() > 0) {
 				if (!removeVertexColors && !colors.empty()) {
 					bsOptShape->SetVertexColors(true);
-					for (uint16_t i = 0; i < bsOptShape->GetNumVertices(); i++) {
+					const auto numColors = static_cast<uint16_t>(
+						std::min<size_t>(colors.size(), bsOptShape->GetNumVertices()));
+					for (uint16_t i = 0; i < numColors; i++) {
 						auto& vertex = bsOptShape->vertData[i];
 
 						float f = std::max(0.0f, std::min(1.0f, colors[i].r));
@@ -1747,14 +1749,17 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 
 										if (part.hasBoneIndices) {
 											auto& boneIndices = part.boneIndices[i];
-											vertex.weightBones[0] = static_cast<uint8_t>(
-												part.bones[boneIndices.i1]);
-											vertex.weightBones[1] = static_cast<uint8_t>(
-												part.bones[boneIndices.i2]);
-											vertex.weightBones[2] = static_cast<uint8_t>(
-												part.bones[boneIndices.i3]);
-											vertex.weightBones[3] = static_cast<uint8_t>(
-												part.bones[boneIndices.i4]);
+											const size_t numPartBones = part.bones.size();
+											const uint8_t ids[4] = {boneIndices.i1,
+																	boneIndices.i2,
+																	boneIndices.i3,
+																	boneIndices.i4};
+
+											for (int j = 0; j < 4; j++)
+												vertex.weightBones[j] = ids[j] < numPartBones
+																			? static_cast<uint8_t>(
+																				part.bones[ids[j]])
+																			: 0;
 										}
 									}
 								}
@@ -1940,7 +1945,9 @@ OptResult NifFile::OptimizeFor(OptOptions& options) {
 			if (bsOptShape->GetNumVertices() > 0) {
 				if (!removeVertexColors && !colors.empty()) {
 					bsOptShape->SetVertexColors(true);
-					for (uint16_t i = 0; i < bsOptShape->GetNumVertices(); i++)
+					const auto numColors = static_cast<uint16_t>(
+						std::min<size_t>(colors.size(), bsOptShape->GetNumVertices()));
+					for (uint16_t i = 0; i < numColors; i++)
 						bsOptShapeData->vertexColors[i] = colors[i];
 				}
 
@@ -2779,6 +2786,9 @@ bool NifFile::SetShapeBoneBounds(const std::string& shapeName,
 		if (!bsSkin)
 			return false;
 
+		if (boneIndex >= bsSkin->nBones)
+			return false;
+
 		bsSkin->boneXforms[boneIndex].bounds = inBounds;
 		return true;
 	}
@@ -2807,6 +2817,9 @@ bool NifFile::GetShapeBoneBounds(NiShape* shape, const uint32_t boneIndex, Bound
 	if (skinForBoneRef) {
 		auto boneData = hdr.GetBlock(skinForBoneRef->dataRef);
 		if (boneData) {
+			if (boneIndex >= boneData->nBones)
+				return false;
+
 			outBounds = boneData->boneXforms[boneIndex].bounds;
 			return true;
 		}
@@ -2904,6 +2917,7 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 		auto& vw = geomData->skinWeights[vertIndex];
 		vw.assign(wpv, BSGeometryMeshData::BoneWeight{});
 		uint32_t num = std::min<uint32_t>(static_cast<uint32_t>(weights.size()), wpv);
+		num = std::min(num, static_cast<uint32_t>(boneids.size()));
 		for(uint32_t i = 0; i< num; i++) {
 			vw[i].boneIndex = boneids[i];
 			vw[i].weight = static_cast<uint16_t>(std::lround((weights[i] / sum) * 65535.0f));
@@ -2928,7 +2942,11 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 	for (auto weight : weights)
 		sum += weight;
 
+	if (sum <= 0.0f)
+		sum = 1.0f;
+
 	uint32_t num = (weights.size() < 4 ? static_cast<uint32_t>(weights.size()) : 4);
+	num = std::min(num, static_cast<uint32_t>(boneids.size()));
 
 	for (uint32_t i = 0; i < num; i++) {
 		vertex.weightBones[i] = boneids[i];
@@ -3844,16 +3862,19 @@ int NifFile::ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName)
 	std::unordered_set<uint32_t> lockedNormalIndices;
 
 	// Get LOCKEDNORM from source
-	NiIntegersExtraData* integersExtraData = nullptr;
+	NiIntegersExtraData* lockedNormalsData = nullptr;
 
 	for (auto& extraDataRef : srcShape->extraDataRefs) {
-		integersExtraData = srcNif.GetHeader().GetBlock<NiIntegersExtraData>(extraDataRef);
-		if (integersExtraData && integersExtraData->name == "LOCKEDNORM")
+		auto integersExtraData = srcNif.GetHeader().GetBlock<NiIntegersExtraData>(extraDataRef);
+		if (integersExtraData && integersExtraData->name == "LOCKEDNORM") {
+			lockedNormalsData = integersExtraData;
+
 			for (auto& i : integersExtraData->integersData)
 				lockedNormalIndices.insert(i);
+		}
 	}
 
-	if (lockedNormalIndices.empty())
+	if (!lockedNormalsData || lockedNormalIndices.empty())
 		return -3;
 
 	// Get normals of target
@@ -3874,8 +3895,10 @@ int NifFile::ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName)
 
 	// Copy locked normals of the source into the target
 	for (auto& i : lockedNormalIndices) {
-		auto& sn = srcNorms->at(i);
-		workNorms[i] = sn;
+		if (i >= workNorms.size())
+			continue;
+
+		workNorms[i] = srcNorms->at(i);
 	}
 
 	SetNormalsForShape(shape, workNorms);
@@ -3886,7 +3909,7 @@ int NifFile::ApplyNormalsFromFile(NifFile& srcNif, const std::string& shapeName)
 			hdr.DeleteBlock(extraDataRef);
 	}
 
-	AssignExtraData(shape, integersExtraData->Clone());
+	AssignExtraData(shape, lockedNormalsData->Clone());
 	return 0;
 }
 
@@ -4309,7 +4332,9 @@ bool NifFile::DeleteVertsForShape(NiShape* shape, const std::vector<uint16_t>& i
 			std::sort(integersData.begin(), integersData.end());
 
 			uint16_t highestRemoved = indices.back();
-			uint16_t mapSize = highestRemoved + 1;
+
+			// 32-bit to avoid wrapping around to zero for a highest removed index of 65535
+			uint32_t mapSize = static_cast<uint32_t>(highestRemoved) + 1;
 			std::vector<int> indexCollapse = GenerateIndexCollapseMap(indices, mapSize);
 
 			for (uint32_t i = integersData.size() - 1; i != NIF_NPOS; i--) {

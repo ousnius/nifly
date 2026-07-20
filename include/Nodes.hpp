@@ -151,7 +151,7 @@ public:
 
 struct BSResourceID {
     uint32_t fileHash = 0;
-    char extension[4];
+    char extension[4]{};
     uint32_t dirHash = 0;
 };
 
@@ -250,7 +250,7 @@ struct BSWeakReference {
 	uint32_t numTransforms = 0;
 	std::vector<Matrix4> transforms;
 
-	uint32_t numMaterials;
+	uint32_t numMaterials = 0;
 	std::vector<UnkMaterialStruct> unkMaterials;
 
 	void Sync(NiStreamReversible& stream);

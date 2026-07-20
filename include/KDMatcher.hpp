@@ -290,6 +290,9 @@ public:
 			mindist = radius;
 
 		queryResult.clear();
+		if (!root)
+			return 0;
+
 		root->find_closest(querypoint, queryResult, radius, mindist);
 		std::sort(queryResult.begin(), queryResult.end());
 

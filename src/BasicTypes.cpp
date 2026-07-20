@@ -76,7 +76,10 @@ void NiString::Read(NiIStream& stream, const int szSize) {
 		uint32_t bigSize = 0;
 		stream >> bigSize;
 
-		buf = std::make_unique<char[]>(bigSize + 1);
+		if (bigSize > NIF_ARRAY_SIZE_LIMIT)
+			throw std::length_error("Read: String size is too high.");
+
+		buf = std::make_unique<char[]>(static_cast<size_t>(bigSize) + 1);
 		stream.read(buf.get(), bigSize);
 		buf[bigSize] = 0;
 	}
@@ -128,10 +131,18 @@ void NiStringRef::Read(NiIStream& stream) {
 		uint32_t sz = 0;
 		stream >> sz;
 
-		if (sz < buf.size())
+		if (sz > NIF_ARRAY_SIZE_LIMIT)
+			throw std::length_error("Read: String size is too high.");
+
+		if (sz < buf.size()) {
 			stream.read(buf.data(), sz);
-		else
+		}
+		else {
+			// Read what fits into the buffer and skip the rest to keep the stream in sync
+			stream.read(buf.data(), buf.size() - 1);
+			stream.ignore(sz - static_cast<uint32_t>(buf.size() - 1));
 			sz = static_cast<uint32_t>(buf.size() - 1);
+		}
 
 		buf[sz] = 0;
 		str = buf.data();
@@ -225,7 +236,7 @@ uint32_t NiHeader::GetBlockID(NiObject* block) const {
 }
 
 void NiHeader::DeleteBlock(const uint32_t blockId) {
-	if (blockId == NIF_NPOS)
+	if (blockId == NIF_NPOS || blockId >= numBlocks)
 		return;
 
 	uint16_t blockTypeId = blockTypeIndices[blockId];
@@ -234,7 +245,7 @@ void NiHeader::DeleteBlock(const uint32_t blockId) {
 		if (blockTypeIndice == blockTypeId)
 			blockTypeRefCount++;
 
-	if (blockTypeRefCount < 2) {
+	if (blockTypeRefCount < 2 && blockTypeId < blockTypes.size()) {
 		blockTypes.erase(blockTypes.begin() + blockTypeId);
 		numBlockTypes--;
 		for (uint16_t& blockTypeIndice : blockTypeIndices)
@@ -291,7 +302,7 @@ uint32_t NiHeader::AddBlock(std::unique_ptr<NiObject> newBlock) {
 }
 
 uint32_t NiHeader::ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObject> newBlock) {
-	if (oldBlockId == NIF_NPOS)
+	if (oldBlockId == NIF_NPOS || oldBlockId >= numBlocks)
 		return NIF_NPOS;
 
 	uint16_t blockTypeId = blockTypeIndices[oldBlockId];
@@ -300,7 +311,7 @@ uint32_t NiHeader::ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObj
 		if (blockTypeIndice == blockTypeId)
 			blockTypeRefCount++;
 
-	if (blockTypeRefCount < 2) {
+	if (blockTypeRefCount < 2 && blockTypeId < blockTypes.size()) {
 		blockTypes.erase(blockTypes.begin() + blockTypeId);
 		numBlockTypes--;
 		for (uint16_t& blockTypeIndice : blockTypeIndices)
@@ -321,6 +332,15 @@ uint32_t NiHeader::ReplaceBlock(const uint32_t oldBlockId, std::unique_ptr<NiObj
 void NiHeader::SetBlockOrder(std::vector<uint32_t>& newOrder) {
 	if (newOrder.size() != numBlocks)
 		return;
+
+	// Make sure the new order is a valid permutation of all block indices
+	std::vector<bool> indexSeen(numBlocks, false);
+	for (uint32_t index : newOrder) {
+		if (index >= numBlocks || indexSeen[index])
+			return;
+
+		indexSeen[index] = true;
+	}
 
 	std::vector<uint16_t> newBlockTypeIndices(blockTypeIndices.size());
 	std::vector<std::unique_ptr<NiObject>> newBlocks(blocks->size());
@@ -635,6 +655,8 @@ void NiHeader::Get(NiIStream& stream) {
 	}
 
 	stream >> numBlocks;
+	if (numBlocks > NIF_BLOCK_INDEX_LIMIT)
+		return; // Header remains invalid
 
 	if (version.IsBethesda()) {
 		stream >> vstream;
@@ -653,6 +675,9 @@ void NiHeader::Get(NiIStream& stream) {
 	}
 	else if (version.File() >= V30_0_0_2) {
 		stream >> embedDataSize;
+		if (embedDataSize > NIF_ARRAY_SIZE_LIMIT)
+			return; // Header remains invalid
+
 		embedData.resize(embedDataSize);
 		for (uint32_t i = 0; i < embedDataSize; i++)
 			stream >> embedData[i];
@@ -665,8 +690,11 @@ void NiHeader::Get(NiIStream& stream) {
 			blockTypes[i].Read(stream, 4);
 
 		blockTypeIndices.resize(numBlocks);
-		for (uint32_t i = 0; i < numBlocks; i++)
+		for (uint32_t i = 0; i < numBlocks; i++) {
 			stream >> blockTypeIndices[i];
+			if (blockTypeIndices[i] >= numBlockTypes)
+				return; // Header remains invalid
+		}
 	}
 
 	if (version.File() >= V20_2_0_5) {
@@ -679,6 +707,9 @@ void NiHeader::Get(NiIStream& stream) {
 		stream >> numStrings;
 		stream >> maxStringLen;
 
+		if (numStrings > NIF_STRING_INDEX_LIMIT)
+			return; // Header remains invalid
+
 		strings.resize(numStrings);
 		for (uint32_t i = 0; i < numStrings; i++)
 			strings[i].Read(stream, 4);
@@ -686,6 +717,9 @@ void NiHeader::Get(NiIStream& stream) {
 
 	if (version.File() >= NiVersion::ToFile(5, 0, 0, 6)) {
 		stream >> numGroups;
+		if (numGroups > NIF_ARRAY_SIZE_LIMIT)
+			return; // Header remains invalid
+
 		groupSizes.resize(numGroups);
 		for (uint32_t i = 0; i < numGroups; i++)
 			stream >> groupSizes[i];

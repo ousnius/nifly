@@ -676,6 +676,9 @@ public:
 	}
 
 	void Set(const std::vector<Vector3>& mat33) {
+		if (mat33.size() < 3)
+			return;
+
 		m[0] = mat33[0].x;
 		m[1] = mat33[0].y;
 		m[2] = mat33[0].z;

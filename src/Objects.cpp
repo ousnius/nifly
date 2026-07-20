@@ -187,6 +187,9 @@ void NiPersistentSrcTextureRendererData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numFaces);
 	stream.Sync(platform);
 
+	if (numFaces > NIF_ARRAY_SIZE_LIMIT || numPixels > NIF_ARRAY_SIZE_LIMIT)
+		throw std::length_error("IO: Array size is too large.");
+
 	pixelData.resize(numFaces);
 	for (uint32_t f = 0; f < numFaces; f++) {
 		pixelData[f].resize(numPixels);
@@ -199,6 +202,9 @@ void NiPersistentSrcTextureRendererData::Sync(NiStreamReversible& stream) {
 void NiPixelData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numPixels);
 	stream.Sync(numFaces);
+
+	if (numFaces > NIF_ARRAY_SIZE_LIMIT || numPixels > NIF_ARRAY_SIZE_LIMIT)
+		throw std::length_error("IO: Array size is too large.");
 
 	pixelData.resize(numFaces);
 	for (uint32_t f = 0; f < numFaces; f++) {

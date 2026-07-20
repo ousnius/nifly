@@ -227,6 +227,7 @@ public:
 		, stream(s) {}
 
 	void read(char* ptr, std::streamsize count) { stream->read(ptr, count); }
+	void ignore(std::streamsize count) { stream->ignore(count); }
 	void getline(char* ptr, std::streamsize maxCount) { stream->getline(ptr, maxCount); }
 	void getstring(std::string& str) { std::getline(*stream, str, '\0'); }
 
@@ -635,6 +636,11 @@ public:
 
 
 	void SyncData(NiStreamReversible& stream, const SizeType size) {
+		if constexpr (sizeof(SizeType) >= sizeof(uint32_t)) {
+			if (size > NIF_ARRAY_SIZE_LIMIT)
+				throw std::length_error("IO: Array size is too large.");
+		}
+
 		Base::resize(size);
 
 		for (auto& e : *this)
@@ -643,6 +649,12 @@ public:
 
 	void SyncByteArray(NiStreamReversible& stream) {
 		SizeType sz = SyncSize(stream);
+
+		if constexpr (sizeof(SizeType) >= sizeof(uint32_t)) {
+			if (sz > NIF_ARRAY_SIZE_LIMIT)
+				throw std::length_error("IO: Array size is too large.");
+		}
+
 		Base::resize(sz);
 
 		if (sz > 0)
@@ -682,6 +694,11 @@ public:
 	}
 
 	void SyncData(NiStreamReversible& stream, const SizeType size) {
+		if constexpr (sizeof(SizeType) >= sizeof(uint32_t)) {
+			if (size > NIF_ARRAY_SIZE_LIMIT)
+				throw std::length_error("IO: Array size is too large.");
+		}
+
 		Base::resize(size);
 
 		for (auto& e : *this)
@@ -724,6 +741,11 @@ public:
 		SizeType sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
 
+		if constexpr (sizeof(SizeType) >= sizeof(uint32_t)) {
+			if (sz > NIF_ARRAY_SIZE_LIMIT)
+				throw std::length_error("IO: Array size is too large.");
+		}
+
 		Base::resize(sz);
 
 		for (auto& e : *this)
@@ -763,6 +785,11 @@ public:
 	void Read(NiIStream& stream) {
 		SizeType sz = 0;
 		stream.read(reinterpret_cast<char*>(&sz), NumSize);
+
+		if constexpr (sizeof(SizeType) >= sizeof(uint32_t)) {
+			if (sz > NIF_ARRAY_SIZE_LIMIT)
+				throw std::length_error("IO: Array size is too large.");
+		}
 
 		Base::resize(sz);
 

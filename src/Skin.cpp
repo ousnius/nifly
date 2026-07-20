@@ -52,8 +52,13 @@ void NiSkinData::Sync(NiStreamReversible& stream) {
 }
 
 void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {
+	if (vertIndices.empty())
+		return;
+
 	uint16_t highestRemoved = vertIndices.back();
-	uint16_t mapSize = highestRemoved + 1;
+
+	// 32-bit to avoid wrapping around to zero for a highest removed index of 65535
+	uint32_t mapSize = static_cast<uint32_t>(highestRemoved) + 1;
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, mapSize);
 
 	NiObject::notifyVerticesDelete(vertIndices);
@@ -78,6 +83,9 @@ void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) 
 
 void NiSkinPartition::Sync(NiStreamReversible& stream) {
 	stream.Sync(numPartitions);
+	if (numPartitions > NIF_ARRAY_SIZE_LIMIT)
+		throw std::length_error("IO: Array size is too large.");
+
 	partitions.resize(numPartitions);
 
 	if (stream.GetVersion().User() >= 12 && stream.GetVersion().Stream() == 100) {
@@ -92,8 +100,14 @@ void NiSkinPartition::Sync(NiStreamReversible& stream) {
 		vertexDesc.Sync(stream);
 
 		if (dataSize > 0) {
-			if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+			if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+				if (vertexSize == 0)
+					throw std::length_error("IO: Vertex size is zero with non-zero data size.");
+
 				numVertices = dataSize / vertexSize;
+				if (numVertices > NIF_ARRAY_SIZE_LIMIT)
+					throw std::length_error("IO: Array size is too large.");
+			}
 
 			vertData.resize(numVertices);
 
@@ -253,7 +267,8 @@ void NiSkinPartition::notifyVerticesDelete(const std::vector<uint16_t>& vertIndi
 			maxVertInd = std::max(maxVertInd, CalcMaxTriangleIndex(p.triangles));
 	}
 
-	uint16_t mapSize = maxVertInd + 1;
+	// 32-bit to avoid wrapping around to zero for a maximum vertex index of 65535
+	uint32_t mapSize = static_cast<uint32_t>(maxVertInd) + 1;
 
 	// Make collapse map for shape vertex indices
 	std::vector<int> indexCollapse = GenerateIndexCollapseMap(vertIndices, mapSize);
@@ -556,6 +571,9 @@ void BSDismemberSkinInstance::DeletePartitions(const std::vector<uint32_t>& part
 
 void BSSkinBoneData::Sync(NiStreamReversible& stream) {
 	stream.Sync(nBones);
+	if (nBones > NIF_ARRAY_SIZE_LIMIT)
+		throw std::length_error("IO: Array size is too large.");
+
 	boneXforms.resize(nBones);
 	for (uint32_t i = 0; i < nBones; i++) {
 		stream.Sync(boneXforms[i].bounds);
