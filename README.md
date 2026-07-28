@@ -19,6 +19,7 @@ Also check out [NiflySharp](https://github.com/ousnius/NiflySharp) for a native 
   - Fallout 4
   - Fallout 4 VR
   - Fallout 76
+  - The Elder Scrolls III: Morrowind
   - The Elder Scrolls IV: Oblivion
   - The Elder Scrolls V: Skyrim
   - The Elder Scrolls V: Skyrim Special Edition
