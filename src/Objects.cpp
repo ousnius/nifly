@@ -15,7 +15,12 @@ void NiObjectNET::Sync(NiStreamReversible& stream) {
 
 	name.Sync(stream);
 
-	extraDataRefs.Sync(stream);
+	if (stream.GetVersion().File() <= NiFileVersion::V4_2_2_0)
+		extraDataRef.Sync(stream);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V10_0_1_0)
+		extraDataRefs.Sync(stream);
+
 	controllerRef.Sync(stream);
 }
 
@@ -28,6 +33,7 @@ void NiObjectNET::GetStringRefs(std::vector<NiStringRef*>& refs) {
 void NiObjectNET::GetChildRefs(std::set<NiRef*>& refs) {
 	NiObject::GetChildRefs(refs);
 
+	refs.insert(&extraDataRef);
 	extraDataRefs.GetIndexPtrs(refs);
 	refs.insert(&controllerRef);
 }
@@ -35,6 +41,7 @@ void NiObjectNET::GetChildRefs(std::set<NiRef*>& refs) {
 void NiObjectNET::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiObject::GetChildIndices(indices);
 
+	indices.push_back(extraDataRef.index);
 	extraDataRefs.GetIndices(indices);
 	indices.push_back(controllerRef.index);
 }
@@ -59,8 +66,18 @@ void NiAVObject::Sync(NiStreamReversible& stream) {
 	stream.Sync(transform.rotation);
 	stream.Sync(transform.scale);
 
+	if (stream.GetVersion().File() <= V4_2_2_0)
+		stream.Sync(velocity);
+
 	if (stream.GetVersion().Stream() <= 34)
 		propertyRefs.Sync(stream);
+
+	if (stream.GetVersion().File() <= V4_2_2_0) {
+		hasBoundingVolume.Sync(stream);
+
+		if (hasBoundingVolume)
+			boundingVolume.Sync(stream);
+	}
 
 	if (stream.GetVersion().File() >= V10_0_1_0)
 		collisionRef.Sync(stream);
@@ -95,14 +112,19 @@ void NiDefaultAVObjectPalette::GetPtrs(std::set<NiPtr*>& ptrs) {
 
 
 void NiCamera::Sync(NiStreamReversible& stream) {
-	stream.Sync(obsoleteFlags);
+	if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
+		stream.Sync(obsoleteFlags);
+
 	stream.Sync(frustumLeft);
 	stream.Sync(frustumRight);
 	stream.Sync(frustumTop);
 	stream.Sync(frustomBottom);
 	stream.Sync(frustumNear);
 	stream.Sync(frustumFar);
-	stream.Sync(useOrtho);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
+		stream.Sync(useOrtho);
+
 	stream.Sync(viewportLeft);
 	stream.Sync(viewportRight);
 	stream.Sync(viewportTop);
@@ -111,7 +133,9 @@ void NiCamera::Sync(NiStreamReversible& stream) {
 
 	sceneRef.Sync(stream);
 	stream.Sync(numScreenPolygons);
-	stream.Sync(numScreenTextures);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V4_2_1_0)
+		stream.Sync(numScreenTextures);
 }
 
 void NiCamera::GetChildRefs(std::set<NiRef*>& refs) {
@@ -147,17 +171,36 @@ void NiPalette::Sync(NiStreamReversible& stream) {
 
 void TextureRenderData::Sync(NiStreamReversible& stream) {
 	stream.Sync(pixelFormat);
-	stream.Sync(bitsPerPixel);
-	stream.Sync(rendererHint);
-	stream.Sync(extraData);
-	stream.Sync(flags);
-	stream.Sync(pixelTiling);
 
-	for (auto& channel : channels) {
-		stream.Sync(channel.type);
-		stream.Sync(channel.convention);
-		stream.Sync(channel.bitsPerChannel);
-		stream.Sync(channel.isSigned);
+	if (stream.GetVersion().File() <= NiFileVersion::V10_4_0_1) {
+		stream.Sync(redMask);
+		stream.Sync(greenMask);
+		stream.Sync(blueMask);
+		stream.Sync(alphaMask);
+
+		auto bpp = static_cast<uint32_t>(bitsPerPixel);
+		stream.Sync(bpp);
+		bitsPerPixel = static_cast<uint8_t>(bpp);
+
+		for (auto& compare : oldFastCompare)
+			stream.Sync(compare);
+
+		if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
+			stream.Sync(pixelTiling);
+	}
+	else {
+		stream.Sync(bitsPerPixel);
+		stream.Sync(rendererHint);
+		stream.Sync(extraData);
+		stream.Sync(flags);
+		stream.Sync(pixelTiling);
+
+		for (auto& channel : channels) {
+			stream.Sync(channel.type);
+			stream.Sync(channel.convention);
+			stream.Sync(channel.bitsPerChannel);
+			stream.Sync(channel.isSigned);
+		}
 	}
 
 	paletteRef.Sync(stream);
@@ -201,7 +244,11 @@ void NiPersistentSrcTextureRendererData::Sync(NiStreamReversible& stream) {
 
 void NiPixelData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numPixels);
-	stream.Sync(numFaces);
+
+	if (stream.GetVersion().File() >= NiVersion::ToFile(10, 4, 0, 2))
+		stream.Sync(numFaces);
+	else
+		numFaces = 1; // Only a single face is stored before that version
 
 	if (numFaces > NIF_ARRAY_SIZE_LIMIT || numPixels > NIF_ARRAY_SIZE_LIMIT)
 		throw std::length_error("IO: Array size is too large.");
@@ -276,7 +323,10 @@ void NiDynamicEffect::Sync(NiStreamReversible& stream) {
 		if (stream.GetVersion().File() > NiFileVersion::V10_1_0_101)
 			stream.Sync(switchState);
 
-		if (stream.GetVersion().File() <= NiFileVersion::V4_0_0_2 || stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
+		// Old file versions store pointer hashes instead of block indices
+		if (stream.GetVersion().File() <= NiFileVersion::V4_0_0_2)
+			affectedNodePointers.Sync(stream);
+		else if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
 			affectedNodes.Sync(stream);
 	}
 }
@@ -298,6 +348,14 @@ void NiTextureEffect::Sync(NiStreamReversible& stream) {
 	sourceTexture.Sync(stream);
 	stream.Sync(clippingPlane);
 	stream.Sync(plane);
+
+	if (stream.GetVersion().File() <= NiFileVersion::V10_2_0_0) {
+		stream.Sync(ps2_l);
+		stream.Sync(ps2_k);
+	}
+
+	if (stream.GetVersion().File() <= NiFileVersion::V4_1_0_12)
+		stream.Sync(unkShort1);
 }
 
 void NiTextureEffect::GetChildRefs(std::set<NiRef*>& refs) {

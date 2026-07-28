@@ -37,12 +37,17 @@ public:
 
 class NiParticlesData : public NiCloneableStreamable<NiParticlesData, NiGeometryData> {
 public:
+	// Only present up to file version 4.0.0.2, matches the vertex count
+	uint16_t numParticles = 0;
+	// Only present up to file version 10.0.1.0
+	float particleRadius = 0.0f;
+
 	bool hasRadii = false;
 	std::vector<float> radii;
 
 	uint16_t numActive = 0;
 
-	bool hasSizes = false;
+	NiBool hasSizes = false;
 	std::vector<float> sizes;
 
 	bool hasRotations = false;
@@ -78,10 +83,16 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiRotatingParticlesData : public NiCloneable<NiRotatingParticlesData, NiParticlesData> {
+class NiRotatingParticlesData : public NiCloneableStreamable<NiRotatingParticlesData, NiParticlesData> {
 public:
+	// Only present up to file version 4.2.2.0
+	NiBool hasRotations2 = false;
+	std::vector<Quaternion> rotations2;
+
 	static constexpr const char* BlockName = "NiRotatingParticlesData";
 	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiParticleMeshesData : public NiCloneableStreamable<NiParticleMeshesData, NiRotatingParticlesData> {
@@ -117,6 +128,209 @@ struct NiParticleInfo {
 		stream.Sync(spawnGeneration);
 		stream.Sync(code);
 	}
+};
+
+// LEGACY (pre-10.1) particle system classes
+
+class NiParticleSystemController;
+
+class NiParticleModifier : public NiCloneableStreamable<NiParticleModifier, NiObject> {
+public:
+	NiBlockRef<NiParticleModifier> nextModifierRef;
+	NiBlockPtr<NiParticleSystemController> controllerRef;
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+	void GetPtrs(std::set<NiPtr*>& ptrs) override;
+};
+
+enum FieldType : uint32_t { FIELD_WIND, FIELD_POINT };
+
+class NiGravity : public NiCloneableStreamable<NiGravity, NiParticleModifier> {
+public:
+	float decay = 0.0f;
+	float force = 0.0f;
+	FieldType fieldType = FIELD_WIND;
+	Vector3 position;
+	Vector3 direction;
+
+	static constexpr const char* BlockName = "NiGravity";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class NiParticleGrowFade : public NiCloneableStreamable<NiParticleGrowFade, NiParticleModifier> {
+public:
+	float grow = 0.0f;
+	float fade = 0.0f;
+
+	static constexpr const char* BlockName = "NiParticleGrowFade";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class NiColorData;
+
+class NiParticleColorModifier : public NiCloneableStreamable<NiParticleColorModifier, NiParticleModifier> {
+public:
+	NiBlockRef<NiColorData> colorDataRef;
+
+	static constexpr const char* BlockName = "NiParticleColorModifier";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+};
+
+class NiParticleRotation : public NiCloneableStreamable<NiParticleRotation, NiParticleModifier> {
+public:
+	uint8_t randomInitialAxis = 0;
+	Vector3 initialAxis;
+	float rotationSpeed = 0.0f;
+
+	static constexpr const char* BlockName = "NiParticleRotation";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+enum DecayType : uint32_t { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
+
+enum SymmetryType : uint32_t { SYMMETRY_SPHERICAL, SYMMETRY_CYLINDRICAL, SYMMETRY_PLANAR };
+
+class NiParticleBomb : public NiCloneableStreamable<NiParticleBomb, NiParticleModifier> {
+public:
+	float decay = 0.0f;
+	float duration = 0.0f;
+	float deltaV = 0.0f;
+	float start = 0.0f;
+	DecayType decayType = DECAY_NONE;
+	SymmetryType symmetryType = SYMMETRY_SPHERICAL;
+	Vector3 position;
+	Vector3 direction;
+
+	static constexpr const char* BlockName = "NiParticleBomb";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class NiParticleMeshModifier : public NiCloneableStreamable<NiParticleMeshModifier, NiParticleModifier> {
+public:
+	NiBlockRefArray<NiAVObject> particleMeshRefs;
+
+	static constexpr const char* BlockName = "NiParticleMeshModifier";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+};
+
+class NiParticleCollider : public NiCloneableStreamable<NiParticleCollider, NiParticleModifier> {
+public:
+	float bounce = 0.0f;
+	bool spawnOnCollide = false;
+	bool dieOnCollide = false;
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class NiPlanarCollider : public NiCloneableStreamable<NiPlanarCollider, NiParticleCollider> {
+public:
+	float height = 0.0f;
+	float width = 0.0f;
+	Vector3 position;
+	Vector3 xVector;
+	Vector3 yVector;
+	NiPlane plane;
+
+	static constexpr const char* BlockName = "NiPlanarCollider";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class NiSphericalCollider : public NiCloneableStreamable<NiSphericalCollider, NiParticleCollider> {
+public:
+	float radius = 0.0f;
+	Vector3 position;
+
+	static constexpr const char* BlockName = "NiSphericalCollider";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+};
+
+class NiEmitterModifier : public NiCloneableStreamable<NiEmitterModifier, NiObject> {
+public:
+	NiBlockRef<NiEmitterModifier> nextModifierRef;
+	NiBlockPtr<NiParticleSystemController> controllerRef;
+
+	static constexpr const char* BlockName = "NiEmitterModifier";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+	void GetPtrs(std::set<NiPtr*>& ptrs) override;
+};
+
+class NiParticleSystemController
+	: public NiCloneableStreamable<NiParticleSystemController, NiTimeController> {
+public:
+	float speed = 0.0f;
+	float speedVariation = 0.0f;
+	float declination = 0.0f;
+	float declinationVariation = 0.0f;
+	float planarAngle = 0.0f;
+	float planarAngleVariation = 0.0f;
+	Vector3 initialNormal = Vector3(1.0f, 0.0f, 0.0f);
+	Color4 initialColor = Color4(1.0f, 1.0f, 1.0f, 1.0f);
+	float initialSize = 1.0f;
+	float emitStartTime = 0.0f;
+	float emitStopTime = 0.0f;
+	uint8_t resetParticleSystem = 0;
+	float birthRate = 0.0f;
+	float lifetime = 0.0f;
+	float lifetimeVariation = 0.0f;
+	uint8_t useBirthRate = 0;
+	uint8_t spawnOnDeath = 0;
+	Vector3 emitterDimensions;
+	NiBlockPtr<NiAVObject> emitterRef;
+
+	uint16_t numSpawnGenerations = 1;
+	float percentageSpawned = 1.0f;
+	uint16_t spawnMultiplier = 0;
+	float spawnSpeedChaos = 0.0f;
+	float spawnDirChaos = 0.0f;
+
+	uint16_t numValid = 0;
+	std::vector<NiParticleInfo> particles;
+
+	NiBlockRef<NiEmitterModifier> emitterModifierRef;
+	NiBlockRef<NiParticleModifier> particleModifierRef;
+	NiBlockRef<NiParticleCollider> particleColliderRef;
+	uint8_t staticTargetBound = 0;
+
+	static constexpr const char* BlockName = "NiParticleSystemController";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
+	void GetPtrs(std::set<NiPtr*>& ptrs) override;
+};
+
+// A particle system controller used together with NiBSParticleNode
+class NiBSPArrayController : public NiCloneable<NiBSPArrayController, NiParticleSystemController> {
+public:
+	static constexpr const char* BlockName = "NiBSPArrayController";
+	const char* GetBlockName() override { return BlockName; }
 };
 
 class NiPSysData : public NiCloneableStreamable<NiPSysData, NiRotatingParticlesData> {
@@ -402,10 +616,6 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 };
-
-enum DecayType : uint32_t { DECAY_NONE, DECAY_LINEAR, DECAY_EXPONENTIAL };
-
-enum SymmetryType : uint32_t { SYMMETRY_SPHERICAL, SYMMETRY_CYLINDRICAL, SYMMETRY_PLANAR };
 
 class NiPSysBombModifier : public NiCloneableStreamable<NiPSysBombModifier, NiPSysModifier> {
 public:

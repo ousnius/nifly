@@ -35,6 +35,8 @@ struct BoneIndices {
 	uint8_t i4 = 0;
 };
 
+class NiSkinPartition;
+
 class NiSkinData : public NiCloneableStreamable<NiSkinData, NiObject> {
 public:
 	struct BoneData {
@@ -50,6 +52,10 @@ public:
 	// Recommend renaming to "transformGlobalToSkin".
 	MatTransform skinTransform;
 	uint32_t numBones = 0;
+
+	// Only present for file versions 4.0.0.2 to 10.1.0.0
+	NiBlockRef<NiSkinPartition> skinPartitionRef;
+
 	uint8_t hasVertWeights = 1;
 	std::vector<BoneData> bones;
 
@@ -57,6 +63,8 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 };
 

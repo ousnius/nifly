@@ -181,6 +181,7 @@ void NiHeader::Clear() {
 	blockTypeIndices.clear();
 	blockSizes.clear();
 	strings.clear();
+	rootRefs.clear();
 }
 
 std::string NiHeader::GetCreatorInfo() const {
@@ -260,6 +261,19 @@ void NiHeader::DeleteBlock(const uint32_t blockId) {
 
 	blocks->erase(blocks->begin() + blockId);
 	numBlocks--;
+
+	// Drop or shift the root references of the footer
+	for (auto it = rootRefs.begin(); it != rootRefs.end();) {
+		if (*it == blockId) {
+			it = rootRefs.erase(it);
+		}
+		else {
+			if (*it != NIF_NPOS && *it > blockId)
+				(*it)--;
+
+			++it;
+		}
+	}
 
 	// Next tell all the blocks that the deletion happened
 	for (auto& b : (*blocks))
@@ -362,6 +376,10 @@ void NiHeader::SetBlockOrder(std::vector<uint32_t>& newOrder) {
 	blockTypeIndices = std::move(newBlockTypeIndices);
 	(*blocks) = std::move(newBlocks);
 
+	for (uint32_t& rootRef : rootRefs)
+		if (rootRef != NIF_NPOS && rootRef < newOrder.size())
+			rootRef = newOrder[rootRef];
+
 	for (auto& b : (*blocks)) {
 		std::set<NiRef*> refs;
 		b->GetChildRefs(refs);
@@ -455,6 +473,19 @@ uint16_t NiHeader::GetBlockTypeIndex(const uint32_t blockId) const {
 		return blockTypeIndices[blockId];
 
 	return 0xFFFF;
+}
+
+std::string NiHeader::ReadBlockType(NiIStream& stream) {
+	NiString blockTypeStr;
+	blockTypeStr.Read(stream, 4);
+
+	blockTypeIndices.push_back(AddOrFindBlockTypeId(blockTypeStr.get()));
+	return blockTypeStr.get();
+}
+
+void NiHeader::WriteBlockType(NiOStream& stream, const uint32_t blockId) {
+	NiString blockTypeStr(GetBlockTypeStringById(blockId));
+	blockTypeStr.Write(stream, 4);
 }
 
 uint32_t NiHeader::GetBlockSize(const uint32_t blockId) const {
@@ -696,6 +727,10 @@ void NiHeader::Get(NiIStream& stream) {
 				return; // Header remains invalid
 		}
 	}
+	else {
+		// Block types are stored in front of each block and registered while loading them
+		blockTypeIndices.clear();
+	}
 
 	if (version.File() >= V20_2_0_5) {
 		blockSizes.resize(numBlocks);
@@ -808,6 +843,66 @@ void NiHeader::Put(NiOStream& stream) {
 		stream << numGroups;
 		for (uint32_t i = 0; i < numGroups; i++)
 			stream << groupSizes[i];
+	}
+}
+
+
+void NiHeader::GetFooter(NiIStream& stream) {
+	rootRefs.clear();
+
+	if (version.File() < V3_3_0_13)
+		return;
+
+	uint32_t numRoots = 0;
+	stream >> numRoots;
+
+	if (numRoots > NIF_BLOCK_INDEX_LIMIT)
+		return; // Footer is unusable, a default one is written instead
+
+	rootRefs.resize(numRoots);
+	for (uint32_t i = 0; i < numRoots; i++)
+		stream >> rootRefs[i];
+}
+
+void NiHeader::PutFooter(NiOStream& stream) {
+	if (version.File() < V3_3_0_13)
+		return;
+
+	// Fall back to the first block being the only root
+	if (rootRefs.empty())
+		rootRefs.push_back(0);
+
+	auto numRoots = static_cast<uint32_t>(rootRefs.size());
+	stream << numRoots;
+
+	for (uint32_t i = 0; i < numRoots; i++)
+		stream << rootRefs[i];
+}
+
+
+BoundingVolume& BoundingVolume::operator=(const BoundingVolume& other) {
+	if (this != &other) {
+		collisionType = other.collisionType;
+		bvSphere = other.bvSphere;
+		bvBox = other.bvBox;
+		bvCapsule = other.bvCapsule;
+		bvUnion = std::make_unique<UnionBV>(*other.bvUnion);
+		bvHalfSpace = other.bvHalfSpace;
+	}
+
+	return *this;
+}
+
+void BoundingVolume::Sync(NiStreamReversible& stream) {
+	stream.Sync(collisionType);
+
+	switch (collisionType) {
+		case SPHERE_BV: stream.Sync(bvSphere); break;
+		case BOX_BV: stream.Sync(bvBox); break;
+		case CAPSULE_BV: stream.Sync(bvCapsule); break;
+		case UNION_BV: bvUnion->Sync(stream); break;
+		case HALFSPACE_BV: stream.Sync(bvHalfSpace); break;
+		default: break;
 	}
 }
 

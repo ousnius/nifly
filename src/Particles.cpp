@@ -13,41 +13,53 @@ NiParticlesData::NiParticlesData() {
 }
 
 void NiParticlesData::Sync(NiStreamReversible& stream) {
-	stream.Sync(hasRadii);
-	if (hasRadii && stream.GetVersion().File() != V20_2_0_7) {
-		radii.resize(numVertices);
-		for (float& r : radii)
-			stream.Sync(r);
+	if (stream.GetVersion().File() <= V4_0_0_2)
+		stream.Sync(numParticles);
+
+	if (stream.GetVersion().File() <= V10_0_1_0)
+		stream.Sync(particleRadius);
+
+	if (stream.GetVersion().File() >= V10_1_0_0) {
+		stream.Sync(hasRadii);
+		if (hasRadii && stream.GetVersion().File() != V20_2_0_7) {
+			radii.resize(numVertices);
+			for (float& r : radii)
+				stream.Sync(r);
+		}
 	}
 
 	stream.Sync(numActive);
 
-	stream.Sync(hasSizes);
+	hasSizes.Sync(stream);
 	if (hasSizes && stream.GetVersion().File() != V20_2_0_7) {
 		sizes.resize(numVertices);
 		for (float& s : sizes)
 			stream.Sync(s);
 	}
 
-	stream.Sync(hasRotations);
-	if (hasRotations && stream.GetVersion().File() != V20_2_0_7) {
-		rotations.resize(numVertices);
-		for (Quaternion& q : rotations)
-			stream.Sync(q);
+	if (stream.GetVersion().File() >= V10_0_1_0) {
+		stream.Sync(hasRotations);
+		if (hasRotations && stream.GetVersion().File() != V20_2_0_7) {
+			rotations.resize(numVertices);
+			for (Quaternion& q : rotations)
+				stream.Sync(q);
+		}
 	}
 
-	stream.Sync(hasRotationAngles);
-	if (hasRotationAngles && stream.GetVersion().File() != V20_2_0_7) {
-		rotationAngles.resize(numVertices);
-		for (float& a : rotationAngles)
-			stream.Sync(a);
-	}
+	if (stream.GetVersion().File() >= V20_0_0_4) {
+		stream.Sync(hasRotationAngles);
+		if (hasRotationAngles && stream.GetVersion().File() != V20_2_0_7) {
+			rotationAngles.resize(numVertices);
+			for (float& a : rotationAngles)
+				stream.Sync(a);
+		}
 
-	stream.Sync(hasRotationAxes);
-	if (hasRotationAxes && stream.GetVersion().File() != V20_2_0_7) {
-		rotationAxes.resize(numVertices);
-		for (Vector3& a : rotationAxes)
-			stream.Sync(a);
+		stream.Sync(hasRotationAxes);
+		if (hasRotationAxes && stream.GetVersion().File() != V20_2_0_7) {
+			rotationAxes.resize(numVertices);
+			for (Vector3& a : rotationAxes)
+				stream.Sync(a);
+		}
 	}
 
 	if (stream.GetVersion().File() == V20_2_0_7) {
@@ -77,6 +89,20 @@ void NiParticlesData::Sync(NiStreamReversible& stream) {
 }
 
 
+void NiRotatingParticlesData::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() > V4_2_2_0)
+		return;
+
+	hasRotations2.Sync(stream);
+
+	if (hasRotations2) {
+		rotations2.resize(numVertices);
+		for (Quaternion& q : rotations2)
+			stream.Sync(q);
+	}
+}
+
+
 void NiParticleMeshesData::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
 }
@@ -91,6 +117,221 @@ void NiParticleMeshesData::GetChildIndices(std::vector<uint32_t>& indices) {
 	NiRotatingParticlesData::GetChildIndices(indices);
 
 	indices.push_back(dataRef.index);
+}
+
+
+void NiParticleModifier::Sync(NiStreamReversible& stream) {
+	nextModifierRef.Sync(stream);
+
+	if (stream.GetVersion().File() >= V3_3_0_13)
+		controllerRef.Sync(stream);
+}
+
+void NiParticleModifier::GetChildRefs(std::set<NiRef*>& refs) {
+	NiObject::GetChildRefs(refs);
+
+	refs.insert(&nextModifierRef);
+}
+
+void NiParticleModifier::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiObject::GetChildIndices(indices);
+
+	indices.push_back(nextModifierRef.index);
+}
+
+void NiParticleModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
+	NiObject::GetPtrs(ptrs);
+
+	ptrs.insert(&controllerRef);
+}
+
+
+void NiGravity::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() >= V3_3_0_13)
+		stream.Sync(decay);
+
+	stream.Sync(force);
+	stream.Sync(fieldType);
+	stream.Sync(position);
+	stream.Sync(direction);
+}
+
+
+void NiParticleGrowFade::Sync(NiStreamReversible& stream) {
+	stream.Sync(grow);
+	stream.Sync(fade);
+}
+
+
+void NiParticleColorModifier::Sync(NiStreamReversible& stream) {
+	colorDataRef.Sync(stream);
+}
+
+void NiParticleColorModifier::GetChildRefs(std::set<NiRef*>& refs) {
+	NiParticleModifier::GetChildRefs(refs);
+
+	refs.insert(&colorDataRef);
+}
+
+void NiParticleColorModifier::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiParticleModifier::GetChildIndices(indices);
+
+	indices.push_back(colorDataRef.index);
+}
+
+
+void NiParticleRotation::Sync(NiStreamReversible& stream) {
+	stream.Sync(randomInitialAxis);
+	stream.Sync(initialAxis);
+	stream.Sync(rotationSpeed);
+}
+
+
+void NiParticleBomb::Sync(NiStreamReversible& stream) {
+	stream.Sync(decay);
+	stream.Sync(duration);
+	stream.Sync(deltaV);
+	stream.Sync(start);
+	stream.Sync(decayType);
+
+	if (stream.GetVersion().File() >= V4_1_0_12)
+		stream.Sync(symmetryType);
+
+	stream.Sync(position);
+	stream.Sync(direction);
+}
+
+
+void NiParticleMeshModifier::Sync(NiStreamReversible& stream) {
+	particleMeshRefs.Sync(stream);
+}
+
+void NiParticleMeshModifier::GetChildRefs(std::set<NiRef*>& refs) {
+	NiParticleModifier::GetChildRefs(refs);
+
+	particleMeshRefs.GetIndexPtrs(refs);
+}
+
+void NiParticleMeshModifier::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiParticleModifier::GetChildIndices(indices);
+
+	particleMeshRefs.GetIndices(indices);
+}
+
+
+void NiParticleCollider::Sync(NiStreamReversible& stream) {
+	stream.Sync(bounce);
+
+	if (stream.GetVersion().File() >= V4_2_0_2) {
+		stream.Sync(spawnOnCollide);
+		stream.Sync(dieOnCollide);
+	}
+}
+
+
+void NiPlanarCollider::Sync(NiStreamReversible& stream) {
+	stream.Sync(height);
+	stream.Sync(width);
+	stream.Sync(position);
+	stream.Sync(xVector);
+	stream.Sync(yVector);
+	stream.Sync(plane);
+}
+
+
+void NiSphericalCollider::Sync(NiStreamReversible& stream) {
+	stream.Sync(radius);
+	stream.Sync(position);
+}
+
+
+void NiEmitterModifier::Sync(NiStreamReversible& stream) {
+	nextModifierRef.Sync(stream);
+	controllerRef.Sync(stream);
+}
+
+void NiEmitterModifier::GetChildRefs(std::set<NiRef*>& refs) {
+	NiObject::GetChildRefs(refs);
+
+	refs.insert(&nextModifierRef);
+}
+
+void NiEmitterModifier::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiObject::GetChildIndices(indices);
+
+	indices.push_back(nextModifierRef.index);
+}
+
+void NiEmitterModifier::GetPtrs(std::set<NiPtr*>& ptrs) {
+	NiObject::GetPtrs(ptrs);
+
+	ptrs.insert(&controllerRef);
+}
+
+
+void NiParticleSystemController::Sync(NiStreamReversible& stream) {
+	stream.Sync(speed);
+	stream.Sync(speedVariation);
+	stream.Sync(declination);
+	stream.Sync(declinationVariation);
+	stream.Sync(planarAngle);
+	stream.Sync(planarAngleVariation);
+	stream.Sync(initialNormal);
+	stream.Sync(initialColor);
+	stream.Sync(initialSize);
+	stream.Sync(emitStartTime);
+	stream.Sync(emitStopTime);
+	stream.Sync(resetParticleSystem);
+	stream.Sync(birthRate);
+	stream.Sync(lifetime);
+	stream.Sync(lifetimeVariation);
+	stream.Sync(useBirthRate);
+	stream.Sync(spawnOnDeath);
+	stream.Sync(emitterDimensions);
+	emitterRef.Sync(stream);
+
+	stream.Sync(numSpawnGenerations);
+	stream.Sync(percentageSpawned);
+	stream.Sync(spawnMultiplier);
+	stream.Sync(spawnSpeedChaos);
+	stream.Sync(spawnDirChaos);
+
+	auto numParticles = static_cast<uint16_t>(particles.size());
+	stream.Sync(numParticles);
+	stream.Sync(numValid);
+
+	particles.resize(numParticles);
+	for (auto& particle : particles)
+		particle.Sync(stream);
+
+	emitterModifierRef.Sync(stream);
+	particleModifierRef.Sync(stream);
+	particleColliderRef.Sync(stream);
+
+	if (stream.GetVersion().File() >= NiVersion::ToFile(3, 3, 0, 15))
+		stream.Sync(staticTargetBound);
+}
+
+void NiParticleSystemController::GetChildRefs(std::set<NiRef*>& refs) {
+	NiTimeController::GetChildRefs(refs);
+
+	refs.insert(&emitterModifierRef);
+	refs.insert(&particleModifierRef);
+	refs.insert(&particleColliderRef);
+}
+
+void NiParticleSystemController::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiTimeController::GetChildIndices(indices);
+
+	indices.push_back(emitterModifierRef.index);
+	indices.push_back(particleModifierRef.index);
+	indices.push_back(particleColliderRef.index);
+}
+
+void NiParticleSystemController::GetPtrs(std::set<NiPtr*>& ptrs) {
+	NiTimeController::GetPtrs(ptrs);
+
+	ptrs.insert(&emitterRef);
 }
 
 

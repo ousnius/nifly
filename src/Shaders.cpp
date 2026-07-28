@@ -33,28 +33,28 @@ void NiTexturingProperty::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(textureCount);
 
-	stream.Sync(hasBaseTex);
+	hasBaseTex.Sync(stream);
 	if (hasBaseTex)
 		baseTex.Sync(stream);
 
-	stream.Sync(hasDarkTex);
+	hasDarkTex.Sync(stream);
 	if (hasDarkTex)
 		darkTex.Sync(stream);
 
-	stream.Sync(hasDetailTex);
+	hasDetailTex.Sync(stream);
 	if (hasDetailTex)
 		detailTex.Sync(stream);
 
-	stream.Sync(hasGlossTex);
+	hasGlossTex.Sync(stream);
 	if (hasGlossTex)
 		glossTex.Sync(stream);
 
-	stream.Sync(hasGlowTex);
+	hasGlowTex.Sync(stream);
 	if (hasGlowTex)
 		glowTex.Sync(stream);
 
 	if (textureCount > 5 && fileVersion >= NiFileVersion::V3_3_0_13) {
-		stream.Sync(hasBumpTex);
+		hasBumpTex.Sync(stream);
 		if (hasBumpTex) {
 			bumpTex.Sync(stream);
 			stream.Sync(lumaScale);
@@ -65,13 +65,13 @@ void NiTexturingProperty::Sync(NiStreamReversible& stream) {
 
 	if (fileVersion >= NiFileVersion::V20_2_0_5) {
 		if (textureCount > 6) {
-			stream.Sync(hasNormalTex);
+			hasNormalTex.Sync(stream);
 			if (hasNormalTex)
 				normalTex.Sync(stream);
 		}
 
 		if (textureCount > 7) {
-			stream.Sync(hasParallaxTex);
+			hasParallaxTex.Sync(stream);
 			if (hasParallaxTex) {
 				parallaxTex.Sync(stream);
 				stream.Sync(parallaxOffset);
@@ -79,50 +79,50 @@ void NiTexturingProperty::Sync(NiStreamReversible& stream) {
 		}
 
 		if (textureCount > 8) {
-			stream.Sync(hasDecalTex0);
+			hasDecalTex0.Sync(stream);
 			if (hasDecalTex0)
 				decalTex0.Sync(stream);
 		}
 
 		if (textureCount > 9) {
-			stream.Sync(hasDecalTex1);
+			hasDecalTex1.Sync(stream);
 			if (hasDecalTex1)
 				decalTex1.Sync(stream);
 		}
 
 		if (textureCount > 10) {
-			stream.Sync(hasDecalTex2);
+			hasDecalTex2.Sync(stream);
 			if (hasDecalTex2)
 				decalTex2.Sync(stream);
 		}
 
 		if (textureCount > 11) {
-			stream.Sync(hasDecalTex3);
+			hasDecalTex3.Sync(stream);
 			if (hasDecalTex3)
 				decalTex3.Sync(stream);
 		}
 	}
 	else {
 		if (textureCount > 6) {
-			stream.Sync(hasDecalTex0);
+			hasDecalTex0.Sync(stream);
 			if (hasDecalTex0)
 				decalTex0.Sync(stream);
 		}
 
 		if (textureCount > 7) {
-			stream.Sync(hasDecalTex1);
+			hasDecalTex1.Sync(stream);
 			if (hasDecalTex1)
 				decalTex1.Sync(stream);
 		}
 
 		if (textureCount > 8) {
-			stream.Sync(hasDecalTex2);
+			hasDecalTex2.Sync(stream);
 			if (hasDecalTex2)
 				decalTex2.Sync(stream);
 		}
 
 		if (textureCount > 9) {
-			stream.Sync(hasDecalTex3);
+			hasDecalTex3.Sync(stream);
 			if (hasDecalTex3)
 				decalTex3.Sync(stream);
 		}

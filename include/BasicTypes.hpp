@@ -138,6 +138,9 @@ public:
 	// Check if file has a special but supported version range
 	bool IsSpecial() const { return (file == V10_0_1_0 && user == 0); }
 
+	// Check if file has a Morrowind version range
+	bool IsMW() const { return file == V4_0_0_2 && user == 0; }
+
 	// Check if file has an Oblivion version range
 	bool IsOB() const {
 		return
@@ -159,6 +162,8 @@ public:
 	// Check if file has a Starfield version range
 	bool IsSF() const { return file == V20_2_0_7 && stream >= 172 && stream <= 175; }
 
+	// Return a Morrowind file version
+	static NiVersion getMW() { return NiVersion(NiFileVersion::V4_0_0_2, 0, 0); }
 	// Return an Oblivion file version
 	static NiVersion getOB() { return NiVersion(NiFileVersion::V20_0_0_5, 11, 11); }
 	// Return a Fallout 3 file version
@@ -407,6 +412,41 @@ private:
 	NiIStream* istream;
 	NiOStream* ostream;
 	Mode mode;
+};
+
+// A NIF boolean, 32-bit up to and including file version 4.0.0.2 and 8-bit from 4.1.0.1 on.
+// Old files often store arbitrary non-zero values, so the raw value is kept as it is.
+class NiBool {
+private:
+	uint32_t value = 0;
+
+public:
+	NiBool() = default;
+	NiBool(const bool b) { value = b ? 1 : 0; }
+
+	NiBool& operator=(const bool b) {
+		value = b ? 1 : 0;
+		return *this;
+	}
+
+	operator bool() const { return value != 0; }
+
+	uint32_t GetRawValue() const { return value; }
+	void SetRawValue(const uint32_t rawValue) { value = rawValue; }
+
+	void Sync(NiStreamReversible& stream) {
+		if (stream.GetVersion().File() <= NiFileVersion::V4_0_0_2) {
+			stream.Sync(value);
+			return;
+		}
+
+		// Values that don't fit into a byte can only come from an older file version
+		auto data = static_cast<uint8_t>(value > 0xFF ? 1 : value);
+		stream.Sync(data);
+
+		if (stream.GetMode() == NiStreamReversible::Mode::Reading)
+			value = data;
+	}
 };
 
 template<typename Derived, typename Base>
@@ -1066,6 +1106,9 @@ private:
 	uint32_t numGroups = 0;
 	std::vector<uint32_t> groupSizes;
 
+	// Root block references stored in the file footer
+	std::vector<uint32_t> rootRefs;
+
 	template<class T>
 	bool DeleteUnreferencedBlocksInternal(uint32_t& rootId, uint32_t* deletionCount) {
 		if (rootId == NIF_NPOS)
@@ -1221,6 +1264,14 @@ public:
 	std::string GetBlockTypeStringById(const uint32_t blockId) const;
 	uint16_t GetBlockTypeIndex(const uint32_t blockId) const;
 
+	// Returns true if the block type strings are stored in front of each block instead of the header
+	bool HasInlineBlockTypes() const { return version.File() < V5_0_0_1; }
+
+	// Reads the inline block type string of the next block and registers it (see HasInlineBlockTypes)
+	std::string ReadBlockType(NiIStream& stream);
+	// Writes the inline block type string of the specified block (see HasInlineBlockTypes)
+	void WriteBlockType(NiOStream& stream, const uint32_t blockId);
+
 	uint32_t GetBlockSize(const uint32_t blockId) const;
 	std::streampos GetBlockSizeStreamPos() const;
 	void ResetBlockSizeStreamPos();
@@ -1250,13 +1301,98 @@ public:
 
 	static void BlockDeleted(NiObject* o, const uint32_t blockId);
 
+	// Returns the block indices of all root blocks (from the file footer)
+	const std::vector<uint32_t>& GetRootBlockIds() const { return rootRefs; }
+	// Sets the block indices of all root blocks (written to the file footer)
+	void SetRootBlockIds(const std::vector<uint32_t>& blockIds) { rootRefs = blockIds; }
+
 	void Get(NiIStream& stream) override;
 	void Put(NiOStream& stream) override;
+
+	// Reads the file footer, which follows all blocks
+	void GetFooter(NiIStream& stream);
+	// Writes the file footer, which follows all blocks
+	void PutFooter(NiOStream& stream);
 };
 
 struct NiPlane {
 	Vector3 normal;
 	float constant = 0.0f;
+};
+
+enum BoundVolumeType : uint32_t {
+	BASE_BV = 0xFFFFFFFF,
+	SPHERE_BV = 0,
+	BOX_BV = 1,
+	CAPSULE_BV = 2,
+	UNION_BV = 4,
+	HALFSPACE_BV = 5
+};
+
+struct BoxBV {
+	Vector3 center;
+	Vector3 axis1;
+	Vector3 axis2;
+	Vector3 axis3;
+	float extent1 = 0.0f;
+	float extent2 = 0.0f;
+	float extent3 = 0.0f;
+};
+
+struct CapsuleBV {
+	Vector3 center;
+	Vector3 origin;
+	float extent = 0.0f;
+	float radius = 0.0f;
+};
+
+struct HalfSpaceBV {
+	NiPlane plane;
+	Vector3 center;
+};
+
+struct UnionBV;
+
+struct BoundingVolume {
+	BoundVolumeType collisionType = BASE_BV;
+	BoundingSphere bvSphere;
+	BoxBV bvBox;
+	CapsuleBV bvCapsule;
+	std::unique_ptr<UnionBV> bvUnion = std::make_unique<UnionBV>();
+	HalfSpaceBV bvHalfSpace;
+
+	BoundingVolume() = default;
+
+	BoundingVolume(const BoundingVolume& other)
+		: collisionType(other.collisionType)
+		, bvSphere(other.bvSphere)
+		, bvBox(other.bvBox)
+		, bvCapsule(other.bvCapsule)
+		, bvUnion(std::make_unique<UnionBV>(*other.bvUnion))
+		, bvHalfSpace(other.bvHalfSpace) {}
+
+	BoundingVolume& operator=(const BoundingVolume& other);
+
+	void Sync(NiStreamReversible& stream);
+};
+
+struct UnionBV {
+	uint32_t numBV = 0;
+	std::vector<BoundingVolume> boundingVolumes;
+
+	void Sync(NiStreamReversible& stream) {
+		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+			numBV = static_cast<uint32_t>(boundingVolumes.size());
+
+		stream.Sync(numBV);
+
+		if (numBV > NIF_ARRAY_SIZE_LIMIT)
+			throw std::length_error("IO: Array size is too large.");
+
+		boundingVolumes.resize(numBV);
+		for (uint32_t i = 0; i < numBV; i++)
+			boundingVolumes[i].Sync(stream);
+	}
 };
 
 class BSTextureArray {

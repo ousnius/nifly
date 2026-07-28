@@ -16,7 +16,15 @@ void NiSkinData::Sync(NiStreamReversible& stream) {
 	stream.Sync(skinTransform.translation);
 	stream.Sync(skinTransform.scale);
 	stream.Sync(numBones);
-	stream.Sync(hasVertWeights);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V4_0_0_2
+		&& stream.GetVersion().File() <= NiFileVersion::V10_1_0_0)
+		skinPartitionRef.Sync(stream);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V4_2_1_0)
+		stream.Sync(hasVertWeights);
+	else
+		hasVertWeights = 1; // Vertex weights are always present before that version
 
 	if (hasVertWeights > 1)
 		hasVertWeights = 1;
@@ -49,6 +57,18 @@ void NiSkinData::Sync(NiStreamReversible& stream) {
 						static_cast<std::streamsize>(numVerts) * sizeof(SkinWeight));
 		}
 	}
+}
+
+void NiSkinData::GetChildRefs(std::set<NiRef*>& refs) {
+	NiObject::GetChildRefs(refs);
+
+	refs.insert(&skinPartitionRef);
+}
+
+void NiSkinData::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiObject::GetChildIndices(indices);
+
+	indices.push_back(skinPartitionRef.index);
 }
 
 void NiSkinData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {

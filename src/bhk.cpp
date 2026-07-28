@@ -19,20 +19,6 @@ void NiCollisionObject::GetPtrs(std::set<NiPtr*>& ptrs) {
 }
 
 
-void BoundingVolume::Sync(NiStreamReversible& stream) {
-	stream.Sync(collisionType);
-
-	switch (collisionType) {
-		case SPHERE_BV: stream.Sync(bvSphere); break;
-		case BOX_BV: stream.Sync(bvBox); break;
-		case CAPSULE_BV: stream.Sync(bvCapsule); break;
-		case UNION_BV: bvUnion->Sync(stream); break;
-		case HALFSPACE_BV: stream.Sync(bvHalfSpace); break;
-		default: break;
-	}
-}
-
-
 void NiCollisionData::Sync(NiStreamReversible& stream) {
 	stream.Sync(propagationMode);
 	stream.Sync(collisionMode);

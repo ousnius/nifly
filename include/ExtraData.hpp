@@ -16,13 +16,20 @@ See the included GPLv3 LICENSE file
 namespace nifly {
 class NiExtraData : public NiCloneableStreamable<NiExtraData, NiObject> {
 public:
+	// Only present for file versions 10.0.1.0 and above
 	NiStringRef name;
+
+	// Extra data was a linked list up to file version 4.2.2.0
+	NiBlockRef<NiExtraData> nextExtraDataRef;
+	uint32_t numBytes = 0;
 
 	static constexpr const char* BlockName = "NiExtraData";
 	const char* GetBlockName() override { return BlockName; }
 
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiBinaryExtraData : public NiCloneableStreamable<NiBinaryExtraData, NiExtraData> {
@@ -355,6 +362,16 @@ public:
 
 	void Sync(NiStreamReversible& stream);
 	void GetStringRefs(std::vector<NiStringRef*>& refs) override;
+};
+
+class NiVertWeightsExtraData : public NiCloneableStreamable<NiVertWeightsExtraData, NiExtraData> {
+public:
+	NiVector<float, uint16_t> weights;
+
+	static constexpr const char* BlockName = "NiVertWeightsExtraData";
+	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
 };
 
 class NiTextKeyExtraData : public NiCloneableStreamable<NiTextKeyExtraData, NiExtraData> {

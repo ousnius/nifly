@@ -114,7 +114,9 @@ void NiLookAtController::GetPtrs(std::set<NiPtr*>& ptrs) {
 
 
 void NiPathController::Sync(NiStreamReversible& stream) {
-	stream.Sync(pathFlags);
+	if (stream.GetVersion().File() >= V10_1_0_0)
+		stream.Sync(pathFlags);
+
 	stream.Sync(bankDir);
 	stream.Sync(maxBankAngle);
 	stream.Sync(smoothing);
@@ -300,9 +302,13 @@ void NiInterpController::Sync(NiStreamReversible& stream) {
 
 
 void NiGeomMorpherController::Sync(NiStreamReversible& stream) {
-	stream.Sync(morpherFlags);
+	if (stream.GetVersion().File() >= V10_0_1_2)
+		stream.Sync(morpherFlags);
+
 	dataRef.Sync(stream);
-	stream.Sync(alwaysUpdate);
+
+	if (stream.GetVersion().File() >= V4_0_0_2)
+		stream.Sync(alwaysUpdate);
 
 	if (stream.GetVersion().File() >= V10_1_0_106 && stream.GetVersion().File() <= V20_1_0_3)
 		interpolatorRefs.Sync(stream);
@@ -373,7 +379,80 @@ void NiRollController::GetChildIndices(std::vector<uint32_t>& indices) {
 
 
 void NiPoint3InterpController::Sync(NiStreamReversible& stream) {
-	stream.Sync(targetColor);
+	if (stream.GetVersion().File() >= V10_1_0_0)
+		stream.Sync(targetColor);
+}
+
+
+void NiMaterialColorController::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() < V10_1_0_104)
+		dataRef.Sync(stream);
+}
+
+void NiMaterialColorController::GetChildRefs(std::set<NiRef*>& refs) {
+	NiPoint3InterpController::GetChildRefs(refs);
+
+	refs.insert(&dataRef);
+}
+
+void NiMaterialColorController::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiPoint3InterpController::GetChildIndices(indices);
+
+	indices.push_back(dataRef.index);
+}
+
+
+void NiLightColorController::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() < V10_1_0_104)
+		dataRef.Sync(stream);
+}
+
+void NiLightColorController::GetChildRefs(std::set<NiRef*>& refs) {
+	NiPoint3InterpController::GetChildRefs(refs);
+
+	refs.insert(&dataRef);
+}
+
+void NiLightColorController::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiPoint3InterpController::GetChildIndices(indices);
+
+	indices.push_back(dataRef.index);
+}
+
+
+void NiVisController::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() < V10_1_0_104)
+		dataRef.Sync(stream);
+}
+
+void NiVisController::GetChildRefs(std::set<NiRef*>& refs) {
+	NiBoolInterpController::GetChildRefs(refs);
+
+	refs.insert(&dataRef);
+}
+
+void NiVisController::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiBoolInterpController::GetChildIndices(indices);
+
+	indices.push_back(dataRef.index);
+}
+
+
+void NiAlphaController::Sync(NiStreamReversible& stream) {
+	if (stream.GetVersion().File() < V10_1_0_104)
+		dataRef.Sync(stream);
+}
+
+void NiAlphaController::GetChildRefs(std::set<NiRef*>& refs) {
+	NiFloatInterpController::GetChildRefs(refs);
+
+	refs.insert(&dataRef);
+}
+
+void NiAlphaController::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiFloatInterpController::GetChildIndices(indices);
+
+	indices.push_back(dataRef.index);
 }
 
 
@@ -395,6 +474,12 @@ void NiVisData::Sync(NiStreamReversible& stream) {
 
 void NiFlipController::Sync(NiStreamReversible& stream) {
 	stream.Sync(textureSlot);
+
+	if (stream.GetVersion().File() < V10_1_0_104) {
+		stream.Sync(accumTime);
+		stream.Sync(delta);
+	}
+
 	sourceRefs.Sync(stream);
 }
 

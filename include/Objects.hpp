@@ -19,6 +19,10 @@ public:
 	uint32_t bslspShaderType = 0; // BSLightingShaderProperty && User Version >= 12
 
 	NiBlockRef<NiTimeController> controllerRef;
+
+	// Head of the extra data chain for file versions 3.0 to 4.2.2.0 (see NiExtraData::nextExtraDataRef)
+	NiBlockRef<NiExtraData> extraDataRef;
+	// List of extra data for file versions 10.0.1.0 and above
 	NiBlockRefArray<NiExtraData> extraDataRefs;
 
 	void Sync(NiStreamReversible& stream);
@@ -38,7 +42,15 @@ public:
 	Recommendation: rename "transform" to "transformToParent". */
 	MatTransform transform;
 
+	// Unused by the engine, only present up to file version 4.2.2.0
+	Vector3 velocity;
+
 	NiBlockRefArray<NiProperty> propertyRefs;
+
+	// Only present for file versions 3.0 to 4.2.2.0
+	NiBool hasBoundingVolume = false;
+	BoundingVolume boundingVolume;
+
 	NiBlockRef<NiCollisionObject> collisionRef;
 
 	void Sync(NiStreamReversible& stream);
@@ -181,12 +193,21 @@ struct MipMapInfo {
 class TextureRenderData : public NiCloneableStreamable<TextureRenderData, NiObject> {
 public:
 	PixelFormat pixelFormat = PX_FMT_RGB8;
+
+	// Channel masks and comparison bytes, only present up to file version 10.4.0.1
+	uint32_t redMask = 0;
+	uint32_t greenMask = 0;
+	uint32_t blueMask = 0;
+	uint32_t alphaMask = 0;
+	uint8_t oldFastCompare[8]{};
+
 	uint8_t bitsPerPixel = 0;
 	uint32_t rendererHint = 0xFFFFFFFF;
 	uint32_t extraData = 0;
 	uint8_t flags = 0;
 	PixelTiling pixelTiling = PX_TILE_NONE;
 
+	// Only present for file versions 10.4.0.2 and above
 	PixelFormatComponent channels[4]{};
 	NiBlockRef<NiPalette> paletteRef;
 
@@ -318,6 +339,9 @@ public:
 	bool switchState = true;
 	NiBlockPtrArray<NiNode> affectedNodes;
 
+	// Node pointer hashes instead of block indices, only present up to file version 4.0.0.2
+	NiVector<uint32_t> affectedNodePointers;
+
 	void Sync(NiStreamReversible& stream);
 	void GetPtrs(std::set<NiPtr*>& ptrs) override;
 };
@@ -333,6 +357,9 @@ public:
 	NiBlockRef<NiSourceTexture> sourceTexture;
 	uint8_t clippingPlane = 0;
 	NiPlane plane;
+	int16_t ps2_l = 0;
+	int16_t ps2_k = -75;
+	uint16_t unkShort1 = 0;
 
 	static constexpr const char* BlockName = "NiTextureEffect";
 	const char* GetBlockName() override { return BlockName; }

@@ -291,6 +291,7 @@ public:
 	uint32_t uvSet = 0;
 	int16_t ps2_l = 0;
 	int16_t ps2_k = -75;
+	uint16_t unkShort1 = 0;
 	bool hasTexTransform = false;
 	TexTransform transform;
 
@@ -310,6 +311,9 @@ public:
 				stream.Sync(ps2_k);
 			}
 		}
+
+		if (fileVersion <= NiFileVersion::V4_1_0_12)
+			stream.Sync(unkShort1);
 
 		if (fileVersion >= NiFileVersion::V20_1_0_3)
 			stream.Sync(flags);
@@ -354,44 +358,44 @@ public:
 	uint32_t applyMode = 2;
 	uint32_t textureCount = 7;
 
-	bool hasBaseTex = false;
+	NiBool hasBaseTex = false;
 	TexDesc baseTex;
 
-	bool hasDarkTex = false;
+	NiBool hasDarkTex = false;
 	TexDesc darkTex;
 
-	bool hasDetailTex = false;
+	NiBool hasDetailTex = false;
 	TexDesc detailTex;
 
-	bool hasGlossTex = false;
+	NiBool hasGlossTex = false;
 	TexDesc glossTex;
 
-	bool hasGlowTex = false;
+	NiBool hasGlowTex = false;
 	TexDesc glowTex;
 
-	bool hasBumpTex = false;
+	NiBool hasBumpTex = false;
 	TexDesc bumpTex;
 	float lumaScale = 1.0f;
 	float lumaOffset = 0.0f;
 	Vector4 bumpMatrix;
 
-	bool hasNormalTex = false;
+	NiBool hasNormalTex = false;
 	TexDesc normalTex;
 
-	bool hasParallaxTex = false;
+	NiBool hasParallaxTex = false;
 	TexDesc parallaxTex;
 	float parallaxOffset = 0.0f;
 
-	bool hasDecalTex0 = false;
+	NiBool hasDecalTex0 = false;
 	TexDesc decalTex0;
 
-	bool hasDecalTex1 = false;
+	NiBool hasDecalTex1 = false;
 	TexDesc decalTex1;
 
-	bool hasDecalTex2 = false;
+	NiBool hasDecalTex2 = false;
 	TexDesc decalTex2;
 
-	bool hasDecalTex3 = false;
+	NiBool hasDecalTex3 = false;
 	TexDesc decalTex3;
 
 	NiSyncVector<ShaderTexDesc> shaderTex;

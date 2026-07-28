@@ -197,7 +197,7 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 		}
 
 		NiVersion& version = hdr.GetVersion();
-		if (!(version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4() || version.IsFO76() || version.IsSF() || version.IsSpecial())) {
+		if (!(version.IsMW() || version.IsOB() || version.IsFO3() || version.IsSK() || version.IsSSE() || version.IsFO4() || version.IsFO76() || version.IsSF() || version.IsSpecial())) {
 			// Unsupported file version
 			Clear();
 			return 2;
@@ -208,7 +208,9 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 
 		auto& nifactories = NiFactoryRegister::Get();
 		for (uint32_t i = 0; i < nBlocks; i++) {
-			std::string blockTypeStr = hdr.GetBlockTypeStringById(i);
+			// Old file versions store the block type in front of each block instead of the header
+			std::string blockTypeStr = hdr.HasInlineBlockTypes() ? hdr.ReadBlockType(stream)
+																 : hdr.GetBlockTypeStringById(i);
 
 			auto nifactory = nifactories.GetFactoryByName(blockTypeStr);
 			if (nifactory) {
@@ -226,6 +228,7 @@ int NifFile::Load(std::istream& file, const NifLoadOptions& options) {
 			}
 		}
 
+		hdr.GetFooter(stream);
 		hdr.SetBlockReference(&blocks);
 	}
 	else {
@@ -352,6 +355,15 @@ void NifFile::SetSortIndices(uint32_t refIndex, SortState& sortState) {
 }
 
 void NifFile::SortNiObjectNET(NiObjectNET* objnet, SortState& sortState) {
+	// Old file versions store the extra data as a linked list
+	SetSortIndices(objnet->extraDataRef, sortState);
+
+	auto extraData = hdr.GetBlock(objnet->extraDataRef);
+	while (extraData && sortState.visitedIndices.count(extraData->nextExtraDataRef.index) == 0) {
+		SetSortIndices(extraData->nextExtraDataRef, sortState);
+		extraData = hdr.GetBlock(extraData->nextExtraDataRef);
+	}
+
 	for (auto& r : objnet->extraDataRefs)
 		SetSortIndices(r, sortState);
 
@@ -829,7 +841,18 @@ void NifFile::SetNodeName(const uint32_t blockID, const std::string& newName) {
 
 uint32_t NifFile::AssignExtraData(NiAVObject* target, std::unique_ptr<NiExtraData> extraData) {
 	uint32_t extraDataId = hdr.AddBlock(std::move(extraData));
-	target->extraDataRefs.AddBlockRef(extraDataId);
+
+	if (hdr.GetVersion().File() <= V4_2_2_0) {
+		// Old file versions store the extra data as a linked list, insert at its head
+		auto newExtraData = hdr.GetBlock<NiExtraData>(extraDataId);
+		if (newExtraData)
+			newExtraData->nextExtraDataRef.index = target->extraDataRef.index;
+
+		target->extraDataRef.index = extraDataId;
+	}
+	else
+		target->extraDataRefs.AddBlockRef(extraDataId);
+
 	return extraDataId;
 }
 
@@ -1191,7 +1214,8 @@ void NifFile::TrimTexturePaths() {
 		// Remove all backslashes from the front
 		tex = std::regex_replace(tex, std::regex("^\\\\+"), "");
 
-		if (!hdr.GetVersion().IsOB() && !hdr.GetVersion().IsSpecial() && is_relative_path(tex)) {
+		if (!hdr.GetVersion().IsMW() && !hdr.GetVersion().IsOB() && !hdr.GetVersion().IsSpecial()
+			&& is_relative_path(tex)) {
 			// If the path doesn't start with "textures\", add it to the front
 			tex = std::regex_replace(tex,
 									 std::regex("^(?!^textures\\\\)", std::regex_constants::icase),
@@ -1476,20 +1500,20 @@ int NifFile::Save(std::ostream& file, const NifSaveOptions& options) {
 		hdr.UpdateHeaderStrings(hasUnknown);
 
 		hdr.Put(stream);
-		stream.InitBlockSize();
 
 		// Retrieve block sizes from NiStream while writing
 		std::vector<std::streamsize> blockSizes(hdr.GetNumBlocks());
 		for (uint32_t i = 0; i < hdr.GetNumBlocks(); i++) {
+			// Old file versions store the block type in front of each block instead of the header
+			if (hdr.HasInlineBlockTypes())
+				hdr.WriteBlockType(stream, i);
+
+			stream.InitBlockSize();
 			blocks[i]->Put(stream);
 			blockSizes[i] = stream.GetBlockSize();
-			stream.InitBlockSize();
 		}
 
-		uint32_t endPad = 1;
-		stream << endPad;
-		endPad = 0;
-		stream << endPad;
+		hdr.PutFooter(stream);
 
 		// Get previous stream pos of block size array and overwrite
 		std::streampos blockSizePos = hdr.GetBlockSizeStreamPos();
@@ -2191,6 +2215,26 @@ NiShape* NifFile::CreateShapeFromData(const std::string& shapeName,
 		shapeResult = nifBSTriShape.get();
 
 		int shapeID = hdr.AddBlock(std::move(nifBSTriShape));
+		rootNode->childRefs.AddBlockRef(shapeID);
+	}
+	else if (version.IsMW()) {
+		// Morrowind uses a material and a texturing property instead of a shader property
+		auto nifTriShape = std::make_unique<NiTriShape>();
+		nifTriShape->name.get() = shapeName;
+
+		nifTriShape->propertyRefs.AddBlockRef(hdr.AddBlock(std::make_unique<NiMaterialProperty>()));
+		nifTriShape->propertyRefs.AddBlockRef(hdr.AddBlock(std::make_unique<NiTexturingProperty>()));
+
+		auto nifShapeData = std::make_unique<NiTriShapeData>();
+		nifShapeData->Create(hdr.GetVersion(), v, t, uv, norms);
+		nifTriShape->SetGeomData(nifShapeData.get());
+
+		nifTriShape->DataRef()->index = hdr.AddBlock(std::move(nifShapeData));
+		nifTriShape->SetSkinned(false);
+
+		shapeResult = nifTriShape.get();
+
+		uint32_t shapeID = hdr.AddBlock(std::move(nifTriShape));
 		rootNode->childRefs.AddBlockRef(shapeID);
 	}
 	else {

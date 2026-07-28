@@ -9,6 +9,8 @@ See the included GPLv3 LICENSE file
 using namespace nifly;
 
 void NiNode::Sync(NiStreamReversible& stream) {
+	// Old file versions use empty child references as placeholders
+	childRefs.SetKeepEmptyRefs(stream.GetVersion().File() <= V4_2_2_0);
 	childRefs.Sync(stream);
 
 	if (stream.GetVersion().User() <= 12 && stream.GetVersion().Stream() < 130)
@@ -195,7 +197,9 @@ void BSFaceGenNiNode::Sync(NiStreamReversible& stream) {
 
 
 void NiBillboardNode::Sync(NiStreamReversible& stream) {
-	stream.Sync(billboardMode);
+	// Older file versions store the billboard mode in the NiAVObject flags
+	if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
+		stream.Sync(billboardMode);
 }
 
 

@@ -146,9 +146,10 @@ protected:
 	bool isPSys = false;
 
 	uint16_t numVertices = 0;
-	bool hasVertices = true;
-	bool hasNormals = false;
-	bool hasVertexColors = false;
+	NiBool hasVertices = true;
+	NiBool hasNormals = false;
+	NiBool hasVertexColors = false;
+	NiBool hasUV = false; // Only present up to file version 4.0.0.2, UV set count is in the data flags
 	BoundingSphere bounds;
 
 public:
@@ -888,7 +889,7 @@ public:
 
 class NiLinesData : public NiCloneableStreamable<NiLinesData, NiGeometryData> {
 public:
-	std::deque<bool> lineFlags;
+	std::deque<NiBool> lineFlags;
 
 	static constexpr const char* BlockName = "NiLinesData";
 	const char* GetBlockName() override { return BlockName; }

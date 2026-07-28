@@ -24,6 +24,10 @@ NiFactoryRegister& NiFactoryRegister::Get() {
 
 NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<NiNode>();
+	RegisterFactory<RootCollisionNode>();
+	RegisterFactory<AvoidNode>();
+	RegisterFactory<NiBSAnimationNode>();
+	RegisterFactory<NiBSParticleNode>();
 	RegisterFactory<BSFadeNode>();
 	RegisterFactory<BSValueNode>();
 	RegisterFactory<BSLeafAnimNode>();
@@ -118,6 +122,17 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<NiAutoNormalParticlesData>();
 	RegisterFactory<NiRotatingParticlesData>();
 	RegisterFactory<NiParticleMeshesData>();
+	RegisterFactory<NiParticleSystemController>();
+	RegisterFactory<NiBSPArrayController>();
+	RegisterFactory<NiEmitterModifier>();
+	RegisterFactory<NiGravity>();
+	RegisterFactory<NiParticleGrowFade>();
+	RegisterFactory<NiParticleColorModifier>();
+	RegisterFactory<NiParticleRotation>();
+	RegisterFactory<NiParticleBomb>();
+	RegisterFactory<NiParticleMeshModifier>();
+	RegisterFactory<NiPlanarCollider>();
+	RegisterFactory<NiSphericalCollider>();
 	RegisterFactory<NiPSysData>();
 	RegisterFactory<NiMeshPSysData>();
 	RegisterFactory<BSStripPSysData>();
@@ -271,6 +286,7 @@ NiFactoryRegister::NiFactoryRegister() {
 	RegisterFactory<BSBehaviorGraphExtraData>();
 	RegisterFactory<BSBound>();
 	RegisterFactory<BSBoneLODExtraData>();
+	RegisterFactory<NiVertWeightsExtraData>();
 	RegisterFactory<NiTextKeyExtraData>();
 	RegisterFactory<BSDistantObjectLargeRefExtraData>();
 	RegisterFactory<BSDistantObjectExtraData>();

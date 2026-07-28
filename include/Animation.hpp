@@ -599,12 +599,34 @@ public:
 
 struct Morph {
 	NiStringRef frameName;
+
+	// Morph keys, only present up to file version 10.1.0.0
+	NiKeyType interpolation = NO_INTERP;
+	std::vector<NiAnimationKey<float>> keys;
+
 	float legacyWeight = 0.0f;
 	std::vector<Vector3> vectors;
 
 	void Sync(NiStreamReversible& stream, uint32_t numVerts) {
 		if (stream.GetVersion().File() >= V10_1_0_106)
 			frameName.Sync(stream);
+
+		if (stream.GetVersion().File() <= V10_1_0_0) {
+			auto numKeys = static_cast<uint32_t>(keys.size());
+			stream.Sync(numKeys);
+
+			if (numKeys > NIF_ARRAY_SIZE_LIMIT)
+				throw std::length_error("IO: Array size is too large.");
+
+			// The interpolation type is present even without any keys
+			stream.Sync(interpolation);
+
+			keys.resize(numKeys);
+			for (auto& key : keys) {
+				key.type = interpolation;
+				key.Sync(stream);
+			}
+		}
 
 		if (stream.GetVersion().File() >= V10_1_0_104 && stream.GetVersion().File() < V20_1_0_3 && stream.GetVersion().Stream() < 10)
 			stream.Sync(legacyWeight);
@@ -708,16 +730,31 @@ public:
 	void Sync(NiStreamReversible& stream);
 };
 
-class NiMaterialColorController : public NiCloneable<NiMaterialColorController, NiPoint3InterpController> {
+class NiMaterialColorController
+	: public NiCloneableStreamable<NiMaterialColorController, NiPoint3InterpController> {
 public:
+	// Only present up to file version 10.1.0.103
+	NiBlockRef<NiPosData> dataRef;
+
 	static constexpr const char* BlockName = "NiMaterialColorController";
 	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
-class NiLightColorController : public NiCloneable<NiLightColorController, NiPoint3InterpController> {
+class NiLightColorController : public NiCloneableStreamable<NiLightColorController, NiPoint3InterpController> {
 public:
+	// Only present up to file version 10.1.0.103
+	NiBlockRef<NiPosData> dataRef;
+
 	static constexpr const char* BlockName = "NiLightColorController";
 	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiExtraDataController : public NiCloneable<NiExtraDataController, NiSingleInterpController> {};
@@ -746,10 +783,17 @@ public:
 
 class NiBoolInterpController : public NiSingleInterpController {};
 
-class NiVisController : public NiCloneable<NiVisController, NiBoolInterpController> {
+class NiVisController : public NiCloneableStreamable<NiVisController, NiBoolInterpController> {
 public:
+	// Only present up to file version 10.1.0.103
+	NiBlockRef<NiVisData> dataRef;
+
 	static constexpr const char* BlockName = "NiVisController";
 	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 enum TexType : uint32_t {
@@ -781,6 +825,11 @@ class NiSourceTexture;
 class NiFlipController : public NiCloneableStreamable<NiFlipController, NiFloatInterpController> {
 public:
 	TexType textureSlot = BASE_MAP;
+
+	// Only present up to file version 10.1.0.103
+	float accumTime = 0.0f;
+	float delta = 0.0f;
+
 	NiBlockRefArray<NiSourceTexture> sourceRefs;
 
 	static constexpr const char* BlockName = "NiFlipController";
@@ -818,10 +867,17 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
-class NiAlphaController : public NiCloneable<NiAlphaController, NiFloatInterpController> {
+class NiAlphaController : public NiCloneableStreamable<NiAlphaController, NiFloatInterpController> {
 public:
+	// Only present up to file version 10.1.0.103
+	NiBlockRef<NiFloatData> dataRef;
+
 	static constexpr const char* BlockName = "NiAlphaController";
 	const char* GetBlockName() override { return BlockName; }
+
+	void Sync(NiStreamReversible& stream);
+	void GetChildRefs(std::set<NiRef*>& refs) override;
+	void GetChildIndices(std::vector<uint32_t>& indices) override;
 };
 
 class NiPSysUpdateCtlr : public NiCloneable<NiPSysUpdateCtlr, NiTimeController> {

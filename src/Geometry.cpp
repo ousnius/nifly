@@ -44,7 +44,7 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 		stream.Sync(compressFlags);
 	}
 
-	stream.Sync(hasVertices);
+	hasVertices.Sync(stream);
 
 	if (hasVertices && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		vertices.resize(numVertices);
@@ -60,21 +60,18 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 		stream.Sync(dataFlags);
 
 	uint16_t nbtMethod = dataFlags & 0xF000;
-	uint8_t numTextureSets = dataFlags & 0x3F;
-	if (stream.GetVersion().Stream() >= 34)
-		numTextureSets = dataFlags & 0x1;
 
 	if (stream.GetVersion().File() == NiFileVersion::V20_2_0_7 && stream.GetVersion().Stream() > 34)
 		stream.Sync(materialCRC);
 
-	stream.Sync(hasNormals);
+	hasNormals.Sync(stream);
 	if (hasNormals && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		normals.resize(numVertices);
 
 		for (uint16_t i = 0; i < numVertices; i++)
 			stream.Sync(normals[i]);
 
-		if (nbtMethod) {
+		if (nbtMethod && stream.GetVersion().File() >= NiFileVersion::V10_1_0_0) {
 			tangents.resize(numVertices);
 			bitangents.resize(numVertices);
 
@@ -88,12 +85,23 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 
 	stream.Sync(bounds);
 
-	stream.Sync(hasVertexColors);
+	hasVertexColors.Sync(stream);
 	if (hasVertexColors && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		vertexColors.resize(numVertices);
 		for (uint16_t i = 0; i < numVertices; i++)
 			stream.Sync(vertexColors[i]);
 	}
+
+	// Old file versions store the data flags behind the vertex colors
+	if (stream.GetVersion().File() <= NiFileVersion::V4_2_2_0)
+		stream.Sync(dataFlags);
+
+	if (stream.GetVersion().File() <= NiFileVersion::V4_0_0_2)
+		hasUV.Sync(stream);
+
+	uint8_t numTextureSets = dataFlags & 0x3F;
+	if (stream.GetVersion().Stream() >= 34)
+		numTextureSets = dataFlags & 0x1;
 
 	if (numTextureSets > 0 && (!isPSys || stream.GetVersion().File() < V20_2_0_7)) {
 		uvSets.resize(numTextureSets);
@@ -104,7 +112,8 @@ void NiGeometryData::Sync(NiStreamReversible& stream) {
 		}
 	}
 
-	stream.Sync(consistencyFlags);
+	if (stream.GetVersion().File() >= NiFileVersion::V10_0_1_0)
+		stream.Sync(consistencyFlags);
 
 	if (stream.GetVersion().File() >= NiFileVersion::V20_0_0_4)
 		additionalDataRef.Sync(stream);
@@ -159,6 +168,8 @@ void NiGeometryData::SetVertexColors(const bool enable) {
 }
 
 void NiGeometryData::SetUVs(const bool enable) {
+	hasUV = enable;
+
 	if (enable) {
 		dataFlags |= 1 << 0;
 		uvSets.resize(1);
@@ -2006,7 +2017,9 @@ void BSGeometry::SetTriangles(const std::vector<Triangle>& tris) {
 
 void NiGeometry::Sync(NiStreamReversible& stream) {
 	dataRef.Sync(stream);
-	skinInstanceRef.Sync(stream);
+
+	if (stream.GetVersion().File() >= V3_3_0_13)
+		skinInstanceRef.Sync(stream);
 
 	if (stream.GetVersion().File() >= V20_2_0_5) {
 		uint32_t numMaterials = materialNames.Sync(stream);
@@ -2014,7 +2027,7 @@ void NiGeometry::Sync(NiStreamReversible& stream) {
 
 		stream.Sync(activeMaterial);
 	}
-	else {
+	else if (stream.GetVersion().File() >= V10_0_1_0) {
 		stream.Sync(shader);
 
 		if (shader) {
@@ -2089,13 +2102,20 @@ void NiTriBasedGeomData::Create(NiVersion& version,
 
 void NiTriShapeData::Sync(NiStreamReversible& stream) {
 	stream.Sync(numTrianglePoints);
-	stream.Sync(hasTriangles);
+
+	if (stream.GetVersion().File() >= NiFileVersion::V10_1_0_0)
+		stream.Sync(hasTriangles);
+	else
+		hasTriangles = true; // Triangle data is always present before that version
 
 	if (hasTriangles) {
 		triangles.resize(numTriangles);
 		for (uint32_t i = 0; i < numTriangles; i++)
 			stream.Sync(triangles[i]);
 	}
+
+	if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+		numMatchGroups = static_cast<uint16_t>(matchGroups.size());
 
 	stream.Sync(numMatchGroups);
 	matchGroups.resize(numMatchGroups);
@@ -2109,10 +2129,6 @@ void NiTriShapeData::Sync(NiStreamReversible& stream) {
 		for (uint32_t j = 0; j < mg.count; j++)
 			stream.Sync(mg.matches[j]);
 	}
-
-	// Not supported yet, so clear it again after reading
-	matchGroups.clear();
-	numMatchGroups = 0;
 }
 
 void NiTriShapeData::Create(NiVersion& version,
@@ -2148,6 +2164,10 @@ void NiTriShapeData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndic
 	ApplyMapToTriangles(triangles, indexCollapse);
 	numTriangles = static_cast<uint16_t>(triangles.size());
 	numTrianglePoints = 3 * numTriangles;
+
+	// Shared normals reference deleted vertices, updating them isn't supported
+	matchGroups.clear();
+	numMatchGroups = 0;
 
 	NiTriBasedGeomData::notifyVerticesDelete(vertIndices);
 }
@@ -2459,7 +2479,7 @@ void NiTriStrips::SetGeomData(NiGeometryData* geomDataPtr) {
 void NiLinesData::Sync(NiStreamReversible& stream) {
 	lineFlags.resize(numVertices);
 	for (uint16_t i = 0; i < numVertices; i++)
-		stream.Sync(lineFlags[i]);
+		lineFlags[i].Sync(stream);
 }
 
 void NiLinesData::notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) {

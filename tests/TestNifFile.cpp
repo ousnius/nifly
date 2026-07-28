@@ -5,11 +5,16 @@
 
 #include <NifFile.hpp>
 #include <NifUtil.hpp>
+#include <Particles.hpp>
+
+#include <fstream>
+#include <sstream>
 
 using namespace nifly;
 
 const std::string nifSuffix = ".nif";
 const std::string meshSuffix = ".mesh";
+const std::string kfSuffix = ".kf";
 
 const std::string folderInput = "input";
 const std::string folderOutput = "output";
@@ -584,6 +589,211 @@ TEST_CASE("FixShaderFlags (add environment mapping)", "[NifFile]") {
 	REQUIRE(nif.Save(fileOutput) == 0);
 
 	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+// Morrowind (file version 4.0.0.2) files use inline block types, a boolean size of four bytes,
+// a linked list of extra data and a range of blocks that were removed in later versions.
+
+// Loads and saves a Morrowind file and compares the result against the expected output
+static void CheckMorrowindFile(const char* fileName, const std::string& suffix = nifSuffix) {
+	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, suffix);
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+	REQUIRE(nif.GetHeader().GetVersion().IsMW());
+	REQUIRE(nif.GetHeader().HasInlineBlockTypes());
+	REQUIRE(!nif.HasUnknown());
+	REQUIRE(nif.Save(fileOutput) == 0);
+
+	REQUIRE(CompareBinaryFiles(fileOutput, fileExpected));
+}
+
+TEST_CASE("Load and save static file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_Static_MW");
+}
+
+TEST_CASE("Load and save billboard file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_Billboard_MW");
+}
+
+TEST_CASE("Load and save skinned file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_Skinned_MW");
+}
+
+TEST_CASE("Load and save particle file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_Particles_MW");
+}
+
+TEST_CASE("Load and save rotating particle file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_RotatingParticles_MW");
+}
+
+TEST_CASE("Load and save UV controller file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_UVController_MW");
+}
+
+TEST_CASE("Load and save texture effect file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_TextureEffect_MW");
+}
+
+TEST_CASE("Load and save morph file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_Morph_MW");
+}
+
+TEST_CASE("Load and save path controller file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_PathController_MW");
+}
+
+TEST_CASE("Load and save animation sequence file (MW)", "[NifFile]") {
+	CheckMorrowindFile("TestNifFile_Sequence_MW", kfSuffix);
+}
+
+TEST_CASE("Save unmodified file without changes (MW)", "[NifFile]") {
+	// Every file of the game has to be written back byte for byte when nothing is changed
+	for (auto fileName : {"TestNifFile_Static_MW",
+						  "TestNifFile_Billboard_MW",
+						  "TestNifFile_Skinned_MW",
+						  "TestNifFile_Particles_MW",
+						  "TestNifFile_RotatingParticles_MW",
+						  "TestNifFile_UVController_MW",
+						  "TestNifFile_TextureEffect_MW",
+						  "TestNifFile_Morph_MW",
+						  "TestNifFile_PathController_MW"}) {
+		INFO(fileName);
+
+		const auto fileInput = std::get<0>(GetFileTuple(fileName, nifSuffix));
+
+		std::ifstream in(fileInput, std::ios::in | std::ios::binary);
+		REQUIRE(in);
+
+		std::stringstream original;
+		original << in.rdbuf();
+		in.close();
+
+		NifFile nif;
+		std::stringstream loadFrom(original.str());
+		REQUIRE(nif.Load(loadFrom) == 0);
+
+		NifSaveOptions saveOptions;
+		saveOptions.optimize = false;
+		saveOptions.sortBlocks = false;
+
+		std::stringstream saved;
+		REQUIRE(nif.Save(saved, saveOptions) == 0);
+		REQUIRE(saved.str() == original.str());
+	}
+}
+
+// Returns the first block of the given type in the file (or nullptr)
+template<typename T>
+static T* FindFirstBlock(NifFile& nif) {
+	auto& hdr = nif.GetHeader();
+
+	for (uint32_t i = 0; i < hdr.GetNumBlocks(); i++) {
+		auto* block = hdr.GetBlock<T>(i);
+		if (block)
+			return block;
+	}
+
+	return nullptr;
+}
+
+TEST_CASE("Read blocks of static file (MW)", "[NifFile]") {
+	const auto fileInput = std::get<0>(GetFileTuple("TestNifFile_Static_MW", nifSuffix));
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+
+	auto& hdr = nif.GetHeader();
+
+	auto* root = nif.GetRootNode();
+	REQUIRE(root);
+	REQUIRE(root->name == "EditorMarker_box_02");
+	REQUIRE(hdr.GetRootBlockIds() == std::vector<uint32_t>{0});
+
+	// Extra data is a linked list up to file version 4.2.2.0
+	auto* extraData = hdr.GetBlock<NiStringExtraData>(root->extraDataRef);
+	REQUIRE(extraData);
+	REQUIRE(extraData->stringData == "MRK");
+	REQUIRE(extraData->nextExtraDataRef.IsEmpty());
+
+	REQUIRE(FindFirstBlock<RootCollisionNode>(nif));
+
+	auto shapes = nif.GetShapes();
+	REQUIRE(shapes.size() == 2);
+
+	auto* shape = shapes.front();
+	REQUIRE(shape->name == "Tri EditorMarker_box_02");
+	REQUIRE(shape->HasVertices());
+	REQUIRE(shape->GetNumVertices() > 0);
+
+	std::vector<Triangle> tris;
+	REQUIRE(shape->GetTriangles(tris));
+	REQUIRE(!tris.empty());
+
+	// Morrowind stores the render state in properties instead of a shader property
+	REQUIRE(shape->propertyRefs.GetSize() > 0);
+	REQUIRE(hdr.GetBlock<NiMaterialProperty>(shape->propertyRefs.GetBlockRef(0)));
+}
+
+TEST_CASE("Read blocks of particle file (MW)", "[NifFile]") {
+	const auto fileInput = std::get<0>(GetFileTuple("TestNifFile_Particles_MW", nifSuffix));
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+
+	auto& hdr = nif.GetHeader();
+
+	auto* particleNode = nif.FindBlockByName<NiBSParticleNode>("Blizzard01");
+	REQUIRE(particleNode);
+
+	auto* emitterNode = nif.FindBlockByName<NiBSAnimationNode>("Blizzard01 Emitter");
+	REQUIRE(emitterNode);
+
+	auto* particles = nif.FindBlockByName<NiAutoNormalParticles>("Blizzard");
+	REQUIRE(particles);
+
+	auto* controller = hdr.GetBlock<NiParticleSystemController>(particles->controllerRef);
+	REQUIRE(controller);
+	REQUIRE(controller->emitterRef.index == hdr.GetBlockID(emitterNode));
+	REQUIRE(controller->particles.size() >= controller->numValid);
+
+	// The particle modifiers form a linked list
+	auto* gravity = hdr.GetBlock<NiGravity>(controller->particleModifierRef);
+	REQUIRE(gravity);
+	REQUIRE(gravity->controllerRef.index == hdr.GetBlockID(controller));
+
+	auto* growFade = hdr.GetBlock<NiParticleGrowFade>(gravity->nextModifierRef);
+	REQUIRE(growFade);
+	REQUIRE(growFade->nextModifierRef.IsEmpty());
+
+	auto* particleData = hdr.GetBlock<NiAutoNormalParticlesData>(particles->DataRef());
+	REQUIRE(particleData);
+	REQUIRE(particleData->numParticles == particleData->GetNumVertices());
+}
+
+TEST_CASE("Write multiple root references (MW)", "[NifFile]") {
+	const auto fileInput = std::get<0>(GetFileTuple("TestNifFile_Static_MW", nifSuffix));
+
+	NifFile nif;
+	REQUIRE(nif.Load(fileInput) == 0);
+
+	auto* collisionNode = FindFirstBlock<RootCollisionNode>(nif);
+	REQUIRE(collisionNode);
+
+	std::vector<uint32_t> rootIds{0, nif.GetBlockID(collisionNode)};
+	nif.GetHeader().SetRootBlockIds(rootIds);
+
+	NifSaveOptions saveOptions;
+	saveOptions.optimize = false;
+	saveOptions.sortBlocks = false;
+
+	std::stringstream saved;
+	REQUIRE(nif.Save(saved, saveOptions) == 0);
+
+	NifFile loaded;
+	std::stringstream loadFrom(saved.str());
+	REQUIRE(loaded.Load(loadFrom) == 0);
+	REQUIRE(loaded.GetHeader().GetRootBlockIds() == rootIds);
 }
 
 TEST_CASE("Load corrupted file", "[NifFile]") {

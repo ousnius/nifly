@@ -11,13 +11,33 @@ See the included GPLv3 LICENSE file
 using namespace nifly;
 
 void NiExtraData::Sync(NiStreamReversible& stream) {
-	name.Sync(stream);
+	if (stream.GetVersion().File() >= NiFileVersion::V10_0_1_0)
+		name.Sync(stream);
+
+	if (stream.GetVersion().File() <= NiFileVersion::V4_2_2_0) {
+		nextExtraDataRef.Sync(stream);
+
+		if (stream.GetVersion().File() >= NiFileVersion::V4_0_0_0)
+			stream.Sync(numBytes);
+	}
 }
 
 void NiExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiObject::GetStringRefs(refs);
 
 	refs.emplace_back(&name);
+}
+
+void NiExtraData::GetChildRefs(std::set<NiRef*>& refs) {
+	NiObject::GetChildRefs(refs);
+
+	refs.insert(&nextExtraDataRef);
+}
+
+void NiExtraData::GetChildIndices(std::vector<uint32_t>& indices) {
+	NiObject::GetChildIndices(indices);
+
+	indices.push_back(nextExtraDataRef.index);
 }
 
 
@@ -351,6 +371,11 @@ void BSBoneLODExtraData::GetStringRefs(std::vector<NiStringRef*>& refs) {
 	NiExtraData::GetStringRefs(refs);
 
 	boneLODs.GetStringRefs(refs);
+}
+
+
+void NiVertWeightsExtraData::Sync(NiStreamReversible& stream) {
+	weights.Sync(stream);
 }
 
 

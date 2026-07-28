@@ -359,71 +359,7 @@ enum PropagationMode : uint32_t {
 
 enum CollisionMode : uint32_t { CM_USE_OBB, CM_USE_TRI, CM_USE_ABV, CM_NOTEST, CM_USE_NIBOUND };
 
-enum BoundVolumeType : uint32_t {
-	BASE_BV = 0xFFFFFFFF,
-	SPHERE_BV = 0,
-	BOX_BV = 1,
-	CAPSULE_BV = 2,
-	UNION_BV = 4,
-	HALFSPACE_BV = 5
-};
-
-struct BoxBV {
-	Vector3 center;
-	Vector3 axis1;
-	Vector3 axis2;
-	Vector3 axis3;
-	float extent1 = 0.0f;
-	float extent2 = 0.0f;
-	float extent3 = 0.0f;
-};
-
-struct CapsuleBV {
-	Vector3 center;
-	Vector3 origin;
-	float extent = 0.0f;
-	float radius = 0.0f;
-};
-
-struct HalfSpaceBV {
-	NiPlane plane;
-	Vector3 center;
-};
-
-struct UnionBV;
-
-struct BoundingVolume {
-	BoundVolumeType collisionType = BASE_BV;
-	BoundingSphere bvSphere;
-	BoxBV bvBox;
-	CapsuleBV bvCapsule;
-	std::unique_ptr<UnionBV> bvUnion = std::make_unique<UnionBV>();
-	HalfSpaceBV bvHalfSpace;
-
-	BoundingVolume() = default;
-
-	BoundingVolume(const BoundingVolume& other)
-		: collisionType(other.collisionType)
-		, bvSphere(other.bvSphere)
-		, bvBox(other.bvBox)
-		, bvCapsule(other.bvCapsule)
-		, bvUnion(std::make_unique<UnionBV>(*other.bvUnion))
-		, bvHalfSpace(other.bvHalfSpace) {}
-
-	void Sync(NiStreamReversible& stream);
-};
-
-struct UnionBV {
-	uint32_t numBV = 0;
-	std::vector<BoundingVolume> boundingVolumes;
-
-	void Sync(NiStreamReversible& stream) {
-		stream.Sync(numBV);
-		boundingVolumes.resize(numBV);
-		for (uint32_t i = 0; i < numBV; i++)
-			boundingVolumes[i].Sync(stream);
-	}
-};
+// BoundVolumeType, BoxBV, CapsuleBV, HalfSpaceBV, UnionBV and BoundingVolume are defined in BasicTypes.hpp
 
 class NiCollisionData : public NiCloneableStreamable<NiCollisionData, NiCollisionObject> {
 public:

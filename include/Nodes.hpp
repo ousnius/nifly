@@ -30,6 +30,34 @@ public:
 	const char* GetBlockName() override { return BlockName; }
 };
 
+// Morrowind only, marks a node holding the collision mesh
+class RootCollisionNode : public NiCloneable<RootCollisionNode, NiNode> {
+public:
+	static constexpr const char* BlockName = "RootCollisionNode";
+	const char* GetBlockName() override { return BlockName; }
+};
+
+// Morrowind only, marks a node that NPCs try to avoid
+class AvoidNode : public NiCloneable<AvoidNode, NiNode> {
+public:
+	static constexpr const char* BlockName = "AvoidNode";
+	const char* GetBlockName() override { return BlockName; }
+};
+
+// Bethesda extension of NiNode with animation properties stored in the flags
+class NiBSAnimationNode : public NiCloneable<NiBSAnimationNode, NiNode> {
+public:
+	static constexpr const char* BlockName = "NiBSAnimationNode";
+	const char* GetBlockName() override { return BlockName; }
+};
+
+// Bethesda extension of NiNode used together with NiBSPArrayController
+class NiBSParticleNode : public NiCloneable<NiBSParticleNode, NiNode> {
+public:
+	static constexpr const char* BlockName = "NiBSParticleNode";
+	const char* GetBlockName() override { return BlockName; }
+};
+
 enum BSValueNodeFlags : uint8_t {
 	BSVN_NONE = 0x0,
 	BSVN_BILLBOARD_WORLD_Z = 0x1,
