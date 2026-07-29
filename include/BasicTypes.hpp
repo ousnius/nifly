@@ -1351,7 +1351,17 @@ struct HalfSpaceBV {
 	Vector3 center;
 };
 
-struct UnionBV;
+struct BoundingVolume;
+
+// UnionBV is defined before BoundingVolume so that the latter can create one with
+// std::make_unique in its member initializers. std::vector supports the incomplete
+// element type here; BoundingVolume is complete before any of its members are used.
+struct UnionBV {
+	uint32_t numBV = 0;
+	std::vector<BoundingVolume> boundingVolumes;
+
+	void Sync(NiStreamReversible& stream);
+};
 
 struct BoundingVolume {
 	BoundVolumeType collisionType = BASE_BV;
@@ -1376,24 +1386,19 @@ struct BoundingVolume {
 	void Sync(NiStreamReversible& stream);
 };
 
-struct UnionBV {
-	uint32_t numBV = 0;
-	std::vector<BoundingVolume> boundingVolumes;
+inline void UnionBV::Sync(NiStreamReversible& stream) {
+	if (stream.GetMode() == NiStreamReversible::Mode::Writing)
+		numBV = static_cast<uint32_t>(boundingVolumes.size());
 
-	void Sync(NiStreamReversible& stream) {
-		if (stream.GetMode() == NiStreamReversible::Mode::Writing)
-			numBV = static_cast<uint32_t>(boundingVolumes.size());
+	stream.Sync(numBV);
 
-		stream.Sync(numBV);
+	if (numBV > NIF_ARRAY_SIZE_LIMIT)
+		throw std::length_error("IO: Array size is too large.");
 
-		if (numBV > NIF_ARRAY_SIZE_LIMIT)
-			throw std::length_error("IO: Array size is too large.");
-
-		boundingVolumes.resize(numBV);
-		for (uint32_t i = 0; i < numBV; i++)
-			boundingVolumes[i].Sync(stream);
-	}
-};
+	boundingVolumes.resize(numBV);
+	for (uint32_t i = 0; i < numBV; i++)
+		boundingVolumes[i].Sync(stream);
+}
 
 class BSTextureArray {
 public:
