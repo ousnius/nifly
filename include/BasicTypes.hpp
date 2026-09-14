@@ -530,6 +530,10 @@ public:
 
 	size_t length() const { return str.length(); }
 
+	// Number of bytes the string occupies in a file, including the appended null byte if enabled
+	size_t byteLength() const { return str.length() + (nullOutput ? 1 : 0); }
+
+	bool GetNullOutput() const { return nullOutput; }
 	void SetNullOutput(const bool wantNullOutput = true) { nullOutput = wantNullOutput; }
 	void clear() { str.clear(); }
 

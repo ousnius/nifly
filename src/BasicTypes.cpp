@@ -54,23 +54,17 @@ void NiVersion::SetFile(NiFileVersion fileVer) {
 
 
 void NiString::Read(NiIStream& stream, const int szSize) {
-	std::unique_ptr<char[]> buf;
+	size_t readSize = 0;
 
 	if (szSize == 1) {
 		uint8_t smSize = 0;
 		stream >> smSize;
-
-		buf = std::make_unique<char[]>(smSize + 1);
-		stream.read(buf.get(), smSize);
-		buf[smSize] = 0;
+		readSize = smSize;
 	}
 	else if (szSize == 2) {
 		uint16_t medSize = 0;
 		stream >> medSize;
-
-		buf = std::make_unique<char[]>(medSize + 1);
-		stream.read(buf.get(), medSize);
-		buf[medSize] = 0;
+		readSize = medSize;
 	}
 	else if (szSize == 4) {
 		uint32_t bigSize = 0;
@@ -79,14 +73,22 @@ void NiString::Read(NiIStream& stream, const int szSize) {
 		if (bigSize > NIF_ARRAY_SIZE_LIMIT)
 			throw std::length_error("Read: String size is too high.");
 
-		buf = std::make_unique<char[]>(static_cast<size_t>(bigSize) + 1);
-		stream.read(buf.get(), bigSize);
-		buf[bigSize] = 0;
+		readSize = bigSize;
 	}
 	else
 		return;
 
-	str = buf.get();
+	// Assign by size instead of relying on null termination to keep embedded null bytes. The
+	// payload of NiStringPalette is a buffer of null separated strings and would be cut short.
+	str.resize(readSize);
+	if (readSize > 0)
+		stream.read(&str.front(), readSize);
+
+	// Strings can be stored with a trailing null byte counted in their size. Remove it and
+	// remember to write it back, so that the string stays clean and round trips stay exact.
+	nullOutput = !str.empty() && str.back() == 0;
+	if (nullOutput)
+		str.pop_back();
 }
 
 void NiString::Write(NiOStream& stream, const int szSize) {

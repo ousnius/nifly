@@ -935,7 +935,9 @@ void BSTreadTransfInterpolator::GetChildIndices(std::vector<uint32_t>& indices) 
 
 void NiStringPalette::Sync(NiStreamReversible& stream) {
 	palette.Sync(stream, 4);
-	length = static_cast<uint32_t>(palette.length());
+
+	// The palette size is repeated here, so keep it in sync with the bytes actually written
+	length = static_cast<uint32_t>(palette.byteLength());
 	stream.Sync(length);
 }
 

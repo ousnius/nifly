@@ -796,6 +796,129 @@ TEST_CASE("Write multiple root references (MW)", "[NifFile]") {
 	REQUIRE(loaded.GetHeader().GetRootBlockIds() == rootIds);
 }
 
+// Appends an unsigned value as byteCount little-endian bytes
+static void AppendLittleEndian(std::string& bytes, const uint32_t value, const int byteCount) {
+	for (int i = 0; i < byteCount; i++)
+		bytes.push_back(static_cast<char>((value >> (i * 8)) & 0xFF));
+}
+
+// Builds the bytes of a sized string as stored in a file: a size prefix of szSize bytes
+// followed by the raw payload
+static std::string MakeSizedString(const std::string& payload, const int szSize) {
+	std::string bytes;
+	AppendLittleEndian(bytes, static_cast<uint32_t>(payload.size()), szSize);
+
+	bytes += payload;
+	return bytes;
+}
+
+static NiString ReadSizedString(const std::string& bytes, const int szSize) {
+	std::istringstream in(bytes, std::ios::binary);
+	NiIStream istream(&in, nullptr);
+
+	NiString str;
+	str.Read(istream, szSize);
+	return str;
+}
+
+static std::string WriteSizedString(NiString& str, const int szSize) {
+	std::ostringstream out(std::ios::binary);
+	NiOStream ostream(&out, nullptr);
+
+	str.Write(ostream, szSize);
+	return out.str();
+}
+
+TEST_CASE("Read and write sized strings", "[NifFile]") {
+	for (const int szSize : {1, 2, 4}) {
+		INFO("size prefix: " << szSize);
+
+		SECTION("plain string") {
+			const auto bytes = MakeSizedString("Bip01 Pelvis", szSize);
+			auto str = ReadSizedString(bytes, szSize);
+
+			REQUIRE(str.get() == "Bip01 Pelvis");
+			REQUIRE_FALSE(str.GetNullOutput());
+			REQUIRE(str.byteLength() == 12);
+			REQUIRE(WriteSizedString(str, szSize) == bytes);
+		}
+
+		SECTION("empty string") {
+			const auto bytes = MakeSizedString("", szSize);
+			auto str = ReadSizedString(bytes, szSize);
+
+			REQUIRE(str.get().empty());
+			REQUIRE_FALSE(str.GetNullOutput());
+			REQUIRE(WriteSizedString(str, szSize) == bytes);
+		}
+
+		SECTION("null terminated string") {
+			// The trailing null byte is counted in the size, but is not part of the string
+			const auto bytes = MakeSizedString(std::string("Nifly", 5) + '\0', szSize);
+			auto str = ReadSizedString(bytes, szSize);
+
+			REQUIRE(str.get() == "Nifly");
+			REQUIRE(str.GetNullOutput());
+			REQUIRE(str.byteLength() == 6);
+			REQUIRE(WriteSizedString(str, szSize) == bytes);
+		}
+
+		SECTION("null separated strings are not truncated") {
+			// The payload of NiStringPalette is a buffer of null separated strings
+			const std::string payload = std::string("Bip01\0NiTransformController\0Bip01 Pelvis\0", 41);
+			const auto bytes = MakeSizedString(payload, szSize);
+			auto str = ReadSizedString(bytes, szSize);
+
+			REQUIRE(str.get().size() == 40);
+			REQUIRE(str.GetNullOutput());
+			REQUIRE(str.byteLength() == 41);
+			REQUIRE(str.get().find("NiTransformController") == 6);
+			REQUIRE(str.get().find("Bip01 Pelvis") == 28);
+			REQUIRE(WriteSizedString(str, szSize) == bytes);
+		}
+	}
+}
+
+TEST_CASE("Read and write string palette", "[NifFile]") {
+	// A palette as the format defines it, with the offsets its controlled blocks reference
+	const std::string palette = std::string("Bip01\0NiTransformController\0Bip01 Pelvis\0Bip01 Spine\0", 53);
+	const std::vector<std::pair<uint32_t, std::string>> entries{{0, "Bip01"},
+																{6, "NiTransformController"},
+																{28, "Bip01 Pelvis"},
+																{41, "Bip01 Spine"}};
+
+	// The palette size is repeated after the payload
+	const auto length = static_cast<uint32_t>(palette.size());
+	std::string bytes = MakeSizedString(palette, 4);
+	AppendLittleEndian(bytes, length, 4);
+
+	NiStringPalette stringPalette;
+	{
+		std::istringstream in(bytes, std::ios::binary);
+		NiIStream istream(&in, nullptr);
+		NiStreamReversible stream(&istream, nullptr, NiStreamReversible::Mode::Reading);
+		stringPalette.Sync(stream);
+	}
+
+	REQUIRE(stringPalette.length == length);
+	REQUIRE(stringPalette.palette.byteLength() == length);
+
+	for (const auto& [offset, name] : entries) {
+		INFO("offset: " << offset);
+		REQUIRE(stringPalette.palette.get().compare(offset, name.size(), name) == 0);
+	}
+
+	// A load and save round trip has to write the palette back unchanged
+	std::ostringstream out(std::ios::binary);
+	{
+		NiOStream ostream(&out, nullptr);
+		NiStreamReversible stream(nullptr, &ostream, NiStreamReversible::Mode::Writing);
+		stringPalette.Sync(stream);
+	}
+
+	REQUIRE(out.str() == bytes);
+}
+
 TEST_CASE("Load corrupted file", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_Corrupted";
 	std::string fileInput = folderInput + "/" + fileName + nifSuffix;
