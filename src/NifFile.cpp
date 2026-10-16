@@ -3297,8 +3297,10 @@ const std::vector<Color4>* NifFile::GetColorsForShape(NiShape* shape) {
 		return nullptr;
 
 	if (auto geomData = GetGeometryData(shape)) {
-		if (geomData)
-			return &geomData->vertexColors;
+		// Starfield stores packed colors separately; expose the float array used by editors.
+		if (dynamic_cast<BSGeometryMeshData*>(geomData))
+			GetColorsForShape(shape, geomData->vertexColors);
+		return &geomData->vertexColors;
 	}
 	else if (shape->HasType<BSTriShape>()) {
 		auto bsTriShape = dynamic_cast<BSTriShape*>(shape);
@@ -3406,6 +3408,14 @@ bool NifFile::GetUvsForShape(NiShape* shape, std::vector<Vector2>& outUvs) const
 
 bool NifFile::GetColorsForShape(NiShape* shape, std::vector<Color4>& outColors) const {
 	if (auto geomData = GetGeometryData(shape)) {
+		if (auto meshData = dynamic_cast<BSGeometryMeshData*>(geomData)) {
+			outColors.resize(meshData->vColors.size());
+			for (size_t i = 0; i < meshData->vColors.size(); ++i) {
+				const auto& c = meshData->vColors[i];
+				outColors[i] = Color4(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
+			}
+			return !outColors.empty();
+		}
 		if (geomData && geomData->HasVertexColors()) {
 			outColors = geomData->vertexColors;
 			return true;
@@ -3554,6 +3564,17 @@ void NifFile::SetColorsForShape(NiShape* shape, const std::vector<Color4>& color
 		if (geomData && colors.size() == geomData->GetNumVertices()) {
 			geomData->SetVertexColors(true);
 			geomData->vertexColors = colors;
+			if (auto meshData = dynamic_cast<BSGeometryMeshData*>(geomData)) {
+				auto toByte = [](float value) {
+					return static_cast<uint8_t>(std::lround(std::clamp(value, 0.0f, 1.0f) * 255.0f));
+				};
+				meshData->vColors.resize(colors.size());
+				for (size_t i = 0; i < colors.size(); ++i) {
+					const auto& c = colors[i];
+					meshData->vColors[i] = {toByte(c.r), toByte(c.g), toByte(c.b), toByte(c.a)};
+				}
+				meshData->nColors = static_cast<uint32_t>(colors.size());
+			}
 		}
 	}
 	else if (shape->HasType<BSTriShape>()) {

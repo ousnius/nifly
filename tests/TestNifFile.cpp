@@ -660,6 +660,67 @@ TEST_CASE("Delete vertices for shape (SF)", "[NifFile]") {
 	}
 }
 
+TEST_CASE("Starfield vertex colors follow editor topology changes", "[NifFile][StarfieldColors]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Colored shape";
+	shape->SetInternalGeomData(true);
+	auto& data = shape->AddMesh()->meshData;
+	data.version = 2;
+	data.scale = 1.0f;
+	const std::vector<Vector3> originalVertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}};
+	data.Create(nif.GetHeader().GetVersion(), &originalVertices, nullptr, nullptr, nullptr);
+	data.nVertices = 4;
+	data.vColors = {{10, 20, 30, 40}, {50, 60, 70, 80}, {90, 100, 110, 120}, {130, 140, 150, 160}};
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+	const auto originalColors = data.vColors;
+
+	// Outfit Studio edits copies of the attribute arrays, then writes them back.
+	auto colorPtr = nif.GetColorsForShape(shape);
+	REQUIRE(colorPtr);
+	REQUIRE(colorPtr->size() == 4);
+	const auto colors = *colorPtr;
+	std::vector<Color4> copiedColors;
+	REQUIRE(nif.GetColorsForShape(shape, copiedColors));
+	REQUIRE(copiedColors.size() == colors.size());
+	REQUIRE(copiedColors[2] == colors[2]);
+
+	SECTION("Delete an interior vertex") {
+		auto vertices = originalVertices;
+		vertices.erase(vertices.begin() + 1);
+		auto editedColors = colors;
+		editedColors.erase(editedColors.begin() + 1);
+		nif.SetVertsForShape(shape, vertices);
+		nif.SetColorsForShape(shape, editedColors);
+		REQUIRE(data.vColors.size() == 3);
+		REQUIRE(data.vColors[1] == originalColors[2]);
+	}
+	SECTION("Undo restores the original colors") {
+		nif.SetVertsForShape(shape, {originalVertices[0], originalVertices[2], originalVertices[3]});
+		nif.SetColorsForShape(shape, {colors[0], colors[2], colors[3]});
+		nif.SetVertsForShape(shape, originalVertices);
+		nif.SetColorsForShape(shape, colors);
+		REQUIRE(data.vColors.size() == originalColors.size());
+		for (size_t i = 0; i < originalColors.size(); ++i)
+			REQUIRE(data.vColors[i] == originalColors[i]);
+	}
+
+	const auto expectedColors = data.vColors;
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(nif.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Colored shape");
+	REQUIRE(reloadedShape);
+	auto reloadedData = dynamic_cast<BSGeometryMeshData*>(reloadedShape->GetGeomData());
+	REQUIRE(reloadedData);
+	REQUIRE(reloadedData->vColors.size() == reloadedData->vertices.size());
+	for (size_t i = 0; i < expectedColors.size(); ++i)
+		REQUIRE(reloadedData->vColors[i] == expectedColors[i]);
+}
+
 TEST_CASE("Load external and save as internal mesh data (SF)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_ToInternalMesh_SF";
 	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, nifSuffix);
