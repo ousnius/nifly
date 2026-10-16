@@ -1478,7 +1478,10 @@ uint32_t NifFile::CloneNamedNode(const std::string& nodeName, NifFile* srcNif) {
 	destNode->childRefs.Clear();
 	destNode->effectRefs.Clear();
 
-	return hdr.AddBlock(std::move(destNode));
+	uint32_t nodeId = hdr.AddBlock(std::move(destNode));
+	// Clone retained extra data and properties instead of keeping source-file references.
+	CloneChildren(hdr.GetBlock<NiNode>(nodeId), srcNif);
+	return nodeId;
 }
 
 int NifFile::Save(const std::filesystem::path& fileName, const NifSaveOptions& options) {

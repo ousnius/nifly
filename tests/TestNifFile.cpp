@@ -1,7 +1,9 @@
 #include "TestNifFile.hpp"
 #include "TestUtil.hpp"
 
+#include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <NifFile.hpp>
 #include <NifUtil.hpp>
@@ -51,6 +53,161 @@ TEST_CASE("Load not existing file", "[NifFile]") {
 
 	NifFile nif;
 	REQUIRE(nif.Load(fileName) != 0);
+}
+
+TEST_CASE("Clone named node preserves independent extra data", "[NifFile][CloneNamedNode]") {
+	NifFile source;
+	source.Create(NiVersion::getSF());
+	auto sourceNode = source.AddNode("Node with extra data", MatTransform());
+	REQUIRE(sourceNode);
+
+	auto stringData = std::make_unique<NiStringExtraData>();
+	stringData->name.get() = "Node metadata";
+	stringData->stringData.get() = "Original value";
+	auto stringId = source.AssignExtraData(sourceNode, std::move(stringData));
+	auto integerData = std::make_unique<NiIntegerExtraData>();
+	integerData->name.get() = "Node flags";
+	integerData->integerData = 42;
+	source.AssignExtraData(sourceNode, std::move(integerData));
+	source.AddNode("Child node", MatTransform(), sourceNode);
+
+	NifFile destination;
+	destination.Create(NiVersion::getSF());
+	NifFile* target = nullptr;
+	SECTION("Between files with conflicting block indices") {
+		destination.AddNode("Existing node", MatTransform());
+		// A stale source index would point to a shader instead of extra data.
+		auto shaderId = destination.GetHeader().AddBlock(std::make_unique<BSLightingShaderProperty>());
+		REQUIRE(shaderId == stringId);
+		target = &destination;
+	}
+	SECTION("Within the same file") {
+		target = &source;
+	}
+	REQUIRE(target);
+
+	auto clonedId = target->CloneNamedNode(sourceNode->name.get(), &source);
+	auto clonedNode = target->GetHeader().GetBlock<NiNode>(clonedId);
+	REQUIRE(clonedNode);
+	clonedNode->name.get() = "Cloned node";
+	target->GetRootNode()->childRefs.AddBlockRef(clonedId);
+	REQUIRE(clonedNode->childRefs.GetSize() == 0);
+	REQUIRE(sourceNode->childRefs.GetSize() == 1);
+	REQUIRE(clonedNode->extraDataRefs.GetSize() == 2);
+
+	auto clonedString = target->GetHeader().GetBlock<NiStringExtraData>(clonedNode->extraDataRefs.GetBlockRef(0));
+	REQUIRE(clonedString);
+	REQUIRE(clonedString->stringData.get() == "Original value");
+	clonedString->stringData.get() = "Cloned value";
+	REQUIRE(source.GetHeader().GetBlock<NiStringExtraData>(stringId)->stringData.get() == "Original value");
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(target->Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedNode = reloaded.FindBlockByName<NiNode>("Cloned node");
+	REQUIRE(reloadedNode);
+	REQUIRE(reloadedNode->extraDataRefs.GetSize() == 2);
+	auto reloadedString = reloaded.GetHeader().GetBlock<NiStringExtraData>(reloadedNode->extraDataRefs.GetBlockRef(0));
+	auto reloadedInteger = reloaded.GetHeader().GetBlock<NiIntegerExtraData>(reloadedNode->extraDataRefs.GetBlockRef(1));
+	REQUIRE(reloadedString);
+	REQUIRE(reloadedInteger);
+	REQUIRE(reloadedString->name.get() == "Node metadata");
+	REQUIRE(reloadedString->stringData.get() == "Cloned value");
+	REQUIRE(reloadedInteger->name.get() == "Node flags");
+	REQUIRE(reloadedInteger->integerData == 42);
+}
+
+TEST_CASE("Clone named node preserves legacy extra-data chains", "[NifFile][CloneNamedNode]") {
+	NifFile source;
+	source.Create(NiVersion::getMW());
+	auto sourceNode = source.AddNode("Node with legacy extra data", MatTransform());
+	REQUIRE(sourceNode);
+	// AssignExtraData inserts at the head of the legacy linked list.
+	for (const char* value : {"Tail", "Middle", "Head"}) {
+		auto data = std::make_unique<NiStringExtraData>();
+		data->stringData.get() = value;
+		data->numBytes = static_cast<uint32_t>(sizeof(uint32_t) + data->stringData.get().size());
+		source.AssignExtraData(sourceNode, std::move(data));
+	}
+	const uint32_t sourceHead = sourceNode->extraDataRef.index;
+
+	NifFile destination;
+	destination.Create(NiVersion::getMW());
+	// Occupy every source data index with an incompatible block type.
+	for (uint32_t i = 0; i < sourceHead; ++i)
+		destination.AddNode("Existing node " + std::to_string(i), MatTransform());
+	auto clonedId = destination.CloneNamedNode(sourceNode->name.get(), &source);
+	auto clonedNode = destination.GetHeader().GetBlock<NiNode>(clonedId);
+	REQUIRE(clonedNode);
+	REQUIRE(destination.GetHeader().GetBlock<NiStringExtraData>(clonedNode->extraDataRef));
+	destination.GetRootNode()->childRefs.AddBlockRef(clonedId);
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(destination.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedNode = reloaded.FindBlockByName<NiNode>(sourceNode->name.get());
+	REQUIRE(reloadedNode);
+	uint32_t next = reloadedNode->extraDataRef.index;
+	for (const char* value : {"Head", "Middle", "Tail"}) {
+		auto data = reloaded.GetHeader().GetBlock<NiStringExtraData>(next);
+		REQUIRE(data);
+		REQUIRE(data->stringData.get() == value);
+		next = data->nextExtraDataRef.index;
+	}
+	REQUIRE(next == NIF_NPOS);
+}
+
+TEST_CASE("Clone named node preserves properties and their texture references", "[NifFile][CloneNamedNode]") {
+	// Exercise both inline strings and the newer string table with legacy properties.
+	const auto version = GENERATE(NiVersion::getMW(), NiVersion::getFO3());
+	INFO(version.GetVersionInfo());
+
+	NifFile source;
+	source.Create(version);
+	auto sourceNode = source.AddNode("Node with properties", MatTransform());
+	REQUIRE(sourceNode);
+
+	auto texture = std::make_unique<NiSourceTexture>();
+	texture->name.get() = "Base texture";
+	texture->fileName.get() = "textures/original.dds";
+	const auto textureId = source.GetHeader().AddBlock(std::move(texture));
+	auto texturing = std::make_unique<NiTexturingProperty>();
+	texturing->name.get() = "Node texturing";
+	texturing->hasBaseTex = true;
+	texturing->baseTex.sourceRef.index = textureId;
+	const auto texturingId = source.GetHeader().AddBlock(std::move(texturing));
+	sourceNode->propertyRefs.AddBlockRef(texturingId);
+
+	NifFile destination;
+	destination.Create(version);
+	for (uint32_t i = 0; i < texturingId; ++i)
+		destination.AddNode("Existing node " + std::to_string(i), MatTransform());
+	auto clonedId = destination.CloneNamedNode(sourceNode->name.get(), &source);
+	auto clonedNode = destination.GetHeader().GetBlock<NiNode>(clonedId);
+	REQUIRE(clonedNode);
+	destination.GetRootNode()->childRefs.AddBlockRef(clonedId);
+
+	auto checkProperties = [](NifFile& nif, NiNode* node) {
+		REQUIRE(node->propertyRefs.GetSize() == 1);
+		auto texturing = nif.GetHeader().GetBlock<NiTexturingProperty>(node->propertyRefs.GetBlockRef(0));
+		REQUIRE(texturing);
+		REQUIRE(texturing->name.get() == "Node texturing");
+		auto texture = nif.GetHeader().GetBlock<NiSourceTexture>(texturing->baseTex.sourceRef);
+		REQUIRE(texture);
+		REQUIRE(texture->name.get() == "Base texture");
+		REQUIRE(texture->fileName.get() == "textures/original.dds");
+	};
+	checkProperties(destination, clonedNode);
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(destination.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedNode = reloaded.FindBlockByName<NiNode>(sourceNode->name.get());
+	REQUIRE(reloadedNode);
+	checkProperties(reloaded, reloadedNode);
 }
 
 TEST_CASE("Load and save static file (SE)", "[NifFile]") {
