@@ -652,6 +652,11 @@ TEST_CASE("Delete vertices for shape (SF)", "[NifFile]") {
 		// Meshlets and cull data were rebuilt if the mesh had them before
 		REQUIRE(meshData->HasMeshlets() == hadMeshlets);
 		REQUIRE(meshData->meshletList.size() == meshData->cullDataList.size());
+		uint32_t indexOffset = 0;
+		for (const auto& meshlet : meshData->meshletList) {
+			REQUIRE(meshlet.primOffset == indexOffset);
+			indexOffset += (meshlet.primCount * 3 + 3) & ~3u;
+		}
 	}
 }
 

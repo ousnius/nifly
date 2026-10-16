@@ -1837,6 +1837,7 @@ void BSGeometryMeshData::GenerateMeshlets(uint32_t maxVerts, uint32_t maxPrims) 
 
 	uint32_t startTri = 0;			  // first triangle of the meshlet being built
 	uint32_t vertOffsetAccum = 0;	  // running sum of emitted vertCounts (= vertOffset)
+	uint32_t primOffsetAccum = 0;	  // local triangle indices, padded to four per meshlet
 	std::unordered_set<uint16_t> cur; // distinct vertices in the meshlet being built
 
 	auto flush = [&](uint32_t endTri) {
@@ -1847,9 +1848,10 @@ void BSGeometryMeshData::GenerateMeshlets(uint32_t maxVerts, uint32_t maxPrims) 
 		m.vertCount = static_cast<uint32_t>(cur.size());
 		m.vertOffset = vertOffsetAccum;
 		m.primCount = endTri - startTri;
-		m.primOffset = startTri; // primOffset is in TRIANGLE units (matches vanilla SF meshlets)
+		m.primOffset = primOffsetAccum;
 		meshletList.push_back(m);
 		vertOffsetAccum += m.vertCount;
+		primOffsetAccum += (m.primCount * 3 + 3) & ~3u;
 
 		// Per-meshlet AABB over the meshlet's vertices. Stored in metric units (NIF units divided by havokScale), matching how the game decodes positions for culling.
 		Vector3 mn(FLT_MAX, FLT_MAX, FLT_MAX);
