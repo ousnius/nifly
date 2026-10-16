@@ -1149,3 +1149,211 @@ TEST_CASE("Load corrupted file", "[NifFile]") {
 	NifFile nif;
 	REQUIRE_THROWS(nif.Load(fileInput) == 0);
 }
+
+TEST_CASE("BSGeometry skinning is created and resized like BSTriShape (SF)", "[NifFile][StarfieldSkinning]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	shape->SetInternalGeomData(true);
+	auto& data = shape->AddMesh()->meshData;
+	data.version = 2;
+	data.scale = 1.0f;
+	const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+	data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+	data.nVertices = 3;
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	auto findSkinAttach = [](NifFile& file, BSGeometry* geom) -> SkinAttach* {
+		for (auto& extraDataRef : geom->extraDataRefs) {
+			auto skinAttach = file.GetHeader().GetBlock<SkinAttach>(extraDataRef);
+			if (skinAttach)
+				return skinAttach;
+		}
+		return nullptr;
+	};
+
+	REQUIRE_FALSE(shape->IsSkinned());
+	REQUIRE_FALSE(findSkinAttach(nif, shape));
+
+	// An unskinned BSGeometry gets a BSSkinInstance, BSSkinBoneData and an empty SkinAttach block
+	nif.CreateSkinning(shape);
+	REQUIRE(shape->IsSkinned());
+
+	auto& hdr = nif.GetHeader();
+	auto skinInst = hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef());
+	REQUIRE(skinInst);
+	REQUIRE(skinInst->targetRef.index == nif.GetBlockID(nif.GetRootNode()));
+
+	auto boneData = hdr.GetBlock(skinInst->dataRef);
+	REQUIRE(boneData);
+	REQUIRE(boneData->nBones == 0);
+	REQUIRE(boneData->boneXforms.empty());
+
+	auto skinAttach = findSkinAttach(nif, shape);
+	REQUIRE(skinAttach);
+	REQUIRE(skinAttach->bones.empty());
+
+	// Skinning an already skinned shape must not add any blocks
+	const auto numBlocks = hdr.GetNumBlocks();
+	nif.CreateSkinning(shape);
+	REQUIRE(hdr.GetNumBlocks() == numBlocks);
+	REQUIRE(hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef()) == skinInst);
+
+	// Starfield bone refs are all None (bones are bound by SkinAttach names),
+	// but the bone data block still has to grow and shrink with the bone list
+	std::vector<int> boneIDs(3, static_cast<int>(NIF_NPOS));
+	nif.SetShapeBoneIDList(shape, boneIDs);
+	REQUIRE(skinInst->boneRefs.GetSize() == 3);
+	REQUIRE(boneData->nBones == 3);
+	REQUIRE(boneData->boneXforms.size() == 3);
+
+	std::vector<int> fewerBoneIDs(1, static_cast<int>(NIF_NPOS));
+	nif.SetShapeBoneIDList(shape, fewerBoneIDs);
+	REQUIRE(skinInst->boneRefs.GetSize() == 1);
+	REQUIRE(boneData->nBones == 1);
+	REQUIRE(boneData->boneXforms.size() == 1);
+
+	nif.SetShapeBoneIDList(shape, boneIDs);
+	REQUIRE(boneData->nBones == 3);
+	REQUIRE(boneData->boneXforms.size() == 3);
+
+	// With the bone data sized correctly, per-bone transforms can be stored
+	MatTransform xform;
+	xform.translation = Vector3(1.0f, 2.0f, 3.0f);
+	nif.SetShapeTransformSkinToBone(shape, 2, xform);
+	MatTransform readBack;
+	REQUIRE(nif.GetShapeTransformSkinToBone(shape, 2, readBack));
+	REQUIRE(readBack.translation == xform.translation);
+
+	// Setting the bone list by name writes the names to SkinAttach, keeps the bone refs
+	// as None and sizes the bone data to match, so GetShapeBoneList reads them back
+	const std::vector<std::string> boneNames{"COM", "Pelvis", "Spine1"};
+	nif.SetShapeBoneList(shape, boneNames);
+	REQUIRE(skinAttach->bones.size() == 3);
+	for (uint32_t i = 0; i < boneNames.size(); ++i)
+		REQUIRE(skinAttach->bones[i].get() == boneNames[i]);
+	REQUIRE(skinInst->boneRefs.GetSize() == 3);
+	for (auto& boneRef : skinInst->boneRefs)
+		REQUIRE(boneRef.IsEmpty());
+	REQUIRE(boneData->nBones == 3);
+	REQUIRE(boneData->boneXforms.size() == 3);
+	// Same bone count: the transforms set before are preserved
+	REQUIRE(boneData->boneXforms[2].boneTransform.translation == xform.translation);
+
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 3);
+	REQUIRE(readBones == boneNames);
+
+	// Adding a bone grows SkinAttach and the bone data together
+	const std::vector<std::string> moreBoneNames{"COM", "Pelvis", "Spine1", "Spine2"};
+	nif.SetShapeBoneList(shape, moreBoneNames);
+	REQUIRE(skinAttach->bones.size() == 4);
+	REQUIRE(skinAttach->bones[3].get() == "Spine2");
+	REQUIRE(skinInst->boneRefs.GetSize() == 4);
+	REQUIRE(boneData->nBones == 4);
+	REQUIRE(boneData->boneXforms.size() == 4);
+	nif.SetShapeTransformSkinToBone(shape, 3, xform);
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(nif.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+
+	auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Skinned shape");
+	REQUIRE(reloadedShape);
+	REQUIRE(reloadedShape->IsSkinned());
+
+	auto reloadedSkinInst = reloaded.GetHeader().GetBlock<BSSkinInstance>(reloadedShape->SkinInstanceRef());
+	REQUIRE(reloadedSkinInst);
+	REQUIRE(reloadedSkinInst->boneRefs.GetSize() == 4);
+
+	auto reloadedBoneData = reloaded.GetHeader().GetBlock(reloadedSkinInst->dataRef);
+	REQUIRE(reloadedBoneData);
+	REQUIRE(reloadedBoneData->nBones == 4);
+	REQUIRE(reloadedBoneData->boneXforms.size() == 4);
+	REQUIRE(reloadedBoneData->boneXforms[3].boneTransform.translation == xform.translation);
+
+	auto reloadedSkinAttach = findSkinAttach(reloaded, reloadedShape);
+	REQUIRE(reloadedSkinAttach);
+	REQUIRE(reloadedSkinAttach->bones.size() == 4);
+	std::vector<std::string> reloadedBones;
+	REQUIRE(reloaded.GetShapeBoneList(reloadedShape, reloadedBones) == 4);
+	REQUIRE(reloadedBones == moreBoneNames);
+}
+
+TEST_CASE("SetShapeBoneList creates missing SkinAttach and bone data for BSGeometry (SF)", "[NifFile][StarfieldSkinning]") {
+	// Mirrors a loaded file whose shape has a BSSkin::Instance but no bone data and no SkinAttach
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	auto& hdr = nif.GetHeader();
+	auto [skinInstS, skinInst] = make_unique<BSSkinInstance>();
+	shape->SkinInstanceRef()->index = hdr.AddBlock(std::move(skinInstS));
+	shape->SetSkinned(true);
+	REQUIRE_FALSE(hdr.GetBlock(skinInst->dataRef));
+
+	const std::vector<std::string> boneNames{"COM", "Pelvis"};
+	nif.SetShapeBoneList(shape, boneNames);
+
+	auto boneData = hdr.GetBlock(skinInst->dataRef);
+	REQUIRE(boneData);
+	REQUIRE(boneData->nBones == 2);
+	REQUIRE(boneData->boneXforms.size() == 2);
+	REQUIRE(skinInst->boneRefs.GetSize() == 2);
+
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 2);
+	REQUIRE(readBones == boneNames);
+
+	// Unskinned shapes are left alone
+	auto unskinnedBlock = std::make_unique<BSGeometry>();
+	auto unskinned = unskinnedBlock.get();
+	unskinned->name.get() = "Unskinned shape";
+	nif.GetRootNode()->childRefs.AddBlockRef(hdr.AddBlock(std::move(unskinnedBlock)));
+	const auto numBlocks = hdr.GetNumBlocks();
+	nif.SetShapeBoneList(unskinned, boneNames);
+	REQUIRE(hdr.GetNumBlocks() == numBlocks);
+	REQUIRE(unskinned->extraDataRefs.GetSize() == 0);
+}
+
+TEST_CASE("SetShapeBoneList resolves bone names to node refs for BSTriShape", "[NifFile]") {
+	NifFile nif;
+	nif.Create(NiVersion::getFO4());
+	auto block = std::make_unique<BSTriShape>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	MatTransform xform;
+	auto com = nif.AddNode("COM", xform);
+	auto pelvis = nif.AddNode("Pelvis", xform, com);
+	REQUIRE(com);
+	REQUIRE(pelvis);
+
+	nif.CreateSkinning(shape);
+	REQUIRE(shape->IsSkinned());
+
+	nif.SetShapeBoneList(shape, {"COM", "Pelvis", "MissingBone"});
+
+	auto& hdr = nif.GetHeader();
+	auto skinInst = hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef());
+	REQUIRE(skinInst);
+	REQUIRE(skinInst->boneRefs.GetSize() == 3);
+	REQUIRE(skinInst->boneRefs.GetBlockRef(0) == nif.GetBlockID(com));
+	REQUIRE(skinInst->boneRefs.GetBlockRef(1) == nif.GetBlockID(pelvis));
+	REQUIRE(skinInst->boneRefs.GetBlockRef(2) == NIF_NPOS);
+
+	auto boneData = hdr.GetBlock(skinInst->dataRef);
+	REQUIRE(boneData);
+	REQUIRE(boneData->nBones == 3);
+
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 2);
+	REQUIRE(readBones == std::vector<std::string>{"COM", "Pelvis"});
+}

@@ -2544,7 +2544,7 @@ void NifFile::SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList) {
 		return;
 
 	BSSkinBoneData* boneData = nullptr;
-	if (shape->HasType<BSTriShape>()) {
+	if (shape->HasType<BSTriShape>() || shape->HasType<BSGeometry>()) {
 		auto skinForBoneRef = hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef());
 		if (skinForBoneRef)
 			boneData = hdr.GetBlock(skinForBoneRef->dataRef);
@@ -2591,6 +2591,53 @@ void NifFile::SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList) {
 			}
 		}
 	}
+}
+
+void NifFile::SetShapeBoneList(NiShape* shape, const std::vector<std::string>& inList) {
+	if (!shape)
+		return;
+
+	if (!shape->HasType<BSGeometry>()) {
+		std::vector<int> boneIDs;
+		boneIDs.reserve(inList.size());
+		for (auto& boneName : inList) {
+			auto node = FindBlockByName<NiNode>(boneName);
+			boneIDs.push_back(node ? GetBlockID(node) : static_cast<int>(NIF_NPOS));
+		}
+
+		SetShapeBoneIDList(shape, boneIDs);
+		return;
+	}
+
+	// Starfield BSGeometry: the game binds the skin by the bone names in SkinAttach, with one BSSkin::BoneData entry per name. The skin instance bone refs are all None.
+	auto skinInst = hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef());
+	if (!skinInst)
+		return;
+
+	if (!hdr.GetBlock(skinInst->dataRef))
+		skinInst->dataRef.index = hdr.AddBlock(std::make_unique<BSSkinBoneData>());
+
+	std::vector<int> boneIDs(inList.size(), static_cast<int>(NIF_NPOS));
+	SetShapeBoneIDList(shape, boneIDs);
+
+	SkinAttach* skinAttach = nullptr;
+	for (auto& extraDataRef : shape->extraDataRefs) {
+		skinAttach = hdr.GetBlock<SkinAttach>(extraDataRef);
+		if (skinAttach)
+			break;
+	}
+
+	if (!skinAttach) {
+		uint32_t skinAttachId = AssignExtraData(shape, std::make_unique<SkinAttach>());
+		skinAttach = hdr.GetBlock<SkinAttach>(skinAttachId);
+		if (!skinAttach)
+			return;
+	}
+
+	const auto numBones = static_cast<uint32_t>(inList.size());
+	skinAttach->bones.resize(numBones);
+	for (uint32_t i = 0; i < numBones; ++i)
+		skinAttach->bones[i].get() = inList[i];
 }
 
 uint32_t NifFile::GetShapeBoneWeights(NiShape* shape,
@@ -4757,6 +4804,32 @@ void NifFile::CreateSkinning(NiShape* shape) {
 				shape->SkinInstanceRef()->index = skinInstID;
 				shape->SetSkinned(true);
 			}
+		}
+	}
+	else if (shape->HasType<BSGeometry>()) {
+		if (shape->SkinInstanceRef()->IsEmpty()) {
+			auto [newSkinInstS, newSkinInst] = make_unique<BSSkinInstance>();
+			int skinInstID = hdr.AddBlock(std::move(newSkinInstS));
+
+			int boneDataRef = hdr.AddBlock(std::make_unique<BSSkinBoneData>());
+
+			newSkinInst->targetRef.index = GetBlockID(GetRootNode());
+			newSkinInst->dataRef.index = boneDataRef;
+
+			shape->SkinInstanceRef()->index = skinInstID;
+			shape->SetSkinned(true);
+
+			// Starfield binds bones by the names stored in a SkinAttach extra data block instead of by NiNode block refs. Make sure the shape has one to write bone names to.
+			bool hasSkinAttach = false;
+			for (auto& extraDataRef : shape->extraDataRefs) {
+				if (hdr.GetBlock<SkinAttach>(extraDataRef)) {
+					hasSkinAttach = true;
+					break;
+				}
+			}
+
+			if (!hasSkinAttach)
+				AssignExtraData(shape, std::make_unique<SkinAttach>());
 		}
 	}
 
