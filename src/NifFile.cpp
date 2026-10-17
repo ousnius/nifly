@@ -4342,6 +4342,28 @@ void NifFile::DeleteSkinning(NiShape* shape) {
 		}
 	}
 
+	// Starfield BSGeometry binds bones by the names in SkinAttach and keeps the per-vertex weights in its mesh data. Remove both so the shape doesn't keep reporting the old bones.
+	if (auto bsGeom = dynamic_cast<BSGeometry*>(shape)) {
+		for (int i = shape->extraDataRefs.GetSize() - 1; i >= 0; --i) {
+			const uint32_t extraDataId = shape->extraDataRefs.GetBlockRef(i);
+			if (!hdr.GetBlock<SkinAttach>(extraDataId))
+				continue;
+
+			// Detach this shape first and only delete the block when no other shape still binds through it
+			shape->extraDataRefs.RemoveBlockRef(i);
+			if (hdr.GetBlockRefCount(extraDataId, false) == 0)
+				hdr.DeleteBlock(extraDataId);
+		}
+
+		for (uint8_t i = 0; i < bsGeom->MeshCount(); ++i) {
+			auto& meshData = bsGeom->SelectMesh(i)->meshData;
+			meshData.skinWeights.clear();
+			meshData.nTotalWeights = 0;
+			meshData.nWeightsPerVert = 0;
+			bsGeom->ReleaseMesh();
+		}
+	}
+
 	shape->SetSkinned(false);
 
 	NiShader* shader = GetShader(shape);

@@ -1322,6 +1322,143 @@ TEST_CASE("SetShapeBoneList creates missing SkinAttach and bone data for BSGeome
 	REQUIRE(unskinned->extraDataRefs.GetSize() == 0);
 }
 
+TEST_CASE("DeleteSkinning removes SkinAttach and vertex weights of BSGeometry (SF)", "[NifFile][StarfieldSkinning]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	shape->SetInternalGeomData(true);
+	auto& data = shape->AddMesh()->meshData;
+	data.version = 2;
+	data.scale = 1.0f;
+	const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+	data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+	data.nVertices = 3;
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	auto& hdr = nif.GetHeader();
+	const auto numBlocksUnskinned = hdr.GetNumBlocks();
+
+	nif.CreateSkinning(shape);
+	const std::vector<std::string> boneNames{"COM", "Pelvis"};
+	nif.SetShapeBoneList(shape, boneNames);
+	nif.ClearShapeVertWeights(shape->name.get());
+	std::vector<uint8_t> boneIndices{0, 1};
+	std::vector<float> weights{0.75f, 0.25f};
+	nif.SetShapeVertWeights(shape->name.get(), 0, boneIndices, weights);
+	REQUIRE(shape->IsSkinned());
+	REQUIRE(data.skinWeights.size() == 3);
+	REQUIRE(data.nWeightsPerVert == 4);
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 2);
+
+	// Removing the skinning deletes the skin instance, bone data and SkinAttach blocks
+	// and drops the per-vertex weights, so no old bones are reported afterwards
+	nif.DeleteSkinning(shape);
+	REQUIRE_FALSE(shape->IsSkinned());
+	REQUIRE(hdr.GetNumBlocks() == numBlocksUnskinned);
+	REQUIRE(shape->extraDataRefs.GetSize() == 0);
+	REQUIRE(data.skinWeights.empty());
+	REQUIRE(data.nWeightsPerVert == 0);
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 0);
+	REQUIRE(readBones.empty());
+
+	// Other extra data of the shape is kept
+	nif.CreateSkinning(shape);
+	auto lockedNorm = std::make_unique<NiIntegersExtraData>();
+	lockedNorm->name.get() = "LOCKEDNORM";
+	nif.AssignExtraData(shape, std::move(lockedNorm));
+	REQUIRE(shape->extraDataRefs.GetSize() == 2);
+	nif.DeleteSkinning(shape);
+	REQUIRE(shape->extraDataRefs.GetSize() == 1);
+	auto keptExtraData = hdr.GetBlock<NiIntegersExtraData>(shape->extraDataRefs.GetBlockRef(0));
+	REQUIRE(keptExtraData);
+	REQUIRE(keptExtraData->name.get() == "LOCKEDNORM");
+
+	// The unskinned shape survives a save and reload without weights or bones
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(nif.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Skinned shape");
+	REQUIRE(reloadedShape);
+	REQUIRE_FALSE(reloadedShape->IsSkinned());
+	auto reloadedData = dynamic_cast<BSGeometryMeshData*>(reloadedShape->GetGeomData());
+	REQUIRE(reloadedData);
+	REQUIRE(reloadedData->skinWeights.empty());
+	REQUIRE(reloaded.GetShapeBoneList(reloadedShape, readBones) == 0);
+}
+
+TEST_CASE("DeleteSkinning keeps a SkinAttach shared with another BSGeometry (SF)", "[NifFile][StarfieldSkinning]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto& hdr = nif.GetHeader();
+
+	auto addShape = [&](const std::string& name) {
+		auto block = std::make_unique<BSGeometry>();
+		auto shape = block.get();
+		shape->name.get() = name;
+		shape->SetInternalGeomData(true);
+		auto& data = shape->AddMesh()->meshData;
+		data.version = 2;
+		data.scale = 1.0f;
+		const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+		data.Create(hdr.GetVersion(), &vertices, nullptr, nullptr, nullptr);
+		data.nVertices = 3;
+		nif.GetRootNode()->childRefs.AddBlockRef(hdr.AddBlock(std::move(block)));
+		return shape;
+	};
+
+	auto findSkinAttachId = [&](BSGeometry* geom) -> uint32_t {
+		for (auto& extraDataRef : geom->extraDataRefs)
+			if (hdr.GetBlock<SkinAttach>(extraDataRef))
+				return extraDataRef.index;
+		return NIF_NPOS;
+	};
+
+	auto first = addShape("First shape");
+	auto second = addShape("Second shape");
+	const auto numBlocksUnskinned = hdr.GetNumBlocks();
+
+	const std::vector<std::string> boneNames{"COM", "Pelvis"};
+	nif.CreateSkinning(first);
+	nif.SetShapeBoneList(first, boneNames);
+	const uint32_t sharedId = findSkinAttachId(first);
+	REQUIRE(sharedId != NIF_NPOS);
+
+	// Point the second shape at the first shape's SkinAttach instead of its own
+	nif.CreateSkinning(second);
+	const uint32_t ownId = findSkinAttachId(second);
+	REQUIRE(ownId != NIF_NPOS);
+	second->extraDataRefs.RemoveBlockRef(0);
+	hdr.DeleteBlock(ownId);
+	second->extraDataRefs.AddBlockRef(findSkinAttachId(first));
+	nif.SetShapeBoneList(second, boneNames);
+	REQUIRE(findSkinAttachId(second) == findSkinAttachId(first));
+	REQUIRE(hdr.GetBlockRefCount(findSkinAttachId(first), false) == 2);
+
+	// Unskinning the first shape detaches it but leaves the shared block for the second shape
+	nif.DeleteSkinning(first);
+	REQUIRE_FALSE(first->IsSkinned());
+	REQUIRE(first->extraDataRefs.GetSize() == 0);
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(first, readBones) == 0);
+
+	REQUIRE(second->IsSkinned());
+	REQUIRE(findSkinAttachId(second) != NIF_NPOS);
+	REQUIRE(hdr.GetBlockRefCount(findSkinAttachId(second), false) == 1);
+	REQUIRE(nif.GetShapeBoneList(second, readBones) == 2);
+	REQUIRE(readBones == boneNames);
+
+	// Unskinning the last user deletes the block
+	nif.DeleteSkinning(second);
+	REQUIRE_FALSE(second->IsSkinned());
+	REQUIRE(second->extraDataRefs.GetSize() == 0);
+	REQUIRE(nif.GetShapeBoneList(second, readBones) == 0);
+	REQUIRE(hdr.GetNumBlocks() == numBlocksUnskinned);
+}
+
 TEST_CASE("SetShapeBoneList resolves bone names to node refs for BSTriShape", "[NifFile]") {
 	NifFile nif;
 	nif.Create(NiVersion::getFO4());
