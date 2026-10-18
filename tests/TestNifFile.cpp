@@ -1,7 +1,9 @@
 #include "TestNifFile.hpp"
 #include "TestUtil.hpp"
 
+#include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <NifFile.hpp>
 #include <NifUtil.hpp>
@@ -51,6 +53,161 @@ TEST_CASE("Load not existing file", "[NifFile]") {
 
 	NifFile nif;
 	REQUIRE(nif.Load(fileName) != 0);
+}
+
+TEST_CASE("Clone named node preserves independent extra data", "[NifFile][CloneNamedNode]") {
+	NifFile source;
+	source.Create(NiVersion::getSF());
+	auto sourceNode = source.AddNode("Node with extra data", MatTransform());
+	REQUIRE(sourceNode);
+
+	auto stringData = std::make_unique<NiStringExtraData>();
+	stringData->name.get() = "Node metadata";
+	stringData->stringData.get() = "Original value";
+	auto stringId = source.AssignExtraData(sourceNode, std::move(stringData));
+	auto integerData = std::make_unique<NiIntegerExtraData>();
+	integerData->name.get() = "Node flags";
+	integerData->integerData = 42;
+	source.AssignExtraData(sourceNode, std::move(integerData));
+	source.AddNode("Child node", MatTransform(), sourceNode);
+
+	NifFile destination;
+	destination.Create(NiVersion::getSF());
+	NifFile* target = nullptr;
+	SECTION("Between files with conflicting block indices") {
+		destination.AddNode("Existing node", MatTransform());
+		// A stale source index would point to a shader instead of extra data.
+		auto shaderId = destination.GetHeader().AddBlock(std::make_unique<BSLightingShaderProperty>());
+		REQUIRE(shaderId == stringId);
+		target = &destination;
+	}
+	SECTION("Within the same file") {
+		target = &source;
+	}
+	REQUIRE(target);
+
+	auto clonedId = target->CloneNamedNode(sourceNode->name.get(), &source);
+	auto clonedNode = target->GetHeader().GetBlock<NiNode>(clonedId);
+	REQUIRE(clonedNode);
+	clonedNode->name.get() = "Cloned node";
+	target->GetRootNode()->childRefs.AddBlockRef(clonedId);
+	REQUIRE(clonedNode->childRefs.GetSize() == 0);
+	REQUIRE(sourceNode->childRefs.GetSize() == 1);
+	REQUIRE(clonedNode->extraDataRefs.GetSize() == 2);
+
+	auto clonedString = target->GetHeader().GetBlock<NiStringExtraData>(clonedNode->extraDataRefs.GetBlockRef(0));
+	REQUIRE(clonedString);
+	REQUIRE(clonedString->stringData.get() == "Original value");
+	clonedString->stringData.get() = "Cloned value";
+	REQUIRE(source.GetHeader().GetBlock<NiStringExtraData>(stringId)->stringData.get() == "Original value");
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(target->Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedNode = reloaded.FindBlockByName<NiNode>("Cloned node");
+	REQUIRE(reloadedNode);
+	REQUIRE(reloadedNode->extraDataRefs.GetSize() == 2);
+	auto reloadedString = reloaded.GetHeader().GetBlock<NiStringExtraData>(reloadedNode->extraDataRefs.GetBlockRef(0));
+	auto reloadedInteger = reloaded.GetHeader().GetBlock<NiIntegerExtraData>(reloadedNode->extraDataRefs.GetBlockRef(1));
+	REQUIRE(reloadedString);
+	REQUIRE(reloadedInteger);
+	REQUIRE(reloadedString->name.get() == "Node metadata");
+	REQUIRE(reloadedString->stringData.get() == "Cloned value");
+	REQUIRE(reloadedInteger->name.get() == "Node flags");
+	REQUIRE(reloadedInteger->integerData == 42);
+}
+
+TEST_CASE("Clone named node preserves legacy extra-data chains", "[NifFile][CloneNamedNode]") {
+	NifFile source;
+	source.Create(NiVersion::getMW());
+	auto sourceNode = source.AddNode("Node with legacy extra data", MatTransform());
+	REQUIRE(sourceNode);
+	// AssignExtraData inserts at the head of the legacy linked list.
+	for (const char* value : {"Tail", "Middle", "Head"}) {
+		auto data = std::make_unique<NiStringExtraData>();
+		data->stringData.get() = value;
+		data->numBytes = static_cast<uint32_t>(sizeof(uint32_t) + data->stringData.get().size());
+		source.AssignExtraData(sourceNode, std::move(data));
+	}
+	const uint32_t sourceHead = sourceNode->extraDataRef.index;
+
+	NifFile destination;
+	destination.Create(NiVersion::getMW());
+	// Occupy every source data index with an incompatible block type.
+	for (uint32_t i = 0; i < sourceHead; ++i)
+		destination.AddNode("Existing node " + std::to_string(i), MatTransform());
+	auto clonedId = destination.CloneNamedNode(sourceNode->name.get(), &source);
+	auto clonedNode = destination.GetHeader().GetBlock<NiNode>(clonedId);
+	REQUIRE(clonedNode);
+	REQUIRE(destination.GetHeader().GetBlock<NiStringExtraData>(clonedNode->extraDataRef));
+	destination.GetRootNode()->childRefs.AddBlockRef(clonedId);
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(destination.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedNode = reloaded.FindBlockByName<NiNode>(sourceNode->name.get());
+	REQUIRE(reloadedNode);
+	uint32_t next = reloadedNode->extraDataRef.index;
+	for (const char* value : {"Head", "Middle", "Tail"}) {
+		auto data = reloaded.GetHeader().GetBlock<NiStringExtraData>(next);
+		REQUIRE(data);
+		REQUIRE(data->stringData.get() == value);
+		next = data->nextExtraDataRef.index;
+	}
+	REQUIRE(next == NIF_NPOS);
+}
+
+TEST_CASE("Clone named node preserves properties and their texture references", "[NifFile][CloneNamedNode]") {
+	// Exercise both inline strings and the newer string table with legacy properties.
+	const auto version = GENERATE(NiVersion::getMW(), NiVersion::getFO3());
+	INFO(version.GetVersionInfo());
+
+	NifFile source;
+	source.Create(version);
+	auto sourceNode = source.AddNode("Node with properties", MatTransform());
+	REQUIRE(sourceNode);
+
+	auto texture = std::make_unique<NiSourceTexture>();
+	texture->name.get() = "Base texture";
+	texture->fileName.get() = "textures/original.dds";
+	const auto textureId = source.GetHeader().AddBlock(std::move(texture));
+	auto texturing = std::make_unique<NiTexturingProperty>();
+	texturing->name.get() = "Node texturing";
+	texturing->hasBaseTex = true;
+	texturing->baseTex.sourceRef.index = textureId;
+	const auto texturingId = source.GetHeader().AddBlock(std::move(texturing));
+	sourceNode->propertyRefs.AddBlockRef(texturingId);
+
+	NifFile destination;
+	destination.Create(version);
+	for (uint32_t i = 0; i < texturingId; ++i)
+		destination.AddNode("Existing node " + std::to_string(i), MatTransform());
+	auto clonedId = destination.CloneNamedNode(sourceNode->name.get(), &source);
+	auto clonedNode = destination.GetHeader().GetBlock<NiNode>(clonedId);
+	REQUIRE(clonedNode);
+	destination.GetRootNode()->childRefs.AddBlockRef(clonedId);
+
+	auto checkProperties = [](NifFile& nif, NiNode* node) {
+		REQUIRE(node->propertyRefs.GetSize() == 1);
+		auto texturing = nif.GetHeader().GetBlock<NiTexturingProperty>(node->propertyRefs.GetBlockRef(0));
+		REQUIRE(texturing);
+		REQUIRE(texturing->name.get() == "Node texturing");
+		auto texture = nif.GetHeader().GetBlock<NiSourceTexture>(texturing->baseTex.sourceRef);
+		REQUIRE(texture);
+		REQUIRE(texture->name.get() == "Base texture");
+		REQUIRE(texture->fileName.get() == "textures/original.dds");
+	};
+	checkProperties(destination, clonedNode);
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(destination.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedNode = reloaded.FindBlockByName<NiNode>(sourceNode->name.get());
+	REQUIRE(reloadedNode);
+	checkProperties(reloaded, reloadedNode);
 }
 
 TEST_CASE("Load and save static file (SE)", "[NifFile]") {
@@ -495,7 +652,73 @@ TEST_CASE("Delete vertices for shape (SF)", "[NifFile]") {
 		// Meshlets and cull data were rebuilt if the mesh had them before
 		REQUIRE(meshData->HasMeshlets() == hadMeshlets);
 		REQUIRE(meshData->meshletList.size() == meshData->cullDataList.size());
+		uint32_t indexOffset = 0;
+		for (const auto& meshlet : meshData->meshletList) {
+			REQUIRE(meshlet.primOffset == indexOffset);
+			indexOffset += (meshlet.primCount * 3 + 3) & ~3u;
+		}
 	}
+}
+
+TEST_CASE("Starfield vertex colors follow editor topology changes", "[NifFile][StarfieldColors]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Colored shape";
+	shape->SetInternalGeomData(true);
+	auto& data = shape->AddMesh()->meshData;
+	data.version = 2;
+	data.scale = 1.0f;
+	const std::vector<Vector3> originalVertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}};
+	data.Create(nif.GetHeader().GetVersion(), &originalVertices, nullptr, nullptr, nullptr);
+	data.nVertices = 4;
+	data.vColors = {{10, 20, 30, 40}, {50, 60, 70, 80}, {90, 100, 110, 120}, {130, 140, 150, 160}};
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+	const auto originalColors = data.vColors;
+
+	// Outfit Studio edits copies of the attribute arrays, then writes them back.
+	auto colorPtr = nif.GetColorsForShape(shape);
+	REQUIRE(colorPtr);
+	REQUIRE(colorPtr->size() == 4);
+	const auto colors = *colorPtr;
+	std::vector<Color4> copiedColors;
+	REQUIRE(nif.GetColorsForShape(shape, copiedColors));
+	REQUIRE(copiedColors.size() == colors.size());
+	REQUIRE(copiedColors[2] == colors[2]);
+
+	SECTION("Delete an interior vertex") {
+		auto vertices = originalVertices;
+		vertices.erase(vertices.begin() + 1);
+		auto editedColors = colors;
+		editedColors.erase(editedColors.begin() + 1);
+		nif.SetVertsForShape(shape, vertices);
+		nif.SetColorsForShape(shape, editedColors);
+		REQUIRE(data.vColors.size() == 3);
+		REQUIRE(data.vColors[1] == originalColors[2]);
+	}
+	SECTION("Undo restores the original colors") {
+		nif.SetVertsForShape(shape, {originalVertices[0], originalVertices[2], originalVertices[3]});
+		nif.SetColorsForShape(shape, {colors[0], colors[2], colors[3]});
+		nif.SetVertsForShape(shape, originalVertices);
+		nif.SetColorsForShape(shape, colors);
+		REQUIRE(data.vColors.size() == originalColors.size());
+		for (size_t i = 0; i < originalColors.size(); ++i)
+			REQUIRE(data.vColors[i] == originalColors[i]);
+	}
+
+	const auto expectedColors = data.vColors;
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(nif.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Colored shape");
+	REQUIRE(reloadedShape);
+	auto reloadedData = dynamic_cast<BSGeometryMeshData*>(reloadedShape->GetGeomData());
+	REQUIRE(reloadedData);
+	REQUIRE(reloadedData->vColors.size() == reloadedData->vertices.size());
+	for (size_t i = 0; i < expectedColors.size(); ++i)
+		REQUIRE(reloadedData->vColors[i] == expectedColors[i]);
 }
 
 TEST_CASE("Load external and save as internal mesh data (SF)", "[NifFile]") {
@@ -925,4 +1148,349 @@ TEST_CASE("Load corrupted file", "[NifFile]") {
 
 	NifFile nif;
 	REQUIRE_THROWS(nif.Load(fileInput) == 0);
+}
+
+TEST_CASE("BSGeometry skinning is created and resized like BSTriShape (SF)", "[NifFile][StarfieldSkinning]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	shape->SetInternalGeomData(true);
+	auto& data = shape->AddMesh()->meshData;
+	data.version = 2;
+	data.scale = 1.0f;
+	const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+	data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+	data.nVertices = 3;
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	auto findSkinAttach = [](NifFile& file, BSGeometry* geom) -> SkinAttach* {
+		for (auto& extraDataRef : geom->extraDataRefs) {
+			auto skinAttach = file.GetHeader().GetBlock<SkinAttach>(extraDataRef);
+			if (skinAttach)
+				return skinAttach;
+		}
+		return nullptr;
+	};
+
+	REQUIRE_FALSE(shape->IsSkinned());
+	REQUIRE_FALSE(findSkinAttach(nif, shape));
+
+	// An unskinned BSGeometry gets a BSSkinInstance, BSSkinBoneData and an empty SkinAttach block
+	nif.CreateSkinning(shape);
+	REQUIRE(shape->IsSkinned());
+
+	auto& hdr = nif.GetHeader();
+	auto skinInst = hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef());
+	REQUIRE(skinInst);
+	REQUIRE(skinInst->targetRef.index == nif.GetBlockID(nif.GetRootNode()));
+
+	auto boneData = hdr.GetBlock(skinInst->dataRef);
+	REQUIRE(boneData);
+	REQUIRE(boneData->nBones == 0);
+	REQUIRE(boneData->boneXforms.empty());
+
+	auto skinAttach = findSkinAttach(nif, shape);
+	REQUIRE(skinAttach);
+	REQUIRE(skinAttach->bones.empty());
+
+	// Skinning an already skinned shape must not add any blocks
+	const auto numBlocks = hdr.GetNumBlocks();
+	nif.CreateSkinning(shape);
+	REQUIRE(hdr.GetNumBlocks() == numBlocks);
+	REQUIRE(hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef()) == skinInst);
+
+	// Starfield bone refs are all None (bones are bound by SkinAttach names),
+	// but the bone data block still has to grow and shrink with the bone list
+	std::vector<int> boneIDs(3, static_cast<int>(NIF_NPOS));
+	nif.SetShapeBoneIDList(shape, boneIDs);
+	REQUIRE(skinInst->boneRefs.GetSize() == 3);
+	REQUIRE(boneData->nBones == 3);
+	REQUIRE(boneData->boneXforms.size() == 3);
+
+	std::vector<int> fewerBoneIDs(1, static_cast<int>(NIF_NPOS));
+	nif.SetShapeBoneIDList(shape, fewerBoneIDs);
+	REQUIRE(skinInst->boneRefs.GetSize() == 1);
+	REQUIRE(boneData->nBones == 1);
+	REQUIRE(boneData->boneXforms.size() == 1);
+
+	nif.SetShapeBoneIDList(shape, boneIDs);
+	REQUIRE(boneData->nBones == 3);
+	REQUIRE(boneData->boneXforms.size() == 3);
+
+	// With the bone data sized correctly, per-bone transforms can be stored
+	MatTransform xform;
+	xform.translation = Vector3(1.0f, 2.0f, 3.0f);
+	nif.SetShapeTransformSkinToBone(shape, 2, xform);
+	MatTransform readBack;
+	REQUIRE(nif.GetShapeTransformSkinToBone(shape, 2, readBack));
+	REQUIRE(readBack.translation == xform.translation);
+
+	// Setting the bone list by name writes the names to SkinAttach, keeps the bone refs
+	// as None and sizes the bone data to match, so GetShapeBoneList reads them back
+	const std::vector<std::string> boneNames{"COM", "Pelvis", "Spine1"};
+	nif.SetShapeBoneList(shape, boneNames);
+	REQUIRE(skinAttach->bones.size() == 3);
+	for (uint32_t i = 0; i < boneNames.size(); ++i)
+		REQUIRE(skinAttach->bones[i].get() == boneNames[i]);
+	REQUIRE(skinInst->boneRefs.GetSize() == 3);
+	for (auto& boneRef : skinInst->boneRefs)
+		REQUIRE(boneRef.IsEmpty());
+	REQUIRE(boneData->nBones == 3);
+	REQUIRE(boneData->boneXforms.size() == 3);
+	// Same bone count: the transforms set before are preserved
+	REQUIRE(boneData->boneXforms[2].boneTransform.translation == xform.translation);
+
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 3);
+	REQUIRE(readBones == boneNames);
+
+	// Adding a bone grows SkinAttach and the bone data together
+	const std::vector<std::string> moreBoneNames{"COM", "Pelvis", "Spine1", "Spine2"};
+	nif.SetShapeBoneList(shape, moreBoneNames);
+	REQUIRE(skinAttach->bones.size() == 4);
+	REQUIRE(skinAttach->bones[3].get() == "Spine2");
+	REQUIRE(skinInst->boneRefs.GetSize() == 4);
+	REQUIRE(boneData->nBones == 4);
+	REQUIRE(boneData->boneXforms.size() == 4);
+	nif.SetShapeTransformSkinToBone(shape, 3, xform);
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(nif.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+
+	auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Skinned shape");
+	REQUIRE(reloadedShape);
+	REQUIRE(reloadedShape->IsSkinned());
+
+	auto reloadedSkinInst = reloaded.GetHeader().GetBlock<BSSkinInstance>(reloadedShape->SkinInstanceRef());
+	REQUIRE(reloadedSkinInst);
+	REQUIRE(reloadedSkinInst->boneRefs.GetSize() == 4);
+
+	auto reloadedBoneData = reloaded.GetHeader().GetBlock(reloadedSkinInst->dataRef);
+	REQUIRE(reloadedBoneData);
+	REQUIRE(reloadedBoneData->nBones == 4);
+	REQUIRE(reloadedBoneData->boneXforms.size() == 4);
+	REQUIRE(reloadedBoneData->boneXforms[3].boneTransform.translation == xform.translation);
+
+	auto reloadedSkinAttach = findSkinAttach(reloaded, reloadedShape);
+	REQUIRE(reloadedSkinAttach);
+	REQUIRE(reloadedSkinAttach->bones.size() == 4);
+	std::vector<std::string> reloadedBones;
+	REQUIRE(reloaded.GetShapeBoneList(reloadedShape, reloadedBones) == 4);
+	REQUIRE(reloadedBones == moreBoneNames);
+}
+
+TEST_CASE("SetShapeBoneList creates missing SkinAttach and bone data for BSGeometry (SF)", "[NifFile][StarfieldSkinning]") {
+	// Mirrors a loaded file whose shape has a BSSkin::Instance but no bone data and no SkinAttach
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	auto& hdr = nif.GetHeader();
+	auto [skinInstS, skinInst] = make_unique<BSSkinInstance>();
+	shape->SkinInstanceRef()->index = hdr.AddBlock(std::move(skinInstS));
+	shape->SetSkinned(true);
+	REQUIRE_FALSE(hdr.GetBlock(skinInst->dataRef));
+
+	const std::vector<std::string> boneNames{"COM", "Pelvis"};
+	nif.SetShapeBoneList(shape, boneNames);
+
+	auto boneData = hdr.GetBlock(skinInst->dataRef);
+	REQUIRE(boneData);
+	REQUIRE(boneData->nBones == 2);
+	REQUIRE(boneData->boneXforms.size() == 2);
+	REQUIRE(skinInst->boneRefs.GetSize() == 2);
+
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 2);
+	REQUIRE(readBones == boneNames);
+
+	// Unskinned shapes are left alone
+	auto unskinnedBlock = std::make_unique<BSGeometry>();
+	auto unskinned = unskinnedBlock.get();
+	unskinned->name.get() = "Unskinned shape";
+	nif.GetRootNode()->childRefs.AddBlockRef(hdr.AddBlock(std::move(unskinnedBlock)));
+	const auto numBlocks = hdr.GetNumBlocks();
+	nif.SetShapeBoneList(unskinned, boneNames);
+	REQUIRE(hdr.GetNumBlocks() == numBlocks);
+	REQUIRE(unskinned->extraDataRefs.GetSize() == 0);
+}
+
+TEST_CASE("DeleteSkinning removes SkinAttach and vertex weights of BSGeometry (SF)", "[NifFile][StarfieldSkinning]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	shape->SetInternalGeomData(true);
+	auto& data = shape->AddMesh()->meshData;
+	data.version = 2;
+	data.scale = 1.0f;
+	const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+	data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+	data.nVertices = 3;
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	auto& hdr = nif.GetHeader();
+	const auto numBlocksUnskinned = hdr.GetNumBlocks();
+
+	nif.CreateSkinning(shape);
+	const std::vector<std::string> boneNames{"COM", "Pelvis"};
+	nif.SetShapeBoneList(shape, boneNames);
+	nif.ClearShapeVertWeights(shape->name.get());
+	std::vector<uint8_t> boneIndices{0, 1};
+	std::vector<float> weights{0.75f, 0.25f};
+	nif.SetShapeVertWeights(shape->name.get(), 0, boneIndices, weights);
+	REQUIRE(shape->IsSkinned());
+	REQUIRE(data.skinWeights.size() == 3);
+	REQUIRE(data.nWeightsPerVert == 4);
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 2);
+
+	// Removing the skinning deletes the skin instance, bone data and SkinAttach blocks
+	// and drops the per-vertex weights, so no old bones are reported afterwards
+	nif.DeleteSkinning(shape);
+	REQUIRE_FALSE(shape->IsSkinned());
+	REQUIRE(hdr.GetNumBlocks() == numBlocksUnskinned);
+	REQUIRE(shape->extraDataRefs.GetSize() == 0);
+	REQUIRE(data.skinWeights.empty());
+	REQUIRE(data.nWeightsPerVert == 0);
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 0);
+	REQUIRE(readBones.empty());
+
+	// Other extra data of the shape is kept
+	nif.CreateSkinning(shape);
+	auto lockedNorm = std::make_unique<NiIntegersExtraData>();
+	lockedNorm->name.get() = "LOCKEDNORM";
+	nif.AssignExtraData(shape, std::move(lockedNorm));
+	REQUIRE(shape->extraDataRefs.GetSize() == 2);
+	nif.DeleteSkinning(shape);
+	REQUIRE(shape->extraDataRefs.GetSize() == 1);
+	auto keptExtraData = hdr.GetBlock<NiIntegersExtraData>(shape->extraDataRefs.GetBlockRef(0));
+	REQUIRE(keptExtraData);
+	REQUIRE(keptExtraData->name.get() == "LOCKEDNORM");
+
+	// The unskinned shape survives a save and reload without weights or bones
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(nif.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Skinned shape");
+	REQUIRE(reloadedShape);
+	REQUIRE_FALSE(reloadedShape->IsSkinned());
+	auto reloadedData = dynamic_cast<BSGeometryMeshData*>(reloadedShape->GetGeomData());
+	REQUIRE(reloadedData);
+	REQUIRE(reloadedData->skinWeights.empty());
+	REQUIRE(reloaded.GetShapeBoneList(reloadedShape, readBones) == 0);
+}
+
+TEST_CASE("DeleteSkinning keeps a SkinAttach shared with another BSGeometry (SF)", "[NifFile][StarfieldSkinning]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto& hdr = nif.GetHeader();
+
+	auto addShape = [&](const std::string& name) {
+		auto block = std::make_unique<BSGeometry>();
+		auto shape = block.get();
+		shape->name.get() = name;
+		shape->SetInternalGeomData(true);
+		auto& data = shape->AddMesh()->meshData;
+		data.version = 2;
+		data.scale = 1.0f;
+		const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+		data.Create(hdr.GetVersion(), &vertices, nullptr, nullptr, nullptr);
+		data.nVertices = 3;
+		nif.GetRootNode()->childRefs.AddBlockRef(hdr.AddBlock(std::move(block)));
+		return shape;
+	};
+
+	auto findSkinAttachId = [&](BSGeometry* geom) -> uint32_t {
+		for (auto& extraDataRef : geom->extraDataRefs)
+			if (hdr.GetBlock<SkinAttach>(extraDataRef))
+				return extraDataRef.index;
+		return NIF_NPOS;
+	};
+
+	auto first = addShape("First shape");
+	auto second = addShape("Second shape");
+	const auto numBlocksUnskinned = hdr.GetNumBlocks();
+
+	const std::vector<std::string> boneNames{"COM", "Pelvis"};
+	nif.CreateSkinning(first);
+	nif.SetShapeBoneList(first, boneNames);
+	const uint32_t sharedId = findSkinAttachId(first);
+	REQUIRE(sharedId != NIF_NPOS);
+
+	// Point the second shape at the first shape's SkinAttach instead of its own
+	nif.CreateSkinning(second);
+	const uint32_t ownId = findSkinAttachId(second);
+	REQUIRE(ownId != NIF_NPOS);
+	second->extraDataRefs.RemoveBlockRef(0);
+	hdr.DeleteBlock(ownId);
+	second->extraDataRefs.AddBlockRef(findSkinAttachId(first));
+	nif.SetShapeBoneList(second, boneNames);
+	REQUIRE(findSkinAttachId(second) == findSkinAttachId(first));
+	REQUIRE(hdr.GetBlockRefCount(findSkinAttachId(first), false) == 2);
+
+	// Unskinning the first shape detaches it but leaves the shared block for the second shape
+	nif.DeleteSkinning(first);
+	REQUIRE_FALSE(first->IsSkinned());
+	REQUIRE(first->extraDataRefs.GetSize() == 0);
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(first, readBones) == 0);
+
+	REQUIRE(second->IsSkinned());
+	REQUIRE(findSkinAttachId(second) != NIF_NPOS);
+	REQUIRE(hdr.GetBlockRefCount(findSkinAttachId(second), false) == 1);
+	REQUIRE(nif.GetShapeBoneList(second, readBones) == 2);
+	REQUIRE(readBones == boneNames);
+
+	// Unskinning the last user deletes the block
+	nif.DeleteSkinning(second);
+	REQUIRE_FALSE(second->IsSkinned());
+	REQUIRE(second->extraDataRefs.GetSize() == 0);
+	REQUIRE(nif.GetShapeBoneList(second, readBones) == 0);
+	REQUIRE(hdr.GetNumBlocks() == numBlocksUnskinned);
+}
+
+TEST_CASE("SetShapeBoneList resolves bone names to node refs for BSTriShape", "[NifFile]") {
+	NifFile nif;
+	nif.Create(NiVersion::getFO4());
+	auto block = std::make_unique<BSTriShape>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	MatTransform xform;
+	auto com = nif.AddNode("COM", xform);
+	auto pelvis = nif.AddNode("Pelvis", xform, com);
+	REQUIRE(com);
+	REQUIRE(pelvis);
+
+	nif.CreateSkinning(shape);
+	REQUIRE(shape->IsSkinned());
+
+	nif.SetShapeBoneList(shape, {"COM", "Pelvis", "MissingBone"});
+
+	auto& hdr = nif.GetHeader();
+	auto skinInst = hdr.GetBlock<BSSkinInstance>(shape->SkinInstanceRef());
+	REQUIRE(skinInst);
+	REQUIRE(skinInst->boneRefs.GetSize() == 3);
+	REQUIRE(skinInst->boneRefs.GetBlockRef(0) == nif.GetBlockID(com));
+	REQUIRE(skinInst->boneRefs.GetBlockRef(1) == nif.GetBlockID(pelvis));
+	REQUIRE(skinInst->boneRefs.GetBlockRef(2) == NIF_NPOS);
+
+	auto boneData = hdr.GetBlock(skinInst->dataRef);
+	REQUIRE(boneData);
+	REQUIRE(boneData->nBones == 3);
+
+	std::vector<std::string> readBones;
+	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 2);
+	REQUIRE(readBones == std::vector<std::string>{"COM", "Pelvis"});
 }

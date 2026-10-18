@@ -379,6 +379,11 @@ public:
 	// Resets bone transforms in BSSkin::BoneData if the bone count changed.
 	void SetShapeBoneIDList(NiShape* shape, std::vector<int>& inList);
 
+	// Sets the bone list of the shape's skin instance by bone (node) name.
+	// For Starfield BSGeometry, bones are bound by the names in the shape's SkinAttach extra data, so names written there and BSSkin::BoneData is sized to match.
+	// For all other shapes, the names are resolved to node block indices (None if missing) and passed to SetShapeBoneIDList.
+	void SetShapeBoneList(NiShape* shape, const std::vector<std::string>& inList);
+
 	// Gets a map of vertex indices to bone weights for the specified shape and bone.
 	// Data source is either BSTriShape (if existing) or otherwise NiSkinData.
 	// Returns the amount of vertices with non-zero weights.
