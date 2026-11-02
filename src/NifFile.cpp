@@ -1451,8 +1451,14 @@ NiShape* NifFile::CloneShape(NiShape* srcShape, const std::string& destShapeName
 		}
 	}
 
+	// Starfield BSGeometry binds its bones by the names in SkinAttach and keeps all bone refs None.
+	// Linking same-named nodes would make GetShapeBoneList report only those bones.
+	if (destBoneCont && destShape->HasType<BSGeometry>()) {
+		for (size_t i = 0; i < srcBoneList.size(); i++)
+			destBoneCont->boneRefs.AddBlockRef(NIF_NPOS);
+	}
 	// Add bones to container if used in skin
-	if (destBoneCont) {
+	else if (destBoneCont) {
 		for (auto& boneName : srcBoneList) {
 			auto node = FindBlockByName<NiNode>(boneName);
 			int boneID = GetBlockID(node);
@@ -2498,6 +2504,26 @@ uint32_t NifFile::GetShapeBoneList(NiShape* shape, std::vector<std::string>& out
 	if (!shape)
 		return 0;
 
+	// SF NIFs store bone names in SkinAttach extra data instead of NiNode refs
+	auto getSkinAttachBones = [&]() {
+		for (auto& extraDataRef : shape->extraDataRefs) {
+			auto skinAttach = hdr.GetBlock<SkinAttach>(extraDataRef);
+			if (skinAttach) {
+				for (auto& bone : skinAttach->bones)
+					outList.push_back(bone.get());
+				break;
+			}
+		}
+	};
+
+	// Starfield BSGeometry binds by the SkinAttach names. A ref to a node that only
+	// shares a bone's name must not hide the other bones.
+	if (shape->HasType<BSGeometry>()) {
+		getSkinAttachBones();
+		if (!outList.empty())
+			return static_cast<uint32_t>(outList.size());
+	}
+
 	auto skinInst = hdr.GetBlock<NiBoneContainer>(shape->SkinInstanceRef());
 	if (skinInst) {
 		for (auto& bone : skinInst->boneRefs) {
@@ -2507,17 +2533,8 @@ uint32_t NifFile::GetShapeBoneList(NiShape* shape, std::vector<std::string>& out
 		}
 	}
 
-	// SF NIFs store bone names in SkinAttach extra data instead of NiNode refs
-	if (outList.empty()) {
-		for (auto& extraDataRef : shape->extraDataRefs) {
-			auto skinAttach = hdr.GetBlock<SkinAttach>(extraDataRef);
-			if (skinAttach) {
-				for (auto& bone : skinAttach->bones)
-					outList.push_back(bone.get());
-				break;
-			}
-		}
-	}
+	if (outList.empty())
+		getSkinAttachBones();
 
 	return static_cast<uint32_t>(outList.size());
 }
