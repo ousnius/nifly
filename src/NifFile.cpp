@@ -3017,18 +3017,19 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 
 		uint32_t wpv = geomData->nWeightsPerVert ? geomData->nWeightsPerVert : 4;
 
-		float sum = 0.0f;
-		for(auto weight : weights) {
-			sum += weight;
-		}
-		if(sum <= 0.f) {
-			sum = 1.f;
-		}
-
 		auto& vw = geomData->skinWeights[vertIndex];
 		vw.assign(wpv, BSGeometryMeshData::BoneWeight{});
 		uint32_t num = std::min<uint32_t>(static_cast<uint32_t>(weights.size()), wpv);
 		num = std::min(num, static_cast<uint32_t>(boneids.size()));
+
+		// Normalize the kept weights so they still add up to 1 when weaker ones are dropped
+		float sum = 0.0f;
+		for (uint32_t i = 0; i < num; i++)
+			sum += weights[i];
+
+		if (sum <= 0.0f)
+			sum = 1.0f;
+
 		for(uint32_t i = 0; i< num; i++) {
 			vw[i].boneIndex = boneids[i];
 			vw[i].weight = static_cast<uint16_t>(std::lround((weights[i] / sum) * 65535.0f));
@@ -3048,16 +3049,16 @@ void NifFile::SetShapeVertWeights(const std::string& shapeName,
 	std::memset(vertex.weights, 0, sizeof(float) * 4);
 	std::memset(vertex.weightBones, 0, sizeof(uint8_t) * 4);
 
-	// Sum weights to normalize values
+	uint32_t num = (weights.size() < 4 ? static_cast<uint32_t>(weights.size()) : 4);
+	num = std::min(num, static_cast<uint32_t>(boneids.size()));
+
+	// Normalize the kept weights so they still add up to 1 when weaker ones are dropped
 	float sum = 0.0f;
-	for (auto weight : weights)
-		sum += weight;
+	for (uint32_t i = 0; i < num; i++)
+		sum += weights[i];
 
 	if (sum <= 0.0f)
 		sum = 1.0f;
-
-	uint32_t num = (weights.size() < 4 ? static_cast<uint32_t>(weights.size()) : 4);
-	num = std::min(num, static_cast<uint32_t>(boneids.size()));
 
 	for (uint32_t i = 0; i < num; i++) {
 		vertex.weightBones[i] = boneids[i];

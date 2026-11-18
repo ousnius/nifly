@@ -1494,3 +1494,73 @@ TEST_CASE("SetShapeBoneList resolves bone names to node refs for BSTriShape", "[
 	REQUIRE(nif.GetShapeBoneList(shape, readBones) == 2);
 	REQUIRE(readBones == std::vector<std::string>{"COM", "Pelvis"});
 }
+
+TEST_CASE("Vertex weights dropped on save leave the kept weights normalized", "[NifFile]") {
+	// Six bones on one vertex, strongest first. Only the strongest ones fit,
+	// and those have to add up to 1 by themselves.
+	std::vector<uint8_t> boneIndices{0, 1, 2, 3, 4, 5};
+	std::vector<float> weights{0.3f, 0.2f, 0.2f, 0.1f, 0.1f, 0.1f};
+
+	SECTION("BSTriShape keeps four (SE)") {
+		const auto fileInput = std::get<0>(GetFileTuple("TestNifFile_Skinned_SE", nifSuffix));
+
+		NifFile nif;
+		REQUIRE(nif.Load(fileInput) == 0);
+
+		BSTriShape* shape = nullptr;
+		for (auto s : nif.GetShapes()) {
+			auto triShape = dynamic_cast<BSTriShape*>(s);
+			if (triShape && triShape->IsSkinned() && !triShape->vertData.empty()) {
+				shape = triShape;
+				break;
+			}
+		}
+		REQUIRE(shape);
+
+		nif.SetShapeVertWeights(shape->name.get(), 0, boneIndices, weights);
+
+		const auto& vertex = shape->vertData[0];
+		float sum = 0.0f;
+		for (int i = 0; i < 4; i++) {
+			REQUIRE(vertex.weightBones[i] == boneIndices[static_cast<size_t>(i)]);
+			sum += vertex.weights[i];
+		}
+		REQUIRE(std::abs(sum - 1.0f) < 1e-5f);
+		REQUIRE(std::abs(vertex.weights[0] - 0.375f) < 1e-5f);
+	}
+
+	SECTION("BSGeometry keeps its weights per vertex (SF)") {
+		NifFile nif;
+		nif.Create(NiVersion::getSF());
+		auto block = std::make_unique<BSGeometry>();
+		auto shape = block.get();
+		shape->name.get() = "Skinned shape";
+		shape->SetInternalGeomData(true);
+		auto& data = shape->AddMesh()->meshData;
+		data.version = 2;
+		data.scale = 1.0f;
+		const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+		data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+		data.nVertices = 3;
+		nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+		nif.CreateSkinning(shape);
+		nif.SetShapeBoneList(shape, {"B0", "B1", "B2", "B3", "B4", "B5"});
+		nif.ClearShapeVertWeights(shape->name.get());
+		REQUIRE(data.nWeightsPerVert == 4);
+
+		nif.SetShapeVertWeights(shape->name.get(), 0, boneIndices, weights);
+
+		const auto& vw = data.skinWeights[0];
+		REQUIRE(vw.size() == 4);
+		uint32_t sum = 0;
+		for (size_t i = 0; i < vw.size(); i++) {
+			REQUIRE(vw[i].boneIndex == boneIndices[i]);
+			sum += vw[i].weight;
+		}
+		// Each weight is rounded to 1/65535 on its own
+		REQUIRE(sum >= 65533);
+		REQUIRE(sum <= 65537);
+		REQUIRE(vw[0].weight == static_cast<uint16_t>(std::lround(0.375f * 65535.0f)));
+	}
+}
