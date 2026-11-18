@@ -58,6 +58,12 @@ target_include_directories(nifly SYSTEM PUBLIC
 
 target_compile_features(nifly PUBLIC cxx_std_17)
 
+# Don't fuse multiplies and adds on targets with FMA (like x86-64-v3). Fused operations round differently, so the
+# bounds and other calculated values would no longer match between compilers and the files they save.
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(nifly PRIVATE "-ffp-contract=off")
+endif()
+
 if(MSVC)
     target_compile_options(nifly PRIVATE "/Zc:inline")
     target_compile_options(nifly PUBLIC "/EHsc" "/bigobj")
