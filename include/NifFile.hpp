@@ -462,6 +462,17 @@ public:
 	// Clears all bone weights and bone indices on the shape. Not implemented for NiTriShape.
 	void ClearShapeVertWeights(const std::string& shapeName) const;
 
+	// Most bones a vertex of the shape can be weighted to: 8 for a Starfield BSGeometry, 4 for other shapes.
+	uint8_t GetShapeMaxBonesPerVertex(NiShape* shape) const;
+
+	// Bones per vertex the vertex weights of the shape are written with. A Starfield BSGeometry stores its own count
+	// in each mesh, this is the one of the selected mesh, or 4 when the mesh has none yet. Other shapes always use 4.
+	uint8_t GetShapeBonesPerVertex(NiShape* shape) const;
+
+	// Sets the bones per vertex of the selected mesh of a skinned Starfield BSGeometry, from 1 to 8. Vertices weighted
+	// to more bones keep the strongest ones, normalized. Does nothing for other shapes, which always use 4.
+	void SetShapeBonesPerVertex(NiShape* shape, uint8_t bonesPerVertex) const;
+
 	// Gets the segmentation info and a list of the segments each triangle is assigned to.
 	// A triangle can only be assigned to one segment at the same time.
 	// A segment index of -1 in the list means the triangle is currently not assigned to any segment.

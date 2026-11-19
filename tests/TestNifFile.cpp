@@ -1564,3 +1564,108 @@ TEST_CASE("Vertex weights dropped on save leave the kept weights normalized", "[
 		REQUIRE(vw[0].weight == static_cast<uint16_t>(std::lround(0.375f * 65535.0f)));
 	}
 }
+
+TEST_CASE("BSGeometry bones per vertex can be set from 1 to 8 (SF)", "[NifFile][StarfieldSkinning]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+	auto block = std::make_unique<BSGeometry>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	shape->SetInternalGeomData(true);
+	auto& data = shape->AddMesh()->meshData;
+	data.version = 2;
+	data.scale = 1.0f;
+	const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+	data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+	data.nVertices = 3;
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	// Unskinned shapes keep no count
+	REQUIRE(nif.GetShapeMaxBonesPerVertex(shape) == 8);
+	nif.SetShapeBonesPerVertex(shape, 6);
+	REQUIRE(data.nWeightsPerVert == 0);
+	REQUIRE(nif.GetShapeBonesPerVertex(shape) == 4);
+
+	nif.CreateSkinning(shape);
+	nif.SetShapeBoneList(shape, {"B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"});
+
+	std::vector<uint8_t> boneIndices{0, 1, 2, 3, 4, 5, 6, 7, 8};
+	std::vector<float> weights{0.3f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f, 0.05f, 0.05f};
+
+	SECTION("Up to 8 weights are written") {
+		nif.SetShapeBonesPerVertex(shape, 8);
+		nif.ClearShapeVertWeights(shape->name.get());
+		REQUIRE(nif.GetShapeBonesPerVertex(shape) == 8);
+		nif.SetShapeVertWeights(shape->name.get(), 0, boneIndices, weights);
+		REQUIRE(data.skinWeights[0].size() == 8);
+		REQUIRE(data.skinWeights[1].size() == 8);
+		REQUIRE(data.skinWeights[0][7].boneIndex == 7);
+		REQUIRE(data.skinWeights[0][7].weight > 0);
+
+		// The count is clamped to 1-8
+		nif.SetShapeBonesPerVertex(shape, 12);
+		REQUIRE(data.nWeightsPerVert == 8);
+		nif.SetShapeBonesPerVertex(shape, 0);
+		REQUIRE(data.nWeightsPerVert == 1);
+		REQUIRE(data.skinWeights[0].size() == 1);
+		REQUIRE(data.skinWeights[0][0].boneIndex == 0);
+		REQUIRE(data.skinWeights[0][0].weight == 65535);
+	}
+
+	SECTION("Lowering the count keeps the strongest weights, normalized") {
+		nif.SetShapeBonesPerVertex(shape, 8);
+		nif.ClearShapeVertWeights(shape->name.get());
+		// Weakest first, to check the strongest are kept and not the first ones
+		std::vector<uint8_t> reversedIndices(boneIndices.rbegin() + 1, boneIndices.rend());
+		std::vector<float> reversedWeights{0.05f, 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.35f};
+		nif.SetShapeVertWeights(shape->name.get(), 0, reversedIndices, reversedWeights);
+
+		nif.SetShapeBonesPerVertex(shape, 2);
+		REQUIRE(nif.GetShapeBonesPerVertex(shape) == 2);
+		const auto& vw = data.skinWeights[0];
+		REQUIRE(vw.size() == 2);
+		REQUIRE(vw[0].boneIndex == 0);
+		REQUIRE(vw[1].boneIndex == 1);
+		REQUIRE(vw[0].weight + vw[1].weight >= 65534);
+		REQUIRE(vw[0].weight + vw[1].weight <= 65536);
+		REQUIRE(vw[0].weight == static_cast<uint16_t>(std::lround(0.35 / 0.55 * 65535.0)));
+
+		// Vertices with fewer weights only get empty slots
+		REQUIRE(data.skinWeights[1].size() == 2);
+		REQUIRE(data.skinWeights[1][0].weight == 0);
+	}
+
+	SECTION("The count is saved in the mesh") {
+		nif.SetShapeBonesPerVertex(shape, 6);
+		nif.ClearShapeVertWeights(shape->name.get());
+		for (uint16_t v = 0; v < 3; v++)
+			nif.SetShapeVertWeights(shape->name.get(), v, boneIndices, weights);
+
+		std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+		REQUIRE(nif.Save(stream) == 0);
+		NifFile reloaded;
+		REQUIRE(reloaded.Load(stream) == 0);
+		auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Skinned shape");
+		REQUIRE(reloadedShape);
+		REQUIRE(reloaded.GetShapeBonesPerVertex(reloadedShape) == 6);
+		auto reloadedData = dynamic_cast<BSGeometryMeshData*>(reloadedShape->GetGeomData());
+		REQUIRE(reloadedData);
+		REQUIRE(reloadedData->skinWeights.size() == 3);
+		REQUIRE(reloadedData->skinWeights[2].size() == 6);
+		REQUIRE(reloadedData->skinWeights[2][5].boneIndex == 5);
+	}
+}
+
+TEST_CASE("Other shapes keep 4 bones per vertex", "[NifFile]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSSE());
+	auto block = std::make_unique<BSTriShape>();
+	auto shape = block.get();
+	shape->name.get() = "Skinned shape";
+	nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+	REQUIRE(nif.GetShapeMaxBonesPerVertex(shape) == 4);
+	REQUIRE(nif.GetShapeBonesPerVertex(shape) == 4);
+	nif.SetShapeBonesPerVertex(shape, 8);
+	REQUIRE(nif.GetShapeBonesPerVertex(shape) == 4);
+}

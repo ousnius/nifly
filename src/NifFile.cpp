@@ -8,6 +8,8 @@ See the included GPLv3 LICENSE file
 #include "bhk.hpp"
 #include "NifUtil.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <regex>
 #include <set>
@@ -3093,6 +3095,54 @@ void NifFile::ClearShapeVertWeights(const std::string& shapeName) const {
 		std::memset(vertex.weights, 0, sizeof(float) * 4);
 		std::memset(vertex.weightBones, 0, sizeof(uint8_t) * 4);
 	}
+}
+
+uint8_t NifFile::GetShapeMaxBonesPerVertex(NiShape* shape) const {
+	if (dynamic_cast<BSGeometry*>(shape))
+		return static_cast<uint8_t>(BSGeometryMeshData::MaxWeightsPerVert);
+
+	return 4;
+}
+
+uint8_t NifFile::GetShapeBonesPerVertex(NiShape* shape) const {
+	if (auto* bsGeom = dynamic_cast<BSGeometry*>(shape))
+		if (auto* geomData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData()))
+			if (geomData->nWeightsPerVert > 0)
+				return static_cast<uint8_t>(std::min<uint32_t>(geomData->nWeightsPerVert, 0xFF));
+
+	return 4;
+}
+
+void NifFile::SetShapeBonesPerVertex(NiShape* shape, uint8_t bonesPerVertex) const {
+	auto* bsGeom = dynamic_cast<BSGeometry*>(shape);
+	if (!bsGeom || !bsGeom->IsSkinned())
+		return;
+
+	auto* geomData = dynamic_cast<BSGeometryMeshData*>(bsGeom->GetGeomData());
+	if (!geomData)
+		return;
+
+	const uint32_t count = std::clamp<uint32_t>(bonesPerVertex, 1, BSGeometryMeshData::MaxWeightsPerVert);
+	for (auto& vw : geomData->skinWeights) {
+		if (vw.size() > count) {
+			// Keep the strongest weights and normalize them so they still add up to 1
+			std::stable_sort(vw.begin(), vw.end(), [](const auto& a, const auto& b) { return a.weight > b.weight; });
+
+			uint32_t kept = 0;
+			uint32_t dropped = 0;
+			for (size_t i = 0; i < vw.size(); i++)
+				(i < count ? kept : dropped) += vw[i].weight;
+
+			vw.resize(count);
+			if (dropped > 0 && kept > 0)
+				for (auto& bw : vw)
+					bw.weight = static_cast<uint16_t>(std::lround(bw.weight * 65535.0 / kept));
+		}
+		else
+			vw.resize(count);
+	}
+
+	geomData->nWeightsPerVert = count;
 }
 
 bool NifFile::GetShapeSegments(NiShape* shape, NifSegmentationInfo& inf, std::vector<int>& triParts) {

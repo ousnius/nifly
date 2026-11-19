@@ -550,6 +550,9 @@ private:
 	// const float havokScale = 69.9866f;
 
 public:
+	// Most bones per vertex NifFile::SetShapeBonesPerVertex allows. The game's meshes store 0 (unskinned) to 8.
+	static constexpr uint32_t MaxWeightsPerVert = 8;
+
 	struct BoneWeight {
 		uint16_t boneIndex = 0;
 		uint16_t weight = 0;
