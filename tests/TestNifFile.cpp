@@ -721,6 +721,62 @@ TEST_CASE("Starfield vertex colors follow editor topology changes", "[NifFile][S
 		REQUIRE(reloadedData->vColors[i] == expectedColors[i]);
 }
 
+TEST_CASE("Starfield vertex colors are fitted to the vertex count on load", "[NifFile][StarfieldColors]") {
+	auto saveWithColors = [](const std::vector<ByteColor4>& colors) {
+		NifFile nif;
+		nif.Create(NiVersion::getSF());
+		auto block = std::make_unique<BSGeometry>();
+		block->name.get() = "Colored shape";
+		block->SetInternalGeomData(true);
+		auto& data = block->AddMesh()->meshData;
+		data.version = 2;
+		data.scale = 1.0f;
+		const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}};
+		data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+		data.nVertices = 4;
+		data.vColors = colors; // The color count is written from this, whatever the vertex count is
+		nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+		auto stream = std::make_unique<std::stringstream>(std::ios::in | std::ios::out | std::ios::binary);
+		REQUIRE(nif.Save(*stream) == 0);
+		return stream;
+	};
+
+	auto loadColors = [](std::stringstream& stream) {
+		NifFile nif;
+		REQUIRE(nif.Load(stream) == 0);
+		auto shape = nif.FindBlockByName<BSGeometry>("Colored shape");
+		REQUIRE(shape);
+		auto data = dynamic_cast<BSGeometryMeshData*>(shape->GetGeomData());
+		REQUIRE(data);
+		REQUIRE(data->nColors == data->vColors.size());
+
+		std::vector<Color4> colors;
+		REQUIRE(nif.GetColorsForShape(shape, colors));
+		REQUIRE(colors.size() == nif.GetVertsForShape(shape)->size());
+		return data->vColors;
+	};
+
+	const ByteColor4 white{255, 255, 255, 255};
+	const std::vector<ByteColor4> colors{{10, 20, 30, 40}, {50, 60, 70, 80}, {90, 100, 110, 120}, {130, 140, 150, 160}, {1, 2, 3, 4}, {5, 6, 7, 8}};
+
+	SECTION("More colors than vertices") {
+		auto stream = saveWithColors(colors);
+		auto loaded = loadColors(*stream);
+		REQUIRE(loaded.size() == 4);
+		for (size_t i = 0; i < loaded.size(); ++i)
+			REQUIRE(loaded[i] == colors[i]);
+	}
+	SECTION("Fewer colors than vertices") {
+		auto stream = saveWithColors({colors[0], colors[1]});
+		auto loaded = loadColors(*stream);
+		REQUIRE(loaded.size() == 4);
+		REQUIRE(loaded[1] == colors[1]);
+		REQUIRE(loaded[2] == white);
+		REQUIRE(loaded[3] == white);
+	}
+}
+
 TEST_CASE("Load external and save as internal mesh data (SF)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_ToInternalMesh_SF";
 	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, nifSuffix);

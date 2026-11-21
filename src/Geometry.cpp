@@ -1714,6 +1714,13 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 	for (uint32_t c = 0; c < nColors; c++)
 		stream.Sync(vColors[c]);
 
+	// Colors are per vertex, but some files store a different number of them (older Outfit Studio versions didn't
+	// remove the colors of deleted vertices). Fit them to the vertices so that every user can index them by vertex.
+	if (stream.GetMode() == NiStreamReversible::Mode::Reading && nColors > 0 && nColors != nVertices) {
+		vColors.resize(nVertices, ByteColor4{255, 255, 255, 255});
+		nColors = nVertices;
+	}
+
 	stream.Sync(nNormals);
 	normals.resize(nNormals);
 	for (uint32_t n = 0; n < nNormals; n++)
