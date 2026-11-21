@@ -777,6 +777,54 @@ TEST_CASE("Starfield vertex colors are fitted to the vertex count on load", "[Ni
 	}
 }
 
+TEST_CASE("Starfield LOD lists pointing past the vertices are dropped on load", "[NifFile][StarfieldLODs]") {
+	auto saveWithLods = [](const std::vector<std::vector<Triangle>>& lods) {
+		NifFile nif;
+		nif.Create(NiVersion::getSF());
+		auto block = std::make_unique<BSGeometry>();
+		block->name.get() = "LOD shape";
+		block->SetInternalGeomData(true);
+		auto& data = block->AddMesh()->meshData;
+		data.version = 2;
+		data.scale = 1.0f;
+		const std::vector<Vector3> vertices{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}};
+		data.Create(nif.GetHeader().GetVersion(), &vertices, nullptr, nullptr, nullptr);
+		data.nVertices = 4;
+		data.tris = {{0, 1, 2}, {1, 3, 2}};
+		data.lods = lods;
+		nif.GetRootNode()->childRefs.AddBlockRef(nif.GetHeader().AddBlock(std::move(block)));
+
+		auto stream = std::make_unique<std::stringstream>(std::ios::in | std::ios::out | std::ios::binary);
+		REQUIRE(nif.Save(*stream) == 0);
+		return stream;
+	};
+
+	auto loadLods = [](std::stringstream& stream) {
+		NifFile nif;
+		REQUIRE(nif.Load(stream) == 0);
+		auto shape = nif.FindBlockByName<BSGeometry>("LOD shape");
+		REQUIRE(shape);
+		auto data = dynamic_cast<BSGeometryMeshData*>(shape->GetGeomData());
+		REQUIRE(data);
+		REQUIRE(data->nLODS == data->lods.size());
+		return data->lods;
+	};
+
+	SECTION("Valid lists are kept") {
+		const std::vector<std::vector<Triangle>> lods{{{0, 1, 2}, {1, 3, 2}}, {{0, 3, 2}}};
+		auto stream = saveWithLods(lods);
+		auto loaded = loadLods(*stream);
+		REQUIRE(loaded.size() == 2);
+		REQUIRE(loaded[0].size() == 2);
+		REQUIRE(loaded[1].size() == 1);
+		REQUIRE(loaded[1][0].p2 == 3);
+	}
+	SECTION("All lists are dropped if one of them points past the vertices") {
+		auto stream = saveWithLods({{{0, 1, 2}}, {{0, 1, 2}, {1, 4, 2}}});
+		REQUIRE(loadLods(*stream).empty());
+	}
+}
+
 TEST_CASE("Load external and save as internal mesh data (SF)", "[NifFile]") {
 	constexpr auto fileName = "TestNifFile_ToInternalMesh_SF";
 	const auto [fileInput, fileOutput, fileExpected] = GetFileTuple(fileName, nifSuffix);

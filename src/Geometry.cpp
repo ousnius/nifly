@@ -1761,6 +1761,22 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 			stream.Sync(lodTri);
 	}
 
+	// LOD triangles index the vertices above. If any of them points past the vertices, the lists belong to other
+	// vertices (older Outfit Studio versions kept them when deleting vertices), so none of them can be used.
+	if (stream.GetMode() == NiStreamReversible::Mode::Reading) {
+		auto outOfRange = [&](const Triangle& t) {
+			return t.p1 >= nVertices || t.p2 >= nVertices || t.p3 >= nVertices;
+		};
+
+		for (auto& lod : lods) {
+			if (std::any_of(lod.begin(), lod.end(), outOfRange)) {
+				lods.clear();
+				nLODS = 0;
+				break;
+			}
+		}
+	}
+
 	stream.Sync(nMeshlets);
 	meshletList.resize(nMeshlets);
 	for (auto& meshlet : meshletList) {
