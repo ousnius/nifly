@@ -1828,3 +1828,20 @@ TEST_CASE("Shapes created from data are Starfield geometry (SF)", "[NifFile]") {
 	REQUIRE(reloadedData->vertices[3].x == Catch::Approx(300.0f).margin(0.05f));
 	REQUIRE(reloadedData->tangentWs == data->tangentWs);
 }
+
+TEST_CASE("Triangle limits follow the games' triangle counts", "[NifFile]") {
+	auto limit = [](const NiVersion& version) {
+		NifFile nif;
+		nif.Create(version);
+		return nif.GetTriangleLimit();
+	};
+
+	// 16-bit counts up to Skyrim SE, 32-bit ones from Fallout 4 on
+	REQUIRE(limit(NiVersion::getOB()) == std::numeric_limits<uint16_t>::max());
+	REQUIRE(limit(NiVersion::getFO3()) == std::numeric_limits<uint16_t>::max());
+	REQUIRE(limit(NiVersion::getSK()) == std::numeric_limits<uint16_t>::max());
+	REQUIRE(limit(NiVersion::getSSE()) == std::numeric_limits<uint16_t>::max());
+	REQUIRE(limit(NiVersion::getFO4()) == std::numeric_limits<uint32_t>::max());
+	REQUIRE(limit(NiVersion::getFO76()) == std::numeric_limits<uint32_t>::max());
+	REQUIRE(limit(NiVersion::getSF()) == std::numeric_limits<uint32_t>::max());
+}

@@ -151,9 +151,10 @@ size_t NifFile::GetVertexLimit() {
 }
 
 size_t NifFile::GetTriangleLimit() const {
-	size_t maxTriIndex = std::numeric_limits<uint32_t>::max();
-	if (hdr.GetVersion().User() >= 12 && hdr.GetVersion().Stream() < 130)
-		maxTriIndex = std::numeric_limits<uint16_t>::max();
+	// Fallout 4 and newer store 32-bit triangle counts, the older games 16-bit ones
+	size_t maxTriIndex = std::numeric_limits<uint16_t>::max();
+	if (hdr.GetVersion().User() >= 12 && hdr.GetVersion().Stream() >= 130)
+		maxTriIndex = std::numeric_limits<uint32_t>::max();
 
 	return maxTriIndex;
 }
