@@ -1636,6 +1636,11 @@ void BSGeometryMeshData::Sync(NiStreamReversible& stream) {
 		nLODS = static_cast<uint32_t>(lods.size());
 		nMeshlets = static_cast<uint32_t>(meshletList.size());
 		nCullData = static_cast<uint32_t>(cullDataList.size());
+
+		// Positions are packed relative to the scale, so it has to grow with vertices moved past it.
+		// A scale that is large enough stays as it is, so unchanged meshes are written back the same.
+		if (!vertices.empty() && scale < MetricExtent())
+			scale = static_cast<float>(RequiredScale());
 	}
 
 	stream.Sync(version);
@@ -1933,6 +1938,114 @@ void BSGeometryMeshData::GenerateMeshlets(uint32_t maxVerts, uint32_t maxPrims) 
 	version = 2;
 }
 
+uint32_t BSGeometryMeshData::GetNumTriangles() const {
+	return static_cast<uint32_t>(tris.size());
+}
+
+bool BSGeometryMeshData::GetTriangles(std::vector<Triangle>& outTris) const {
+	outTris = tris;
+	return true;
+}
+
+void BSGeometryMeshData::SetTriangles(const std::vector<Triangle>& newTris) {
+	if (tris == newTris)
+		return;
+
+	tris = newTris;
+	nTriIndices = static_cast<uint32_t>(tris.size()) * 3;
+
+	meshletList.clear();
+	cullDataList.clear();
+	nMeshlets = 0;
+	nCullData = 0;
+}
+
+void BSGeometryMeshData::RecalcNormals(const bool smooth, const float smoothThres, std::unordered_set<uint32_t>* lockedIndices) {
+	// Unlike the older formats, the mesh always stores normals
+	SetNormals(true);
+	CalculateNormals(vertices, tris, normals, smooth, smoothThres, lockedIndices);
+}
+
+void BSGeometryMeshData::CalcTangentSpace() {
+	const size_t vertCount = vertices.size();
+	if (normals.size() != vertCount)
+		return;
+
+	SetTangents(true);
+	tangentWs.assign(vertCount, 3);
+
+	const bool hasUVs = !uvSets.empty() && uvSets[0].size() == vertCount;
+
+	std::vector<Vector3> dirU(vertCount);
+	std::vector<Vector3> dirV(vertCount);
+	if (hasUVs) {
+		for (auto& t : tris) {
+			if (t.p1 >= vertCount || t.p2 >= vertCount || t.p3 >= vertCount)
+				continue;
+
+			const Vector3 e1 = vertices[t.p2] - vertices[t.p1];
+			const Vector3 e2 = vertices[t.p3] - vertices[t.p1];
+
+			const Vector2& w1 = uvSets[0][t.p1];
+			const float s1 = uvSets[0][t.p2].u - w1.u;
+			const float s2 = uvSets[0][t.p3].u - w1.u;
+			const float t1 = uvSets[0][t.p2].v - w1.v;
+			const float t2 = uvSets[0][t.p3].v - w1.v;
+
+			const float r = (s1 * t2 - s2 * t1) >= 0.0f ? 1.0f : -1.0f;
+
+			Vector3 sdir = (e1 * t2 - e2 * t1) * r;
+			Vector3 tdir = (e2 * s1 - e1 * s2) * r;
+			sdir.Normalize();
+			tdir.Normalize();
+
+			dirU[t.p1] += sdir;
+			dirU[t.p2] += sdir;
+			dirU[t.p3] += sdir;
+
+			dirV[t.p1] += tdir;
+			dirV[t.p2] += tdir;
+			dirV[t.p3] += tdir;
+		}
+	}
+
+	for (size_t i = 0; i < vertCount; i++) {
+		const Vector3& n = normals[i];
+
+		Vector3 tangent = dirU[i] - n * n.dot(dirU[i]);
+		if (tangent.IsZero(true)) {
+			// No UV direction to follow, any direction perpendicular to the normal will do
+			tangent = Vector3(n.y, n.z, n.x);
+			tangent = tangent - n * n.dot(tangent);
+			if (tangent.IsZero(true))
+				tangent = std::fabs(n.x) < 0.9f ? Vector3(1.0f, 0.0f, 0.0f) - n * n.x : Vector3(0.0f, 1.0f, 0.0f) - n * n.y;
+		}
+		tangent.Normalize();
+
+		Vector3 bitangent = n.cross(tangent);
+		if (bitangent.dot(dirV[i]) < 0.0f) {
+			bitangent = bitangent * -1.0f;
+			tangentWs[i] = 0;
+		}
+
+		tangents[i] = tangent;
+		bitangents[i] = bitangent;
+	}
+}
+
+float BSGeometryMeshData::MetricExtent() const {
+	float maxComponent = 0.0f;
+	for (auto& v : vertices)
+		maxComponent = std::max({maxComponent, std::fabs(v.x), std::fabs(v.y), std::fabs(v.z)});
+
+	return maxComponent / havokScale;
+}
+
+uint32_t BSGeometryMeshData::RequiredScale() const {
+	// The game's meshes use the extent rounded up to whole meters
+	return std::max(1u, static_cast<uint32_t>(std::ceil(MetricExtent())));
+}
+
 void BSGeometryMesh::Sync(NiStreamReversible& stream) {
 	stream.Sync(triSize);
 	stream.Sync(numVerts);
@@ -2019,24 +2132,9 @@ bool BSGeometry::GetTriangles(std::vector<Triangle>& tris) const {
 }
 
 void BSGeometry::SetTriangles(const std::vector<Triangle>& tris) {
-	if (meshes.size() > selectedMesh) {
-		auto& meshData = meshes[selectedMesh].meshData;
-
-		// Detect whether the triangle topology actually changes.
-		bool changed = meshData.tris.size() != tris.size();
-		for (size_t i = 0; !changed && i < tris.size(); ++i) {
-			changed = meshData.tris[i].p1 != tris[i].p1 || meshData.tris[i].p2 != tris[i].p2
-					  || meshData.tris[i].p3 != tris[i].p3;
-		}
-
-		meshData.tris = tris;
-
-		//If triangles changed, we want to drop the meshlets so export re-generates them. (only want to strip on invalidation, not if no changes occured)
-		if (changed) {
-			meshData.meshletList.clear();
-			meshData.cullDataList.clear();
-		}
-	}
+	// Changed triangles drop the meshlets so that saving generates them again (unchanged ones keep them)
+	if (meshes.size() > selectedMesh)
+		meshes[selectedMesh].meshData.SetTriangles(tris);
 }
 
 

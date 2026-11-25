@@ -2228,6 +2228,54 @@ NiShape* NifFile::CreateShapeFromData(const std::string& shapeName,
 		int shapeID = hdr.AddBlock(std::move(nifBSTriShape));
 		rootNode->childRefs.AddBlockRef(shapeID);
 	}
+	else if (version.IsSF()) {
+		// Set up like the game's meshes: the geometry goes to an external .mesh file and the
+		// shader only names a material (no texture set), which stays empty until one is chosen.
+		auto bsGeom = std::make_unique<BSGeometry>();
+		bsGeom->name.get() = shapeName;
+		bsGeom->flags = 14;
+
+		auto mesh = bsGeom->AddMesh();
+		mesh->flags = 64;
+
+		auto& meshData = mesh->meshData;
+		meshData.Create(hdr.GetVersion(), v, nullptr, uv, nullptr);
+		meshData.nVertices = static_cast<uint32_t>(meshData.vertices.size());
+		meshData.version = 2;
+		meshData.scale = static_cast<float>(meshData.RequiredScale());
+
+		if (t) {
+			// Leave out triangles with vertices that didn't fit
+			std::vector<Triangle> tris;
+			tris.reserve(t->size());
+			for (auto& tri : *t)
+				if (tri.p1 < meshData.nVertices && tri.p2 < meshData.nVertices && tri.p3 < meshData.nVertices)
+					tris.push_back(tri);
+			meshData.SetTriangles(tris);
+		}
+
+		// The format always has normals and tangents
+		if (norms && norms->size() == meshData.vertices.size()) {
+			meshData.SetNormals(true);
+			meshData.normals = *norms;
+		}
+		else
+			meshData.RecalcNormals();
+		meshData.CalcTangentSpace();
+
+		mesh->triSize = static_cast<uint32_t>(meshData.tris.size()) * 3;
+		mesh->numVerts = meshData.nVertices;
+		bsGeom->ReleaseMesh();
+
+		auto nifShader = std::make_unique<BSLightingShaderProperty>(hdr.GetVersion());
+		nifShader->SetSkinned(false);
+		bsGeom->ShaderPropertyRef()->index = hdr.AddBlock(std::move(nifShader));
+
+		shapeResult = bsGeom.get();
+
+		int shapeID = hdr.AddBlock(std::move(bsGeom));
+		rootNode->childRefs.AddBlockRef(shapeID);
+	}
 	else if (version.IsMW()) {
 		// Morrowind uses a material and a texturing property instead of a shader property
 		auto nifTriShape = std::make_unique<NiTriShape>();

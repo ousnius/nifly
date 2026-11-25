@@ -613,6 +613,22 @@ public:
 
 	void notifyVerticesDelete(const std::vector<uint16_t>& vertIndices) override;
 
+	uint32_t GetNumTriangles() const override;
+	bool GetTriangles(std::vector<Triangle>& outTris) const override;
+	// Drops the meshlets when the triangles change, so that saving generates them again
+	void SetTriangles(const std::vector<Triangle>& newTris) override;
+
+	void RecalcNormals(const bool smooth = true,
+					   const float smoothThres = 60.0f,
+					   std::unordered_set<uint32_t>* lockedIndices = nullptr) override;
+	// Tangents point along +U. The bitangent is cross(normal, tangent), flipped where the tangent W is 0.
+	void CalcTangentSpace() override;
+
+	// Largest absolute vertex coordinate in metric units
+	float MetricExtent() const;
+	// Smallest position scale (in whole metric units) that the vertices fit in when packed to 16 bits
+	uint32_t RequiredScale() const;
+
 	bool HasMeshlets() const { return !meshletList.empty(); }
 
 	void GenerateMeshlets(uint32_t maxVerts = 128, uint32_t maxPrims = 128);

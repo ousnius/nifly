@@ -1,6 +1,7 @@
 #include "TestNifFile.hpp"
 #include "TestUtil.hpp"
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -1772,4 +1773,58 @@ TEST_CASE("Other shapes keep 4 bones per vertex", "[NifFile]") {
 	REQUIRE(nif.GetShapeBonesPerVertex(shape) == 4);
 	nif.SetShapeBonesPerVertex(shape, 8);
 	REQUIRE(nif.GetShapeBonesPerVertex(shape) == 4);
+}
+
+TEST_CASE("Shapes created from data are Starfield geometry (SF)", "[NifFile]") {
+	NifFile nif;
+	nif.Create(NiVersion::getSF());
+
+	// Quad of 100 by 100 units (more than a meter), V running down like the games' UVs
+	const std::vector<Vector3> verts{{0, 0, 0}, {100, 0, 0}, {0, 100, 0}, {100, 100, 0}};
+	const std::vector<Vector2> uvs{{0, 1}, {1, 1}, {0, 0}, {1, 0}};
+	// The last triangle points past the vertices and is left out
+	const std::vector<Triangle> tris{{0, 1, 2}, {1, 3, 2}, {1, 3, 4}};
+
+	auto shape = dynamic_cast<BSGeometry*>(nif.CreateShapeFromData("Quad", &verts, &tris, &uvs));
+	REQUIRE(shape);
+	REQUIRE(shape->GetNumVertices() == 4);
+	REQUIRE(shape->GetNumTriangles() == 2);
+	REQUIRE_FALSE(shape->HasInternalGeomData());
+
+	auto shader = dynamic_cast<BSLightingShaderProperty*>(nif.GetShader(shape));
+	REQUIRE(shader);
+	REQUIRE(shader->TextureSetRef()->IsEmpty());
+
+	auto data = dynamic_cast<BSGeometryMeshData*>(shape->GetGeomData());
+	REQUIRE(data);
+	REQUIRE(data->version == 2);
+	REQUIRE(data->scale == 2.0f);
+	// Without normals in the data they are calculated, the format always has them
+	REQUIRE(data->normals.size() == 4);
+	REQUIRE(data->tangents.size() == 4);
+	REQUIRE(data->tangentWs.size() == 4);
+	for (size_t i = 0; i < 4; i++) {
+		REQUIRE(data->normals[i].z == Catch::Approx(1.0f));
+		REQUIRE(data->tangents[i].x == Catch::Approx(1.0f));
+		REQUIRE(data->tangentWs[i] == 0);
+	}
+
+	// Saved with the mesh in the NIF, a vertex moved past the scale makes it grow
+	shape->SetInternalGeomData(true);
+	auto moved = verts;
+	moved[3] = Vector3(300, 100, 0);
+	nif.SetVertsForShape(shape, moved);
+
+	std::stringstream stream(std::ios::in | std::ios::out | std::ios::binary);
+	REQUIRE(nif.Save(stream) == 0);
+	NifFile reloaded;
+	REQUIRE(reloaded.Load(stream) == 0);
+	auto reloadedShape = reloaded.FindBlockByName<BSGeometry>("Quad");
+	REQUIRE(reloadedShape);
+	REQUIRE(reloadedShape->GetNumTriangles() == 2);
+	auto reloadedData = dynamic_cast<BSGeometryMeshData*>(reloadedShape->GetGeomData());
+	REQUIRE(reloadedData);
+	REQUIRE(reloadedData->scale == 5.0f);
+	REQUIRE(reloadedData->vertices[3].x == Catch::Approx(300.0f).margin(0.05f));
+	REQUIRE(reloadedData->tangentWs == data->tangentWs);
 }
